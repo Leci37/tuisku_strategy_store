@@ -24,7 +24,8 @@ STOREFRONT = "Storefront v7.dc.html"
 REACT = "vendor/react/react.production.min.js"
 # Lo de docs/design/ que es de la tienda y no viene en el prototype/ de la exportación: el texto de las
 # notas, las notas mezcladas con lo suyo y el servidor de la maqueta.
-SHOP_OWN = {"handoff", "HANDOFF.md", "PR_DESCRIPTION.md", "STATUS.md", "README.md", "serve.py", "__pycache__"}
+SHOP_OWN = {"handoff", "HANDOFF.md", "PR_DESCRIPTION.md", "STATUS.md", "FLUJO_USUARIO.md", "README.md", "serve.py",
+            "__pycache__"}
 
 sys.path.insert(0, str(ROOT / "tools"))
 import design_update  # noqa: E402
@@ -139,10 +140,12 @@ def test_a_new_vendor_copy_reaches_docs_design(tmp_path):
 
 
 def test_a_note_the_shop_does_not_have_yet_comes_whole(tmp_path):
-    # Una tienda sin sus copias de las notas que van a docs/ y sin STATUS.md (ni su texto en handoff/): a
-    # tres contra un texto vacío saldrían vacías; entran enteras, y su texto, a docs/design/handoff/.
+    # Una tienda sin sus copias de las notas que van a docs/ (ni su flujo, docs/design/FLUJO_USUARIO.md) y sin
+    # STATUS.md (ni su texto en handoff/): a tres contra un texto vacío saldrían vacías; entran enteras, y su
+    # texto, a docs/design/handoff/.
     root = tmp_path / "shop"
     shutil.copytree(DESIGN, root / "docs" / "design")
+    (root / "docs" / "design" / "FLUJO_USUARIO.md").unlink()
     (root / "docs" / "design" / "STATUS.md").unlink()
     (root / "docs" / "design" / "handoff" / "STATUS.md").unlink()
     export = design_update.open_export(_export(tmp_path), tmp_path / "zip")
@@ -151,8 +154,8 @@ def test_a_note_the_shop_does_not_have_yet_comes_whole(tmp_path):
     design_update.plan_files(plan, root, export)
 
     new = {rel: dest for rel, dest in design_update.NOTES.items() if not (root / dest).is_file()}
-    assert sorted(new.values()) == ["docs/FLUJO_USUARIO.md", "docs/IMPLEMENTATION-v7.md", "docs/USER-FLOW-v7.md",
-                                    "docs/catalogue-updates.md", "docs/design/STATUS.md"]
+    assert sorted(new.values()) == ["docs/IMPLEMENTATION-v7.md", "docs/USER-FLOW-v7.md", "docs/catalogue-updates.md",
+                                    "docs/design/FLUJO_USUARIO.md", "docs/design/STATUS.md"]
     for rel, dest in new.items():
         text = (export / rel).read_bytes()
         assert text.strip() and plan.writes[dest] == text, dest

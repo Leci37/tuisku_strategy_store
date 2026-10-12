@@ -26,7 +26,7 @@ base de una mezcla a tres. Lo que hace:
    y vendor/ (React, ReactDOM y Babel, que carga support.js, y el Font Awesome de las plantillas: la
    maqueta abre sin internet); el texto de sus notas, en docs/design/handoff/; y mezcla a tres esas notas
    en docs/design/HANDOFF.md, docs/design/PR_DESCRIPTION.md, docs/design/STATUS.md,
-   docs/FLUJO_USUARIO.md, docs/IMPLEMENTATION-v7.md, docs/USER-FLOW-v7.md y docs/catalogue-updates.md.
+   docs/design/FLUJO_USUARIO.md, docs/IMPLEMENTATION-v7.md, docs/USER-FLOW-v7.md y docs/catalogue-updates.md.
    Una nota que la tienda aún no tiene entra entera.
 
 Sale con 0 si todo entra limpio, con 1 si queda un conflicto o algo por decidir (lo dice), con 2 si el zip
@@ -59,7 +59,7 @@ COPIED = ("Storefront v7.dc.html", "Strategy Tree.dc.html", "support.js", "i18n/
 MOCKUP = ("storefront/", "zlecitool_core/ui/")
 # Las notas del diseño (ruta en el zip -> la copia de la tienda, que lleva cambios propios).
 NOTES = {"README.md": "docs/design/HANDOFF.md", "PR_DESCRIPTION.md": "docs/design/PR_DESCRIPTION.md",
-         "STATUS.md": "docs/design/STATUS.md", "FLUJO_USUARIO.md": "docs/FLUJO_USUARIO.md",
+         "STATUS.md": "docs/design/STATUS.md", "FLUJO_USUARIO.md": "docs/design/FLUJO_USUARIO.md",
          "docs/IMPLEMENTATION-v7.md": "docs/IMPLEMENTATION-v7.md", "docs/USER-FLOW-v7.md": "docs/USER-FLOW-v7.md",
          "docs/catalogue-updates.md": "docs/catalogue-updates.md"}
 HANDOFF = "docs/design/handoff"         # esas notas tal como llegaron la última vez: la base de su mezcla

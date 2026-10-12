@@ -568,8 +568,9 @@ catalogue/                 catalogue.csv, indicators.csv, bundles.json, fx.json;
 tests/                     las pruebas (arriba)
 tools/screenshots.py       el recorrido en un navegador (las capturas de arriba)
 tools/design_update.py     aplicar una exportación nueva del diseño (con dc2htm.py, que hace las vistas)
-docs/                      IMPLEMENTATION-v7.md, USER-FLOW-v7.md y FLUJO_USUARIO.md (el diseño y el flujo
-                           de cada pantalla), catalogue-updates.md, design/ (el diseño de referencia, con
+docs/                      PANTALLAS.md, FLUJO_USUARIO.md, API_ENDPOINTS.md y API_ENDPOINTS_referencia.md (la
+                           tienda de hoy, sacada del código); IMPLEMENTATION-v7.md, USER-FLOW-v7.md y
+                           catalogue-updates.md (el diseño, al día con cada exportación); design/ (el diseño de referencia y su flujo, con
                            su vendor/: python docs/design/serve.py lo abre), handoff/<fecha>/ (cada
                            exportación tal como llegó y su CAMBIOS.md), img/, notes/
 ```

@@ -1,434 +1,514 @@
-# Edgefolio · Flujo de usuario (exportación 2026-10-06)
+# Edgefolio · Flujo de usuario (la tienda en `_ztool_dev`)
 
-> **En esta tienda.** Es el flujo del diseño tal como llegó (exportación del 2026-10-06), y la tienda lo
-> sigue con las diferencias que apunta `docs/handoff/2026-10-06/CAMBIOS.md`: las direcciones de verdad
-> (`/s/<id>`, `/thanks`, `/mine`), la barra, el idioma, la cuenta y el pie del núcleo, PayPal y los enlaces
-> contados de verdad, «¿Compraste sin cuenta?», todas las vistas previas cortadas y el recorrido de
-> bienvenida propio, una vez por navegador. La próxima exportación se compara con este fichero.
-
-- **Herramienta:** `edgefolio`. **Repositorio:** `Leci37/tuisku_Web_selling`, rama `_ztool_dev`, sobre el núcleo `zlecitool-core` 0.23.0.
-- **Archivos:** `prototype/Storefront v7.dc.html` (pantallas 1–3 y 5–9) y `prototype/Strategy Tree.dc.html` (pantalla 4, incrustada en la ficha).
-
-**Punto de partida.** La tienda de `_ztool_dev` sigue hoy el diseño v7 exportado el 6 oct 2026, más la fila de confianza bajo «Pagar». La marca de cada pantalla compara el diseño con eso:
-- **same:** igual que en la tienda;
-- **changed: …:** cambia lo que se indica;
-- **new:** pantalla nueva;
-- **removed:** se quita.
-
-Lo que la tienda tiene y el diseño no muestra se mantiene; no es una baja. Por ejemplo, «¿Compraste sin cuenta?» en Mis estrategias.
+- **Qué es:** cómo funciona hoy la tienda, paso a paso. Está leído del código de `_ztool_dev` el 12 oct 2026.
+- **Documentos hermanos,** con la misma numeración de pantallas (1–9):
+  - `docs/PANTALLAS.md`: qué contiene cada pantalla;
+  - `docs/API_ENDPOINTS.md`: qué manda y qué recibe cada pantalla.
+- **Llamadas al servidor:** cada paso dice cuál hace. El número (API #7) es el de `docs/API_ENDPOINTS_referencia.md` y `docs/API_ENDPOINTS.md`.
+- **Repositorio:** `Leci37/tuisku_strategy_store` (antes `tuisku_Web_selling`), rama `_ztool_dev`, núcleo zlecitool-core 0.23.0.
+- **Sustituye** al `docs/FLUJO_USUARIO.md` del repositorio, que era el flujo del diseño (exportación del 6 oct).
+- **Diferencias con el diseño:** cada pantalla las apunta en «Distinto del diseño». Vienen de `docs/handoff/2026-10-06/CAMBIOS.md` o del código.
+- **Textos:** entre comillas, los del diseño en español. Los que solo tiene la tienda, por su clave de `i18n/ui.json`.
 
 **Etiquetas:**
-- **[Simulado]:** el prototipo lo imita; la tienda lo hace en el servidor.
-- **[Regla]:** regla que hay que mantener.
+- **[Servidor]:** lo decide el servidor.
+- **[Navegador]:** lo guarda este navegador (localStorage).
 - **📱:** diferencia en el móvil (390 px) frente al escritorio (1366 px).
-
-Los textos citados son los de español (`texts.json`).
 
 ---
 
 ## Común a todas las pantallas
 
-**Barra superior.** La pone el núcleo, con la palabra «Edgefolio». Las fichas de la tienda van en sus dos huecos:
+**Archivos:**
+- `templates/edgefolio/shop.html`: una sola plantilla para todas las direcciones, dentro de `zt/base.html` del núcleo.
+- `static/js/app.js`: el estado, las llamadas y las acciones.
+- `static/js/lib/vals*.js`: pasan el estado a los valores que leen las vistas.
+- `static/js/views/*.js`: las vistas, con el marcado del diseño.
+
+**Barra superior.** Es del núcleo: «Edgefolio», el menú de idioma, la cuenta («Entrar» o el correo) y la raya. Lo de la tienda va en sus dos huecos:
+- al principio, **Lite | Pro** y **Mis estrategias**;
+- antes del idioma, **? Ver tutorial**, **TradingView** y la **moneda**.
 
 | Elemento | Clic → resultado |
 |---|---|
-| **Lite \| Pro** | Cambia de modo, lo guarda en `tuisku-sf-mode` y va a la tienda desde cualquier pantalla |
-| **Mis estrategias** | Abre la pantalla 8 |
-| **? Ver tutorial** | Abre el tutorial de bienvenida en el paso 1 (pantalla 1) |
-| **TradingView** («● Conectado» / «Conectar TradingView») | Alterna el estado. [Simulado] Solo cambia la etiqueta. |
-| **Moneda** (EUR, INR, CNY, SAR o USD) | Alterna entre la moneda local y USD. En inglés no cambia nada. No se guarda. |
-| **Idioma** | Abre el menú de los 8 idiomas. Al elegir uno, la interfaz cambia al momento y se guarda; el árabe va de derecha a izquierda. Un clic fuera o **Esc** cierra el menú. |
+| **Lite \| Pro** | Cambia de modo [Navegador `tuisku-sf-mode`] y va a la tienda desde cualquier página |
+| **Mis estrategias** | Con sesión, pantalla 8. Sin sesión, va a `/mine`: el núcleo pide entrar y después vuelve a `/mine` |
+| **? Ver tutorial** | El recorrido de bienvenida, desde el paso 1 (pantalla 1) |
+| **TradingView** | Al encenderlo abre tradingview.com en otra pestaña, y se recuerda [Navegador `edgefolio-tv`]. No conecta nada: TradingView no tiene una API para eso |
+| **Moneda** | Alterna entre la moneda local y USD, con los cambios de API #5. Si no llegan, todo sale en USD. No se guarda |
+| **Idioma** (núcleo) | Cambia la página al momento (evento `zt:language`); el árabe va de derecha a izquierda. Esc no lo cierra desde la tienda: lo cierra el núcleo |
 
-- **Página:** 1320 px de ancho, con bandas a todo el ancho bajo la barra (la cinta de cotizaciones, la cabecera de Lite y la franja del carrito de Pro).
-- **Pie:** el del núcleo (Privacidad · Cookies · Condiciones de uso · Aviso legal · Contacto).
-- **Sin anuncios y sin aviso de cookies.**
-- **Precios:**
+- **Página:** 1320 px de ancho, con bandas a todo el ancho bajo la barra.
+- **Pie (núcleo):** Privacidad, Cookies, Condiciones de uso, Aviso legal y Contacto.
+- **Sin anuncios** (`tool.json`: `"ads": false`).
+- **Precios** [Servidor]:
   - PayPal, en USD, sin créditos.
-  - El servidor calcula los precios, y ningún código de descuento llega a la página.
-  - Cada estrategia cuesta 79 US$; en moneda local se muestra aproximado («≈ 73 €»).
-  - [Simulado] El código `DEMO20` viene ya escrito en el prototipo.
-- **Direcciones:**
+  - Cada precio, descuento y total lo calcula el servidor (API #7).
+  - Ningún código de descuento llega a la página.
 
-  | Pantalla | Dirección |
-  |---|---|
-  | Tienda | `/` |
-  | Ficha | `/s/<id>` |
-  | Cómo decide | `/s/<id>/tree` |
-  | Gracias | `/thanks` |
-  | Mis estrategias | `/mine` |
+**Direcciones:**
 
-  - En el prototipo, la ficha usa `#s=<id>` y `#s=<id>/tree`; Gracias y Mis estrategias no tienen dirección propia.
-  - Atrás, Adelante y recargar mantienen la ficha y su pestaña. Un id que no existe lleva a la tienda.
-- **Al llegar:**
-  - Se leen el modo, el idioma y la vista de Pro guardados.
-  - Si la dirección es una ficha, se abre esa ficha.
-  - Si no, se abre la tienda, y en la primera visita también el tutorial de bienvenida.
-- **Estados al llegar:**
-  - **Cargando:** mientras llegan los textos, las etiquetas salen vacías un instante (no hay pantalla de carga diseñada).
-  - **Error:** no diseñado.
-  - **Hecho:** la pantalla de destino.
+| Pantalla | Dirección | Qué hace el servidor |
+|---|---|---|
+| Tienda | `/` | — |
+| Ficha | `/s/<id>` | Un id que no existe → 302 a `/`. Un alias o una clave → 301 a `/s/<id>` |
+| Cómo decide | `/s/<id>/tree` | Igual que la ficha |
+| Gracias | `/thanks?token=<pedido>` | — |
+| Mis estrategias | `/mine` | Pide sesión |
+
+- Atrás, Adelante y recargar mantienen la página.
+- Los enlaces antiguos `#s=<id>` siguen abriendo la ficha.
+
+**Al llegar** (las llamadas van a la vez):
+1. Llegan los textos del núcleo (`zt.i18nReady`). **Hasta que llegan, no se pinta nada de la tienda.**
+2. Se llaman API #1 (configuración), #4 (packs), #5 (cambios) y #2 (la cinta). Si la página llegó con sesión, también #14.
+3. Con sesión, las favoritas guardadas en el navegador pasan a la cuenta (API #21, una llamada por favorita).
+4. La dirección decide la pantalla. Estos parámetros valen una vez y se borran de la barra de direcciones:
+   - `?checkout=cancel`: se vuelve de PayPal sin pagar, y el carrito sigue igual.
+   - `?link=<clave>`: un enlace de descarga que ya no vale. Sale un aviso con el motivo.
+   - `?news=confirmed` / `?news=expired`: sale el aviso `newsConfirmed` o `newsExpired`.
+   - `/mine?proof=<token>`: lleva a la pantalla 8, a demostrar un correo.
+
+**Avisos:**
+- Cada rechazo del servidor sale como un aviso flotante, con su texto traducido. El diseño no tiene avisos.
+- En Lite van encima del carrito flotante y de la píldora Comparar; la página mide su alto.
+
+**Estados al llegar:**
+- **Cargando:** se ven la barra y el pie del núcleo; el contenido queda en blanco hasta que llegan los textos.
+- **Error:** si los textos no llegan, el contenido se queda en blanco. Sin textos, tampoco se puede pintar el aviso.
+- **Hecho:** la pantalla de la dirección.
+
+**Distinto del diseño:**
+- Direcciones de verdad, en lugar de `#s=`.
+- La barra, el idioma, la cuenta y el pie son del núcleo:
+  - a 390 px, la barra ocupa cuatro filas;
+  - con sesión en el escritorio, baja a dos filas, porque el correo de la cuenta ocupa unos 210 px. Está pedido al núcleo en `CAMBIOS.md`.
+- Los avisos flotantes son de la tienda.
 
 ---
 
 ## 1 · Lite (por defecto)
 
-**changed:**
-- etiqueta «Novedades» en las tarjetas de estrategias publicadas en los últimos 30 días;
-- un pack nuevo saca del carrito los packs que comparten alguna estrategia;
-- la píldora «Comparar» va encima del carrito flotante;
-- Esc cierra el selector del pack y la comparación.
+**Archivos:** `static/js/views/lite.js`, `lib/vals_shop.js` y `lib/vals_cart.js`.
 
-**Pantalla:** `/`, en `Storefront v7.dc.html`, bloque Lite.
+### Recorrido de bienvenida
+- Es el de la tienda, no el del núcleo, porque el del núcleo solo sale con sesión.
+- Sale en la tienda la primera vez que se entra desde este navegador [Navegador `edgefolio-tour-v1`]. Si se entra por otra dirección, no sale.
+- Tiene 3 pasos:
+  1. «Elige un mercado», con el texto de Lite o el de Pro;
+  2. «Lee la curva»;
+  3. «Compra y cárgala en TradingView».
+- **Controles:**
+  - **Continuar**, **Atrás** y **Empezar**;
+  - **×** o **Esc** lo cierran;
+  - **→ / ←** cambian de paso (al revés en árabe);
+  - un toque en la imagen avanza, y deslizar más de 40 px cambia de paso.
 
-### Primera visita: tutorial de bienvenida (núcleo, 3 pasos)
+### La lista
 
-| Paso | Título | Texto |
+| Zona | Qué pasa | Llamada |
 |---|---|---|
-| 1 de 3 | Elige un mercado | En Lite: «Busca una empresa o una cripto, o usa las pestañas…». En Pro: «Acota las 2.834 estrategias…». |
-| 2 de 3 | Lee la curva | `tour2Text` |
-| 3 de 3 | Compra y cárgala en TradingView | `tour3Text` |
+| **Cinta** | 12 estrategias de pago, en orden `hot`: el mejor % de cada ticker, por turnos. No se pulsa | API #2 `paid=1&sort=hot&size=12` |
+| **Buscador** | Busca al escribir en el nombre, el ticker, el indicador y la clave | API #2 `q=…`, 150 ms después de la última tecla |
+| **Pestañas** | Destacadas (`hot`), Tasa de acierto (`win`), Acciones, Cripto, Gratis y **Novedades · N** (las publicadas en los últimos 30 días; N = `counts.new`) | API #2 `tab=…` |
+| **Lista** | 24 tarjetas. «Mostrando N de M», con el total del servidor | API #2 `size=24&page=1` |
+| **Ver más** | Añade las 24 siguientes. Solo sale mientras queda algo | API #2 `page=2…` |
+| **Aviso de sobreajuste** | Siempre visible | — |
 
-- **Continuar**, **Atrás** y **Empezar** (en el paso 3).
-- **×** o **Esc** lo cierran.
-- **→ / ←** cambian de paso (al revés en árabe).
-- Un clic en la imagen avanza; deslizar más de 40 px cambia de paso.
-- Al cerrarlo se guarda `edgefolio-tour-v1` y no vuelve a salir solo.
+Solo cuenta la respuesta más nueva: una búsqueda vieja que llega tarde no pisa la nueva.
 
-### Qué ve y qué hace
+### Packs
+- **Packs del catálogo** (API #4, de `catalogue/bundles.json`):
+  - cada uno muestra su nombre, el «antes» (sus estrategias sueltas) y el precio;
+  - no sale un pack que perdió una estrategia, ni uno que no es más barato que sus estrategias por separado.
+- **Añadir pack:** entra en el carrito [Navegador].
+  - Sus estrategias sueltas salen del carrito.
+  - También salen los packs que comparten alguna estrategia con él.
+  - [Servidor] Un carrito con la misma estrategia en dos packs se rechaza (`errBundleOverlap`).
+- **Pack propio** (`packTitle`; «Crea tu pack» en `settings.py`): 5 estrategias por 249 US$ (`PACK_SIZE`, `PACK_PRICE`).
+  - Antes de elegir, el «antes» vale 5 × el precio mediano de las estrategias de pago (API #4).
+  - El selector busca en todo el catálogo de pago (API #2 `paid=1&sort=hot&size=40&q=…`).
+  - Se puede marcar una estrategia que ya va en un pack del carrito, que sale marcada «En el carrito». Al añadir el pack propio, ese otro pack sale del carrito.
+  - El pack propio solo va al presupuesto con las 5 elegidas.
+  - [Servidor] Cuesta 249 US$, o la suma de sus precios si es menor.
 
-| Zona | Qué pasa |
-|---|---|
-| **Cinta de cotizaciones** | Las estrategias de pago por beneficio neto %, por ejemplo «AAPL · 1C00 +85,80 %». Se desliza de lado y no se puede pulsar. |
-| **Buscador** «Busca una empresa, cripto o indicador» | Filtra al escribir, por nombre, ticker, indicador o clave. Es el mismo buscador que Pro. |
-| **Pestañas** | **Destacadas** (por beneficio neto %), **Tasa de acierto** (por acierto), **Acciones**, **Cripto**, **Gratis** (precio 0) y **Novedades · 3** (últimos 30 días). Se combinan con la búsqueda. |
-| **Aviso «Riesgo de sobreajuste»** | Siempre visible; no se cierra |
-
-**Packs:**
-- **Top 5 por beneficio:** 249 US$ (antes 395 US$; «Ahorra un 37 %»).
-- **Inicio en cripto:** 119 US$ (antes 158 US$; «Ahorra un 25 %»).
-- **Pareja Amazon:** 119 US$ (antes 158 US$).
-- **Añadir pack** lo mete en el carrito y el botón pasa a «✓ En el carrito»:
-  - sus estrategias que estaban sueltas salen del carrito;
-  - también salen los packs que comparten alguna estrategia con él.
-- Otro clic en «✓ En el carrito» quita el pack.
-
-**Arma tu pack** (5 por 249 US$):
-- 5 huecos y el texto «Elige N más · 5 por 249 US$». El botón **Añadir pack** sale gris hasta tener 5.
-- Un clic en un hueco, o en el botón sin estar completo, abre el **selector**:
-  - las 7 estrategias de pago con casilla, y el contador «N / 5»;
-  - una sexta marca se ignora;
-  - cualquier cambio saca el pack del carrito;
-  - **Hecho** o **Esc** lo cierran.
-- Con 5, el botón mete el pack en el carrito («En el carrito»), con las mismas reglas que los packs.
-
-**Tarjetas** (columnas de al menos 270 px):
+### Tarjetas
 
 | Elemento | Clic → resultado |
 |---|---|
-| Ticker, con la etiqueta «Novedades» si es nueva, o la curva con «⚠ Backtest» | Abre la ficha (pantalla 3) |
-| «+85,80 % ?», «Tasa de acierto …?», «… operaciones ?» | Burbuja con la explicación; solo hay una abierta a la vez |
-| **Nota** A–D | Al pasar el ratón: «Muestra: N operaciones cerradas…». [Regla] A ≥ 300, B ≥ 100, C ≥ 30 operaciones. |
-| «Desde su publicación +9,4 %» | Verde, o rojo si es negativo. [Simulado] |
-| ♡ | Favorita, sí o no (pantalla 8) |
-| Comparar | Entra o sale de la comparación, hasta 3 (pantalla 2) |
+| Ticker o curva | La ficha (pantalla 3) |
+| «?» de cada cifra | Una burbuja con la explicación |
+| **Nota** A–D | [Servidor] Según las operaciones cerradas: A desde 300, B desde 100, C desde 30, D por debajo. Al pasar el ratón, la explicación |
+| «Novedades» | Sale si `is_new` [Servidor, `NEW_DAYS`] |
+| «Desde su publicación» | El `live` del servidor. Mientras no haya cálculo diario, `liveUnknown` («—») |
+| ♡ | Sin sesión, se guarda en el navegador [`edgefolio-favs-v1`]. Con sesión, API #21 / #22 |
+| Comparar | Hasta 3 estrategias, solo en el navegador (pantalla 2) |
 | **Ficha técnica** / **Cómo decide** | Pantallas 3 y 4 |
-| **Comprar** | Entra en el carrito → «✓ En el carrito». Otro clic la quita; si está dentro de un pack, quita el pack. |
-| **Descargar** (gratis) | Abre la pantalla 6 |
+| **Comprar** / «✓ En el carrito» | Entra en el carrito o sale de él [Navegador `edgefolio-cart-v1`]. Si va dentro de un pack, quita el pack. Cada cambio pide presupuesto (API #7) |
+| **Descargar** (gratis) | Pantalla 6 |
 
-Debajo: «Mostrando N de 2.834» y **Ver más** [Simulado].
+Las imágenes de las tarjetas son miniaturas WebP (API #6).
 
-**Carrito flotante** (pantalla 5):
-- Se queda pegado abajo mientras haya algo en el carrito.
-- Si hay estrategias en comparación, la píldora **Comparar · N** va justo encima.
+**El carrito flotante** se explica en la pantalla 5.
 
 **Estados:**
-- **Vacío:** «Ninguna estrategia coincide».
-- **Cargando / error:** no diseñados.
-- **Hecho:** tarjetas y contador.
+- **Vacío:** «Ninguna estrategia coincide» (`noMatch`).
+- **Cargando:**
+  - la primera vez, la lista sale vacía, sin indicador;
+  - al cambiar la búsqueda o la pestaña, se ve la lista anterior hasta que llega la nueva.
+- **Error:** un aviso con el motivo; la lista anterior se queda.
+- **Hecho:** las tarjetas y el contador.
+
+**Distinto del diseño:**
+- Cifras de verdad:
+  - el total de la lista;
+  - «Novedades · N», que hoy es 0 porque no hay nada publicado en los últimos 30 días;
+  - «Desde su publicación», que sale como «—».
+- «Ver más» funciona, y el selector del pack busca en todo el catálogo.
+- Los packs son los de `catalogue/bundles.json`, no los del diseño.
 
 ---
 
 ## 2 · Pro
 
-**changed:**
-- en la vista Tarjetas, el nombre del indicador abre su página en TradingView;
-- Esc cierra los desplegables de filtros;
-- la etiqueta «Tabla» usa la clave `viewTableTab` (mismo texto).
+**Archivos:** `views/pro.js`, `lib/filters.js` (arma la consulta) y `lib/vals_shop.js`.
 
-**Pantalla:** `/` en modo Pro, en `Storefront v7.dc.html`, bloque Pro.
+**Panel de filtros** (📱 encima de la lista). Cada cambio vuelve a pedir la lista (API #2) 150 ms después del último cambio, con `facets=1` cuando cambian los filtros.
+- El contador «N · estrategias mostradas» y **Restablecer filtros**.
+- **Solo GRATIS** → `free=1`.
+- **16 rangos** → `<clave>_min` / `<clave>_max`. Las claves son `np`, `price`, `npp`, `trades`, `win`, `pf`, `months`, `mlu`, `mlp`, `avg`, `avgp`, `bars`, `act`, `candles`, `prec` y `tree`.
+  - Los histogramas y la escala de cada barra los da el servidor.
+  - Cada histograma cuenta con todos los demás filtros, pero sin el suyo.
+  - Un asa en el extremo no manda nada: quiere decir «sin límite».
+- **5 desplegables** → `sym`, `tf`, `ind`, `idx` y `rel`, repetidos tantas veces como opciones marcadas.
+  - Las opciones, su recuento y los iconos los da el servidor.
+  - Con todo quitado, la lista se queda vacía.
+- [Servidor] Los filtros se combinan con Y, y las opciones de un mismo desplegable, con O.
 
-- **Franja del carrito y escalera de descuento:** ver la pantalla 5.
-- **Panel de filtros:** a la izquierda; 📱 encima de la lista.
-  - El contador «N · estrategias mostradas» y **Restablecer filtros**.
-  - **Solo GRATIS.**
-  - **16 deslizadores de rango**, cada uno con su histograma:
-    - Beneficio neto ($) y Precio ($) siempre abiertos;
-    - los otros 14, plegados: Beneficio neto (%), Operaciones cerradas, Tasa de acierto (%), Factor de beneficio, Entrenamiento (meses), Pérdida máxima ($), Pérdida máxima (%), Beneficio medio ($), Beneficio medio (%), Velas medias por operación, Actividad por vela, Número de velas, Precisión f1 (%), Profundidad del árbol;
-    - las asas se arrastran, y un clic en la pista mueve la más cercana;
-    - un asa en el extremo significa «sin límite»;
-    - las casillas mín. y máx. se aplican con Intro o al salir;
-    - al pasar el ratón por una barra del histograma se ve «N estrategias».
-  - **5 desplegables** (Símbolo, Temporalidad, Indicadores, Mercado, Fecha de publicación):
-    - buscador, **Seleccionar todo** / **Quitar todo**, y casillas con su recuento;
-    - si no hay nada marcado, la lista queda vacía;
-    - un clic fuera o **Esc** cierran el desplegable.
-  - [Regla] Los filtros se combinan con Y; dentro de un desplegable, las opciones se combinan con O.
-- **Encima de la lista:**
-  - **Ordenar** (Beneficio neto, Tasa de acierto, Precio, Operaciones cerradas), siempre de mayor a menor.
-  - El buscador.
-  - **Filas / Tarjetas / Tabla**, que se guarda.
-  - Una **etiqueta** por filtro activo con su ×, y **Borrar filtros**.
-- **Filas:**
-  - el ticker enlaza con TradingView;
-  - los botones Ficha técnica y Cómo decide;
-  - la curva y 4 cifras;
-  - Añadir al carrito o Descargar.
-- **Tarjetas:**
-  - las dos curvas y 6 cifras;
-  - «CLAVE · indicador» abre la página del indicador en TradingView.
+**Encima de la lista:**
+- **Ordenar** → `sort`, siempre de mayor a menor.
+- El buscador → `q`.
+- **Filas / Tarjetas / Tabla** [Navegador `tuisku-sf-pview5`].
+- Una etiqueta por filtro activo, con su ×, y **Borrar filtros**.
+
+**Vistas:**
+- **Filas** y **Tarjetas:** 25 por página; «Ver más» añade la página siguiente.
 - **Tabla:**
-  - clic en una cabecera numérica para ordenar;
-  - clic en una fila para desplegarla (una cada vez);
-  - Comparar y carrito en la fila;
+  - 25 por página, y el paginador cambia de página («a–b de N»);
+  - las cabeceras numéricas ordenan, y un clic despliega una fila;
+  - Comparar y el carrito van en la fila;
   - 📱 se desplaza de lado.
-  - «Filas por página» y los botones de página son [Simulado].
-- **Comparar** (también desde las tarjetas Lite):
-  - la píldora **Comparar · N** abre «Comparar estrategias»;
-  - una columna por estrategia, con ×;
-  - en cada fila, el mejor valor en verde (en el precio, el más bajo);
-  - quitar la última, × o **Esc** cierran.
+- «CLAVE · indicador» abre la página del indicador en TradingView (`ind_url`). Al pasar el ratón, sale su explicación (`ind_text`).
+
+**Comparar:**
+- Admite hasta 3 estrategias, desde las tarjetas de Lite y desde la Tabla.
+- La píldora **Comparar · N** abre la tabla comparativa, con el mejor valor de cada fila en verde. En el precio, gana el más bajo.
+- No llama al servidor.
+
+**La franja del carrito y la escalera** se explican en la pantalla 5.
 
 **Estados:**
-- **Vacío:** «Ninguna estrategia coincide».
-- **Cargando / error:** no diseñados (en la tienda, `GET /api/strategies`).
+- **Vacío:** `noMatch`.
+- **Cargando:** se ve la lista anterior hasta que llega la nueva.
+- **Error:** un aviso; por ejemplo, `errRequest` si un valor no vale.
 - **Hecho:** la lista.
+
+**Distinto del diseño:**
+- El paginador de la Tabla y «Ver más» funcionan.
+- Las filas de los filtros y las cabeceras de la Tabla son botones (`aria-expanded`, `aria-sort`).
+- Hay 1.402 estrategias con indicadores combinados (2BB0, 2BT0…) que enlazan a la lista de scripts de TradingView, porque `indicators.csv` no les da página.
 
 ---
 
 ## 3 · Ficha de la estrategia (/s/<id>)
 
-**changed:**
-- «Actualización disponible» solo sale a quien tiene la v1;
-- la dirección sigue a la ficha, y Atrás, Adelante y recargar funcionan.
+**Archivos:** `views/detail.js` y `lib/vals_pages.js`.
 
-**Pantalla:** `Storefront v7.dc.html`, bloque de la ficha.
+**Al abrirla se piden:**
+- el registro completo (API #3): el indicador, su autor y las versiones;
+- la vista previa, de `/static/assets/previews/…pine` (cortada);
+- con sesión, Mis estrategias (API #15), una vez y en silencio, para saber si hay que mostrar «Actualización disponible».
 
+**Qué ve y qué hace:**
 1. **Cabecera:**
-   - «Volver a la tienda»;
-   - el gráfico de velas difuminado y «Nombre · TICKER»;
-   - **Abrir en TradingView** y las etiquetas «1Day», el mercado y la clave;
-   - el precio, con **Añadir al carrito** o **Descargar** (si es gratis);
-   - «Abrir en otra pestaña» y ♡ Favoritas.
-2. **Pestañas Ficha técnica | Cómo decide** (pantalla 4).
-3. La tarjeta «Mira cómo decide esta estrategia», que lleva a la pantalla 4.
-4. «En TradingView, pon el gráfico en la temporalidad 1Day.»
-5. El aviso de sobreajuste.
-6. **Backtest frente a resultado real**, con la nota A–D y dos barras. Debajo, «Cifras de ejemplo…» [Simulado].
-7. **Versiones:**
-   - v2, «Reconstrucción…», con «Actualización disponible» solo para quien tiene la v1;
-   - v1 · 27 sep 2024.
-8. Los **gráficos** de la estrategia y de velas.
-9. Los **14 resultados del backtest**. Un dato que falta sale como «—».
-10. **Sobre el indicador**, con «Ver el indicador en TradingView».
-11. **Vista previa del Pine Script**, cortada: líneas 5–16 legibles y 17–21 difuminadas, con «El resto del script se entrega tras la compra». [Regla] El script completo nunca llega al navegador.
-12. **Formatos:** Pine Script (.pine), Markdown para IA (.md), Python (.py, BETA) y JavaScript (.js, BETA).
-
-**Diferencia que se mantiene:** en la tienda, las vistas previas de pago van cortadas y las gratuitas enteras. El diseño muestra cortada también la gratuita (NVDA 1S00). Se mantiene lo de la tienda.
+   - **Volver a la tienda**, el nombre y el ticker;
+   - **Abrir en TradingView** (`tv_symbol`: `NASDAQ:AAPL`, o `BINANCE:ETHUSDT` en cripto);
+   - la temporalidad, el mercado y la clave.
+2. **Compra:** el precio, con **Añadir al carrito** / «✓ En el carrito», o **Descargar** si es gratis (pantalla 6).
+3. **Abrir en otra pestaña** (`/s/<id>`) y ♡.
+4. **Pestañas Ficha técnica | Cómo decide.** La dirección pasa a `/s/<id>/tree`.
+5. **Ficha técnica**, de arriba abajo:
+   - la tarjeta de «Cómo decide»;
+   - la temporalidad que hay que poner en TradingView;
+   - el aviso de sobreajuste;
+   - el backtest frente a «Desde su publicación», con la nota;
+   - **Versiones**;
+   - los dos gráficos;
+   - los **14 resultados**, con «—» si falta un dato;
+   - **Sobre el indicador**;
+   - la **vista previa** del Pine Script, cortada;
+   - los **formatos**: .pine, .md, .py (beta) y .js (beta).
+6. **Versiones** [Servidor]: van de la actual a la 1, sin notas, y solo la actual lleva fecha.
+   - «Actualización disponible» sale solo a quien compró una versión anterior (`update` en API #15).
+   - Una descarga gratis renovada ya da la versión nueva.
 
 **Estados:**
-- **Cargando:** el editor del Pine Script sale vacío hasta que llega el archivo.
-- **Error:** el editor se queda vacío y sin mensaje (no diseñado).
+- **Cargando:** el editor de la vista previa sale vacío hasta que llega.
+- **Error:**
+  - si la estrategia no existe (404), sale un aviso y se vuelve a la tienda;
+  - si la vista previa no llega, el editor se queda vacío, sin mensaje.
 - **Hecho:** la ficha completa.
 
-📱 Las tarjetas van una debajo de otra y el editor se desplaza de lado.
+📱 Las tarjetas van una debajo de otra, y el editor se desplaza de lado.
+
+**Distinto del diseño:**
+- Toda vista previa pública va cortada, también la de las gratis. El diseño mostraba entera la gratis; está en los puntos a revisar de `API_ENDPOINTS_referencia.md`.
+- Las versiones no tienen notas, y «Desde su publicación» sale como «—».
 
 ---
 
 ## 4 · Cómo decide (/s/<id>/tree)
 
-**changed:**
-- «Comprar para desbloquear» solo añade al carrito, y en una estrategia gratis abre la pantalla 6;
-- la dirección guarda `/tree`;
-- el árbol usa las fuentes de la página (sin cambio visible).
+**Archivos:**
+- `static/js/tree.js`, que se carga al abrir la pestaña;
+- `views/tree/*.js`;
+- `static/trees/features.json` y `static/trees/ui.json`.
 
-**Pantalla:** `Strategy Tree.dc.html`, dentro de la ficha.
+**De dónde sale el árbol:**
+- **Visitante:** de la vista previa cortada.
+- **Propietario** (con sesión y la estrategia comprada): del script entero (API #17), así que el árbol sale completo.
 
-| Control | Qué pasa |
-|---|---|
-| **Árbol \| Bloques** | Dos formas de dibujar el mismo árbol |
-| **Visitante \| Propietario** | [Simulado] Interruptor de demostración; en la tienda depende de la compra |
-| Clic en una pregunta o en su **Sí / No** | El camino va hasta ella |
-| Resultado (Comprar / Vender / Esperar) | Ratón encima → la regla en una frase. Clic → pone los valores que llegan a ese resultado. |
-| Arrastrar | Mueve el árbol |
-| **Valores de los indicadores** | Deslizadores coloreados (Compraría, Vendería, Esperaría), y la nota «Umbrales ya optimizados» |
-| **Ejemplo de compra / de venta** | Pone los valores del resultado más fuerte |
-| **Ver todas las reglas en frases (N)** | Lista las reglas; un clic en una salta a ella |
-| Ramas «Parte de pago» + **Comprar para desbloquear** | Añade la estrategia al carrito → «Añadida al carrito». En una gratis, abre la pantalla 6. |
-| **Volver a la ficha técnica** | Vuelve a la pantalla 3 |
+**Controles:** los mismos que en el diseño:
+- Árbol | Bloques;
+- clic en una pregunta o en su Sí / No;
+- los resultados, con su regla;
+- arrastrar el árbol;
+- los deslizadores de los indicadores;
+- los ejemplos de compra y venta;
+- «Ver todas las reglas» y «Volver a la ficha técnica».
+
+**Botones de compra y descarga:**
+- **Comprar para desbloquear** solo añade al carrito.
+- En una estrategia gratis, el árbol dice «Script completo» y «Conseguirla gratis», que abre la pantalla 6.
+- **Descargar .pine** (propietario) abre su enlace de descarga o, si no lo tiene, Mis estrategias.
 
 **Estados:**
-- **Cargando:** «Cargando el árbol…».
-- **Error:** «No se pudo cargar el árbol: …».
+- **Cargando:** el mensaje de carga del árbol.
+- **Error:**
+  - si el código del árbol no llega, sale el aviso `errShopNetwork`;
+  - si no llegan sus datos, sale el mensaje de error del árbol, con el motivo.
 - **Hecho:** el árbol.
 
 📱 Los deslizadores van encima del árbol.
+
+**Distinto del diseño:**
+- Los resultados se colorean con los niveles con que opera el script (comprar desde 0,55, cerrar hasta −0,9), no con los comentarios de la vista previa. Algunos salen distintos que en la maqueta; por ejemplo, AMZN 1BOL.
+- En árabe, los deslizadores siguen yendo de izquierda a derecha.
 
 ---
 
 ## 5 · Carrito y pago
 
-**changed:**
-- «Vaciar carrito» quita también los packs;
-- el subtotal tachado solo sale si hay descuento;
-- «Pagas X US$ con PayPal» también en Pro;
-- en Lite, el código muestra si es válido;
-- cada estrategia se cobra una sola vez.
+**Archivos:** `views/lite.js` (el carrito flotante), `views/pro.js` (la franja) y `lib/vals_cart.js`.
 
-**Pantalla:** el carrito flotante de Lite y la franja de Pro, en `Storefront v7.dc.html`.
+**El carrito** [Navegador `edgefolio-cart-v1`] guarda las estrategias, los packs, el pack propio y el código. Cada cambio pide un presupuesto (API #7) 120 ms después; solo vale la respuesta más nueva.
 
-**Lite, carrito flotante:**
-- «Carrito · N» y la etiqueta «−35 %».
-- **¿Tienes un código?** abre la casilla «Código» con **Aplicar**. Al lado sale «Código de descuento aplicado» o «Código no válido: sin descuento».
-- El subtotal tachado (solo si hay descuento), el total y «Pagas 154,05 US$ con PayPal».
-- **Pagar**.
+| Elemento | Comportamiento |
+|---|---|
+| «Carrito · N» | — |
+| ¿Tienes un código? / Código + **Aplicar** | El código va al servidor al pulsar Aplicar. Según `code_status`, sale «Código de descuento aplicado» o «Código no válido»; un código no válido se quita. Aplicar otra vez el mismo no borra el mensaje, y la casilla vacía quita el código |
+| Escalera (Pro) | Los tramos vienen de API #1. «Añade X más para llegar al Y %» usa `next_tier.missing` (detalle bajo la tabla) |
+| Totales | El subtotal tachado solo si hay descuento, y el total. En moneda local, «≈ …» y «Pagas X US$ con PayPal» |
+| Fila de confianza | PayPal; «Enlaces: 7 días, 10 descargas», con las cifras de API #1; «Factura por correo»; el correo de contacto (`CONTACT_EMAIL`) |
+| **Vaciar carrito** (Pro) | Quita las estrategias, los packs y el pack propio |
 
-**Pro, franja del carrito:**
-- «Carrito · N» y **Vaciar carrito**.
-- La escalera: «15 % de descuento por volumen + 20 % con el código» y «Añade 53,00 US$ más para llegar al 20 %». Hay 5 marcas: 160, 290, 500, 1.000 y 2.500 US$, que dan un 15, 20, 25, 40 y 70 %.
-- La casilla del código, los totales y **Pagar**.
+Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 53,01 US$ donde el diseño dice 53,00, y con el carrito vacío dice 160,01 US$.
 
-**Fila de confianza** (bajo «Pagar», en Lite y en Pro): «PayPal: nunca vemos tu tarjeta» · «Enlaces: 7 días, 10 descargas» · «Factura por correo» · sales@tuisku.eu.
-
-**[Regla]:**
-- **Tramos:** cada tramo cuenta cuando el subtotal supera su importe (`api/settings.py`). El código suma su %, con un tope total del 70 %.
-- **Precios:** el servidor calcula todos los precios, y los códigos se comprueban en el servidor.
-- **Packs:** sacan las estrategias sueltas y los otros packs que comparten alguna estrategia.
-
-**Ejemplo:** el carrito de prueba (3 × 79 US$) suma 237 US$; con −35 % queda en **154,05 US$**, o «≈ 142 €».
+**Descuentos** [Servidor]:
+- Por tramos: más de 160 US$ → 15 %; más de 290 → 20 %; más de 500 → 25 %; más de 1.000 → 40 %; más de 2.500 → 70 %.
+- Un código suma su porcentaje al del tramo. El descuento total tiene un tope del 70 %.
+- Un código de precio fijo pone ese precio a cada estrategia suelta, y entonces no se aplica el tramo.
 
 **Pagar:**
-- Con el carrito vacío, no pasa nada.
-- Si no, PayPal y luego la pantalla 7. [Simulado] El prototipo salta PayPal.
+1. Con el carrito vacío, no hace nada.
+2. API #8 crea el pedido en PayPal por el total del servidor. **Pagar** queda ocupado, así que un doble clic no crea dos pedidos.
+3. El navegador va a PayPal (`approve_url`).
+4. Si se aprueba, PayPal vuelve a `/thanks?token=<pedido>` (pantalla 7).
+5. Si se cancela, vuelve a `/?checkout=cancel`: la tienda, con el carrito intacto. Con el botón Atrás del navegador, **Pagar** se libera.
 
 **Estados:**
 - **Vacío:** Lite no muestra el carrito; Pro muestra «Carrito · 0».
-- **Error:** código no válido.
-- **Cargando / error de PayPal:** no diseñados.
-- **Hecho:** pantalla 7.
+- **Cargando:**
+  - se ve el presupuesto anterior hasta que llega el nuevo;
+  - **Pagar** está ocupado mientras se crea el pedido.
+- **Error:**
+  - código no válido;
+  - un aviso con `errBundleOverlap`, `errPackSize`, `errPayPal` o `errLater`;
+  - las estrategias o los packs que ya no se venden salen solos del carrito.
+- **Hecho:** PayPal.
 
-📱 El carrito flotante va 76 px por encima del borde, sobre la barra inferior.
+📱 El carrito flotante va 76 px por encima del borde, sobre la barra de abajo.
+
+**Distinto del diseño:**
+- PayPal de verdad, y las cifras del servidor.
+- La escalera dice 53,01 en vez de 53,00.
 
 ---
 
 ## 6 · Estrategia gratis por correo (diálogo)
 
-**changed:**
-- un correo vacío o no válido muestra su error;
-- Intro envía y Esc cierra;
-- pedir otra vez la misma estrategia renueva su enlace.
+**Archivos:** `views/dialogs.js` y `lib/vals_pages.js`.
 
-**Pantalla:** diálogo de `Storefront v7.dc.html`. Se abre con **Descargar** en una estrategia gratis (pantallas 1–4).
-
-1. Muestra la estrategia, «Consíguela gratis» y «Escribe tu correo y te enviamos el enlace de descarga.».
-2. El campo **Correo**: al escribir se borra el error, e **Intro** envía.
-3. La casilla ☐ «Avísame también de estrategias nuevas (opcional)», **sin marcar** de entrada. [Regla] RGPD.
-4. **Enviarme el enlace:**
-   - vacío → «Escribe tu correo electrónico.»;
-   - no válido → «Eso no parece un correo electrónico.» (en rojo, con el borde rojo);
-   - válido → «Hecho. Mira tu correo: el enlace vale 7 días.» y **Volver a la tienda**.
-5. La estrategia aparece en la pantalla 8, o su enlace vuelve a empezar si ya estaba.
-6. **×** o **Esc** cierran el diálogo.
+1. **Se abre** con **Descargar** en una estrategia gratis (pantallas 1–3), o con «Conseguirla gratis» en el árbol.
+   - El cursor va al campo del correo, salvo en pantallas táctiles.
+   - Al cerrarse, el foco vuelve al botón que lo abrió.
+2. **La casilla de novedades** empieza **sin marcar** cada vez que se abre el diálogo.
+3. **Enviarme el enlace:**
+   - **Correo vacío:** `errEmailRequired`, bajo el campo y con el borde rojo (texto del núcleo).
+   - **Correo mal escrito:** `errEmailInvalid`, igual (texto del núcleo).
+   - **Correo bien escrito:** se envía (API #12).
+     - Si el servidor rechaza el correo, el error sale también bajo el campo.
+     - Los demás rechazos salen como aviso: `errFreeDaily` (más de 10 al día con el mismo correo), `errTooMany` (más de 20 por hora desde la misma IP), `errNotFree` o `errLater`.
+   - **Hecho:** «Hecho. Mira tu correo: el enlace vale 7 días.» y **Volver a la tienda**.
+4. **El correo** lleva el enlace del .pine y el del .zip (7 días, 10 descargas), y el de Mis estrategias. El enlace nunca va en la respuesta del servidor.
+5. **Con la casilla marcada,** el correo pide confirmar las novedades (doble opt-in, RGPD).
+   - El enlace lleva a `/?news=confirmed` y al aviso `newsConfirmed`.
+   - Si caducó (vale 30 días), lleva al aviso `newsExpired`.
+6. **Dónde aparece la estrategia:** con sesión, en Mis estrategias en seguida. Sin sesión, cuando la cuenta demuestre ese correo (pantalla 8).
+7. **Teclado:**
+   - **×** o **Esc** cierran el diálogo.
+   - **Intro** envía, salvo mientras se compone texto en chino o en hindi.
 
 **Estados:**
 - **Vacío:** el formulario.
-- **Error:** el correo.
-- **Cargando:** no diseñado.
+- **Cargando:** el botón no envía otra vez mientras espera la respuesta.
+- **Error:** bajo el campo, o como aviso.
 - **Hecho:** el mensaje verde.
 
 ---
 
 ## 7 · Gracias (/thanks)
 
-**same**
+**Archivos:** `views/thanks.js`; el tutorial de instalación está en `views/dialogs.js`.
 
-**Pantalla:** `Storefront v7.dc.html`, bloque Gracias, con el tutorial de instalación en un diálogo.
+1. PayPal vuelve a `/thanks?token=<pedido>`. Sin `token`, la página lleva a la tienda.
+2. **El cobro** (API #9) cobra el pedido y devuelve el recibo.
+   - Repetirlo, por ejemplo al recargar, no cobra otra vez.
+   - Con el primer cobro sale el recibo por correo: las líneas, el total y el enlace a Mis estrategias.
+3. **El carrito** de este navegador se vacía.
+4. **El pedido:** el total en USD y «Pagado con PayPal · Pedido <id de PayPal>», con el correo de quien pagó recortado (a•••@dominio).
+5. **Los enlaces:**
+   - **Quién los ve:** el navegador que hizo el pedido, la cuenta que lo hizo o la cuenta que demostró su correo. Ven una fila por estrategia con:
+     - **.pine** y **.zip** (API #10);
+     - **Ficha técnica ↗** y **Cómo decide ↗**.
 
-**Página de gracias:**
-- «¡Gracias! El pago se ha completado.», con el total pagado en USD y «Pagado con PayPal · Pedido EF-xxxxx».
-- «Cada enlace vale 7 días y hasta 10 descargas…» y **Descargar todo** [Simulado].
-- Una fila por estrategia, con **.pine**, **.zip**, **Ficha técnica ↗** y **Cómo decide ↗** (en otra pestaña).
-- «Añádela a TradingView», con **Ver el tutorial** y 5 casillas de pasos (📱 una debajo de otra).
-- **Ir a Mis estrategias** y **Volver a la tienda**.
-
-**Tutorial de instalación** (5 pasos):
-1. Descarga y copia el script.
-2. Entra en TradingView.
-3. Abre el gráfico correcto, con el enlace «Abrir AMZN en TradingView».
-4. Pégalo en el Pine Editor.
-5. Añádela al gráfico.
-
-- **Continuar**, **Atrás** y **Listo**.
-- Los puntos se pueden pulsar.
-- **→ / ←**, **Esc** o **×**.
-- Un clic en la imagen avanza, y se puede deslizar.
-- Sale solo la primera vez (`edgefolio-install-v1`).
+     Encima, **Descargar todo** (API #11). Cada descarga gasta una de las 10 del enlace.
+   - **Cualquier otro** ve `linksHiddenTitle` y `linksHiddenText`, con `signInToDownload`: los enlaces están en Mis estrategias.
+6. **El tutorial de instalación** (5 pasos):
+   - se abre solo la primera vez [Navegador `edgefolio-install-v1`], y solo si hay un script que instalar;
+   - usa la primera estrategia del pedido;
+   - se puede reabrir con **Ver el tutorial** o con las casillas de los pasos.
+7. **Ir a Mis estrategias** y **Volver a la tienda**.
 
 **Estados:**
-- **Hecho.**
-- Sin pedido, el prototipo muestra uno de ejemplo [Simulado].
+- **Cargando:** no hay pedido que mostrar hasta que contesta el cobro.
+- **Error:** `errPayment` (PayPal no cobró el importe del pedido), `errPayPal` o `errUnknownOrder`. Sale un aviso y se vuelve a la tienda.
+- **Hecho:** el pedido y sus enlaces.
+
+**Distinto del diseño:**
+- El número de pedido es el de PayPal, no «EF-xxxxx».
+- Los enlaces caducan, se cuentan y solo los ve quien compró.
 
 ---
 
 ## 8 · Mis estrategias (/mine)
 
-**changed:**
-- «Pedir un enlace nuevo» mantiene la fecha de compra, el pedido y la versión;
-- cada fila lleva también .zip, «Ficha técnica ↗» y «Cómo decide ↗».
+**Archivos:** `views/mine.js` y `lib/vals_pages.js`.
 
-**Pantalla:** `Storefront v7.dc.html`, bloque Mis estrategias.
+**Entrar:**
+- Pide sesión. Sin ella, el núcleo lleva a `/login?next=/mine` y después vuelve aquí.
+- Al entrar, las favoritas del navegador pasan a la cuenta (API #21), y luego se lee la lista (API #15).
 
-**Se mantiene de la tienda:** el bloque **«¿Compraste sin cuenta?»**, que pide demostrar un correo. No está en el diseño, pero no es una baja.
+**Qué es de la cuenta** [Servidor]:
+- lo que hizo con la sesión abierta;
+- lo que se hizo sin cuenta con un correo que la cuenta ha demostrado.
 
-**Una fila por compra o descarga:**
-- «Comprada el …» o «Descarga gratuita el …», y el pedido.
-- El estado: «Enlace válido N días más» o «El enlace caducó». [Regla] 7 días y 10 descargas desde el último enlace.
-- **Obtener la actualización · v2:** solo en compras anteriores a la v2. [Simulado]
-- **.pine** y **.zip**, mientras el enlace es válido.
-- **Pedir un enlace nuevo**, cuando caducó.
+Nunca entra algo solo porque coincide con el correo de alta.
+
+**Una fila por estrategia**, la más reciente arriba:
+- «Comprada el …» o «Descarga gratuita el …», con la fecha de la primera vez, y el pedido.
+- «Enlace válido N días más» o «El enlace caducó». También caduca al gastar las 10 descargas.
+- **.pine** y **.zip**, mientras el enlace vale.
+- **Pedir un enlace nuevo**, cuando el enlace ya no vale (API #16).
+  - Da otros 7 días y 10 descargas.
+  - La fecha y el pedido se quedan, y el script es el de la versión de hoy.
+  - Con un enlace que aún vale, no cambia nada.
+- **Obtener la actualización · vN**, si hay una versión más nueva que la del enlace. Hace la misma llamada, sin cobrar.
 - **Ficha técnica ↗** y **Cómo decide ↗**.
 
-**Favoritas:**
-- Cada una abre su ficha con un clic, tiene tres alertas (**Versión nueva**, **Bajada de precio**, **En un pack**) y el ♥ la quita.
-- Sin favoritas: «Pulsa el corazón de una estrategia para seguirla.»
+**¿Compraste sin cuenta?** (`proofTitle`, `proofText`). Sale cuando el correo de la cuenta aún no está demostrado (`proof_needed`), o después de un enlace caducado.
+1. Se escribe el correo; por defecto, el de la cuenta. API #18 → `proofSent`. La respuesta es siempre la misma, así que no dice si con ese correo se compró algo.
+2. El correo lleva `/mine?proof=<token>`, que vale 24 horas, una vez y solo para esta cuenta.
+3. Al abrirlo, la página pregunta de qué correo es (API #19) sin gastarlo, y muestra `proofConfirmTitle` / `proofAs` con el botón `proofConfirm`.
+4. El clic confirma (API #20), y la lista se vuelve a leer con los pedidos y las descargas gratis de ese correo.
+5. Si el enlace está usado, caducado o es de otra cuenta, sale `errProofExpired`, y el bloque se ofrece otra vez.
 
-**Abajo:** **Añádela a TradingView** (abre el tutorial) y **Volver a la tienda**.
+**Favoritas:**
+- Son las de la cuenta (API #15).
+- Las alertas **Versión nueva**, **Bajada de precio** y **En un pack** se guardan al momento (API #21).
+- ♥ quita la favorita (API #22).
+- [Servidor] Los correos de las alertas los manda el trabajo diario (`send-alerts`), y solo a un correo demostrado.
+
+**Botones:**
+- **Añádela a TradingView** abre el tutorial de instalación.
+- **Volver a la tienda.**
+- **Salir** (`signOut`) cierra la sesión y lleva a la tienda.
 
 **Estados:**
-- **Vacío (sin compras):** no diseñado.
-- **Favoritas vacías:** con su mensaje.
-- **Cargando / error:** no diseñados.
-- **Hecho:** las filas.
+- **Cargando:** hasta que llega API #15.
+- **Vacío:**
+  - sin compras, la lista sale vacía (no está diseñado);
+  - sin favoritas, «Pulsa el corazón de una estrategia para seguirla.».
+- **Error:** un aviso. Sin sesión (401), lleva a entrar.
+- **Hecho:** las filas y las favoritas.
+
+**Distinto del diseño:**
+- Pide cuenta.
+- Tiene el bloque «¿Compraste sin cuenta?».
+- El enlace nuevo da la versión de hoy, no la de la compra.
 
 ---
 
-## 9 · Móvil (390 px) con la barra inferior
+## 9 · Móvil (390 px) con la barra de abajo
 
-**changed:**
-- el carrito flotante y la píldora «Comparar» van encima de la barra;
-- «Buscar» pone el cursor en el buscador;
-- «Carrito» lleva al carrito.
+**Archivo:** `views/phonebar.js`. Sale por debajo de 640 px.
 
-**Pantalla:** `Storefront v7.dc.html`, por debajo de 640 px de ancho.
-
-| Botón de la barra inferior | Qué pasa |
+| Botón | Qué pasa |
 |---|---|
-| **Tienda** | Tienda, arriba. En azul si estás en ella. |
-| **Buscar** | Tienda, con el cursor en su buscador |
-| **Carrito** (con número) | Tienda con el carrito a la vista: en Pro sube a la franja; en Lite el carrito flotante ya está en pantalla |
-| **Mías** | Pantalla 8. En azul si estás en ella. |
+| **Tienda** | La tienda, arriba. Sale en azul si ya estás en ella |
+| **Buscar** | La tienda, con el cursor en su buscador (`data-search`). En Lite, la tienda arriba; en Pro, el buscador justo bajo la barra fija |
+| **Carrito** (con número) | En Pro, la franja del carrito, bajo la barra. En Lite no se mueve nada, porque el carrito flotante ya está a la vista. Desde otra página, la tienda arriba |
+| **Mías** | Pantalla 8, o entrar si no hay sesión. Sale en azul si estás en ella |
 
+**Medidas y colocación:**
 - Los botones miden al menos 44 px, y quedan 64 px libres bajo el pie.
-- El carrito flotante y la píldora «Comparar» van a 76 px del borde.
-- La cabecera ocupa dos líneas y las tarjetas van en una columna.
-- El panel de Pro va encima de la lista, y la tabla se desplaza de lado.
+- El carrito flotante y la píldora Comparar van a 76 px del borde, y los avisos, encima de ellos.
+
+**Cómo se adapta la página:**
+- La barra del núcleo ocupa cuatro filas.
+- Las tarjetas van en una columna.
+- El panel de Pro va encima de la lista, y la Tabla se desplaza de lado.
 - Los diálogos ocupan el ancho menos 16 px por lado.
+
+---
+
+## Teclado
+
+| Tecla | Dónde | Resultado |
+|---|---|---|
+| **Esc** | Recorrido de bienvenida, tutorial de instalación | Lo cierra y lo marca como visto |
+| **Esc** | Comparar, selector del pack, diálogo de la gratis, desplegable de Pro | Cierra uno cada vez, en ese orden |
+| **→ / ←** | Los dos tutoriales | Paso siguiente o anterior (al revés en árabe) |
+| **Intro** | Casillas mín. y máx. de Pro | Aplica el valor |
+| **Intro** | Correo de la gratis | Envía |
+| **Tab**, **Espacio** | Casilla de novedades, «Solo GRATIS», filas de los filtros, cabeceras de la Tabla | Llegan a ellos y los activan, porque son botones |

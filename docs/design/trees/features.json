@@ -1,0 +1,298 @@
+{
+ "features": {
+  "VIP": [
+   "VI+ (Vortex up line)",
+   "Strength of the up moves over the last bars; higher means stronger up moves.",
+   "VI+ (línea alcista del Vortex)",
+   "Fuerza de los movimientos al alza en las últimas velas; cuanto más alto, más fuerza."
+  ],
+  "VIM": [
+   "VI− (Vortex down line)",
+   "Strength of the down moves over the last bars; higher means stronger down moves.",
+   "VI− (línea bajista del Vortex)",
+   "Fuerza de los movimientos a la baja en las últimas velas; cuanto más alto, más fuerza."
+  ],
+  "VIP_VIM": [
+   "VI+ minus VI−",
+   "Above 0 when up moves dominate, below 0 when down moves dominate.",
+   "VI+ menos VI−",
+   "Mayor que 0 cuando dominan las subidas, menor que 0 cuando dominan las bajadas."
+  ],
+  "ema1": [
+   "Fast average",
+   "Exponential moving average of the closing price: the fastest of the three.",
+   "Media rápida",
+   "Media móvil exponencial del cierre: la más rápida de las tres."
+  ],
+  "ema2": [
+   "Middle average",
+   "The fast average smoothed again: slower than ema1.",
+   "Media intermedia",
+   "La media rápida suavizada otra vez: más lenta que ema1."
+  ],
+  "ema3": [
+   "Slow average",
+   "The average smoothed a third time: the slowest of the three.",
+   "Media lenta",
+   "La media suavizada una tercera vez: la más lenta de las tres."
+  ],
+  "tema": [
+   "TEMA line",
+   "Triple EMA: 3 × ema1 − 3 × ema2 + ema3. Follows the price with less delay than a plain average.",
+   "Línea TEMA",
+   "Triple EMA: 3 × ema1 − 3 × ema2 + ema3. Sigue al precio con menos retraso que una media normal."
+  ],
+  "ema12": [
+   "Fast vs middle",
+   "Compares the fast and middle averages (exact formula in the paid script).",
+   "Rápida vs. intermedia",
+   "Compara la media rápida y la intermedia (fórmula exacta en el script de pago)."
+  ],
+  "ema13": [
+   "Fast vs slow",
+   "Compares the fast and slow averages (exact formula in the paid script).",
+   "Rápida vs. lenta",
+   "Compara la media rápida y la lenta (fórmula exacta en el script de pago)."
+  ],
+  "macd": [
+   "MACD line",
+   "Fast EMA minus slow EMA of the close. Above 0 when the short-term trend is stronger.",
+   "Línea MACD",
+   "EMA rápida menos EMA lenta del cierre. Mayor que 0 cuando la tendencia corta es más fuerte."
+  ],
+  "signal": [
+   "Signal line",
+   "Moving average of the MACD line. MACD crossing it is a classic buy or sell cue.",
+   "Línea de señal",
+   "Media móvil de la línea MACD. Que el MACD la cruce es una señal clásica de compra o venta."
+  ],
+  "hist": [
+   "Histogram",
+   "MACD minus the signal line. Positive and growing means momentum is building up.",
+   "Histograma",
+   "MACD menos la línea de señal. Positivo y creciendo indica que el impulso aumenta."
+  ],
+  "histA_IsUpInt": [
+   "Histogram above 0 and rising",
+   "Yes when the histogram is positive and higher than on the previous bar.",
+   "Histograma sobre 0 y subiendo",
+   "Sí cuando el histograma es positivo y más alto que en la vela anterior."
+  ],
+  "histA_IsDownInt": [
+   "Histogram above 0 and falling",
+   "Yes when the histogram is positive and lower than on the previous bar.",
+   "Histograma sobre 0 y bajando",
+   "Sí cuando el histograma es positivo y más bajo que en la vela anterior."
+  ],
+  "histB_IsUpInt": [
+   "Histogram below 0 and rising",
+   "Yes when the histogram is negative and higher than on the previous bar.",
+   "Histograma bajo 0 y subiendo",
+   "Sí cuando el histograma es negativo y más alto que en la vela anterior."
+  ],
+  "histB_IsDownInt": [
+   "Histogram below 0 and falling",
+   "Yes when the histogram is negative and lower than on the previous bar.",
+   "Histograma bajo 0 y bajando",
+   "Sí cuando el histograma es negativo y más bajo que en la vela anterior."
+  ],
+  "macd_IsAboveInt": [
+   "MACD above signal",
+   "Yes when the MACD line is at or above the signal line.",
+   "MACD sobre la señal",
+   "Sí cuando la línea MACD está en o por encima de la línea de señal."
+  ],
+  "macd_IsBelowInt": [
+   "MACD below signal",
+   "Yes when the MACD line is below the signal line.",
+   "MACD bajo la señal",
+   "Sí cuando la línea MACD está por debajo de la línea de señal."
+  ],
+  "BBupper": [
+   "Upper Bollinger band",
+   "Moving average plus two standard deviations, as used in training; its scale may differ from the chart.",
+   "Banda de Bollinger superior",
+   "Media móvil más dos desviaciones típicas, tal como se usó al entrenar; su escala puede no coincidir con el gráfico."
+  ],
+  "BBlower": [
+   "Lower Bollinger band",
+   "Moving average minus two standard deviations, as used in training; its scale may differ from the chart.",
+   "Banda de Bollinger inferior",
+   "Media móvil menos dos desviaciones típicas, tal como se usó al entrenar; su escala puede no coincidir con el gráfico."
+  ],
+  "dif_source_BBupper": [
+   "Price vs upper band",
+   "Gap between the price and the upper band, as used in training. Negative when the price is below the band.",
+   "Precio frente a banda superior",
+   "Distancia entre el precio y la banda superior, tal como se usó al entrenar. Negativa si el precio está por debajo."
+  ],
+  "dif_source_BBlower": [
+   "Price vs lower band",
+   "Gap between the price and the lower band, as used in training. Positive when the price is above the band.",
+   "Precio frente a banda inferior",
+   "Distancia entre el precio y la banda inferior, tal como se usó al entrenar. Positiva si el precio está por encima."
+  ],
+  "vrsi": [
+   "RSI",
+   "Relative Strength Index of the close, from 0 to 100. Above 70 is often read as overbought, below 30 as oversold.",
+   "RSI",
+   "Índice de fuerza relativa del cierre, de 0 a 100. Por encima de 70 se suele leer como sobrecompra y por debajo de 30 como sobreventa."
+  ],
+  "crossover_rsi_bblowerInt": [
+   "Buy cue of the original script",
+   "Yes on bars where the RSI and the price cross up through their lower levels.",
+   "Señal de compra del script original",
+   "Sí en las velas en que el RSI y el precio cruzan al alza sus niveles inferiores."
+  ],
+  "crossunder_rsi_bbupperInt": [
+   "Sell cue of the original script",
+   "Yes on bars where the RSI and the price cross down through their upper levels.",
+   "Señal de venta del script original",
+   "Sí en las velas en que el RSI y el precio cruzan a la baja sus niveles superiores."
+  ],
+  "ad": [
+   "Money flow volume",
+   "Volume of the bar weighted by where the close sits between the high and the low: positive near the high, negative near the low.",
+   "Volumen de flujo de dinero",
+   "Volumen de la vela ponderado según dónde cierra entre el máximo y el mínimo: positivo cerca del máximo, negativo cerca del mínimo."
+  ],
+  "mf": [
+   "Chaikin Money Flow",
+   "Money flow volume divided by volume over the period, from −1 to +1. Above 0 suggests buying pressure.",
+   "Chaikin Money Flow",
+   "Volumen de flujo dividido por el volumen del periodo, de −1 a +1. Por encima de 0 sugiere presión compradora."
+  ],
+  "ad_mf": [
+   "Money flow combined",
+   "Combines the two values above (exact formula in the paid script).",
+   "Flujo combinado",
+   "Combina los dos valores anteriores (fórmula exacta en el script de pago)."
+  ],
+  "Typical_Price": [
+   "Typical price",
+   "(High + low + close) / 3 of the bar.",
+   "Precio típico",
+   "(Máximo + mínimo + cierre) / 3 de la vela."
+  ],
+  "Raw_Money_Flow": [
+   "Raw money flow",
+   "Typical price × volume of the bar.",
+   "Flujo de dinero bruto",
+   "Precio típico × volumen de la vela."
+  ],
+  "Positive_Money_Flow": [
+   "Positive money flow",
+   "Raw money flow of the bar when the typical price went up.",
+   "Flujo de dinero positivo",
+   "Flujo bruto de la vela cuando el precio típico subió."
+  ],
+  "Negative_Money_Flow": [
+   "Negative money flow",
+   "Raw money flow of the bar when the typical price went down.",
+   "Flujo de dinero negativo",
+   "Flujo bruto de la vela cuando el precio típico bajó."
+  ],
+  "Positive_Money_Flow_Sum": [
+   "Positive flow over the period",
+   "Sum of the positive money flow over the last bars.",
+   "Flujo positivo del periodo",
+   "Suma del flujo positivo de las últimas velas."
+  ],
+  "Negative_Money_Flow_Sum": [
+   "Negative flow over the period",
+   "Sum of the negative money flow over the last bars.",
+   "Flujo negativo del periodo",
+   "Suma del flujo negativo de las últimas velas."
+  ],
+  "Money_Flow_Ratio": [
+   "Money flow ratio",
+   "Positive flow divided by negative flow over the period. Above 1 means more money flowing in.",
+   "Ratio de flujo",
+   "Flujo positivo dividido por el negativo del periodo. Mayor que 1 significa que entra más dinero."
+  ],
+  "MFI": [
+   "Money Flow Index",
+   "From 0 to 100. Above 80 is often read as overbought, below 20 as oversold.",
+   "Money Flow Index",
+   "De 0 a 100. Por encima de 80 se suele leer como sobrecompra y por debajo de 20 como sobreventa."
+  ],
+  "MFI_High": [
+   "MFI upper level",
+   "Upper reference level of the MFI, as used in training.",
+   "Nivel alto del MFI",
+   "Nivel de referencia superior del MFI, tal como se usó al entrenar."
+  ],
+  "MFI_Low": [
+   "MFI lower level",
+   "Lower reference level of the MFI, as used in training.",
+   "Nivel bajo del MFI",
+   "Nivel de referencia inferior del MFI, tal como se usó al entrenar."
+  ],
+  "rsi1": [
+   "RSI",
+   "Relative Strength Index of the close, from 0 to 100.",
+   "RSI",
+   "Índice de fuerza relativa del cierre, de 0 a 100."
+  ],
+  "k": [
+   "%K line",
+   "Smoothed stochastic of the RSI: where the RSI sits within its recent range, from 0 to 100.",
+   "Línea %K",
+   "Estocástico suavizado del RSI: dónde está el RSI dentro de su rango reciente, de 0 a 100."
+  ],
+  "d": [
+   "%D line",
+   "Moving average of %K: the slower line.",
+   "Línea %D",
+   "Media móvil de %K: la línea lenta."
+  ],
+  "d_k": [
+   "%D compared with %K",
+   "Compares the slow and fast lines (exact formula in the paid script).",
+   "%D frente a %K",
+   "Compara la línea lenta y la rápida (fórmula exacta en el script de pago)."
+  ],
+  "smoothK_k": [
+   "Smoothing of %K",
+   "Derived from the %K smoothing (exact formula in the paid script).",
+   "Suavizado de %K",
+   "Derivado del suavizado de %K (fórmula exacta en el script de pago)."
+  ],
+  "smoothD_d": [
+   "Smoothing of %D",
+   "Derived from the %D smoothing (exact formula in the paid script).",
+   "Suavizado de %D",
+   "Derivado del suavizado de %D (fórmula exacta en el script de pago)."
+  ]
+ },
+ "patterns": {
+  "L_Vortex_Indicator": [
+   "The Vortex Indicator compares up moves with down moves over the last bars. VI+ above VI− points to an uptrend.",
+   "El indicador Vortex compara los movimientos al alza con los movimientos a la baja de las últimas velas. VI+ por encima de VI− apunta a tendencia alcista."
+  ],
+  "L_Triple_EMA": [
+   "Triple EMA (TEMA) is a fast trend line built from three exponential moving averages of the close.",
+   "La Triple EMA (TEMA) es una línea de tendencia rápida construida con tres medias móviles exponenciales del cierre."
+  ],
+  "MACD_ULT_MTF": [
+   "MACD measures trend momentum: the gap between a fast and a slow moving average, its signal line and the histogram between them.",
+   "El MACD mide el impulso de la tendencia: la distancia entre una media rápida y una lenta, su línea de señal y el histograma entre ambas."
+  ],
+  "Bollinger_RSI_Double_Strategy": [
+   "Bollinger Bands (a moving average with bands two standard deviations away) combined with the RSI, which compares recent gains with losses on a 0–100 scale.",
+   "Bandas de Bollinger (una media móvil con bandas a dos desviaciones típicas) combinadas con el RSI, que compara ganancias y pérdidas recientes en una escala de 0 a 100."
+  ],
+  "L_Chaikin_Money_Flow": [
+   "Chaikin Money Flow measures buying and selling pressure from price and volume over a period.",
+   "El Chaikin Money Flow mide la presión compradora y vendedora a partir del precio y el volumen de un periodo."
+  ],
+  "L_Money_Flow_Index": [
+   "The Money Flow Index is an RSI that also weighs volume: it compares money flowing in and out over the last bars.",
+   "El Money Flow Index es un RSI que también pondera el volumen: compara el dinero que entra y sale en las últimas velas."
+  ],
+  "L_Stochastic_RSI": [
+   "Stochastic RSI applies the stochastic formula to the RSI, showing where the RSI sits within its recent range.",
+   "El RSI estocástico aplica la fórmula del estocástico al RSI y muestra dónde está el RSI dentro de su rango reciente."
+  ]
+ }
+}

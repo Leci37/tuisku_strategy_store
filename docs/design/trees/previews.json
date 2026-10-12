@@ -1,0 +1,101 @@
+[
+ {
+  "ticker": "AAPL",
+  "key": "1C00",
+  "hash": "ac87f0dc",
+  "pattern": "Chaikin Money Flow",
+  "base": "L_Chaikin_Money_Flow",
+  "icon": "storefront/assets/icons/AAPL_big.svg",
+  "source": "storefront/assets/previews/QUFQTCAtIDFEYXkgLSAxQzAwIC0gYWM4N2YwZGM.pine"
+ },
+ {
+  "ticker": "NVDA",
+  "key": "1M00",
+  "hash": "14639a7a",
+  "pattern": "Money Flow Index",
+  "base": "L_Money_Flow_Index",
+  "icon": "storefront/assets/icons/NVDA_big.svg",
+  "source": "storefront/assets/previews/TlZEQSAtIDFEYXkgLSAxTTAwIC0gMTQ2MzlhN2E.pine"
+ },
+ {
+  "ticker": "NVDA",
+  "key": "1S00",
+  "hash": "1b1cceca",
+  "pattern": "Stochastic RSI",
+  "base": "L_Stochastic_RSI",
+  "icon": "storefront/assets/icons/NVDA_big.svg",
+  "source": "storefront/assets/previews/TlZEQSAtIDFEYXkgLSAxUzAwIC0gMWIxY2NlY2E.pine"
+ },
+ {
+  "ticker": "ADBE",
+  "key": "1T00",
+  "hash": "751f3295",
+  "pattern": "Triple EMA",
+  "base": "L_Triple_EMA",
+  "icon": "storefront/assets/icons/ADBE_big.svg",
+  "source": "storefront/assets/previews/QURCRSAtIDFEYXkgLSAxVDAwIC0gNzUxZjMyOTU.pine"
+ },
+ {
+  "ticker": "AMZN",
+  "key": "1T00",
+  "hash": "912096cc",
+  "pattern": "Triple EMA",
+  "base": "L_Triple_EMA",
+  "icon": "storefront/assets/icons/AMZN_big.svg",
+  "source": "storefront/assets/previews/QU1aTiAtIDFEYXkgLSAxVDAwIC0gOTEyMDk2Y2M.pine"
+ },
+ {
+  "ticker": "AMZN",
+  "key": "1BOL",
+  "hash": "9d10c25f",
+  "pattern": "Bollinger + RSI Double",
+  "base": "Bollinger_RSI_Double_Strategy",
+  "icon": "storefront/assets/icons/AMZN_big.svg",
+  "source": "storefront/assets/previews/QU1aTiAtIDFEYXkgLSAxQk9MIC0gOWQxMGMyNWY.pine"
+ },
+ {
+  "ticker": "ETHUSDT",
+  "key": "1T00",
+  "hash": "9cc24d8a",
+  "pattern": "Triple EMA",
+  "base": "L_Triple_EMA",
+  "icon": "storefront/assets/icons/ETH+USDT_big.svg",
+  "source": "storefront/assets/previews/RVRIVVNEVCAtIDFEYXkgLSAxVDAwIC0gOWNjMjRkOGE.pine"
+ },
+ {
+  "ticker": "BTCUSDT",
+  "key": "1BOL",
+  "hash": "4166b2d5",
+  "pattern": "Bollinger + RSI Double",
+  "base": "Bollinger_RSI_Double_Strategy",
+  "icon": "storefront/assets/icons/BTC+USDT_big.svg",
+  "source": "storefront/assets/previews/QlRDVVNEVCAtIDFEYXkgLSAxQk9MIC0gNDE2NmIyZDU.pine"
+ },
+ {
+  "ticker": "CRSR",
+  "key": "1V00",
+  "hash": "15ea3f22",
+  "pattern": "Vortex Indicator",
+  "base": "L_Vortex_Indicator",
+  "icon": "storefront/assets/icons/CRSR_big.svg",
+  "source": "storefront/assets/previews/Q1JTUiAtIDFEYXkgLSAxVjAwIC0gMTVlYTNmMjI.pine"
+ },
+ {
+  "ticker": "CRSR",
+  "key": "1T00",
+  "hash": "3f4ef00f",
+  "pattern": "Triple EMA",
+  "base": "L_Triple_EMA",
+  "icon": "storefront/assets/icons/CRSR_big.svg",
+  "source": "storefront/assets/previews/Q1JTUiAtIDFEYXkgLSAxVDAwIC0gM2Y0ZWYwMGY.pine"
+ },
+ {
+  "ticker": "CRSR",
+  "key": "1MAC",
+  "hash": "ffedc015",
+  "pattern": "MACD Ultimate MTF",
+  "base": "MACD_ULT_MTF",
+  "icon": "storefront/assets/icons/CRSR_big.svg",
+  "source": "storefront/assets/previews/Q1JTUiAtIDFEYXkgLSAxTUFDIC0gZmZlZGMwMTU.pine"
+ }
+]

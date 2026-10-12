@@ -1,0 +1,1983 @@
+{
+ "_comment": "The storefront's own texts, in the zlecitool format: key first, then the 8 languages of zlecitool_core/i18n/common.json. Shared texts (language, legal links, contact, Free) come from the core dictionary and are not repeated here. Placeholders: {n} number, {p} percentage, {amount} money, {e} email.",
+ "toolName": {
+  "es": "Estrategias de TradingView",
+  "en": "TradingView strategies",
+  "pt": "Estratégias do TradingView",
+  "fr": "Stratégies TradingView",
+  "de": "TradingView-Strategien",
+  "zh": "TradingView 策略",
+  "ar": "استراتيجيات TradingView",
+  "hi": "TradingView रणनीतियाँ"
+ },
+ "tvConnect": {
+  "es": "Conectar TradingView",
+  "en": "Connect TradingView",
+  "pt": "Ligar ao TradingView",
+  "fr": "Connecter TradingView",
+  "de": "TradingView verbinden",
+  "zh": "连接 TradingView",
+  "ar": "ربط TradingView",
+  "hi": "TradingView कनेक्ट करें"
+ },
+ "tvConnected": {
+  "es": "Conectado",
+  "en": "Connected",
+  "pt": "Ligado",
+  "fr": "Connecté",
+  "de": "Verbunden",
+  "zh": "已连接",
+  "ar": "متصل",
+  "hi": "कनेक्टेड"
+ },
+ "tvDisconnect": {
+  "es": "Desconectar",
+  "en": "Disconnect",
+  "pt": "Desligar",
+  "fr": "Se déconnecter",
+  "de": "Verbindung trennen",
+  "zh": "断开连接",
+  "ar": "قطع الاتصال",
+  "hi": "डिस्कनेक्ट करें"
+ },
+ "cart": {
+  "es": "Carrito",
+  "en": "Cart",
+  "pt": "Carrinho",
+  "fr": "Panier",
+  "de": "Warenkorb",
+  "zh": "购物车",
+  "ar": "السلة",
+  "hi": "कार्ट"
+ },
+ "emptyCart": {
+  "es": "Vaciar carrito",
+  "en": "Empty cart",
+  "pt": "Esvaziar carrinho",
+  "fr": "Vider le panier",
+  "de": "Warenkorb leeren",
+  "zh": "清空购物车",
+  "ar": "إفراغ السلة",
+  "hi": "कार्ट खाली करें"
+ },
+ "tierNone": {
+  "es": "Aún sin descuento por volumen",
+  "en": "No order discount yet",
+  "pt": "Ainda sem desconto por volume",
+  "fr": "Pas encore de remise sur volume",
+  "de": "Noch kein Mengenrabatt",
+  "zh": "暂无订单折扣",
+  "ar": "لا يوجد خصم على الطلب بعد",
+  "hi": "अभी कोई ऑर्डर छूट नहीं"
+ },
+ "tierOn": {
+  "es": "{p} de descuento por volumen",
+  "en": "{p} order discount",
+  "pt": "{p} de desconto por volume",
+  "fr": "{p} de remise sur volume",
+  "de": "{p} Mengenrabatt",
+  "zh": "订单折扣 {p}",
+  "ar": "خصم {p} على الطلب",
+  "hi": "{p} ऑर्डर छूट"
+ },
+ "plusCode": {
+  "es": "+ {p} con el código",
+  "en": "+ {p} code",
+  "pt": "+ {p} com código",
+  "fr": "+ {p} avec le code",
+  "de": "+ {p} per Code",
+  "zh": "+ 优惠码 {p}",
+  "ar": "+ {p} برمز الخصم",
+  "hi": "+ कोड से {p}"
+ },
+ "nextTier": {
+  "es": "Añade {amount} más para llegar al {p}",
+  "en": "Add {amount} more to reach {p}",
+  "pt": "Faltam {amount} para chegar a {p}",
+  "fr": "Encore {amount} pour atteindre {p}",
+  "de": "Noch {amount} bis {p} Rabatt",
+  "zh": "再加 {amount} 即可享受 {p} 折扣",
+  "ar": "أضف {amount} أخرى للوصول إلى {p}",
+  "hi": "{p} तक पहुँचने के लिए {amount} और जोड़ें"
+ },
+ "topTier": {
+  "es": "Descuento máximo alcanzado",
+  "en": "Top discount reached",
+  "pt": "Desconto máximo atingido",
+  "fr": "Remise maximale atteinte",
+  "de": "Höchster Rabatt erreicht",
+  "zh": "已达到最高折扣",
+  "ar": "تم بلوغ أعلى خصم",
+  "hi": "सबसे बड़ी छूट मिल गई"
+ },
+ "codePh": {
+  "es": "Código",
+  "en": "Code",
+  "pt": "Código",
+  "fr": "Code",
+  "de": "Code",
+  "zh": "优惠码",
+  "ar": "رمز الخصم",
+  "hi": "कोड"
+ },
+ "apply": {
+  "es": "Aplicar",
+  "en": "Apply",
+  "pt": "Aplicar",
+  "fr": "Appliquer",
+  "de": "Einlösen",
+  "zh": "使用",
+  "ar": "تطبيق",
+  "hi": "लागू करें"
+ },
+ "codeOk": {
+  "es": "Código de descuento aplicado",
+  "en": "Discount code applied",
+  "pt": "Código de desconto aplicado",
+  "fr": "Code de réduction appliqué",
+  "de": "Rabattcode eingelöst",
+  "zh": "优惠码已生效",
+  "ar": "تم تطبيق رمز الخصم",
+  "hi": "डिस्काउंट कोड लागू हो गया"
+ },
+ "codeBad": {
+  "es": "Código no válido: sin descuento",
+  "en": "Invalid code, no discount applied",
+  "pt": "Código inválido, sem desconto",
+  "fr": "Code non valide, aucune remise",
+  "de": "Ungültiger Code, kein Rabatt",
+  "zh": "优惠码无效，未享受折扣",
+  "ar": "رمز غير صالح، لم يُطبَّق أي خصم",
+  "hi": "अमान्य कोड, कोई छूट नहीं मिली"
+ },
+ "checkout": {
+  "es": "Pagar",
+  "en": "Checkout",
+  "pt": "Pagar",
+  "fr": "Payer",
+  "de": "Zur Kasse",
+  "zh": "结账",
+  "ar": "إتمام الشراء",
+  "hi": "चेकआउट"
+ },
+ "shown": {
+  "es": "estrategias mostradas",
+  "en": "strategies shown",
+  "pt": "estratégias mostradas",
+  "fr": "stratégies affichées",
+  "de": "Strategien angezeigt",
+  "zh": "个策略",
+  "ar": "استراتيجية معروضة",
+  "hi": "रणनीतियाँ दिख रही हैं"
+ },
+ "reset": {
+  "es": "Restablecer filtros",
+  "en": "Reset filters",
+  "pt": "Repor filtros",
+  "fr": "Réinitialiser les filtres",
+  "de": "Filter zurücksetzen",
+  "zh": "重置筛选",
+  "ar": "إعادة ضبط عوامل التصفية",
+  "hi": "फ़िल्टर रीसेट करें"
+ },
+ "onlyFree": {
+  "es": "Solo GRATIS",
+  "en": "Show only FREE",
+  "pt": "Só GRÁTIS",
+  "fr": "Seulement les GRATUITES",
+  "de": "Nur KOSTENLOSE",
+  "zh": "只看免费",
+  "ar": "عرض المجانية فقط",
+  "hi": "सिर्फ़ मुफ़्त दिखाएँ"
+ },
+ "selectedN": {
+  "es": "{n} seleccionados",
+  "en": "{n} selected",
+  "pt": "{n} selecionados",
+  "fr": "{n} sélectionnés",
+  "de": "{n} ausgewählt",
+  "zh": "已选 {n} 项",
+  "ar": "تم اختيار {n}",
+  "hi": "{n} चुने गए"
+ },
+ "any": {
+  "es": "cualquiera",
+  "en": "any",
+  "pt": "qualquer",
+  "fr": "tous",
+  "de": "alle",
+  "zh": "不限",
+  "ar": "الكل",
+  "hi": "कोई भी"
+ },
+ "strategies": {
+  "es": "Estrategias",
+  "en": "Strategies",
+  "pt": "Estratégias",
+  "fr": "Stratégies",
+  "de": "Strategien",
+  "zh": "策略",
+  "ar": "الاستراتيجيات",
+  "hi": "रणनीतियाँ"
+ },
+ "sortNp": {
+  "es": "Beneficio neto",
+  "en": "Net profit",
+  "pt": "Lucro líquido",
+  "fr": "Bénéfice net",
+  "de": "Nettogewinn",
+  "zh": "净利润",
+  "ar": "صافي الربح",
+  "hi": "शुद्ध लाभ"
+ },
+ "sortWin": {
+  "es": "Tasa de acierto",
+  "en": "Win rate",
+  "pt": "Taxa de acerto",
+  "fr": "Taux de réussite",
+  "de": "Trefferquote",
+  "zh": "胜率",
+  "ar": "نسبة الصفقات الرابحة",
+  "hi": "जीत दर"
+ },
+ "sortPrice": {
+  "es": "Precio",
+  "en": "Price",
+  "pt": "Preço",
+  "fr": "Prix",
+  "de": "Preis",
+  "zh": "价格",
+  "ar": "السعر",
+  "hi": "कीमत"
+ },
+ "sortTrades": {
+  "es": "Operaciones cerradas",
+  "en": "Closed trades",
+  "pt": "Operações fechadas",
+  "fr": "Trades clôturés",
+  "de": "Abgeschl. Trades",
+  "zh": "已平仓交易",
+  "ar": "الصفقات المغلقة",
+  "hi": "बंद ट्रेड"
+ },
+ "npPct": {
+  "es": "Beneficio neto %",
+  "en": "Net profit %",
+  "pt": "Lucro líquido %",
+  "fr": "Bénéfice net %",
+  "de": "Nettogewinn %",
+  "zh": "净利润率",
+  "ar": "صافي الربح %",
+  "hi": "शुद्ध लाभ %"
+ },
+ "avgProfit": {
+  "es": "Beneficio medio",
+  "en": "Avg profit",
+  "pt": "Lucro médio",
+  "fr": "Bénéfice moyen",
+  "de": "Ø Gewinn",
+  "zh": "平均利润",
+  "ar": "متوسط الربح",
+  "hi": "औसत लाभ"
+ },
+ "monthsTrained": {
+  "es": "Meses de entrenamiento",
+  "en": "Months trained",
+  "pt": "Meses de treino",
+  "fr": "Mois d’entraînement",
+  "de": "Trainingsmonate",
+  "zh": "训练月数",
+  "ar": "أشهر التدريب",
+  "hi": "प्रशिक्षण के महीने"
+ },
+ "view": {
+  "es": "Vista",
+  "en": "View",
+  "pt": "Vista",
+  "fr": "Affichage",
+  "de": "Ansicht",
+  "zh": "视图",
+  "ar": "طريقة العرض",
+  "hi": "दृश्य"
+ },
+ "viewRows": {
+  "es": "Filas",
+  "en": "Rows",
+  "pt": "Linhas",
+  "fr": "Lignes",
+  "de": "Zeilen",
+  "zh": "列表",
+  "ar": "صفوف",
+  "hi": "पंक्तियाँ"
+ },
+ "viewCards": {
+  "es": "Tarjetas",
+  "en": "Cards",
+  "pt": "Cartões",
+  "fr": "Cartes",
+  "de": "Karten",
+  "zh": "卡片",
+  "ar": "بطاقات",
+  "hi": "कार्ड"
+ },
+ "addToCart": {
+  "es": "Añadir al carrito",
+  "en": "Add to cart",
+  "pt": "Adicionar ao carrinho",
+  "fr": "Ajouter au panier",
+  "de": "In den Warenkorb",
+  "zh": "加入购物车",
+  "ar": "أضف إلى السلة",
+  "hi": "कार्ट में डालें"
+ },
+ "inCartBtn": {
+  "es": "En el carrito",
+  "en": "In cart",
+  "pt": "No carrinho",
+  "fr": "Dans le panier",
+  "de": "Im Warenkorb",
+  "zh": "已加入",
+  "ar": "في السلة",
+  "hi": "कार्ट में है"
+ },
+ "download": {
+  "es": "Descargar",
+  "en": "Download",
+  "pt": "Descarregar",
+  "fr": "Télécharger",
+  "de": "Herunterladen",
+  "zh": "下载",
+  "ar": "تنزيل",
+  "hi": "डाउनलोड करें"
+ },
+ "riskTitle": {
+  "es": "Riesgo de sobreajuste",
+  "en": "Risk of overfitting",
+  "pt": "Risco de sobreajuste",
+  "fr": "Risque de surapprentissage",
+  "de": "Risiko der Überanpassung",
+  "zh": "过拟合风险",
+  "ar": "خطر فرط التخصيص",
+  "hi": "ओवरफ़िटिंग का जोखिम"
+ },
+ "riskText": {
+  "es": "Estos resultados son backtests de TradingView sobre precios pasados. Una estrategia ajustada al pasado puede estar sobreajustada y rendir peor con datos nuevos. Los resultados pasados no garantizan rentabilidades futuras.",
+  "en": "These results are TradingView backtests on past prices. A strategy tuned to the past can be overfitted and do worse on new data. Past results do not guarantee future returns.",
+  "pt": "Estes resultados são backtests do TradingView sobre preços passados. Uma estratégia ajustada ao passado pode estar sobreajustada e render menos com dados novos. Resultados passados não garantem rentabilidades futuras.",
+  "fr": "Ces résultats sont des backtests TradingView sur des prix passés. Une stratégie calée sur le passé peut être surajustée et faire moins bien sur de nouvelles données. Les performances passées ne préjugent pas des performances futures.",
+  "de": "Diese Ergebnisse sind TradingView-Backtests auf vergangenen Kursen. Eine an die Vergangenheit angepasste Strategie kann überangepasst sein und mit neuen Daten schlechter abschneiden. Vergangene Ergebnisse garantieren keine künftigen Renditen.",
+  "zh": "这些结果是 TradingView 基于历史价格的回测。贴合过去行情调校的策略可能存在过拟合，在新数据上表现更差。过往业绩不代表未来收益。",
+  "ar": "هذه النتائج اختبارات رجعية في TradingView على أسعار سابقة. قد تكون الاستراتيجية المضبوطة على الماضي مفرطة التخصيص فيسوء أداؤها مع بيانات جديدة. النتائج السابقة لا تضمن العوائد المستقبلية.",
+  "hi": "ये परिणाम पिछली कीमतों पर TradingView के बैकटेस्ट हैं। अतीत के हिसाब से ढाली गई रणनीति ओवरफ़िट हो सकती है और नए डेटा पर कमज़ोर चल सकती है। पिछले परिणाम भविष्य के रिटर्न की गारंटी नहीं हैं।"
+ },
+ "contactProblems": {
+  "es": "¿Problemas? {e}",
+  "en": "Problems? {e}",
+  "pt": "Problemas? {e}",
+  "fr": "Un problème ? {e}",
+  "de": "Probleme? {e}",
+  "zh": "遇到问题？{e}",
+  "ar": "هل من مشكلة؟ {e}",
+  "hi": "कोई समस्या? {e}"
+ },
+ "fNetProfitUsd": {
+  "es": "Beneficio neto ($)",
+  "en": "Net Profit ($)",
+  "pt": "Lucro líquido ($)",
+  "fr": "Bénéfice net ($)",
+  "de": "Nettogewinn ($)",
+  "zh": "净利润（$）",
+  "ar": "صافي الربح ($)",
+  "hi": "शुद्ध लाभ ($)"
+ },
+ "fPrice": {
+  "es": "Precio ($)",
+  "en": "Price ($)",
+  "pt": "Preço ($)",
+  "fr": "Prix ($)",
+  "de": "Preis ($)",
+  "zh": "价格（$）",
+  "ar": "السعر ($)",
+  "hi": "कीमत ($)"
+ },
+ "fSymbol": {
+  "es": "Símbolo",
+  "en": "Symbol",
+  "pt": "Símbolo",
+  "fr": "Symbole",
+  "de": "Symbol",
+  "zh": "代码",
+  "ar": "رمز التداول",
+  "hi": "सिंबल"
+ },
+ "fTimeframe": {
+  "es": "Temporalidad",
+  "en": "Time frame",
+  "pt": "Período",
+  "fr": "Unité de temps",
+  "de": "Zeiteinheit",
+  "zh": "时间周期",
+  "ar": "الإطار الزمني",
+  "hi": "टाइम फ़्रेम"
+ },
+ "fIndicators": {
+  "es": "Indicadores",
+  "en": "Indicators",
+  "pt": "Indicadores",
+  "fr": "Indicateurs",
+  "de": "Indikatoren",
+  "zh": "指标",
+  "ar": "المؤشرات",
+  "hi": "इंडिकेटर"
+ },
+ "fIndex": {
+  "es": "Mercado",
+  "en": "Index",
+  "pt": "Mercado",
+  "fr": "Marché",
+  "de": "Börse",
+  "zh": "市场",
+  "ar": "السوق",
+  "hi": "बाज़ार"
+ },
+ "fNetProfitPct": {
+  "es": "Beneficio neto (%)",
+  "en": "Net Profit (%)",
+  "pt": "Lucro líquido (%)",
+  "fr": "Bénéfice net (%)",
+  "de": "Nettogewinn (%)",
+  "zh": "净利润（%）",
+  "ar": "صافي الربح (%)",
+  "hi": "शुद्ध लाभ (%)"
+ },
+ "fClosedTrades": {
+  "es": "Operaciones cerradas",
+  "en": "Closed Trades",
+  "pt": "Operações fechadas",
+  "fr": "Trades clôturés",
+  "de": "Abgeschlossene Trades",
+  "zh": "已平仓交易",
+  "ar": "الصفقات المغلقة",
+  "hi": "बंद ट्रेड"
+ },
+ "fWinRate": {
+  "es": "Tasa de acierto (%)",
+  "en": "Win Rate (%)",
+  "pt": "Taxa de acerto (%)",
+  "fr": "Taux de réussite (%)",
+  "de": "Trefferquote (%)",
+  "zh": "胜率（%）",
+  "ar": "نسبة الصفقات الرابحة (%)",
+  "hi": "जीत दर (%)"
+ },
+ "fProfitFactor": {
+  "es": "Factor de beneficio",
+  "en": "Profit Factor",
+  "pt": "Fator de lucro",
+  "fr": "Facteur de profit",
+  "de": "Profitfaktor",
+  "zh": "盈利因子",
+  "ar": "عامل الربح",
+  "hi": "प्रॉफ़िट फ़ैक्टर"
+ },
+ "fReleaseDate": {
+  "es": "Fecha de publicación",
+  "en": "Release Date",
+  "pt": "Data de publicação",
+  "fr": "Date de publication",
+  "de": "Veröffentlichung",
+  "zh": "发布日期",
+  "ar": "تاريخ النشر",
+  "hi": "जारी होने की तारीख"
+ },
+ "fTrainingMonths": {
+  "es": "Entrenamiento (meses)",
+  "en": "Training (Months)",
+  "pt": "Treino (meses)",
+  "fr": "Entraînement (mois)",
+  "de": "Training (Monate)",
+  "zh": "训练（月）",
+  "ar": "التدريب (بالأشهر)",
+  "hi": "प्रशिक्षण (महीने)"
+ },
+ "fMaxLossUsd": {
+  "es": "Pérdida máxima ($)",
+  "en": "Max Loss ($)",
+  "pt": "Perda máxima ($)",
+  "fr": "Perte maximale ($)",
+  "de": "Max. Verlust ($)",
+  "zh": "最大亏损（$）",
+  "ar": "أقصى خسارة ($)",
+  "hi": "अधिकतम घाटा ($)"
+ },
+ "fMaxLossPct": {
+  "es": "Pérdida máxima (%)",
+  "en": "Max Loss (%)",
+  "pt": "Perda máxima (%)",
+  "fr": "Perte maximale (%)",
+  "de": "Max. Verlust (%)",
+  "zh": "最大亏损（%）",
+  "ar": "أقصى خسارة (%)",
+  "hi": "अधिकतम घाटा (%)"
+ },
+ "fAvgProfitUsd": {
+  "es": "Beneficio medio ($)",
+  "en": "Avg Profit ($)",
+  "pt": "Lucro médio ($)",
+  "fr": "Bénéfice moyen ($)",
+  "de": "Ø Gewinn ($)",
+  "zh": "平均利润（$）",
+  "ar": "متوسط الربح ($)",
+  "hi": "औसत लाभ ($)"
+ },
+ "fAvgProfitPct": {
+  "es": "Beneficio medio (%)",
+  "en": "Avg Profit (%)",
+  "pt": "Lucro médio (%)",
+  "fr": "Bénéfice moyen (%)",
+  "de": "Ø Gewinn (%)",
+  "zh": "平均利润（%）",
+  "ar": "متوسط الربح (%)",
+  "hi": "औसत लाभ (%)"
+ },
+ "fAvgBars": {
+  "es": "Velas medias por operación",
+  "en": "Avg Bars/Trade",
+  "pt": "Velas médias por operação",
+  "fr": "Bougies moyennes par trade",
+  "de": "Ø Kerzen pro Trade",
+  "zh": "每笔交易平均K线数",
+  "ar": "متوسط الشموع لكل صفقة",
+  "hi": "प्रति ट्रेड औसत बार"
+ },
+ "fActivity": {
+  "es": "Actividad por vela",
+  "en": "Trade Activity Per Candle",
+  "pt": "Atividade por vela",
+  "fr": "Activité par bougie",
+  "de": "Aktivität pro Kerze",
+  "zh": "每根K线交易活跃度",
+  "ar": "النشاط لكل شمعة",
+  "hi": "प्रति कैंडल ट्रेड गतिविधि"
+ },
+ "fCandles": {
+  "es": "Número de velas",
+  "en": "Number of Candles",
+  "pt": "Número de velas",
+  "fr": "Nombre de bougies",
+  "de": "Anzahl der Kerzen",
+  "zh": "K线数量",
+  "ar": "عدد الشموع",
+  "hi": "कैंडल की संख्या"
+ },
+ "fPrecision": {
+  "es": "Precisión f1 (%)",
+  "en": "Precision f1 (%)",
+  "pt": "Precisão f1 (%)",
+  "fr": "Précision f1 (%)",
+  "de": "Präzision f1 (%)",
+  "zh": "精确度 f1（%）",
+  "ar": "الدقة f1 (%)",
+  "hi": "प्रिसिज़न f1 (%)"
+ },
+ "fTreeDepth": {
+  "es": "Profundidad del árbol",
+  "en": "Tree Deep",
+  "pt": "Profundidade da árvore",
+  "fr": "Profondeur de l’arbre",
+  "de": "Baumtiefe",
+  "zh": "决策树深度",
+  "ar": "عمق الشجرة",
+  "hi": "ट्री की गहराई"
+ },
+ "proView": {
+  "es": "Vista Pro",
+  "en": "Pro view",
+  "pt": "Vista Pro",
+  "fr": "Vue Pro",
+  "de": "Pro-Ansicht",
+  "zh": "专业视图",
+  "ar": "العرض الاحترافي",
+  "hi": "प्रो व्यू"
+ },
+ "liteTitle": {
+  "es": "Estrategias para TradingView",
+  "en": "Strategies for TradingView",
+  "pt": "Estratégias para TradingView",
+  "fr": "Stratégies pour TradingView",
+  "de": "Strategien für TradingView",
+  "zh": "适用于 TradingView 的策略",
+  "ar": "استراتيجيات لـ TradingView",
+  "hi": "TradingView के लिए रणनीतियाँ"
+ },
+ "liteSub": {
+  "es": "Elige un mercado, mira la curva y descarga el Pine Script.",
+  "en": "Pick a market, look at the curve, download the Pine Script.",
+  "pt": "Escolhe um mercado, vê a curva e descarrega o Pine Script.",
+  "fr": "Choisissez un marché, regardez la courbe, téléchargez le Pine Script.",
+  "de": "Markt wählen, Kurve ansehen, Pine Script herunterladen.",
+  "zh": "选择市场，查看曲线，下载 Pine Script。",
+  "ar": "اختر سوقًا، وانظر إلى المنحنى، ونزّل Pine Script.",
+  "hi": "बाज़ार चुनें, कर्व देखें, Pine Script डाउनलोड करें।"
+ },
+ "searchPh": {
+  "es": "Busca una empresa, cripto o indicador",
+  "en": "Search a company, crypto or indicator",
+  "pt": "Procura uma empresa, cripto ou indicador",
+  "fr": "Cherchez une entreprise, une crypto ou un indicateur",
+  "de": "Unternehmen, Krypto oder Indikator suchen",
+  "zh": "搜索公司、加密货币或指标",
+  "ar": "ابحث عن شركة أو عملة مشفرة أو مؤشر",
+  "hi": "कंपनी, क्रिप्टो या इंडिकेटर खोजें"
+ },
+ "chipTop": {
+  "es": "Más rentables",
+  "en": "Most profitable",
+  "pt": "Mais rentáveis",
+  "fr": "Les plus rentables",
+  "de": "Profitabelste",
+  "zh": "最赚钱",
+  "ar": "الأكثر ربحًا",
+  "hi": "सबसे फ़ायदेमंद"
+ },
+ "chipWin": {
+  "es": "Más acierto",
+  "en": "Highest win rate",
+  "pt": "Maior taxa de acerto",
+  "fr": "Meilleur taux de réussite",
+  "de": "Höchste Trefferquote",
+  "zh": "胜率最高",
+  "ar": "أعلى نسبة ربح",
+  "hi": "सबसे ऊँची जीत दर"
+ },
+ "showingN": {
+  "es": "Mostrando {n} de {total}",
+  "en": "Showing {n} of {total}",
+  "pt": "A mostrar {n} de {total}",
+  "fr": "{n} sur {total} affichées",
+  "de": "{n} von {total} angezeigt",
+  "zh": "显示 {n} / {total}",
+  "ar": "عرض {n} من {total}",
+  "hi": "{total} में से {n} दिख रही हैं"
+ },
+ "loadMore": {
+  "es": "Ver más",
+  "en": "Load more",
+  "pt": "Ver mais",
+  "fr": "Voir plus",
+  "de": "Mehr laden",
+  "zh": "加载更多",
+  "ar": "عرض المزيد",
+  "hi": "और दिखाएँ"
+ },
+ "haveCode": {
+  "es": "¿Tienes un código?",
+  "en": "Have a code?",
+  "pt": "Tens um código?",
+  "fr": "Un code ?",
+  "de": "Rabattcode?",
+  "zh": "有优惠码？",
+  "ar": "لديك رمز خصم؟",
+  "hi": "कोड है?"
+ },
+ "riskShort": {
+  "es": "Backtests sobre precios pasados: los resultados pueden estar sobreajustados y no garantizan rentabilidades futuras.",
+  "en": "Backtests on past prices: results can be overfitted and are no guarantee of future returns.",
+  "pt": "Backtests sobre preços passados: os resultados podem estar sobreajustados e não garantem rentabilidades futuras.",
+  "fr": "Backtests sur des prix passés : les résultats peuvent être surajustés et ne garantissent pas les performances futures.",
+  "de": "Backtests auf vergangenen Kursen: Ergebnisse können überangepasst sein und garantieren keine künftigen Renditen.",
+  "zh": "基于历史价格的回测：结果可能过拟合，不代表未来收益。",
+  "ar": "اختبارات رجعية على أسعار سابقة: قد تكون النتائج مفرطة التخصيص ولا تضمن العوائد المستقبلية.",
+  "hi": "पिछली कीमतों पर बैकटेस्ट: परिणाम ओवरफ़िट हो सकते हैं और भविष्य के रिटर्न की गारंटी नहीं हैं।"
+ },
+ "noMatch": {
+  "es": "Ninguna estrategia coincide",
+  "en": "No strategies match",
+  "pt": "Nenhuma estratégia corresponde",
+  "fr": "Aucune stratégie ne correspond",
+  "de": "Keine passende Strategie",
+  "zh": "没有匹配的策略",
+  "ar": "لا توجد استراتيجيات مطابقة",
+  "hi": "कोई रणनीति मेल नहीं खाती"
+ },
+ "tabHot": {
+  "es": "Destacadas",
+  "en": "Hot",
+  "pt": "Em destaque",
+  "fr": "Tendances",
+  "de": "Beliebt",
+  "zh": "热门",
+  "ar": "الأكثر رواجًا",
+  "hi": "लोकप्रिय"
+ },
+ "tabStocks": {
+  "es": "Acciones",
+  "en": "Stocks",
+  "pt": "Ações",
+  "fr": "Actions",
+  "de": "Aktien",
+  "zh": "股票",
+  "ar": "الأسهم",
+  "hi": "शेयर"
+ },
+ "tabCrypto": {
+  "es": "Cripto",
+  "en": "Crypto",
+  "pt": "Cripto",
+  "fr": "Crypto",
+  "de": "Krypto",
+  "zh": "加密货币",
+  "ar": "العملات المشفرة",
+  "hi": "क्रिप्टो"
+ },
+ "tradesWord": {
+  "es": "operaciones",
+  "en": "trades",
+  "pt": "operações",
+  "fr": "trades",
+  "de": "Trades",
+  "zh": "笔交易",
+  "ar": "صفقة",
+  "hi": "ट्रेड"
+ },
+ "rangeOf": {
+  "es": "{from}–{to} de {total}",
+  "en": "{from}–{to} of {total}",
+  "pt": "{from}–{to} de {total}",
+  "fr": "{from}–{to} sur {total}",
+  "de": "{from}–{to} von {total}",
+  "zh": "第 {from}–{to} 条，共 {total} 条",
+  "ar": "{from}–{to} من {total}",
+  "hi": "{total} में से {from}–{to}"
+ },
+ "rowsPerPage": {
+  "es": "Filas por página",
+  "en": "Rows per page",
+  "pt": "Linhas por página",
+  "fr": "Lignes par page",
+  "de": "Zeilen pro Seite",
+  "zh": "每页行数",
+  "ar": "عدد الصفوف في الصفحة",
+  "hi": "प्रति पेज पंक्तियाँ"
+ },
+ "addFilter": {
+  "es": "Añadir filtro",
+  "en": "Add filter",
+  "pt": "Adicionar filtro",
+  "fr": "Ajouter un filtre",
+  "de": "Filter hinzufügen",
+  "zh": "添加筛选",
+  "ar": "إضافة عامل تصفية",
+  "hi": "फ़िल्टर जोड़ें"
+ },
+ "viewTableTab": {
+  "es": "Tabla",
+  "en": "Table",
+  "pt": "Tabela",
+  "fr": "Tableau",
+  "de": "Tabelle",
+  "zh": "表格",
+  "ar": "جدول",
+  "hi": "टेबल"
+ },
+ "colBacktest": {
+  "es": "Backtest",
+  "en": "Backtest",
+  "pt": "Backtest",
+  "fr": "Backtest",
+  "de": "Backtest",
+  "zh": "回测",
+  "ar": "الاختبار الرجعي",
+  "hi": "बैकटेस्ट"
+ },
+ "strategyChart": {
+  "es": "Gráfico de la estrategia",
+  "en": "Strategy chart",
+  "pt": "Gráfico da estratégia",
+  "fr": "Graphique de la stratégie",
+  "de": "Strategie-Chart",
+  "zh": "策略图表",
+  "ar": "مخطط الاستراتيجية",
+  "hi": "रणनीति चार्ट"
+ },
+ "candleChart": {
+  "es": "Gráfico de velas",
+  "en": "Candle chart",
+  "pt": "Gráfico de velas",
+  "fr": "Graphique en chandeliers",
+  "de": "Kerzenchart",
+  "zh": "K线图",
+  "ar": "مخطط الشموع",
+  "hi": "कैंडल चार्ट"
+ },
+ "openTv": {
+  "es": "Abrir en TradingView",
+  "en": "Open in TradingView",
+  "pt": "Abrir no TradingView",
+  "fr": "Ouvrir dans TradingView",
+  "de": "In TradingView öffnen",
+  "zh": "在 TradingView 中打开",
+  "ar": "فتح في TradingView",
+  "hi": "TradingView में खोलें"
+ },
+ "tour1Title": {
+  "es": "Elige un mercado",
+  "en": "Pick a market",
+  "pt": "Escolhe um mercado",
+  "fr": "Choisissez un marché",
+  "de": "Markt wählen",
+  "zh": "选择市场",
+  "ar": "اختر سوقًا",
+  "hi": "बाज़ार चुनें"
+ },
+ "tour1Lite": {
+  "es": "Busca una empresa o una cripto, o usa las pestañas: Destacadas, Tasa de acierto, Acciones, Cripto y Gratis.",
+  "en": "Search a company or a crypto, or use the tabs: Hot, Win rate, Stocks, Crypto and Free.",
+  "pt": "Procura uma empresa ou uma cripto, ou usa os separadores: Em destaque, Taxa de acerto, Ações, Cripto e Grátis.",
+  "fr": "Cherchez une entreprise ou une crypto, ou utilisez les onglets : Tendances, Taux de réussite, Actions, Crypto et Gratuit.",
+  "de": "Suche ein Unternehmen oder eine Kryptowährung oder nutze die Tabs: Beliebt, Trefferquote, Aktien, Krypto und Kostenlos.",
+  "zh": "搜索公司或加密货币，或使用标签：热门、胜率、股票、加密货币和免费。",
+  "ar": "ابحث عن شركة أو عملة مشفرة، أو استخدم التبويبات: الأكثر رواجًا ونسبة الربح والأسهم والعملات المشفرة والمجانية.",
+  "hi": "कोई कंपनी या क्रिप्टो खोजें, या टैब इस्तेमाल करें: लोकप्रिय, जीत दर, शेयर, क्रिप्टो और मुफ़्त।"
+ },
+ "tour1Pro": {
+  "es": "Acota las 2.834 estrategias con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 15 más.",
+  "en": "Narrow the 2,834 strategies with the filter panel: net profit, price, symbol, time frame, indicators and 15 more.",
+  "pt": "Restringe as 2834 estratégias com o painel de filtros: lucro líquido, preço, símbolo, período, indicadores e mais 15.",
+  "fr": "Affinez les 2 834 stratégies avec le panneau de filtres : bénéfice net, prix, symbole, unité de temps, indicateurs et 15 autres.",
+  "de": "Grenze die 2.834 Strategien mit dem Filterbereich ein: Nettogewinn, Preis, Symbol, Zeiteinheit, Indikatoren und 15 weitere.",
+  "zh": "用筛选面板缩小 2,834 个策略的范围：净利润、价格、代码、时间周期、指标，以及另外 15 项。",
+  "ar": "ضيّق نطاق الاستراتيجيات الـ 2,834 بلوحة عوامل التصفية: صافي الربح والسعر والرمز والإطار الزمني والمؤشرات و15 غيرها.",
+  "hi": "फ़िल्टर पैनल से 2,834 रणनीतियाँ छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 15 और।"
+ },
+ "tour2Title": {
+  "es": "Lee la curva",
+  "en": "Read the curve",
+  "pt": "Lê a curva",
+  "fr": "Lisez la courbe",
+  "de": "Kurve lesen",
+  "zh": "看懂曲线",
+  "ar": "اقرأ المنحنى",
+  "hi": "कर्व पढ़ें"
+ },
+ "tour2Text": {
+  "es": "Cada curva es el backtest de TradingView de la estrategia. Mira la tasa de acierto y el número de operaciones, y ten presente el aviso de sobreajuste: los resultados pasados no prometen los futuros.",
+  "en": "Each curve is the strategy's TradingView backtest. Look at the win rate and the number of trades, and keep the overfitting note in mind: past results don't promise future ones.",
+  "pt": "Cada curva é o backtest do TradingView da estratégia. Vê a taxa de acerto e o número de operações, e lembra-te do aviso de sobreajuste: resultados passados não prometem os futuros.",
+  "fr": "Chaque courbe est le backtest TradingView de la stratégie. Regardez le taux de réussite et le nombre de trades, et gardez en tête l’avertissement sur le surapprentissage : le passé ne promet pas l’avenir.",
+  "de": "Jede Kurve ist der TradingView-Backtest der Strategie. Achte auf Trefferquote und Anzahl der Trades und denk an den Hinweis zur Überanpassung: Vergangene Ergebnisse versprechen keine künftigen.",
+  "zh": "每条曲线都是该策略在 TradingView 上的回测。留意胜率和交易笔数，并记住过拟合提示：过去的结果不代表未来。",
+  "ar": "كل منحنى هو الاختبار الرجعي للاستراتيجية في TradingView. انظر إلى نسبة الربح وعدد الصفقات، وتذكّر تنبيه فرط التخصيص: النتائج السابقة لا تعِد بالمستقبل.",
+  "hi": "हर कर्व रणनीति का TradingView बैकटेस्ट है। जीत दर और ट्रेड की संख्या देखें, और ओवरफ़िटिंग की चेतावनी याद रखें: पिछले नतीजे भविष्य का वादा नहीं करते।"
+ },
+ "tour3Title": {
+  "es": "Compra y cárgala en TradingView",
+  "en": "Buy and load it in TradingView",
+  "pt": "Compra e carrega-a no TradingView",
+  "fr": "Achetez et chargez-la dans TradingView",
+  "de": "Kaufen und in TradingView laden",
+  "zh": "购买并载入 TradingView",
+  "ar": "اشترِ وحمّلها في TradingView",
+  "hi": "खरीदें और TradingView में लोड करें"
+ },
+ "tour3Text": {
+  "es": "Paga con PayPal y descarga el Pine Script. En TradingView, pégalo en el Pine Editor y pulsa «Add to chart». Los enlaces de descarga valen 7 días.",
+  "en": "Pay with PayPal and download the Pine Script. In TradingView, paste it into the Pine Editor and click Add to chart. Download links stay valid for 7 days.",
+  "pt": "Paga com PayPal e descarrega o Pine Script. No TradingView, cola-o no Pine Editor e carrega em «Add to chart». As ligações de download valem 7 dias.",
+  "fr": "Payez avec PayPal et téléchargez le Pine Script. Dans TradingView, collez-le dans le Pine Editor et cliquez sur « Add to chart ». Les liens de téléchargement restent valables 7 jours.",
+  "de": "Mit PayPal bezahlen und das Pine Script herunterladen. In TradingView im Pine Editor einfügen und auf „Add to chart“ klicken. Download-Links gelten 7 Tage.",
+  "zh": "用 PayPal 付款并下载 Pine Script。在 TradingView 中把它粘贴到 Pine Editor，然后点击“Add to chart”。下载链接 7 天内有效。",
+  "ar": "ادفع عبر PayPal ونزّل Pine Script. في TradingView الصقه في Pine Editor ثم انقر «Add to chart». تبقى روابط التنزيل صالحة 7 أيام.",
+  "hi": "PayPal से भुगतान करें और Pine Script डाउनलोड करें। TradingView में उसे Pine Editor में पेस्ट करें और «Add to chart» दबाएँ। डाउनलोड लिंक 7 दिन तक चलते हैं।"
+ },
+ "expNpp": {
+  "es": "Beneficio neto %: lo que ganó la estrategia en el backtest, como porcentaje del capital inicial.",
+  "en": "Net profit %: what the strategy gained in the backtest, as a share of the starting capital.",
+  "pt": "Lucro líquido %: o que a estratégia ganhou no backtest, em percentagem do capital inicial.",
+  "fr": "Bénéfice net % : ce que la stratégie a gagné dans le backtest, en pourcentage du capital de départ.",
+  "de": "Nettogewinn %: was die Strategie im Backtest verdient hat, als Anteil am Startkapital.",
+  "zh": "净利润率：该策略在回测中的收益占初始资金的比例。",
+  "ar": "صافي الربح %: ما ربحته الاستراتيجية في الاختبار الرجعي كنسبة من رأس المال الابتدائي.",
+  "hi": "शुद्ध लाभ %: बैकटेस्ट में रणनीति ने शुरुआती पूँजी के मुक़ाबले कितना कमाया।"
+ },
+ "expWin": {
+  "es": "Tasa de acierto: el porcentaje de operaciones cerradas que acabaron en beneficio.",
+  "en": "Win rate: the share of closed trades that ended in profit.",
+  "pt": "Taxa de acerto: a percentagem de operações fechadas que terminaram com lucro.",
+  "fr": "Taux de réussite : la part des trades clôturés qui ont fini en bénéfice.",
+  "de": "Trefferquote: der Anteil der abgeschlossenen Trades, die mit Gewinn endeten.",
+  "zh": "胜率：已平仓交易中盈利的比例。",
+  "ar": "نسبة الربح: نسبة الصفقات المغلقة التي انتهت بربح.",
+  "hi": "जीत दर: बंद हुए ट्रेड में से कितने मुनाफ़े में ख़त्म हुए।"
+ },
+ "expTrades": {
+  "es": "Operaciones: cuántas operaciones cerró el backtest. Cuantas más, más fiable es el resultado.",
+  "en": "Trades: how many trades the backtest closed. The more trades, the more the result means.",
+  "pt": "Operações: quantas operações o backtest fechou. Quanto mais, mais fiável é o resultado.",
+  "fr": "Trades : le nombre de trades clôturés dans le backtest. Plus il y en a, plus le résultat est fiable.",
+  "de": "Trades: wie viele Trades der Backtest abgeschlossen hat. Je mehr, desto aussagekräftiger das Ergebnis.",
+  "zh": "交易笔数：回测中平仓的交易数量。笔数越多，结果越可靠。",
+  "ar": "الصفقات: عدد الصفقات التي أغلقها الاختبار الرجعي. كلما زادت، كانت النتيجة أكثر موثوقية.",
+  "hi": "ट्रेड: बैकटेस्ट में कितने ट्रेड बंद हुए। जितने ज़्यादा, नतीजा उतना भरोसेमंद।"
+ },
+ "bundles": {
+  "es": "Packs",
+  "en": "Bundles",
+  "pt": "Pacotes",
+  "fr": "Packs",
+  "de": "Pakete",
+  "zh": "组合包",
+  "ar": "الباقات",
+  "hi": "बंडल"
+ },
+ "bundleTop": {
+  "es": "Top 5 por beneficio",
+  "en": "Top 5 by profit",
+  "pt": "Top 5 por lucro",
+  "fr": "Top 5 par bénéfice",
+  "de": "Top 5 nach Gewinn",
+  "zh": "利润前 5",
+  "ar": "أفضل 5 حسب الربح",
+  "hi": "मुनाफ़े के हिसाब से टॉप 5"
+ },
+ "bundleCrypto": {
+  "es": "Inicio en cripto",
+  "en": "Crypto starter",
+  "pt": "Arranque cripto",
+  "fr": "Démarrage crypto",
+  "de": "Krypto-Einstieg",
+  "zh": "加密入门",
+  "ar": "بداية العملات المشفرة",
+  "hi": "क्रिप्टो स्टार्टर"
+ },
+ "bundleAmzn": {
+  "es": "Pareja Amazon",
+  "en": "Amazon pair",
+  "pt": "Par Amazon",
+  "fr": "Duo Amazon",
+  "de": "Amazon-Duo",
+  "zh": "亚马逊双策略",
+  "ar": "ثنائي Amazon",
+  "hi": "Amazon जोड़ी"
+ },
+ "nStrategies": {
+  "es": "{n} estrategias",
+  "en": "{n} strategies",
+  "pt": "{n} estratégias",
+  "fr": "{n} stratégies",
+  "de": "{n} Strategien",
+  "zh": "{n} 个策略",
+  "ar": "{n} استراتيجيات",
+  "hi": "{n} रणनीतियाँ"
+ },
+ "saveP": {
+  "es": "Ahorra un {p}",
+  "en": "Save {p}",
+  "pt": "Poupa {p}",
+  "fr": "Économisez {p}",
+  "de": "{p} sparen",
+  "zh": "省 {p}",
+  "ar": "وفّر {p}",
+  "hi": "{p} बचाएँ"
+ },
+ "addBundle": {
+  "es": "Añadir pack",
+  "en": "Add bundle",
+  "pt": "Adicionar pacote",
+  "fr": "Ajouter le pack",
+  "de": "Paket hinzufügen",
+  "zh": "加入组合包",
+  "ar": "أضف الباقة",
+  "hi": "बंडल जोड़ें"
+ },
+ "freeTitle": {
+  "es": "Consíguela gratis",
+  "en": "Get it free",
+  "pt": "Obtém-na grátis",
+  "fr": "Obtenez-la gratuitement",
+  "de": "Kostenlos erhalten",
+  "zh": "免费获取",
+  "ar": "احصل عليها مجانًا",
+  "hi": "मुफ़्त पाएँ"
+ },
+ "freeText": {
+  "es": "Escribe tu correo y te enviamos el enlace de descarga.",
+  "en": "Enter your email and we'll send you the download link.",
+  "pt": "Escreve o teu e-mail e enviamos-te a ligação de download.",
+  "fr": "Saisissez votre e-mail et nous vous enverrons le lien de téléchargement.",
+  "de": "Gib deine E-Mail ein und wir schicken dir den Download-Link.",
+  "zh": "输入邮箱，我们会把下载链接发给你。",
+  "ar": "أدخل بريدك الإلكتروني وسنرسل إليك رابط التنزيل.",
+  "hi": "अपना ईमेल डालें, हम आपको डाउनलोड लिंक भेजेंगे।"
+ },
+ "newsOpt": {
+  "es": "Avísame también de estrategias nuevas (opcional)",
+  "en": "Also tell me about new strategies (optional)",
+  "pt": "Avisa-me também de novas estratégias (opcional)",
+  "fr": "Prévenez-moi aussi des nouvelles stratégies (facultatif)",
+  "de": "Auch über neue Strategien informieren (optional)",
+  "zh": "有新策略时也通知我（可选）",
+  "ar": "أخبرني أيضًا بالاستراتيجيات الجديدة (اختياري)",
+  "hi": "नई रणनीतियों के बारे में भी बताएँ (वैकल्पिक)"
+ },
+ "sendLink": {
+  "es": "Enviarme el enlace",
+  "en": "Send me the link",
+  "pt": "Enviar-me a ligação",
+  "fr": "M’envoyer le lien",
+  "de": "Link schicken",
+  "zh": "发送链接",
+  "ar": "أرسل لي الرابط",
+  "hi": "मुझे लिंक भेजें"
+ },
+ "freeSent": {
+  "es": "Hecho. Mira tu correo: el enlace vale 7 días.",
+  "en": "Done. Check your inbox: the link is valid for 7 days.",
+  "pt": "Feito. Vê o teu e-mail: a ligação vale 7 dias.",
+  "fr": "C’est fait. Consultez votre boîte de réception : le lien est valable 7 jours.",
+  "de": "Erledigt. Schau in dein Postfach: Der Link gilt 7 Tage.",
+  "zh": "已发送。请查收邮件：链接 7 天内有效。",
+  "ar": "تم. تفقّد بريدك: الرابط صالح لمدة 7 أيام.",
+  "hi": "हो गया। अपना इनबॉक्स देखें: लिंक 7 दिन तक चलेगा।"
+ },
+ "myStrategies": {
+  "es": "Mis estrategias",
+  "en": "My strategies",
+  "pt": "As minhas estratégias",
+  "fr": "Mes stratégies",
+  "de": "Meine Strategien",
+  "zh": "我的策略",
+  "ar": "استراتيجياتي",
+  "hi": "मेरी रणनीतियाँ"
+ },
+ "mineSub": {
+  "es": "Todo lo que has comprado o descargado, con su enlace.",
+  "en": "Everything you bought or downloaded, with its link.",
+  "pt": "Tudo o que compraste ou descarregaste, com a respetiva ligação.",
+  "fr": "Tout ce que vous avez acheté ou téléchargé, avec son lien.",
+  "de": "Alles, was du gekauft oder heruntergeladen hast, mit Link.",
+  "zh": "你购买或下载过的所有策略及其链接。",
+  "ar": "كل ما اشتريته أو نزّلته، مع رابطه.",
+  "hi": "आपने जो भी खरीदा या डाउनलोड किया, उसके लिंक के साथ।"
+ },
+ "boughtOn": {
+  "es": "Comprada el {date}",
+  "en": "Bought {date}",
+  "pt": "Comprada a {date}",
+  "fr": "Achetée le {date}",
+  "de": "Gekauft am {date}",
+  "zh": "购于 {date}",
+  "ar": "اشتُريت في {date}",
+  "hi": "{date} को खरीदी"
+ },
+ "freeOn": {
+  "es": "Descarga gratuita el {date}",
+  "en": "Free download {date}",
+  "pt": "Download gratuito a {date}",
+  "fr": "Téléchargement gratuit le {date}",
+  "de": "Kostenloser Download am {date}",
+  "zh": "{date} 免费下载",
+  "ar": "تنزيل مجاني في {date}",
+  "hi": "{date} को मुफ़्त डाउनलोड"
+ },
+ "linkValid": {
+  "es": "Enlace válido {n} días más",
+  "en": "Link valid {n} more days",
+  "pt": "Ligação válida mais {n} dias",
+  "fr": "Lien valable encore {n} jours",
+  "de": "Link noch {n} Tage gültig",
+  "zh": "链接还剩 {n} 天有效",
+  "ar": "الرابط صالح {n} أيام أخرى",
+  "hi": "लिंक {n} दिन और चलेगा"
+ },
+ "linkExpired": {
+  "es": "El enlace caducó",
+  "en": "Link expired",
+  "pt": "A ligação expirou",
+  "fr": "Lien expiré",
+  "de": "Link abgelaufen",
+  "zh": "链接已过期",
+  "ar": "انتهت صلاحية الرابط",
+  "hi": "लिंक की अवधि ख़त्म"
+ },
+ "newLink": {
+  "es": "Pedir un enlace nuevo",
+  "en": "Get a new link",
+  "pt": "Pedir nova ligação",
+  "fr": "Obtenir un nouveau lien",
+  "de": "Neuen Link anfordern",
+  "zh": "获取新链接",
+  "ar": "احصل على رابط جديد",
+  "hi": "नया लिंक लें"
+ },
+ "orderN": {
+  "es": "Pedido {id}",
+  "en": "Order {id}",
+  "pt": "Encomenda {id}",
+  "fr": "Commande {id}",
+  "de": "Bestellung {id}",
+  "zh": "订单 {id}",
+  "ar": "الطلب {id}",
+  "hi": "ऑर्डर {id}"
+ },
+ "backShop": {
+  "es": "Volver a la tienda",
+  "en": "Back to the shop",
+  "pt": "Voltar à loja",
+  "fr": "Retour à la boutique",
+  "de": "Zurück zum Shop",
+  "zh": "返回商店",
+  "ar": "العودة إلى المتجر",
+  "hi": "दुकान पर वापस"
+ },
+ "signedAs": {
+  "es": "Has entrado como {e}",
+  "en": "Signed in as {e}",
+  "pt": "Sessão iniciada como {e}",
+  "fr": "Connecté en tant que {e}",
+  "de": "Angemeldet als {e}",
+  "zh": "当前登录：{e}",
+  "ar": "مسجّل الدخول باسم {e}",
+  "hi": "{e} के रूप में साइन इन"
+ },
+ "thanksTitle": {
+  "es": "¡Gracias! El pago se ha completado.",
+  "en": "Thank you! Your payment went through.",
+  "pt": "Obrigado! O pagamento foi concluído.",
+  "fr": "Merci ! Votre paiement a été accepté.",
+  "de": "Danke! Deine Zahlung ist eingegangen.",
+  "zh": "谢谢！付款已完成。",
+  "ar": "شكرًا لك! تمت عملية الدفع.",
+  "hi": "धन्यवाद! आपका भुगतान हो गया।"
+ },
+ "thanksSub": {
+  "es": "Tus estrategias están listas para descargar.",
+  "en": "Your strategies are ready to download.",
+  "pt": "As tuas estratégias estão prontas a descarregar.",
+  "fr": "Vos stratégies sont prêtes à être téléchargées.",
+  "de": "Deine Strategien sind bereit zum Download.",
+  "zh": "你的策略已可下载。",
+  "ar": "استراتيجياتك جاهزة للتنزيل.",
+  "hi": "आपकी रणनीतियाँ डाउनलोड के लिए तैयार हैं।"
+ },
+ "downloadAll": {
+  "es": "Descargar todo",
+  "en": "Download all",
+  "pt": "Descarregar tudo",
+  "fr": "Tout télécharger",
+  "de": "Alle herunterladen",
+  "zh": "全部下载",
+  "ar": "تنزيل الكل",
+  "hi": "सब डाउनलोड करें"
+ },
+ "linksNote": {
+  "es": "Cada enlace vale {n} días y hasta {m} descargas. También están en Mis estrategias.",
+  "en": "Each link is valid for {n} days and up to {m} downloads. You'll also find them in My strategies.",
+  "pt": "Cada ligação vale {n} dias e até {m} downloads. Também estão em As minhas estratégias.",
+  "fr": "Chaque lien est valable {n} jours et jusqu’à {m} téléchargements. Vous les retrouverez aussi dans Mes stratégies.",
+  "de": "Jeder Link gilt {n} Tage und für bis zu {m} Downloads. Du findest sie auch unter Meine Strategien.",
+  "zh": "每个链接 {n} 天内有效，最多可下载 {m} 次。也可在“我的策略”中找到。",
+  "ar": "كل رابط صالح لمدة {n} أيام وحتى {m} مرات تنزيل. ستجدها أيضًا في استراتيجياتي.",
+  "hi": "हर लिंक {n} दिन और {m} डाउनलोड तक चलता है। ये मेरी रणनीतियाँ में भी मिलेंगे।"
+ },
+ "totalPaid": {
+  "es": "Total pagado",
+  "en": "Total paid",
+  "pt": "Total pago",
+  "fr": "Total payé",
+  "de": "Gesamt bezahlt",
+  "zh": "实付金额",
+  "ar": "إجمالي المدفوع",
+  "hi": "कुल भुगतान"
+ },
+ "paidWith": {
+  "es": "Pagado con PayPal",
+  "en": "Paid with PayPal",
+  "pt": "Pago com PayPal",
+  "fr": "Payé avec PayPal",
+  "de": "Mit PayPal bezahlt",
+  "zh": "通过 PayPal 支付",
+  "ar": "تم الدفع عبر PayPal",
+  "hi": "PayPal से भुगतान"
+ },
+ "installTitle": {
+  "es": "Añádela a TradingView",
+  "en": "Add it to TradingView",
+  "pt": "Adiciona-a ao TradingView",
+  "fr": "Ajoutez-la à TradingView",
+  "de": "Zu TradingView hinzufügen",
+  "zh": "添加到 TradingView",
+  "ar": "أضفها إلى TradingView",
+  "hi": "TradingView में जोड़ें"
+ },
+ "inst1": {
+  "es": "Descarga el archivo .pine.",
+  "en": "Download the .pine file.",
+  "pt": "Descarrega o ficheiro .pine.",
+  "fr": "Téléchargez le fichier .pine.",
+  "de": "Lade die .pine-Datei herunter.",
+  "zh": "下载 .pine 文件。",
+  "ar": "نزّل ملف .pine.",
+  "hi": ".pine फ़ाइल डाउनलोड करें।"
+ },
+ "inst2": {
+  "es": "En TradingView, abre un gráfico y el Pine Editor (panel de abajo).",
+  "en": "In TradingView, open a chart and the Pine Editor (bottom panel).",
+  "pt": "No TradingView, abre um gráfico e o Pine Editor (painel de baixo).",
+  "fr": "Dans TradingView, ouvrez un graphique et le Pine Editor (panneau du bas).",
+  "de": "Öffne in TradingView einen Chart und den Pine Editor (unteres Panel).",
+  "zh": "在 TradingView 中打开图表和 Pine Editor（底部面板）。",
+  "ar": "في TradingView افتح مخططًا ثم Pine Editor (اللوحة السفلية).",
+  "hi": "TradingView में कोई चार्ट और Pine Editor (नीचे का पैनल) खोलें।"
+ },
+ "inst3": {
+  "es": "Pega el script y pulsa «Save».",
+  "en": "Paste the script and click Save.",
+  "pt": "Cola o script e carrega em «Save».",
+  "fr": "Collez le script et cliquez sur « Save ».",
+  "de": "Füge das Script ein und klicke auf „Save“.",
+  "zh": "粘贴脚本并点击“Save”。",
+  "ar": "الصق النص البرمجي وانقر «Save».",
+  "hi": "स्क्रिप्ट पेस्ट करें और «Save» दबाएँ।"
+ },
+ "inst4": {
+  "es": "Pulsa «Add to chart». Los ajustes están en el engranaje de la estrategia.",
+  "en": "Click Add to chart. Its settings are under the strategy's gear icon.",
+  "pt": "Carrega em «Add to chart». As definições estão na roda dentada da estratégia.",
+  "fr": "Cliquez sur « Add to chart ». Les réglages sont sous l’icône d’engrenage de la stratégie.",
+  "de": "Klicke auf „Add to chart“. Die Einstellungen findest du am Zahnrad der Strategie.",
+  "zh": "点击“Add to chart”。设置在策略的齿轮图标中。",
+  "ar": "انقر «Add to chart». الإعدادات تحت أيقونة الترس الخاصة بالاستراتيجية.",
+  "hi": "«Add to chart» दबाएँ। सेटिंग रणनीति के गियर आइकन में हैं।"
+ },
+ "goMine": {
+  "es": "Ir a Mis estrategias",
+  "en": "Go to My strategies",
+  "pt": "Ir para As minhas estratégias",
+  "fr": "Aller à Mes stratégies",
+  "de": "Zu Meine Strategien",
+  "zh": "前往我的策略",
+  "ar": "الانتقال إلى استراتيجياتي",
+  "hi": "मेरी रणनीतियाँ पर जाएँ"
+ },
+ "selAll": {
+  "es": "Seleccionar todo",
+  "en": "Select all",
+  "pt": "Selecionar tudo",
+  "fr": "Tout sélectionner",
+  "de": "Alle auswählen",
+  "zh": "全选",
+  "ar": "تحديد الكل",
+  "hi": "सभी चुनें"
+ },
+ "selNone": {
+  "es": "Quitar todo",
+  "en": "Deselect all",
+  "pt": "Desmarcar tudo",
+  "fr": "Tout désélectionner",
+  "de": "Alle abwählen",
+  "zh": "全不选",
+  "ar": "إلغاء تحديد الكل",
+  "hi": "सभी हटाएँ"
+ },
+ "searchSmall": {
+  "es": "Buscar",
+  "en": "Search",
+  "pt": "Pesquisar",
+  "fr": "Rechercher",
+  "de": "Suchen",
+  "zh": "搜索",
+  "ar": "بحث",
+  "hi": "खोजें"
+ },
+ "clearAll": {
+  "es": "Borrar filtros",
+  "en": "Clear all",
+  "pt": "Limpar tudo",
+  "fr": "Tout effacer",
+  "de": "Alle löschen",
+  "zh": "清除全部",
+  "ar": "مسح الكل",
+  "hi": "सब हटाएँ"
+ },
+ "openPage": {
+  "es": "Ficha de la estrategia",
+  "en": "Strategy page",
+  "pt": "Ficha da estratégia",
+  "fr": "Fiche de la stratégie",
+  "de": "Strategie-Seite",
+  "zh": "策略详情",
+  "ar": "صفحة الاستراتيجية",
+  "hi": "रणनीति पेज"
+ },
+ "newTab": {
+  "es": "Abrir en otra pestaña",
+  "en": "Open in a new tab",
+  "pt": "Abrir noutro separador",
+  "fr": "Ouvrir dans un nouvel onglet",
+  "de": "In neuem Tab öffnen",
+  "zh": "在新标签页中打开",
+  "ar": "فتح في علامة تبويب جديدة",
+  "hi": "नए टैब में खोलें"
+ },
+ "tfNote": {
+  "es": "En TradingView, pon el gráfico en la temporalidad {tf}.",
+  "en": "In TradingView, set the chart's time frame to {tf}.",
+  "pt": "No TradingView, põe o gráfico no período {tf}.",
+  "fr": "Dans TradingView, réglez l’unité de temps du graphique sur {tf}.",
+  "de": "Stelle in TradingView die Zeiteinheit des Charts auf {tf}.",
+  "zh": "在 TradingView 中，把图表时间周期设为 {tf}。",
+  "ar": "في TradingView اضبط الإطار الزمني للمخطط على {tf}.",
+  "hi": "TradingView में चार्ट का टाइम फ़्रेम {tf} रखें।"
+ },
+ "allResults": {
+  "es": "Resultados del backtest",
+  "en": "Backtest results",
+  "pt": "Resultados do backtest",
+  "fr": "Résultats du backtest",
+  "de": "Backtest-Ergebnisse",
+  "zh": "回测结果",
+  "ar": "نتائج الاختبار الرجعي",
+  "hi": "बैकटेस्ट के नतीजे"
+ },
+ "aboutInd": {
+  "es": "Sobre el indicador",
+  "en": "About the indicator",
+  "pt": "Sobre o indicador",
+  "fr": "À propos de l’indicateur",
+  "de": "Über den Indikator",
+  "zh": "关于该指标",
+  "ar": "عن المؤشر",
+  "hi": "इंडिकेटर के बारे में"
+ },
+ "seeInd": {
+  "es": "Ver el indicador en TradingView",
+  "en": "See the indicator on TradingView",
+  "pt": "Ver o indicador no TradingView",
+  "fr": "Voir l’indicateur sur TradingView",
+  "de": "Indikator auf TradingView ansehen",
+  "zh": "在 TradingView 上查看该指标",
+  "ar": "عرض المؤشر على TradingView",
+  "hi": "TradingView पर इंडिकेटर देखें"
+ },
+ "scriptPreview": {
+  "es": "Vista previa de Pine Script v5",
+  "en": "Pine Script v5 preview",
+  "pt": "Pré-visualização do Pine Script v5",
+  "fr": "Aperçu du Pine Script v5",
+  "de": "Vorschau des Pine Script v5",
+  "zh": "Pine Script v5 预览",
+  "ar": "معاينة Pine Script v5",
+  "hi": "Pine Script v5 प्रीव्यू"
+ },
+ "lockedNote": {
+  "es": "El script completo se entrega tras la compra.",
+  "en": "The full script is delivered after purchase.",
+  "pt": "O script completo é entregue depois da compra.",
+  "fr": "Le script complet est livré après l’achat.",
+  "de": "Das vollständige Script erhältst du nach dem Kauf.",
+  "zh": "完整脚本将在购买后提供。",
+  "ar": "يُسلَّم النص البرمجي الكامل بعد الشراء.",
+  "hi": "पूरी स्क्रिप्ट खरीद के बाद मिलती है।"
+ },
+ "sinceRelease": {
+  "es": "Desde su publicación",
+  "en": "Since release",
+  "pt": "Desde a publicação",
+  "fr": "Depuis la sortie",
+  "de": "Seit Veröffentlichung",
+  "zh": "发布以来",
+  "ar": "منذ النشر",
+  "hi": "रिलीज़ के बाद से"
+ },
+ "liveVsBacktest": {
+  "es": "Backtest frente a resultado real",
+  "en": "Backtest vs. live result",
+  "pt": "Backtest vs. resultado real",
+  "fr": "Backtest vs résultat réel",
+  "de": "Backtest vs. echtes Ergebnis",
+  "zh": "回测与实盘对比",
+  "ar": "الاختبار الرجعي مقابل النتيجة الفعلية",
+  "hi": "बैकटेस्ट बनाम असली नतीजा"
+ },
+ "demoFigures": {
+  "es": "Cifras de ejemplo hasta que funcione el cálculo diario.",
+  "en": "Example figures until the daily job runs.",
+  "pt": "Valores de exemplo até o cálculo diário funcionar.",
+  "fr": "Chiffres d’exemple en attendant le calcul quotidien.",
+  "de": "Beispielwerte, bis die tägliche Berechnung läuft.",
+  "zh": "每日计算上线前为示例数据。",
+  "ar": "أرقام توضيحية إلى أن تعمل المهمة اليومية.",
+  "hi": "दैनिक गणना चालू होने तक ये उदाहरण के आँकड़े हैं।"
+ },
+ "compare": {
+  "es": "Comparar",
+  "en": "Compare",
+  "pt": "Comparar",
+  "fr": "Comparer",
+  "de": "Vergleichen",
+  "zh": "对比",
+  "ar": "مقارنة",
+  "hi": "तुलना करें"
+ },
+ "compareTitle": {
+  "es": "Comparar estrategias",
+  "en": "Compare strategies",
+  "pt": "Comparar estratégias",
+  "fr": "Comparer les stratégies",
+  "de": "Strategien vergleichen",
+  "zh": "对比策略",
+  "ar": "مقارنة الاستراتيجيات",
+  "hi": "रणनीतियों की तुलना"
+ },
+ "compareMax": {
+  "es": "Hasta 3 estrategias",
+  "en": "Up to 3 strategies",
+  "pt": "Até 3 estratégias",
+  "fr": "Jusqu’à 3 stratégies",
+  "de": "Bis zu 3 Strategien",
+  "zh": "最多 3 个策略",
+  "ar": "حتى 3 استراتيجيات",
+  "hi": "अधिकतम 3 रणनीतियाँ"
+ },
+ "grade": {
+  "es": "Nota",
+  "en": "Grade",
+  "pt": "Nota",
+  "fr": "Note",
+  "de": "Note",
+  "zh": "评级",
+  "ar": "التقييم",
+  "hi": "ग्रेड"
+ },
+ "gradeTip": {
+  "es": "Muestra: {n} operaciones cerradas. Menos operaciones, más riesgo de sobreajuste.",
+  "en": "Sample: {n} closed trades. Fewer trades, more risk of overfitting.",
+  "pt": "Amostra: {n} operações fechadas. Menos operações, mais risco de sobreajuste.",
+  "fr": "Échantillon : {n} trades clôturés. Moins de trades, plus de risque de surapprentissage.",
+  "de": "Stichprobe: {n} abgeschlossene Trades. Weniger Trades, mehr Risiko der Überanpassung.",
+  "zh": "样本：{n} 笔已平仓交易。交易越少，过拟合风险越高。",
+  "ar": "العينة: {n} صفقة مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+  "hi": "नमूना: {n} बंद ट्रेड। कम ट्रेड, ओवरफ़िटिंग का ज़्यादा जोखिम।"
+ },
+ "packTitle": {
+  "es": "Arma tu pack",
+  "en": "Build your pack",
+  "pt": "Monta o teu pacote",
+  "fr": "Composez votre pack",
+  "de": "Stell dein Paket zusammen",
+  "zh": "自选组合包",
+  "ar": "كوّن باقتك",
+  "hi": "अपना बंडल बनाएँ"
+ },
+ "packHint": {
+  "es": "Elige {n} más · 5 por {price}",
+  "en": "Pick {n} more · 5 for {price}",
+  "pt": "Escolhe mais {n} · 5 por {price}",
+  "fr": "Encore {n} · 5 pour {price}",
+  "de": "Noch {n} · 5 für {price}",
+  "zh": "再选 {n} 个 · 5 个只需 {price}",
+  "ar": "اختر {n} أخرى · 5 مقابل {price}",
+  "hi": "{n} और चुनें · 5 सिर्फ़ {price} में"
+ },
+ "packReady": {
+  "es": "5 por {price}",
+  "en": "5 for {price}",
+  "pt": "5 por {price}",
+  "fr": "5 pour {price}",
+  "de": "5 für {price}",
+  "zh": "5 个只需 {price}",
+  "ar": "5 مقابل {price}",
+  "hi": "5 सिर्फ़ {price} में"
+ },
+ "addPack": {
+  "es": "Añadir pack",
+  "en": "Add pack",
+  "pt": "Adicionar pacote",
+  "fr": "Ajouter le pack",
+  "de": "Paket hinzufügen",
+  "zh": "加入组合包",
+  "ar": "أضف الباقة",
+  "hi": "बंडल जोड़ें"
+ },
+ "done": {
+  "es": "Hecho",
+  "en": "Done",
+  "pt": "Concluído",
+  "fr": "Terminé",
+  "de": "Fertig",
+  "zh": "完成",
+  "ar": "تم",
+  "hi": "हो गया"
+ },
+ "favourites": {
+  "es": "Favoritas",
+  "en": "Favourites",
+  "pt": "Favoritas",
+  "fr": "Favoris",
+  "de": "Favoriten",
+  "zh": "收藏",
+  "ar": "المفضلة",
+  "hi": "पसंदीदा"
+ },
+ "favEmpty": {
+  "es": "Pulsa el corazón de una estrategia para seguirla.",
+  "en": "Tap the heart on a strategy to follow it.",
+  "pt": "Carrega no coração de uma estratégia para a seguir.",
+  "fr": "Touchez le cœur d’une stratégie pour la suivre.",
+  "de": "Tippe auf das Herz einer Strategie, um ihr zu folgen.",
+  "zh": "点击策略上的爱心即可关注。",
+  "ar": "انقر على القلب في أي استراتيجية لمتابعتها.",
+  "hi": "किसी रणनीति को फ़ॉलो करने के लिए दिल पर टैप करें।"
+ },
+ "alertNew": {
+  "es": "Versión nueva",
+  "en": "New version",
+  "pt": "Nova versão",
+  "fr": "Nouvelle version",
+  "de": "Neue Version",
+  "zh": "新版本",
+  "ar": "إصدار جديد",
+  "hi": "नया वर्ज़न"
+ },
+ "alertPrice": {
+  "es": "Bajada de precio",
+  "en": "Price drop",
+  "pt": "Descida de preço",
+  "fr": "Baisse de prix",
+  "de": "Preissenkung",
+  "zh": "降价",
+  "ar": "انخفاض السعر",
+  "hi": "कीमत में गिरावट"
+ },
+ "alertBundle": {
+  "es": "En un pack",
+  "en": "In a bundle",
+  "pt": "Num pacote",
+  "fr": "Dans un pack",
+  "de": "In einem Paket",
+  "zh": "加入组合包时",
+  "ar": "ضمن باقة",
+  "hi": "बंडल में"
+ },
+ "versions": {
+  "es": "Versiones",
+  "en": "Versions",
+  "pt": "Versões",
+  "fr": "Versions",
+  "de": "Versionen",
+  "zh": "版本",
+  "ar": "الإصدارات",
+  "hi": "वर्ज़न"
+ },
+ "v2note": {
+  "es": "Reconstrucción: indicadores iguales que en TradingView; Ichimoku sin precios futuros.",
+  "en": "Rebuild: indicators match TradingView; Ichimoku without future prices.",
+  "pt": "Reconstrução: indicadores iguais aos do TradingView; Ichimoku sem preços futuros.",
+  "fr": "Reconstruction : indicateurs identiques à TradingView ; Ichimoku sans prix futurs.",
+  "de": "Neuaufbau: Indikatoren wie in TradingView; Ichimoku ohne künftige Kurse.",
+  "zh": "重建：指标与 TradingView 一致；Ichimoku 不再使用未来价格。",
+  "ar": "إعادة البناء: المؤشرات مطابقة لـ TradingView؛ Ichimoku بلا أسعار مستقبلية.",
+  "hi": "दोबारा बनाया: इंडिकेटर TradingView जैसे; Ichimoku में भविष्य की कीमतें नहीं।"
+ },
+ "v1note": {
+  "es": "Primera publicación",
+  "en": "First release",
+  "pt": "Primeira publicação",
+  "fr": "Première version",
+  "de": "Erste Veröffentlichung",
+  "zh": "首次发布",
+  "ar": "الإصدار الأول",
+  "hi": "पहली रिलीज़"
+ },
+ "updateAvail": {
+  "es": "Actualización disponible",
+  "en": "Update available",
+  "pt": "Atualização disponível",
+  "fr": "Mise à jour disponible",
+  "de": "Update verfügbar",
+  "zh": "有可用更新",
+  "ar": "يتوفر تحديث",
+  "hi": "अपडेट उपलब्ध"
+ },
+ "getUpdate": {
+  "es": "Obtener la actualización",
+  "en": "Get the update",
+  "pt": "Obter a atualização",
+  "fr": "Obtenir la mise à jour",
+  "de": "Update holen",
+  "zh": "获取更新",
+  "ar": "احصل على التحديث",
+  "hi": "अपडेट लें"
+ },
+ "trustPaypal": {
+  "es": "PayPal: nunca vemos tu tarjeta",
+  "en": "PayPal: we never see your card",
+  "pt": "PayPal: nunca vemos o teu cartão",
+  "fr": "PayPal : nous ne voyons jamais votre carte",
+  "de": "PayPal: Wir sehen deine Karte nie",
+  "zh": "PayPal：我们看不到你的银行卡",
+  "ar": "PayPal: لا نرى بطاقتك أبدًا",
+  "hi": "PayPal: हम आपका कार्ड कभी नहीं देखते"
+ },
+ "trustLinks": {
+  "es": "Enlaces: 7 días, 10 descargas",
+  "en": "Links: 7 days, 10 downloads",
+  "pt": "Ligações: 7 dias, 10 downloads",
+  "fr": "Liens : 7 jours, 10 téléchargements",
+  "de": "Links: 7 Tage, 10 Downloads",
+  "zh": "链接：7 天，10 次下载",
+  "ar": "الروابط: 7 أيام، 10 تنزيلات",
+  "hi": "लिंक: 7 दिन, 10 डाउनलोड"
+ },
+ "trustInvoice": {
+  "es": "Factura por correo",
+  "en": "Invoice by email",
+  "pt": "Fatura por e-mail",
+  "fr": "Facture par e-mail",
+  "de": "Rechnung per E-Mail",
+  "zh": "电子邮件发票",
+  "ar": "فاتورة بالبريد الإلكتروني",
+  "hi": "ईमेल से इनवॉइस"
+ },
+ "payNote": {
+  "es": "Pagas {amount} con PayPal",
+  "en": "You pay {amount} with PayPal",
+  "pt": "Pagas {amount} com PayPal",
+  "fr": "Vous payez {amount} avec PayPal",
+  "de": "Du zahlst {amount} mit PayPal",
+  "zh": "通过 PayPal 支付 {amount}",
+  "ar": "تدفع {amount} عبر PayPal",
+  "hi": "आप PayPal से {amount} देंगे"
+ },
+ "currencyLabel": {
+  "es": "Moneda",
+  "en": "Currency",
+  "pt": "Moeda",
+  "fr": "Devise",
+  "de": "Währung",
+  "zh": "货币",
+  "ar": "العملة",
+  "hi": "मुद्रा"
+ },
+ "tabNew": {
+  "es": "Novedades",
+  "en": "New",
+  "pt": "Novidades",
+  "fr": "Nouveautés",
+  "de": "Neu",
+  "zh": "新上架",
+  "ar": "الجديد",
+  "hi": "नया"
+ },
+ "navShop": {
+  "es": "Tienda",
+  "en": "Shop",
+  "pt": "Loja",
+  "fr": "Boutique",
+  "de": "Shop",
+  "zh": "商店",
+  "ar": "المتجر",
+  "hi": "दुकान"
+ },
+ "navMine": {
+  "es": "Mías",
+  "en": "Mine",
+  "pt": "Minhas",
+  "fr": "Les miennes",
+  "de": "Meine",
+  "zh": "我的",
+  "ar": "استراتيجياتي",
+  "hi": "मेरी"
+ },
+ "howItDecides": {
+  "es": "Cómo decide",
+  "en": "How it decides",
+  "pt": "Como decide",
+  "fr": "Comment elle décide",
+  "de": "Wie sie entscheidet",
+  "zh": "如何决策",
+  "ar": "كيف تقرر",
+  "hi": "यह कैसे तय करती है"
+ },
+ "overviewTab": {
+  "es": "Ficha técnica",
+  "en": "Fact sheet",
+  "pt": "Ficha técnica",
+  "fr": "Fiche technique",
+  "de": "Datenblatt",
+  "zh": "技术资料",
+  "ar": "البطاقة الفنية",
+  "hi": "तकनीकी विवरण"
+ },
+ "howTeaserTitle": {
+  "es": "Mira cómo decide esta estrategia",
+  "en": "See how this strategy decides",
+  "pt": "Vê como esta estratégia decide",
+  "fr": "Voyez comment cette stratégie décide",
+  "de": "Sieh, wie diese Strategie entscheidet",
+  "zh": "查看此策略如何决策",
+  "ar": "شاهد كيف تقرر هذه الاستراتيجية",
+  "hi": "देखें यह रणनीति कैसे तय करती है"
+ },
+ "howTeaserText": {
+  "es": "Su árbol de decisión paso a paso: qué indicadores mira y qué valores llevan a comprar o vender.",
+  "en": "Its decision tree step by step: which indicators it checks and which values lead to buy or sell.",
+  "pt": "A sua árvore de decisão passo a passo: que indicadores analisa e que valores levam a comprar ou vender.",
+  "fr": "Son arbre de décision étape par étape : les indicateurs vérifiés et les valeurs qui mènent à l’achat ou à la vente.",
+  "de": "Ihr Entscheidungsbaum Schritt für Schritt: welche Indikatoren sie prüft und welche Werte zu Kauf oder Verkauf führen.",
+  "zh": "逐步展示其决策树：检查哪些指标，以及哪些数值导致买入或卖出。",
+  "ar": "شجرة قراراتها خطوة بخطوة: المؤشرات التي تفحصها والقيم التي تؤدي إلى الشراء أو البيع.",
+  "hi": "इसका निर्णय वृक्ष कदम दर कदम: यह कौन से इंडिकेटर देखती है और कौन से मान खरीद या बिक्री तक ले जाते हैं।"
+ },
+ "toSheet": {
+  "es": "Volver a la ficha técnica",
+  "en": "Back to the fact sheet",
+  "pt": "Voltar à ficha técnica",
+  "fr": "Retour à la fiche technique",
+  "de": "Zurück zum Datenblatt",
+  "zh": "返回技术资料",
+  "ar": "العودة إلى البطاقة الفنية",
+  "hi": "तकनीकी विवरण पर वापस"
+ },
+ "scriptRest": {
+  "es": "El resto del script se entrega tras la compra",
+  "en": "The rest of the script is delivered after purchase",
+  "pt": "O resto do script é entregue após a compra",
+  "fr": "La suite du script est livrée après l’achat",
+  "de": "Der Rest des Skripts kommt nach dem Kauf",
+  "zh": "脚本其余部分在购买后提供",
+  "ar": "يُسلَّم باقي السكربت بعد الشراء",
+  "hi": "बाकी स्क्रिप्ट खरीद के बाद दी जाती है"
+ },
+ "buyScriptTitle": {
+  "es": "Lo que compras: el script completo",
+  "en": "What you buy: the complete script",
+  "pt": "O que compras: o script completo",
+  "fr": "Ce que vous achetez : le script complet",
+  "de": "Was du kaufst: das komplette Skript",
+  "zh": "你购买的是：完整脚本",
+  "ar": "ما تشتريه: السكربت الكامل",
+  "hi": "आप क्या खरीदते हैं: पूरी स्क्रिप्ट"
+ },
+ "buyScriptText": {
+  "es": "El código Pine completo de la estrategia, con todos los árboles de su bosque, listo para pegar en el editor Pine de TradingView. Arriba ves sus primeras líneas.",
+  "en": "The strategy’s complete Pine code, with every tree of its forest, ready to paste into TradingView’s Pine editor. Its first lines are shown above.",
+  "pt": "O código Pine completo da estratégia, com todas as árvores da sua floresta, pronto a colar no editor Pine do TradingView. Acima vês as primeiras linhas.",
+  "fr": "Le code Pine complet de la stratégie, avec tous les arbres de sa forêt, prêt à coller dans l’éditeur Pine de TradingView. Ses premières lignes sont affichées ci-dessus.",
+  "de": "Der komplette Pine-Code der Strategie mit allen Bäumen ihres Waldes, bereit zum Einfügen in den Pine-Editor von TradingView. Oben siehst du die ersten Zeilen.",
+  "zh": "策略的完整 Pine 代码，包含其森林中的所有决策树，可直接粘贴到 TradingView 的 Pine 编辑器。上方显示前几行。",
+  "ar": "شيفرة Pine الكاملة للاستراتيجية مع كل أشجار غابتها، جاهزة للصق في محرر Pine في TradingView. تظهر أسطرها الأولى في الأعلى.",
+  "hi": "रणनीति का पूरा Pine कोड, उसके जंगल के सभी पेड़ों के साथ, TradingView के Pine एडिटर में पेस्ट करने के लिए तैयार। ऊपर इसकी पहली पंक्तियाँ दिख रही हैं।"
+ },
+ "formatsNote": {
+  "es": "Formatos incluidos. Se descargan desde Mis estrategias después de comprar.",
+  "en": "Included formats. Download them from My strategies after purchase.",
+  "pt": "Formatos incluídos. Descarregam-se em As minhas estratégias após a compra.",
+  "fr": "Formats inclus. À télécharger depuis Mes stratégies après l’achat.",
+  "de": "Enthaltene Formate. Nach dem Kauf unter Meine Strategien herunterladen.",
+  "zh": "包含的格式。购买后可在“我的策略”中下载。",
+  "ar": "الصيغ المضمّنة. نزّلها من استراتيجياتي بعد الشراء.",
+  "hi": "शामिल फ़ॉर्मैट। खरीद के बाद मेरी रणनीतियाँ से डाउनलोड करें।"
+ },
+ "fmtPineDesc": {
+  "es": "Para TradingView. Es el producto que compras.",
+  "en": "For TradingView. This is the product you buy.",
+  "pt": "Para o TradingView. É o produto que compras.",
+  "fr": "Pour TradingView. C’est le produit que vous achetez.",
+  "de": "Für TradingView. Das ist das Produkt, das du kaufst.",
+  "zh": "用于 TradingView。这就是你购买的产品。",
+  "ar": "لـ TradingView. هذا هو المنتج الذي تشتريه.",
+  "hi": "TradingView के लिए। यही वह उत्पाद है जो आप खरीदते हैं।"
+ },
+ "fmtMd": {
+  "es": "Markdown para IA",
+  "en": "Markdown for AI",
+  "pt": "Markdown para IA",
+  "fr": "Markdown pour l’IA",
+  "de": "Markdown für KI",
+  "zh": "供 AI 使用的 Markdown",
+  "ar": "Markdown للذكاء الاصطناعي",
+  "hi": "AI के लिए Markdown"
+ },
+ "fmtMdDesc": {
+  "es": "Las reglas en texto claro para ChatGPT, Claude u otro asistente.",
+  "en": "The rules in plain text for ChatGPT, Claude or another assistant.",
+  "pt": "As regras em texto claro para o ChatGPT, o Claude ou outro assistente.",
+  "fr": "Les règles en texte clair pour ChatGPT, Claude ou un autre assistant.",
+  "de": "Die Regeln als Klartext für ChatGPT, Claude oder einen anderen Assistenten.",
+  "zh": "以纯文本列出规则，可用于 ChatGPT、Claude 或其他助手。",
+  "ar": "القواعد بنص واضح لـ ChatGPT أو Claude أو أي مساعد آخر.",
+  "hi": "ChatGPT, Claude या किसी अन्य सहायक के लिए साफ़ टेक्स्ट में नियम।"
+ },
+ "fmtPyDesc": {
+  "es": "Para tus propios backtests, por ejemplo con pandas.",
+  "en": "For your own backtests, for example with pandas.",
+  "pt": "Para os teus próprios backtests, por exemplo com pandas.",
+  "fr": "Pour vos propres backtests, par exemple avec pandas.",
+  "de": "Für eigene Backtests, zum Beispiel mit pandas.",
+  "zh": "用于自行回测，例如配合 pandas。",
+  "ar": "لاختباراتك الرجعية الخاصة، مثلًا باستخدام pandas.",
+  "hi": "अपने बैकटेस्ट के लिए, जैसे pandas के साथ।"
+ },
+ "fmtJsDesc": {
+  "es": "Para integrarla en tu web o en tu bot.",
+  "en": "To build it into your website or bot.",
+  "pt": "Para a integrar no teu site ou bot.",
+  "fr": "Pour l’intégrer à votre site ou à votre bot.",
+  "de": "Zum Einbau in deine Website oder deinen Bot.",
+  "zh": "可集成到你的网站或机器人中。",
+  "ar": "لدمجها في موقعك أو في البوت الخاص بك.",
+  "hi": "अपनी वेबसाइट या बॉट में जोड़ने के लिए।"
+ },
+ "instTourTitle": {
+  "es": "Cómo instalarla en TradingView",
+  "en": "How to install it in TradingView",
+  "pt": "Como instalá-la no TradingView",
+  "fr": "L’installer dans TradingView",
+  "de": "So installierst du sie in TradingView",
+  "zh": "如何在 TradingView 中安装",
+  "ar": "كيفية تثبيتها في TradingView",
+  "hi": "TradingView में इसे कैसे इंस्टॉल करें"
+ },
+ "instWatch": {
+  "es": "Ver el tutorial",
+  "en": "Watch the tutorial",
+  "pt": "Ver o tutorial",
+  "fr": "Voir le tutoriel",
+  "de": "Tutorial ansehen",
+  "zh": "观看教程",
+  "ar": "شاهد الشرح",
+  "hi": "ट्यूटोरियल देखें"
+ },
+ "instDone": {
+  "es": "Listo",
+  "en": "Done",
+  "pt": "Concluído",
+  "fr": "Terminé",
+  "de": "Fertig",
+  "zh": "完成",
+  "ar": "تم",
+  "hi": "हो गया"
+ },
+ "instOpenTv": {
+  "es": "Abrir {sym} en TradingView",
+  "en": "Open {sym} in TradingView",
+  "pt": "Abrir {sym} no TradingView",
+  "fr": "Ouvrir {sym} dans TradingView",
+  "de": "{sym} in TradingView öffnen",
+  "zh": "在 TradingView 中打开 {sym}",
+  "ar": "افتح {sym} في TradingView",
+  "hi": "{sym} को TradingView में खोलें"
+ },
+ "zipTitle": {
+  "es": "Todo en un .zip: script .pine, reglas .md para IA, Python y JavaScript (beta)",
+  "en": "Everything in one .zip: the .pine script, .md rules for AI, Python and JavaScript (beta)",
+  "pt": "Tudo num .zip: script .pine, regras .md para IA, Python e JavaScript (beta)",
+  "fr": "Tout dans un .zip : script .pine, règles .md pour l’IA, Python et JavaScript (bêta)",
+  "de": "Alles in einer .zip: .pine-Skript, .md-Regeln für KI, Python und JavaScript (Beta)",
+  "zh": "全部打包为 .zip：.pine 脚本、供 AI 使用的 .md 规则、Python 和 JavaScript（测试版）",
+  "ar": "كل شيء في ملف ‎.zip: سكربت ‎.pine وقواعد ‎.md للذكاء الاصطناعي وPython وJavaScript (تجريبي)",
+  "hi": "सब कुछ एक .zip में: .pine स्क्रिप्ट, AI के लिए .md नियम, Python और JavaScript (बीटा)"
+ },
+ "i1T": {
+  "es": "Descarga y copia el script",
+  "en": "Download and copy the script",
+  "pt": "Descarrega e copia o script",
+  "fr": "Téléchargez et copiez le script",
+  "de": "Skript herunterladen und kopieren",
+  "zh": "下载并复制脚本",
+  "ar": "نزّل السكربت وانسخه",
+  "hi": "स्क्रिप्ट डाउनलोड करें और कॉपी करें"
+ },
+ "i1X": {
+  "es": "Pulsa .pine y abre el archivo con el Bloc de notas u otro editor de texto. Selecciona todo (Ctrl+A) y cópialo (Ctrl+C). En Mac, usa ⌘ en lugar de Ctrl.",
+  "en": "Click .pine and open the file with Notepad or any text editor. Select everything (Ctrl+A) and copy it (Ctrl+C). On a Mac, use ⌘ instead of Ctrl.",
+  "pt": "Clica em .pine e abre o ficheiro com o Bloco de Notas ou outro editor de texto. Seleciona tudo (Ctrl+A) e copia (Ctrl+C). No Mac, usa ⌘ em vez de Ctrl.",
+  "fr": "Cliquez sur .pine et ouvrez le fichier avec le Bloc-notes ou un autre éditeur de texte. Sélectionnez tout (Ctrl+A) et copiez (Ctrl+C). Sur Mac, utilisez ⌘ au lieu de Ctrl.",
+  "de": "Klicke auf .pine und öffne die Datei mit dem Editor oder einem anderen Texteditor. Markiere alles (Strg+A) und kopiere es (Strg+C). Auf dem Mac nutzt du ⌘ statt Strg.",
+  "zh": "点击 .pine，用记事本或任意文本编辑器打开文件。全选（Ctrl+A）并复制（Ctrl+C）。在 Mac 上用 ⌘ 代替 Ctrl。",
+  "ar": "انقر على ‎.pine وافتح الملف بالمفكرة أو أي محرر نصوص. حدّد الكل (Ctrl+A) وانسخه (Ctrl+C). على Mac استخدم ⌘ بدلًا من Ctrl.",
+  "hi": ".pine पर क्लिक करें और फ़ाइल को Notepad या किसी टेक्स्ट एडिटर में खोलें। सब चुनें (Ctrl+A) और कॉपी करें (Ctrl+C)। Mac पर Ctrl की जगह ⌘ इस्तेमाल करें।"
+ },
+ "i2T": {
+  "es": "Entra en TradingView",
+  "en": "Sign in to TradingView",
+  "pt": "Entra no TradingView",
+  "fr": "Connectez-vous à TradingView",
+  "de": "Bei TradingView anmelden",
+  "zh": "登录 TradingView",
+  "ar": "سجّل الدخول إلى TradingView",
+  "hi": "TradingView में साइन इन करें"
+ },
+ "i2X": {
+  "es": "Desde un ordenador, entra en tradingview.com e inicia sesión. Si no tienes cuenta, créala gratis: con el plan gratuito basta.",
+  "en": "On a computer, go to tradingview.com and sign in. If you don’t have an account, create one for free: the free plan is enough.",
+  "pt": "Num computador, vai a tradingview.com e inicia sessão. Se não tens conta, cria uma grátis: o plano gratuito chega.",
+  "fr": "Sur un ordinateur, allez sur tradingview.com et connectez-vous. Sans compte, créez-en un gratuitement : l’offre gratuite suffit.",
+  "de": "Öffne am Computer tradingview.com und melde dich an. Ohne Konto erstellst du kostenlos eins: Der Gratis-Tarif reicht.",
+  "zh": "在电脑上打开 tradingview.com 并登录。没有账户的话，可免费注册：免费套餐就够用。",
+  "ar": "من جهاز كمبيوتر، ادخل إلى tradingview.com وسجّل الدخول. إن لم يكن لديك حساب، أنشئ حسابًا مجانيًا: الخطة المجانية تكفي.",
+  "hi": "कंप्यूटर पर tradingview.com खोलें और साइन इन करें। खाता नहीं है तो मुफ़्त में बनाएँ: मुफ़्त प्लान काफ़ी है।"
+ },
+ "i3T": {
+  "es": "Abre el gráfico correcto",
+  "en": "Open the right chart",
+  "pt": "Abre o gráfico certo",
+  "fr": "Ouvrez le bon graphique",
+  "de": "Den richtigen Chart öffnen",
+  "zh": "打开正确的图表",
+  "ar": "افتح الرسم البياني الصحيح",
+  "hi": "सही चार्ट खोलें"
+ },
+ "i3X": {
+  "es": "Busca {sym} y elige el intervalo {int}, como en la imagen. La estrategia se entrenó con ese valor e intervalo, así que úsala solo en ese gráfico.",
+  "en": "Search for {sym} and choose the {int} interval, as in the image. The strategy was trained on that symbol and interval, so use it only on that chart.",
+  "pt": "Procura {sym} e escolhe o intervalo {int}, como na imagem. A estratégia foi treinada com esse ativo e intervalo, por isso usa-a só nesse gráfico.",
+  "fr": "Recherchez {sym} et choisissez l’intervalle {int}, comme sur l’image. La stratégie a été entraînée sur cet actif et cet intervalle : utilisez-la uniquement sur ce graphique.",
+  "de": "Suche {sym} und wähle das Intervall {int}, wie im Bild. Die Strategie wurde mit diesem Wert und Intervall trainiert, nutze sie also nur auf diesem Chart.",
+  "zh": "搜索 {sym} 并选择 {int} 周期，如图所示。该策略是用这个品种和周期训练的，所以只在这个图表上使用。",
+  "ar": "ابحث عن {sym} واختر الفاصل الزمني {int} كما في الصورة. دُرّبت الاستراتيجية على هذا الرمز وهذا الفاصل، لذا استخدمها على هذا الرسم فقط.",
+  "hi": "{sym} खोजें और {int} इंटरवल चुनें, जैसा तस्वीर में है। रणनीति इसी सिंबल और इंटरवल पर ट्रेन हुई है, इसलिए इसे सिर्फ़ इसी चार्ट पर इस्तेमाल करें।"
+ },
+ "i4T": {
+  "es": "Pégalo en el Pine Editor",
+  "en": "Paste it into the Pine Editor",
+  "pt": "Cola-o no Pine Editor",
+  "fr": "Collez-le dans le Pine Editor",
+  "de": "Im Pine Editor einfügen",
+  "zh": "粘贴到 Pine Editor",
+  "ar": "الصقه في Pine Editor",
+  "hi": "Pine Editor में पेस्ट करें"
+ },
+ "i4X": {
+  "es": "Abre el Pine Editor desde la barra lateral derecha y crea un script nuevo. Selecciona todo el código de ejemplo, pega el tuyo encima (Ctrl+V) y pulsa «Save».",
+  "en": "Open the Pine Editor from the right sidebar and create a new script. Select all the sample code, paste yours over it (Ctrl+V) and click “Save”.",
+  "pt": "Abre o Pine Editor na barra lateral direita e cria um script novo. Seleciona todo o código de exemplo, cola o teu por cima (Ctrl+V) e clica em «Save».",
+  "fr": "Ouvrez le Pine Editor depuis la barre latérale droite et créez un nouveau script. Sélectionnez tout le code d’exemple, collez le vôtre par-dessus (Ctrl+V) et cliquez sur « Save ».",
+  "de": "Öffne den Pine Editor über die rechte Seitenleiste und erstelle ein neues Skript. Markiere den gesamten Beispielcode, füge deinen darüber ein (Strg+V) und klicke auf „Save“.",
+  "zh": "从右侧边栏打开 Pine Editor，新建一个脚本。全选示例代码，把你的代码粘贴覆盖（Ctrl+V），然后点击“Save”。",
+  "ar": "افتح Pine Editor من الشريط الجانبي وأنشئ سكربتًا جديدًا. حدّد كل الشيفرة النموذجية والصق شيفرتك فوقها (Ctrl+V) ثم انقر «Save».",
+  "hi": "दाईं साइडबार से Pine Editor खोलें और नई स्क्रिप्ट बनाएँ। सारा उदाहरण कोड चुनें, उसके ऊपर अपना कोड पेस्ट करें (Ctrl+V) और “Save” दबाएँ।"
+ },
+ "i5T": {
+  "es": "Añádela al gráfico",
+  "en": "Add it to the chart",
+  "pt": "Adiciona-a ao gráfico",
+  "fr": "Ajoutez-la au graphique",
+  "de": "Zum Chart hinzufügen",
+  "zh": "添加到图表",
+  "ar": "أضفها إلى الرسم البياني",
+  "hi": "चार्ट में जोड़ें"
+ },
+ "i5X": {
+  "es": "Pulsa «Add to chart». Verás sus compras y ventas en el gráfico y sus resultados en «Strategy Tester». En el móvil la tienes en «Indicators» › «My scripts».",
+  "en": "Click “Add to chart”. You will see its buys and sells on the chart and its results in “Strategy Tester”. On your phone, it is under “Indicators” › “My scripts”.",
+  "pt": "Clica em «Add to chart». Vês as compras e vendas no gráfico e os resultados em «Strategy Tester». No telemóvel, está em «Indicators» › «My scripts».",
+  "fr": "Cliquez sur « Add to chart ». Vous verrez ses achats et ventes sur le graphique et ses résultats dans « Strategy Tester ». Sur mobile, elle se trouve dans « Indicators » › « My scripts ».",
+  "de": "Klicke auf „Add to chart“. Du siehst ihre Käufe und Verkäufe im Chart und ihre Ergebnisse im „Strategy Tester“. Auf dem Handy findest du sie unter „Indicators“ › „My scripts“.",
+  "zh": "点击“Add to chart”。你会在图表上看到它的买卖信号，并在“Strategy Tester”中看到结果。在手机上，它位于“Indicators” › “My scripts”。",
+  "ar": "انقر «Add to chart». سترى عمليات الشراء والبيع على الرسم ونتائجها في «Strategy Tester». على الهاتف تجدها في «Indicators» ‹ «My scripts».",
+  "hi": "“Add to chart” दबाएँ। चार्ट पर इसकी खरीद-बिक्री और “Strategy Tester” में इसके नतीजे दिखेंगे। फ़ोन पर यह “Indicators” › “My scripts” में है।"
+ }
+}

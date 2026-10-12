@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#f4f8fb}
+a{color:#0950e3;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</helmet>
+<div style="min-height:100vh;font-family:Ubuntu,system-ui,'Segoe UI',sans-serif;color:#16263a;font-size:14px;line-height:1.5">
+  <sc-if value="{{ standalone }}" hint-placeholder-val="{{ true }}"><header style="position:relative;background:#fff;border-bottom:1px solid #e2e9f0">
+    <div style="max-width:1320px;margin:0 auto;padding:12px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-weight:700;font-size:21px;letter-spacing:-.5px">Edge<span style="color:#0950e3">folio</span></span>
+      <span style="width:1px;height:20px;background:#e2e9f0"></span>
+      <span style="font-weight:500;font-size:13px;color:#5a6b80">{{ L.pageName }}</span>
+      <span style="margin-inline-start:auto;display:flex;gap:16px;font-size:12.5px;font-weight:600"><a href="Improvements Lab.dc.html">{{ L.lab }}</a><a href="Storefront v7.dc.html">{{ L.store }}</a></span>
+    </div>
+    <div style="position:absolute;inset-inline:0;bottom:-1px;height:3px;background:linear-gradient(90deg,#47f9e5,#0950e3)"></div>
+  </header></sc-if>
+
+  <main style="max-width:1320px;margin:0 auto;padding:{{ mainPad }};display:flex;flex-direction:column;gap:20px">
+    <sc-if value="{{ standalone }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:820px;display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:30px;font-weight:700;letter-spacing:-.5px">{{ L.h1 }}</h1>
+      <p style="margin:0;color:#5a6b80;font-size:15px;text-wrap:pretty">{{ L.intro }}</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      <sc-for list="{{ picks }}" as="p" hint-placeholder-count="0">
+        <button onClick="{{ p.pick }}" style="font-family:inherit;display:flex;align-items:center;gap:10px;border:1.5px solid {{ p.bd }};background:{{ p.bg }};border-radius:14px;padding:8px 14px 8px 8px;cursor:pointer;text-align:start;color:#16263a">
+          <span role="img" aria-hidden="true" style="width:30px;height:30px;border-radius:8px;flex-shrink:0;background-image:url('{{ p.icon }}');background-size:cover;background-position:center"></span>
+          <span style="line-height:1.25"><strong style="display:block;font-size:13.5px;color:{{ p.color }}">{{ p.ticker }} · {{ p.pattern }}</strong><span style="font-size:11.5px;color:#5a6b80">{{ p.key }} · 1Day · {{ p.status }}</span></span>
+        </button>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px"><sc-for list="{{ steps }}" as="st" hint-placeholder-count="0"><div style="flex:1 1 220px;display:flex;gap:10px;align-items:flex-start;background:#ffffff;border:1px solid #e2e9f0;border-radius:14px;padding:12px 14px"><span style="width:24px;height:24px;border-radius:7px;background:#16263a;color:#ffffff;display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0">{{ st.n }}</span><span style="font-size:13.5px;text-wrap:pretty">{{ st.text }}</span></div></sc-for></div>
+      <span style="font-size:12.5px;color:#5a6b80;text-wrap:pretty">{{ L.forest }}</span>
+    </div>
+
+    <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}"><p style="margin:0;color:#8d9cae">{{ L.loading }}</p></sc-if>
+    <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><p style="margin:0;color:#c0392b">{{ L.loadErr }} {{ err }}</p></sc-if>
+
+    <sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+      <aside style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:16px;position:{{ asidePos }};top:16px">
+        <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80">{{ L.output }}</span>
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><strong style="font-size:30px;font-weight:700;letter-spacing:-.5px;line-height:1.1;color:{{ sigColor }}">{{ sigLabel }}</strong><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ sigColor }}">{{ sigValue }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="position:relative;height:8px;border-radius:999px;background:linear-gradient(90deg,#f3c1bb,#e2e9f0 50%,#b7e4c7)">
+              <sc-if value="{{ hasMarker }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;left:{{ markerLeft }};width:4px;height:16px;margin-left:-2px;border-radius:2px;background:#16263a"></span></sc-if>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a6b80"><span>{{ L.sellEnd }}</span><span>0</span><span>{{ L.buyEnd }}</span></div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+            <sc-for list="{{ pathChips }}" as="c" hint-placeholder-count="0"><span style="font-size:12px;font-weight:600;background:#e9f0fd;color:#0950e3;border-radius:999px;padding:3px 9px">{{ c.text }}</span></sc-for>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onClick="{{ buyExample }}" style="font-family:inherit;border:1px solid #b7e4c7;background:#e8f7ef;color:#15803d;font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">{{ L.buyEx }}</button>
+            <button onClick="{{ sellExample }}" style="font-family:inherit;border:1px solid #f3c1bb;background:#fdecea;color:#c0392b;font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">{{ L.sellEx }}</button>
+          </div>
+          <span style="font-size:11.5px;color:#8d9cae;margin-top:-4px">{{ L.exHelp }}</span>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80">{{ L.values }}</span>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:-4px">
+            <div style="display:flex;gap:10px;align-items:flex-start;background:#f5f8ff;border:1px solid #d6e2fb;border-radius:12px;padding:10px 12px"><i class="fa-solid fa-circle-check" style="color:#0950e3;margin-top:2px"></i><span style="display:flex;flex-direction:column;gap:2px"><strong style="font-size:12.5px">{{ L.optTitle }}</strong><span style="font-size:12px;color:#5a6b80;text-wrap:pretty">{{ L.optText }}</span></span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:#5a6b80"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#15803d"></span>{{ L.zBuy }}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#c0392b"></span>{{ L.zSell }}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#9aa7b8"></span>{{ L.zWait }}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:2px;height:12px;border-radius:1px;background:#0950e3"></span>{{ L.zNotch }}</span></div>
+            <span style="font-size:11.5px;color:#8d9cae;text-wrap:pretty">{{ L.zHelp }}</span>
+          </div>
+          <sc-for list="{{ feats }}" as="f" hint-placeholder-count="0">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;gap:6px;min-width:0"><button onClick="{{ f.onInfo }}" onMouseEnter="{{ f.onEnter }}" onMouseLeave="{{ f.onLeave }}" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:600;color:{{ f.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:none;background:none;padding:0;cursor:help;text-decoration:underline dotted #9aa7b8;text-underline-offset:3px">{{ f.name }}</button><button onClick="{{ f.onInfo }}" aria-label="What is {{ f.full }}?" style="width:18px;height:18px;border-radius:50%;border:1px solid #cfd8e3;background:#ffffff;color:#5a6b80;font-size:11px;font-weight:700;cursor:pointer;display:grid;place-items:center;padding:0;flex-shrink:0;font-family:Georgia,serif;font-style:italic">i</button></span><span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">{{ f.valueLabel }}</span></div><span style="font-size:11.5px;color:#5a6b80;line-height:1.3">{{ f.label }}</span>
+              <sc-if value="{{ f.isNum }}" hint-placeholder-val="{{ false }}">
+                <div style="position:relative;height:14px">
+                  <span style="position:absolute;left:8px;right:8px;top:5px;height:4px;border-radius:2px;background:#e2e9f0"></span>
+                  <sc-for list="{{ f.zones }}" as="z" hint-placeholder-count="0"><span style="position:absolute;left:{{ z.l }};width:{{ z.w }};top:3px;height:8px;border-radius:2px;background:{{ z.c }};opacity:{{ z.op }};box-shadow:{{ z.ring }}"></span></sc-for>
+                  <sc-for list="{{ f.ticks }}" as="tk" hint-placeholder-count="0"><span onMouseEnter="{{ tk.onEnter }}" onMouseLeave="{{ tk.onLeave }}" style="position:absolute;left:{{ tk.left }};top:-3px;width:12px;height:20px;margin-left:-6px;display:flex;justify-content:center;align-items:center;cursor:help"><span style="width:2px;height:{{ tk.h }};border-radius:1px;background:{{ tk.bg }}"></span></span></sc-for>
+                </div>
+                <input type="range" min="{{ f.min }}" max="{{ f.max }}" step="any" value="{{ f.value }}" onChange="{{ f.onChange }}" aria-label="{{ f.full }}" style="width:100%;margin:0;accent-color:#0950e3;cursor:pointer">
+              </sc-if>
+              <sc-if value="{{ f.isBool }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;background:#e9eef4;border-radius:10px;padding:3px;align-self:flex-start">
+                  <button onClick="{{ f.setNo }}" style="font-family:inherit;border:none;border-radius:8px;padding:5px 14px;font-size:12.5px;font-weight:700;cursor:pointer;background:{{ f.noBg }};color:{{ f.noColor }}">{{ L.no }}</button>
+                  <button onClick="{{ f.setYes }}" style="font-family:inherit;border:none;border-radius:8px;padding:5px 14px;font-size:12.5px;font-weight:700;cursor:pointer;background:{{ f.yesBg }};color:{{ f.yesColor }}">{{ L.yes }}</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ hasUnused }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:12px;color:#8d9cae;text-wrap:pretty">{{ L.unused }} {{ unused }}</p></sc-if>
+        </div>
+      </aside>
+
+      <section data-tree-sec="1" style="flex:999 1 480px;min-width:0;background:#fff;border:1px solid #e2e9f0;border-radius:18px;overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:16px 18px 10px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-start">
+          <div style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong style="font-size:18px">{{ title }}</strong><span style="font-size:11.5px;font-weight:700;color:#0950e3;background:#e9f0fd;border-radius:999px;padding:2px 9px">{{ L.tree1 }}</span></div>
+            <span style="font-size:12.5px;color:#5a6b80">{{ summary }}</span>
+            <span style="font-size:13px;color:#16263a;text-wrap:pretty;margin-top:4px;max-width:640px">{{ about }}</span>
+            <span style="font-size:11px;color:#8d9cae;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere">{{ params }}</span>
+          </div>
+          <div role="tablist" style="display:flex;background:#e9eef4;border-radius:10px;padding:3px">
+            <button role="tab" onClick="{{ showTree }}" style="font-family:inherit;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:{{ tBg }};color:{{ tColor }};box-shadow:{{ tShadow }}">{{ L.treeTab }}</button>
+            <button role="tab" onClick="{{ showRules }}" style="font-family:inherit;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:{{ rBg }};color:{{ rColor }};box-shadow:{{ rShadow }}">{{ L.rulesTab }}</button>
+          </div>
+          <div style="display:flex;background:#e9eef4;border-radius:10px;padding:3px"><button onClick="{{ asVisitor }}" style="font-family:inherit;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;background:{{ vBg }};color:{{ vColor }};box-shadow:{{ vShadow }}">{{ L.visitor }}</button><button onClick="{{ asOwner }}" style="font-family:inherit;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;background:{{ oBg }};color:{{ oColor }};box-shadow:{{ oShadow }}">{{ L.owner }}</button></div>
+        </div>
+        <div style="padding:0 18px 12px;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#5a6b80">
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#e8f7ef;border:1px solid #b7e4c7"></span>{{ L.buy }}</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#fdecea;border:1px solid #f3c1bb"></span>{{ L.sell }}</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#f4f8fb;border:1px solid #cfd8e3"></span>{{ L.none }}</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#f4f8fb;border:1px dashed #b8c4d3"></span>{{ L.paid }}</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:3px;border-radius:2px;background:#0950e3"></span>{{ L.path }}</span>
+        </div>
+        <sc-if value="{{ showCta }}" hint-placeholder-val="{{ false }}"><div style="margin:0 18px 12px;border:1px solid #c5d6f8;background:#f5f8ff;border-radius:12px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px"><i class="fa-solid fa-lock" style="color:#0950e3"></i><span style="flex:1 1 240px;font-size:13px;text-wrap:pretty">{{ ctaText }}</span><button onClick="{{ unlock }}" style="font-family:inherit;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;background:#0950e3;color:#ffffff;white-space:nowrap">{{ unlockLabel }}</button></div></sc-if>
+        <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ false }}"><div style="margin:0 18px 12px;border:1px solid #b7e4c7;background:#e8f7ef;border-radius:12px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px"><i class="fa-solid fa-circle-check" style="color:#15803d"></i><span style="flex:1 1 240px;font-size:13px;text-wrap:pretty">{{ ownerText }}</span><button onClick="{{ download }}" style="font-family:inherit;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;background:#15803d;color:#ffffff;white-space:nowrap"><i class="fa-solid fa-download"></i> {{ L.download }}</button></div></sc-if>
+
+        <sc-if value="{{ isTree }}" hint-placeholder-val="{{ true }}">
+          <div ref="{{ treeRef }}" data-tree-scroll="1" onPointerDown="{{ panDown }}" onPointerMove="{{ panMove }}" onPointerUp="{{ panUp }}" onPointerLeave="{{ panUp }}" style="cursor:grab;user-select:none;overflow:auto;max-height:72vh;border-top:1px solid #e2e9f0;background:#fbfcfe">
+            <div style="position:relative;width:{{ cwPx }};height:{{ chPx }}">
+              <sc-for list="{{ heads }}" as="hd" hint-placeholder-count="0"><span style="position:absolute;left:{{ hd.x }};top:9px;width:{{ nW }};text-align:center;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#8d9cae">{{ hd.text }}</span></sc-for>
+              <svg width="{{ cw }}" height="{{ ch }}" style="position:absolute;left:0;top:0;overflow:visible">
+                <sc-for list="{{ edges }}" as="e" hint-placeholder-count="0"><path d="{{ e.d }}" style="fill:none;stroke:{{ e.stroke }};stroke-width:{{ e.sw }};stroke-linejoin:round;stroke-linecap:round"></path></sc-for>
+              </svg>
+              <sc-for list="{{ labels }}" as="l" hint-placeholder-count="0"><button onClick="{{ l.go }}" style="position:absolute;left:{{ l.left }};top:{{ l.top }};transform:{{ l.tf }};height:18px;line-height:18px;padding:0 6px;border:none;border-radius:999px;background:{{ l.bg }};color:{{ l.color }};font-family:inherit;font-size:10.5px;font-weight:700;white-space:nowrap;cursor:pointer">{{ l.text }}</button></sc-for>
+              <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="0">
+                <button onClick="{{ n.onClick }}" onMouseEnter="{{ n.onEnter }}" onMouseLeave="{{ n.onLeave }}" onFocus="{{ n.onEnter }}" onBlur="{{ n.onLeave }}" aria-label="{{ n.title }}" style="position:absolute;left:{{ n.x }};top:{{ n.y }};width:{{ nW }};height:{{ nH }};border-radius:10px;border:{{ n.bd }};background:{{ n.bg }};box-shadow:{{ n.shadow }};opacity:{{ n.op }};cursor:pointer;font-family:inherit;padding:0 9px;display:flex;align-items:center;gap:6px;text-align:start;color:#16263a;transition:box-shadow .15s,transform .15s,opacity .15s" style-hover="transform:translateY(-1px);box-shadow:0 8px 20px rgba(22,38,58,.16);opacity:1">
+                  
+                  <sc-if value="{{ n.isDec }}" hint-placeholder-val="{{ false }}"><span style="flex:1;display:flex;flex-direction:column;min-width:0"><strong style="font-size:12px;line-height:15px;color:{{ n.nameC }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.name }}</strong><span style="font-size:11px;line-height:14px;color:#5a6b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums">{{ n.q }}</span></span></sc-if>
+                  <sc-if value="{{ n.isLeaf }}" hint-placeholder-val="{{ false }}"><span style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0"><span style="display:flex;justify-content:space-between;align-items:center;gap:6px"><strong style="font-size:12.5px;line-height:15px;color:{{ n.c }};display:inline-flex;align-items:center;gap:5px;white-space:nowrap"><i class="{{ n.ic }}" style="font-size:10.5px"></i>{{ n.verb }}</strong><span style="font-size:11.5px;line-height:15px;font-weight:700;color:{{ n.c }};font-variant-numeric:tabular-nums">{{ n.value }}</span></span><span style="height:4px;border-radius:2px;background:#e9eef4;overflow:hidden"><span style="display:block;height:100%;width:{{ n.str }};border-radius:2px;background:{{ n.c }}"></span></span></span></sc-if>
+                  <sc-if value="{{ n.isLock }}" hint-placeholder-val="{{ false }}"><strong style="font-size:12px;color:#5a6b80;display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><i class="fa-solid fa-lock" style="font-size:10.5px"></i>{{ L.paid }}</strong></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRules }}" hint-placeholder-val="{{ false }}">
+          <div data-blk-scroll="1" onPointerDown="{{ panDown }}" onPointerMove="{{ panMove }}" onPointerUp="{{ panUp }}" onPointerLeave="{{ panUp }}" style="cursor:grab;user-select:none;overflow:auto;max-height:72vh;border-top:1px solid #e2e9f0;background:#fbfcfe;padding:10px 12px">
+            <div style="display:flex;width:{{ bwPx }}"><sc-for list="{{ heads }}" as="hd" hint-placeholder-count="0"><span style="width:{{ bW }};flex-shrink:0;text-align:center;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#8d9cae;padding-bottom:8px">{{ hd.text }}</span></sc-for></div>
+            <div style="position:relative;width:{{ bwPx }};height:{{ bhPx }}">
+              <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="0"><div style="position:absolute;left:{{ b.x }};top:{{ b.y }};width:{{ b.w }};height:{{ b.h }};padding:2px"><button onClick="{{ b.onClick }}" onMouseEnter="{{ b.onEnter }}" onMouseLeave="{{ b.onLeave }}" style="width:100%;height:100%;font-family:inherit;text-align:start;cursor:pointer;border-radius:9px;background:{{ b.bg }};border:{{ b.bd }};padding:3px 8px;display:flex;flex-direction:column;justify-content:flex-start;gap:0;overflow:hidden;opacity:{{ b.op }}" style-hover="opacity:1;box-shadow:0 6px 16px rgba(22,38,58,.12)"><span style="flex-shrink:0;max-width:100%;font-size:10.5px;line-height:12px;color:{{ b.subC }};white-space:{{ b.ws }};overflow:hidden;text-overflow:ellipsis">{{ b.inc }}</span><strong style="flex-shrink:0;max-width:100%;font-size:12px;line-height:15px;color:{{ b.c }};display:flex;gap:6px;align-items:flex-start;overflow:hidden"><i class="{{ b.ic }}" style="font-size:10.5px;flex-shrink:0;margin-top:2.5px"></i><span style="white-space:{{ b.ws }};overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:{{ b.lc }};-webkit-box-orient:vertical">{{ b.main }}</span><span style="font-weight:500;font-size:11px">{{ b.val }}</span></strong></button></div></sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <div style="border-top:1px solid #e2e9f0;padding:14px 18px 18px;display:flex;flex-direction:column;gap:14px">
+          <button onClick="{{ toggleAllRules }}" style="align-self:flex-start;font-family:inherit;border-radius:999px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;border:1.5px solid #0950e3;background:#ffffff;color:#0950e3" style-hover="background:#e9f0fd"><i class="fa-solid fa-list-ul"></i>{{ allRulesLabel }}</button>
+          <sc-if value="{{ allRulesOpen }}" hint-placeholder-val="{{ false }}">
+            <sc-for list="{{ groups }}" as="g" hint-placeholder-count="0">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:50%;background:{{ g.c }};color:#ffffff;display:grid;place-items:center;font-size:13px"><i class="{{ g.ic }}"></i></span><strong style="font-size:17px;color:{{ g.c }}">{{ g.verb }}</strong><span style="font-size:13px;color:#5a6b80">{{ g.count }}</span></div>
+                <sc-for list="{{ g.rules }}" as="r" hint-placeholder-count="0">
+                  <button onClick="{{ r.jump }}" style="font-family:inherit;text-align:start;cursor:pointer;color:#16263a;background:#ffffff;border:{{ r.bd }};border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;box-shadow:{{ r.sh }}" style-hover="border-color:#9fb8ef">
+                    <span style="display:flex;gap:14px;align-items:center"><span style="width:46px;height:46px;border-radius:50%;background:conic-gradient({{ r.c }} {{ r.deg }}, #e9eef4 0);display:grid;place-items:center;flex-shrink:0"><span style="width:36px;height:36px;border-radius:50%;background:#ffffff;display:grid;place-items:center;font-size:11px;font-weight:700;color:{{ r.c }}">{{ r.val }}</span></span><span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:{{ r.c }}">{{ r.str }}</span><span style="font-size:14px;text-wrap:pretty">{{ r.text }}</span></span><sc-if value="{{ r.now }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:700;color:#0950e3;background:#e9f0fd;border-radius:999px;padding:3px 10px;white-space:nowrap">{{ L.path }}</span></sc-if></span>
+                    <span style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px 18px"><sc-for list="{{ r.bars }}" as="br" hint-placeholder-count="0"><span style="display:flex;flex-direction:column;gap:5px"><span style="display:flex;justify-content:space-between;gap:8px;font-size:12px"><strong>{{ br.name }}</strong><span style="color:#5a6b80;font-variant-numeric:tabular-nums">{{ br.range }}</span></span><span style="position:relative;height:8px;border-radius:4px;background:#e9eef4"><span style="position:absolute;top:0;bottom:0;left:{{ br.l }};width:{{ br.w }};border-radius:4px;background:{{ r.c }}"></span></span></span></sc-for></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+            <sc-if value="{{ hasLockedNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#5a6b80;display:inline-flex;gap:8px;align-items:center"><i class="fa-solid fa-lock"></i>{{ lockedNote }}</span></sc-if>
+          </sc-if>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ standalone }}" hint-placeholder-val="{{ true }}"><p style="margin:0;max-width:820px;font-size:12.5px;color:#8d9cae;text-wrap:pretty">{{ L.source }}</p></sc-if>
+  </main>
+  <sc-if value="{{ tipOn }}" hint-placeholder-val="{{ false }}">
+    <div role="tooltip" style="position:fixed;left:{{ tipX }};top:{{ tipY }};transform:{{ tipTf }};z-index:80;width:300px;max-width:calc(100vw - 24px);background:#16263a;color:#ffffff;border-radius:14px;padding:14px 16px;box-shadow:0 18px 40px rgba(22,38,58,.32);display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.45;font-family:Ubuntu,system-ui,sans-serif">
+      <div style="display:flex;align-items:flex-start;gap:8px"><strong style="flex:1;font-size:14.5px;line-height:1.3">{{ tipTitle }}</strong><sc-if value="{{ tipPinned }}" hint-placeholder-val="{{ false }}"><button onClick="{{ closeTip }}" aria-label="Close" style="border:none;background:rgba(255,255,255,.14);color:#ffffff;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;flex-shrink:0">×</button></sc-if></div>
+      <sc-if value="{{ tipHasCode }}" hint-placeholder-val="{{ false }}"><span style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;color:#9fd8ff;overflow-wrap:anywhere">{{ tipCode }}</span></sc-if>
+      <p style="margin:0;color:#e3eaf3;text-wrap:pretty">{{ tipText }}</p>
+      <sc-for list="{{ tipRows }}" as="tw" hint-placeholder-count="0"><div style="display:flex;justify-content:space-between;gap:12px;font-size:12.5px;border-top:1px solid rgba(255,255,255,.12);padding-top:6px"><span style="color:#b8c7da">{{ tw.k }}</span><strong style="text-align:end;font-variant-numeric:tabular-nums">{{ tw.v }}</strong></div></sc-for>
+      <sc-if value="{{ tipHasBars }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px"><sc-for list="{{ tipBars }}" as="tb" hint-placeholder-count="0"><div style="display:flex;flex-direction:column;gap:4px"><span style="display:flex;justify-content:space-between;gap:8px;font-size:12px"><strong>{{ tb.name }}</strong><span style="color:#b8c7da;font-variant-numeric:tabular-nums">{{ tb.range }}</span></span><span style="position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.16)"><span style="position:absolute;top:0;bottom:0;left:{{ tb.l }};width:{{ tb.w }};border-radius:3px;background:#47f9e5"></span></span></div></sc-for></div></sc-if>
+      <sc-if value="{{ tipHasFoot }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;color:#b8c7da">{{ tipFoot }}</span></sc-if>
+      <sc-if value="{{ tipHasCta }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tipCta }}" style="font-family:inherit;border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;background:#ffffff;color:#0950e3">{{ tipCtaLabel }}</button></sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;horizontal&quot;,&quot;vertical&quot;],&quot;default&quot;:&quot;horizontal&quot;,&quot;tsType&quot;:&quot;'horizontal' | 'vertical'&quot;,&quot;section&quot;:&quot;Tree&quot;},&quot;edgeStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;curved&quot;,&quot;elbow&quot;],&quot;default&quot;:&quot;curved&quot;,&quot;tsType&quot;:&quot;'curved' | 'elbow'&quot;,&quot;section&quot;:&quot;Tree&quot;},&quot;exactValues&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Tree&quot;},&quot;strategy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;lang&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;onBuy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { trees: null, sel: 0, vals: {}, view: 'tree', err: '', vw: 1400, tip: null, owner: false, added: false, allRules: false };
+  treeRef = React.createRef();
+  T = {
+    en: {
+      locale: 'en-GB', pageName: 'Strategy tree', lab: 'Improvement lab', store: 'Open the store', h1: 'How a strategy decides',
+      intro: 'Each strategy is a random forest, a group of decision trees. This page draws the first tree of each strategy from its free preview. Move the values, or click a result, to see the path.',
+      s1: 'Each box checks one indicator from the chart against a fixed value.',
+      s2h: 'At or below the value (≤) the path goes up; above it (>) the path goes down.',
+      s2v: 'At or below the value (≤) the path goes left; above it (>) the path goes right.',
+      s3: 'The path ends in a result: a score from −1 (sell) to +1 (buy).',
+      forest: 'The strategy combines many trees like this one, so one tree alone does not decide its signal.',
+      loading: 'Loading the tree…', loadErr: 'Could not load the tree:', output: 'Tree output', sellEnd: 'Sell −1', buyEnd: 'Buy +1',
+      buyEx: 'Buy example', sellEx: 'Sell example', exHelp: 'Sets the values that reach the strongest buy or sell result of this tree.',
+      values: 'Indicator values', lg1: 'A value the tree checks (hover it)', lg2: 'Checked on the current path', lg3: 'Range where the result stays the same',
+      unused: 'Not used in the visible part:', no: 'No', yes: 'Yes', visitor: 'Visitor', owner: 'Owner', tree1: 'Tree 1 of the forest',
+      treeTab: 'Tree', rulesTab: 'Rules', buy: 'Buy', sell: 'Sell', none: 'No signal', paid: 'Paid part', path: 'Current path',
+      unlockBtn: 'Buy to unlock', added: 'Added to the cart', download: 'Download .pine',
+      source: 'Source: the free preview of each strategy’s Pine script (storefront/assets/previews). Values and scores are exactly as written there.',
+      statusPreview: 'preview', statusComplete: 'complete tree', visible: '{n} results visible', paid1: '1 branch in the paid part', paidN: '{n} branches in the paid part',
+      complete: 'Complete tree · {n} results', created: 'created {d}', check: 'Check {n}', result: 'Result',
+      upB: 'upper branch', dnB: 'lower branch', lB: 'left branch', rB: 'right branch',
+      curVal: 'Current value', checksAt: 'The tree checks it at', tickTitle: '{f} checked at {t}',
+      tickText: 'One step of the tree compares {name} with {t}. At or below this value it goes one way, above it goes the other.',
+      onPath: 'Used on the current path', now: 'Now', stepsTo: 'Checks to get here',
+      leafText: 'Score of this result: the average outcome of the training days that ended here, from −1 (sell) to +1 (buy). The script marks strong scores as buy or sell. Click to set the values that lead here.',
+      lockText: 'This branch is in the paid script. Buying the strategy shows the complete tree and every tree of its forest, and lets you download the .pine from My strategies.',
+      dlText: 'On the real site this downloads the full script with a signed link (7 days, 10 downloads). It is also in My strategies.',
+      defDesc: 'Value of this indicator as used when the model was trained.',
+      cta1: '1 branch of this tree is in the paid part.', ctaN: '{n} branches of this tree are in the paid part.',
+      ctaRest: ' Buying the strategy shows the complete tree and every tree of its forest, and lets you download the .pine.',
+      ownLocked: 'Owner view. On the real site the complete tree loads from your purchase; this demo only has the free preview, so the grey branches stay locked.',
+      ownFull: 'Owner view: this is the complete first tree. Download the script to use it in TradingView.'
+    },
+    es: {
+      locale: 'es-ES', pageName: 'Árbol de la estrategia', lab: 'Laboratorio de mejoras', store: 'Abrir la tienda', h1: 'Cómo decide una estrategia',
+      intro: 'Cada estrategia es un bosque aleatorio, un grupo de árboles de decisión. Esta página dibuja el primer árbol de cada estrategia a partir de su vista previa gratuita. Mueve los valores, o haz clic en un resultado, para ver el camino.',
+      s1: 'Cada caja compara un indicador del gráfico con un valor fijo.',
+      s2h: 'Si es igual o menor (≤), el camino sube; si es mayor (>), baja.',
+      s2v: 'Si es igual o menor (≤), el camino va a la izquierda; si es mayor (>), a la derecha.',
+      s3: 'El camino termina en un resultado: una puntuación de −1 (venta) a +1 (compra).',
+      forest: 'La estrategia combina muchos árboles como este, así que su señal no la decide un solo árbol.',
+      loading: 'Cargando el árbol…', loadErr: 'No se pudo cargar el árbol:', output: 'Resultado del árbol', sellEnd: 'Venta −1', buyEnd: 'Compra +1',
+      buyEx: 'Ejemplo de compra', sellEx: 'Ejemplo de venta', exHelp: 'Pone los valores que llevan al resultado de compra o venta más fuerte de este árbol.',
+      values: 'Valores de los indicadores', lg1: 'Un valor que el árbol comprueba (pasa el ratón)', lg2: 'Comprobado en el camino actual', lg3: 'Rango en el que el resultado no cambia',
+      unused: 'No se usan en la parte visible:', no: 'No', yes: 'Sí', visitor: 'Visitante', owner: 'Propietario', tree1: 'Árbol 1 del bosque',
+      treeTab: 'Árbol', rulesTab: 'Reglas', buy: 'Compra', sell: 'Venta', none: 'Sin señal', paid: 'Parte de pago', path: 'Camino actual',
+      unlockBtn: 'Comprar para desbloquear', added: 'Añadida al carrito', download: 'Descargar .pine',
+      source: 'Fuente: la vista previa gratuita del script Pine de cada estrategia (storefront/assets/previews). Los valores y las puntuaciones son exactamente los que aparecen ahí.',
+      statusPreview: 'vista previa', statusComplete: 'árbol completo', visible: '{n} resultados visibles', paid1: '1 rama en la parte de pago', paidN: '{n} ramas en la parte de pago',
+      complete: 'Árbol completo · {n} resultados', created: 'creado el {d}', check: 'Paso {n}', result: 'Resultado',
+      upB: 'rama de arriba', dnB: 'rama de abajo', lB: 'rama izquierda', rB: 'rama derecha',
+      curVal: 'Valor actual', checksAt: 'El árbol lo compara con', tickTitle: '{f} comparado con {t}',
+      tickText: 'Un paso del árbol compara {name} con {t}. Si es igual o menor va por un lado; si es mayor, por el otro.',
+      onPath: 'Usado en el camino actual', now: 'Ahora', stepsTo: 'Pasos hasta aquí',
+      leafText: 'Puntuación de este resultado: la media de los días de entrenamiento que acabaron aquí, de −1 (venta) a +1 (compra). El script marca las puntuaciones fuertes como compra o venta. Haz clic para poner los valores que llevan aquí.',
+      lockText: 'Esta rama está en el script de pago. Al comprar la estrategia ves el árbol completo y todos los árboles de su bosque, y puedes descargar el .pine desde Mis estrategias.',
+      dlText: 'En la web real descarga el script completo con un enlace firmado (7 días, 10 descargas). También está en Mis estrategias.',
+      defDesc: 'Valor de este indicador tal como se usó al entrenar el modelo.',
+      cta1: '1 rama de este árbol está en la parte de pago.', ctaN: '{n} ramas de este árbol están en la parte de pago.',
+      ctaRest: ' Al comprar la estrategia ves el árbol completo y todos los árboles de su bosque, y puedes descargar el .pine.',
+      ownLocked: 'Vista de propietario. En la web real el árbol completo se carga desde tu compra; esta demo solo tiene la vista previa gratuita, así que las ramas grises siguen bloqueadas.',
+      ownFull: 'Vista de propietario: este es el primer árbol completo. Descarga el script para usarlo en TradingView.'
+    }
+  };
+
+  watchSec() {
+    const q = sel => this._root ? this._root.querySelector(sel) : document.querySelector(sel);
+    const el = q('[data-blk-scroll]') || q('[data-tree-sec]');
+    if (!el || el === this._secEl) return;
+    if (this._ro) this._ro.disconnect();
+    this._secEl = el;
+    const inner = el.hasAttribute('data-blk-scroll');
+    this._measure = () => { if (!el.isConnected) return; const cs = getComputedStyle(el), w = Math.floor(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) - (inner ? 0 : 40); if (w > 0 && w !== this.state.aw) this.setState({ aw: w }); };
+    if (window.ResizeObserver) { this._ro = new ResizeObserver(this._measure); this._ro.observe(el); }
+    this._measure();
+  }
+  textW(list, font) { const c = this._mc || (this._mc = document.createElement('canvas').getContext('2d')); c.font = font; return list.reduce((m, t) => Math.max(m, c.measureText(t).width), 0); }
+  componentWillUnmount() { clearInterval(this._ws); if (this._ro) this._ro.disconnect(); if (document.fonts && this._fl) document.fonts.removeEventListener('loadingdone', this._fl); this._fl = null; window.removeEventListener('resize', this._rs); window.removeEventListener('scroll', this._sc, true); }
+  componentDidMount() {
+    if (!this.props.embedded) this.ensureAssets();
+    this._rs = () => { this.setState({ vw: window.innerWidth }); if (this._measure) this._measure(); };
+    window.addEventListener('resize', this._rs); this._rs(); this._ws = setInterval(() => { this.watchSec(); if (this._secEl) clearInterval(this._ws); }, 300);
+    if (document.fonts) { this._fl = () => this.forceUpdate(); document.fonts.addEventListener('loadingdone', this._fl); document.fonts.ready.then(() => this._fl && this._fl()); }
+    this._sc = () => { if (this.state.tip) this.setState({ tip: null }); };
+    window.addEventListener('scroll', this._sc, true);
+    this.load();
+  }
+  componentDidUpdate(pp) { this.watchSec(); if (pp.strategy !== this.props.strategy) this.load(); }
+
+  R(p) { const id = 'r-' + String(p).replace(/^storefront\/assets\//, '').replace(/[^A-Za-z0-9]+/g, '-'); return (window.__resources && window.__resources[id]) || p; }
+  ensureAssets() {
+    try {
+      if (document.getElementById('st-assets')) return;
+      const l = document.createElement('link'); l.id = 'st-assets'; l.rel = 'stylesheet'; l.href = 'vendor/fontawesome/css/all.min.css'; document.head.appendChild(l);
+      const st = document.createElement('style'); st.textContent = [400, 500, 700].map(w => '@font-face{font-family:"Ubuntu";font-weight:' + w + ';font-display:swap;src:url("zlecitool_core/ui/static/fonts/Ubuntu-' + w + '-latin.woff2") format("woff2")}').join(''); document.head.appendChild(st);
+    } catch (e) {}
+  }
+  load() {
+    const k = this.props.strategy;
+    this.setState({ trees: null, err: '', vals: {}, tip: null, added: false });
+    Promise.all([fetch(this.R('trees/previews.json')).then(r => r.json()), fetch(this.R('trees/features.json')).then(r => r.json()), fetch(this.R('trees/ui.json')).then(r => r.json()).catch(() => ({}))])
+      .then(([man, fx, ui]) => { this._ui = ui;
+        const list = k ? man.filter(m => m.ticker + '_' + m.key === k) : man;
+        if (!list.length) throw new Error('no tree for ' + k);
+        return Promise.all(list.map(m => fetch(this.R(m.source)).then(r => { if (!r.ok) throw new Error(m.source); return r.text(); })
+          .then(src => ({ ...m, ...this.parse(src.replace(/\r/g, '')), created: (src.match(/Date Creation: (\d{4})\/(\d{2})\/(\d{2})/) || []).slice(1).join('-') }))))
+          .then(trees => { if (k !== this.props.strategy) return; this._fx = fx; this.setState({ trees, sel: 0 }, () => this.example('buy')); });
+      })
+      .catch(e => this.setState({ err: String((e && e.message) || e) }));
+  }
+
+  follow() {
+    const el = (this.treeRef && this.treeRef.current) || document.querySelector('[data-tree-scroll]'), p = this._leafPos;
+    if (!el || !p) return;
+    const pad = 40, L = el.scrollLeft, T = el.scrollTop, vw = el.clientWidth, vh = el.clientHeight;
+    let nl = L, nt = T;
+    if (p.x < L + pad) nl = Math.max(0, p.x - pad); else if (p.x + p.w > L + vw - pad) nl = p.x + p.w - vw + pad;
+    if (p.y < T + pad) nt = Math.max(0, p.y - pad); else if (p.y + p.h > T + vh - pad) nt = p.y + p.h - vh + pad;
+    if (nl !== L) el.scrollLeft = nl;
+    if (nt !== T) el.scrollTop = nt;
+  }
+
+  parse(src) {
+    const lines = src.split('\n').map(l => { const m = l.match(/^(\t*)(.*)$/); return { ind: m[1].length, text: m[2].trim() }; }).filter(l => l.text);
+    let i = lines.findIndex(l => /^decision_tree_\d+_/.test(l.text));
+    const sig = lines[i].text.match(/\(([^)]*)\)\s*=>/);
+    const params = ((lines[i + 1] && lines[i + 1].text.match(/DecisionTreeRegressor\(([^)]*)\)/)) || [])[1] || '';
+    while (i < lines.length && !/^if\(/.test(lines[i].text)) i++;
+    const base = lines[i].ind;
+    const NUM = '(-?\\d+(?:\\.\\d+)?(?:e[-+]?\\d+)?)';
+    const reLeaf = new RegExp('^ret := ' + NUM + '\\s*(?://\\s*(buy|sell))?');
+    const reLe = new RegExp('^if\\(\\s*(\\w+)\\s*<=\\s*' + NUM + '\\s*\\)');
+    let id = 0, locked = 0, leaves = 0;
+    const stub = d => { locked++; return { id: id++, locked: true, depth: d }; };
+    const node = (ind, d) => {
+      const L = lines[i];
+      if (!L || L.ind !== ind) return stub(d);
+      let m = L.text.match(reLeaf);
+      if (m) { i++; leaves++; return { id: id++, leaf: true, v: +m[1], sig: m[2] || 'none', depth: d }; }
+      m = L.text.match(reLe);
+      if (!m) return stub(d);
+      i++;
+      const n = { id: id++, f: m[1], t: +m[2], raw: m[2], depth: d };
+      n.le = node(ind + 1, d + 1);
+      const R = lines[i];
+      if (R && R.ind === ind && new RegExp('^if\\(\\s*' + n.f + '\\s*>\\s*').test(R.text)) { i++; n.gt = node(ind + 1, d + 1); }
+      else n.gt = stub(d + 1);
+      return n;
+    };
+    const root = node(base, 0);
+    return { root, signature: sig ? sig[1].split(',').map(x => x.trim()) : [], params, locked, leaves };
+  }
+
+  nodesOf(root) { const out = []; const rec = n => { out.push(n); if (n.le) { rec(n.le); rec(n.gt); } }; rec(root); return out; }
+
+  pathTo(root, target) {
+    const rec = (n, acc) => {
+      if (n.id === target) return acc;
+      if (!n.le) return null;
+      return rec(n.le, [...acc, { f: n.f, t: n.t, dir: 'le' }]) || rec(n.gt, [...acc, { f: n.f, t: n.t, dir: 'gt' }]);
+    };
+    return rec(root, []);
+  }
+
+  featInfo(tr) {
+    const ts = {}, order = [], q = [tr.root];
+    while (q.length) { const n = q.shift(); if (n.f) { if (!ts[n.f]) { ts[n.f] = []; order.push(n.f); } ts[n.f].push(n.t); } if (n.le) q.push(n.le, n.gt); }
+    return order.map(f => {
+      const list = [...new Set(ts[f])].sort((a, b) => a - b);
+      const isBool = /Int$/.test(f) && list.every(t => t > 0 && t < 1);
+      const lo = list[0], hi = list[list.length - 1];
+      let span = hi - lo; if (!span) span = Math.max(Math.abs(lo) * 0.5, 1);
+      return { f, ts: list, isBool, min: isBool ? 0 : lo - span * 0.3, max: isBool ? 1 : hi + span * 0.3 };
+    });
+  }
+
+  walk(root, vals) {
+    const ids = new Set([root.id]), used = [];
+    let n = root;
+    while (n.le) { const dir = vals[n.f] <= n.t ? 'le' : 'gt'; used.push({ f: n.f, t: n.t, dir }); n = n[dir]; ids.add(n.id); }
+    return { ids, used, leaf: n };
+  }
+
+  jump(id) {
+    const tr = this.state.trees[this.state.sel], path = this.pathTo(tr.root, id);
+    if (!path) return;
+    const vals = { ...this.state.vals };
+    this.featInfo(tr).forEach(F => {
+      const cs = path.filter(c => c.f === F.f);
+      if (!cs.length) { if (vals[F.f] == null) vals[F.f] = F.isBool ? 0 : (F.min + F.max) / 2; return; }
+      let lo = -Infinity, hi = Infinity;
+      cs.forEach(c => { if (c.dir === 'le') hi = Math.min(hi, c.t); else lo = Math.max(lo, c.t); });
+      if (F.isBool) { vals[F.f] = hi < Infinity ? 0 : 1; return; }
+      vals[F.f] = ((lo === -Infinity ? F.min : lo) + (hi === Infinity ? F.max : hi)) / 2;
+    });
+    this.setState({ vals });
+  }
+
+  example(kind) {
+    const tr = this.state.trees[this.state.sel];
+    const leaves = this.nodesOf(tr.root).filter(n => n.leaf);
+    const pick = leaves.reduce((a, b) => (kind === 'buy' ? b.v > a.v : b.v < a.v) ? b : a);
+    this.jump(pick.id);
+  }
+
+  showTip(e, data, pin) {
+    if (!pin && this.state.tip && this.state.tip.pin) return;
+    const r = e.currentTarget.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+    const x = Math.max(12, Math.min(r.left, vw - 312)), below = r.bottom + 240 < vh;
+    this.setState({ tip: { ...data, pin: !!pin, x, y: below ? r.bottom + 8 : r.top - 8, up: !below } });
+  }
+  hideTip() { if (this.state.tip && !this.state.tip.pin) this.setState({ tip: null }); }
+
+  clickNode(e, id, kind) {
+    if (Date.now() - (this._suppress || 0) < 250) return;
+    const touch = !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
+    if (kind === 'lock' || touch) this.showTip(e, kind === 'lock' ? { kind: 'lock' } : { kind, id }, true);
+    this.jump(id);
+  }
+  panDown(e) { if ((e.pointerType && e.pointerType !== 'mouse') || e.button !== 0) return; const el = e.currentTarget; this._pan = { el, x: e.clientX, y: e.clientY, l: el.scrollLeft, t: el.scrollTop, moved: false }; }
+  panMove(e) { const p = this._pan; if (!p) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; if (!p.moved && Math.abs(dx) + Math.abs(dy) < 6) return; p.moved = true; p.el.scrollLeft = p.l - dx; p.el.scrollTop = p.t - dy; }
+  panUp() { if (this._pan && this._pan.moved) this._suppress = Date.now(); this._pan = null; }
+
+  renderVals() {
+    const s = this.state, P = this.props;
+    const lg = String(P.lang || 'en').slice(0, 2), es = lg === 'es', L = { ...this.T.en, ...(this.T[lg] || {}) };
+    Object.assign(L, es ? { buy: 'Comprar', sell: 'Vender', none: 'Esperar', rulesTab: 'Bloques', qNum: '¿≤ {t}?', qBool: '¿Se cumple?', leadBuy: 'Compra cuando', leadSell: 'Vende cuando', leadNone: 'Espera cuando', between: 'entre {a} y {b}', and: 'y', allRules: 'Ver todas las reglas en frases ({n})', hideRules: 'Ocultar las reglas', rulesOne: '{n} regla', rulesN: '{n} reglas', start: 'Inicio', lockedRules: 'Ramas en la parte de pago: {n}', leafFoot: 'Fuerza de −1 a +1: la media de los días de entrenamiento que acabaron aquí. Haz clic para ir a este resultado.', s1: 'Cada caja hace una pregunta sobre un indicador del gráfico.', s2h: 'Si la respuesta es Sí, el camino sube; si es No, baja.', s2v: 'Si la respuesta es Sí, el camino va a la izquierda; si es No, a la derecha.', s3: 'El camino termina en una acción (comprar, vender o esperar) con su fuerza, de −1 a +1.' }
+      : { buy: 'Buy', sell: 'Sell', none: 'Wait', rulesTab: 'Blocks', qNum: 'At or below {t}?', qBool: 'Is it true?', leadBuy: 'Buys when', leadSell: 'Sells when', leadNone: 'Waits when', between: 'between {a} and {b}', and: 'and', allRules: 'See all rules in plain words ({n})', hideRules: 'Hide the rules', rulesOne: '{n} rule', rulesN: '{n} rules', start: 'Start', lockedRules: 'Branches in the paid part: {n}', leafFoot: 'Strength from −1 to +1: the average of the training days that ended here. Click to go to this result.', s1: 'Each box asks a question about one indicator from the chart.', s2h: 'If the answer is Yes the path goes up; if No, it goes down.', s2v: 'If the answer is Yes the path goes left; if No, it goes right.', s3: 'The path ends in an action (buy, sell or wait) with its strength, from −1 to +1.' });
+    Object.assign(L, (this._ui && this._ui[lg]) || {});
+    const rpl = (str, o) => str.replace(/\{(\w+)\}/g, (m, k) => (o[k] != null ? o[k] : m));
+    const dir = P.direction === 'vertical' ? 'vertical' : 'horizontal';
+    const curved = P.edgeStyle !== 'elbow', exact = !!P.exactValues;
+    const seg = on => on ? ['#ffffff', '#0950e3', '0 1px 3px rgba(22,38,58,.12)'] : ['transparent', '#5a6b80', 'none'];
+    const [tBg, tColor, tShadow] = seg(s.view === 'tree'), [rBg, rColor, rShadow] = seg(s.view === 'rules');
+    const [vBg, vColor, vShadow] = seg(!s.owner), [oBg, oColor, oShadow] = seg(s.owner);
+    const unlockLabel = s.added ? L.added : L.unlockBtn;
+    const base = {
+      L, steps: [L.s1, dir === 'vertical' ? L.s2v : L.s2h, L.s3].map((text, i) => ({ n: String(i + 1), text })),
+      loading: !s.trees && !s.err, ready: !!s.trees, hasErr: !!s.err, err: s.err,
+      isTree: s.view === 'tree', isRules: s.view === 'rules',
+      showTree: () => this.setState({ view: 'tree' }), showRules: () => this.setState({ view: 'rules' }),
+      tBg, tColor, tShadow, rBg, rColor, rShadow, treeRef: this.treeRef,
+      asidePos: s.vw >= 840 ? 'sticky' : 'static',
+      standalone: !P.embedded, mainPad: P.embedded ? '0' : '28px 28px 64px',
+      vBg, vColor, vShadow, oBg, oColor, oShadow, asVisitor: () => this.setState({ owner: false }), asOwner: () => this.setState({ owner: true }),
+      panDown: e => this.panDown(e), panMove: e => this.panMove(e), panUp: () => this.panUp(),
+      tipOn: false, tipRows: [], heads: [], closeTip: () => this.setState({ tip: null }), unlockLabel,
+      buyExample: () => this.example('buy'), sellExample: () => this.example('sell')
+    };
+    if (!s.trees) return { ...base, picks: [], feats: [], nodes: [], edges: [], labels: [], rules: [], pathChips: [], groups: [], blocks: [], tipBars: [] };
+
+    const FX = this._fx || { features: {}, patterns: {} };
+    const minus = x => x.replace('-', '−');
+    const fmt = x => {
+      if (exact) return minus(String(x));
+      const a = Math.abs(x);
+      return minus(new Intl.NumberFormat(L.locale, { maximumFractionDigits: a >= 1000 ? 0 : a >= 100 ? 1 : a >= 10 ? 2 : 3 }).format(x));
+    };
+    const fmtV = v => (v > 0 ? '+' : '') + minus(new Intl.NumberFormat(L.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v));
+    const isBoolF = f => /Int$/.test(f);
+    const nice = f => f.replace(/Int$/, '');
+    const fdesc = f => { const x = FX.features[f], ul = (L.feat || {})[f]; return x ? (es ? [x[2], x[3]] : [ul || x[0], x[1]]) : [ul || nice(f), L.defDesc]; };
+    const SIG = {
+      buy: [L.buy, '#15803d', '#e8f7ef', '#b7e4c7', 'rgba(21,128,61,.22)'],
+      sell: [L.sell, '#c0392b', '#fdecea', '#f3c1bb', 'rgba(192,57,43,.22)'],
+      none: [L.none, '#5a6b80', '#f4f8fb', '#cfd8e3', 'rgba(90,107,128,.2)']
+    };
+
+    const picks = s.trees.map((t, i) => {
+      const on = i === s.sel;
+      return {
+        icon: this.R(t.icon), ticker: t.ticker, key: t.key, pattern: t.pattern, status: t.locked ? L.statusPreview : L.statusComplete,
+        bg: on ? '#f5f8ff' : '#ffffff', bd: on ? '#0950e3' : '#e2e9f0', color: on ? '#0950e3' : '#16263a',
+        pick: () => { if (i !== s.sel) this.setState({ sel: i, vals: {}, tip: null }, () => this.example('buy')); }
+      };
+    });
+
+    const tr = s.trees[s.sel], fi = this.featInfo(tr), vals = s.vals, w = this.walk(tr.root, vals);
+
+    const sm = s.vw < 640, H = 34, PAD = sm ? 10 : 14, GAP = sm ? 34 : 40;
+    const isBoolN = n => isBoolF(n.f) && n.t > 0 && n.t < 1;
+    const kidsOf = n => isBoolN(n) ? [n.gt, n.le] : [n.le, n.gt];
+    const yesKid = n => isBoolN(n) ? n.gt : n.le;
+    const all = []; let row = 0;
+    const place = n => { all.push(n); if (n.le) { const [a, b] = kidsOf(n); place(a); place(b); n.u = (a.u + b.u) / 2; n.first = a.first; n.cnt = a.cnt + b.cnt; } else { n.u = row++; n.first = n.u; n.cnt = 1; } };
+    place(tr.root);
+    const maxD = Math.max(...all.map(n => n.depth));
+    const decs = all.filter(n => n.le), mName = this.textW(decs.map(n => fdesc(n.f)[0]), '700 12px Ubuntu, system-ui, sans-serif'), mQ = this.textW(decs.map(n => isBoolN(n) ? L.qBool : rpl(L.qNum, { t: fmt(n.t) })), '400 11px Ubuntu, system-ui, sans-serif');
+    const W = Math.max(sm ? 120 : 132, Math.min(sm ? 172 : 200, Math.ceil(Math.max(mName, mQ, 90)) + 22));
+    const pos = {}; let cw, ch, heads = [];
+    if (dir === 'vertical') {
+      const cp = W + 14, rp = H + 56;
+      all.forEach(n => { pos[n.id] = { x: PAD + n.u * cp, y: PAD + n.depth * rp }; });
+      cw = PAD * 2 + (row - 1) * cp + W; ch = PAD * 2 + maxD * rp + H;
+    } else {
+      const cp = W + GAP, rp = H + 6, TOP = 28;
+      all.forEach(n => { pos[n.id] = { x: PAD + n.depth * cp, y: PAD + TOP + n.u * rp }; });
+      cw = PAD * 2 + maxD * cp + W; ch = PAD * 2 + TOP + (row - 1) * rp + H;
+    }
+    heads = Array.from({ length: maxD + 1 }, (_, d) => ({ x: (PAD + d * (W + GAP)) + 'px', text: d === maxD ? L.result : rpl(L.check, { n: d + 1 }) }));
+    if (dir === 'vertical') heads = heads.map(x => ({ ...x, x: '-9999px' }));
+    const edges = [], labels = [];
+    all.forEach(n => {
+      if (!n.le) return;
+      [n.le, n.gt].forEach(c => {
+        const a = pos[n.id], b = pos[c.id], on = w.ids.has(n.id) && w.ids.has(c.id), yes = c === yesKid(n);
+        let path, lx, ly;
+        if (dir === 'vertical') {
+          const x1 = a.x + W / 2, y1 = a.y + H, x2 = b.x + W / 2, y2 = b.y, ym = y1 + (y2 - y1) * 0.45;
+          path = curved ? `M${x1} ${y1} C${x1} ${ym} ${x2} ${ym} ${x2} ${y2}` : `M${x1} ${y1} V${ym} H${x2} V${y2}`;
+          lx = x2 - 14; ly = y2 - 26;
+        } else {
+          const x1 = a.x + W, y1 = a.y + H / 2, x2 = b.x, y2 = b.y + H / 2, xm = x1 + (x2 - x1) * 0.3;
+          path = curved ? `M${x1} ${y1} C${x1 + GAP * 0.6} ${y1} ${x2 - GAP * 0.8} ${y2} ${x2} ${y2}` : `M${x1} ${y1} H${xm} V${y2} H${x2}`;
+          lx = x2 - 3; ly = y2 - 9;
+        }
+        edges.push({ d: path, stroke: on ? '#0950e3' : '#d5dde7', sw: on ? 3 : 2, on });
+        labels.push({ go: () => { if (Date.now() - (this._suppress || 0) < 250) return; this.jump(c.id); }, text: yes ? L.yes : L.no, left: lx + 'px', top: ly + 'px', tf: dir === 'vertical' ? 'none' : 'translateX(-100%)', bg: on ? '#0950e3' : (yes ? '#eef6f1' : '#f6eeee'), color: on ? '#ffffff' : (yes ? '#3c7a55' : '#9a4b44') });
+      });
+    });
+    edges.sort((a, b) => a.on - b.on);
+
+    const ICO = { buy: 'fa-solid fa-arrow-trend-up', sell: 'fa-solid fa-arrow-trend-down', none: 'fa-solid fa-pause' };
+    const nodes = all.map(n => {
+      const p = pos[n.id], on = w.ids.has(n.id), end = on && !n.le;
+      const o = { op: on ? 1 : 0.78, x: p.x + 'px', y: p.y + 'px', isDec: !!n.le, isLeaf: !!n.leaf, isLock: !!n.locked, name: '', q: '', verb: '', value: '', str: '0%', c: '#16263a', nameC: '#16263a' };
+      if (n.le) return { ...o, nameC: on ? '#0950e3' : '#16263a', name: fdesc(n.f)[0], q: isBoolN(n) ? L.qBool : rpl(L.qNum, { t: fmt(n.t) }), title: `if( ${n.f} <= ${n.raw} )`, ic: 'fa-solid fa-chart-line', icBg: on ? '#0950e3' : '#eef3fa', icC: on ? '#ffffff' : '#5a6b80', bg: on ? '#f5f8ff' : '#ffffff', bd: on ? '1.5px solid #0950e3' : '1px solid #e2e9f0', shadow: on ? '0 6px 18px rgba(9,80,227,.14)' : 'none', onEnter: e => this.showTip(e, { kind: 'node', id: n.id }), onLeave: () => this.hideTip(), onClick: e => this.clickNode(e, n.id, 'node') };
+      if (n.leaf) {
+        const S = SIG[n.sig];
+        return { ...o, verb: S[0], value: fmtV(n.v), str: Math.round(Math.min(1, Math.abs(n.v)) * 100) + '%', c: S[1], ic: ICO[n.sig], icBg: S[1], icC: '#ffffff', title: `ret := ${n.v.toFixed(6)}${n.sig !== 'none' ? ' // ' + n.sig : ''}`, bg: S[2], bd: end ? `2px solid ${S[1]}` : `1px solid ${S[3]}`, shadow: end ? `0 0 0 3px ${S[4]}, 0 6px 16px rgba(22,38,58,.12)` : 'none', onClick: e => this.clickNode(e, n.id, 'leaf'), onEnter: e => this.showTip(e, { kind: 'leaf', id: n.id }), onLeave: () => this.hideTip() };
+      }
+      return { ...o, ic: 'fa-solid fa-lock', icBg: '#e2e9f0', icC: '#5a6b80', title: L.paid, bg: '#f7f9fc', bd: end ? '2px dashed #5a6b80' : '1px dashed #b8c4d3', shadow: 'none', onEnter: e => this.showTip(e, { kind: 'lock' }), onLeave: () => this.hideTip(), onClick: e => this.clickNode(e, n.id, 'lock') };
+    });
+    const lp = pos[w.leaf.id];
+    this._leafPos = { id: w.leaf.id, x: lp.x, y: lp.y, w: W, h: H, dir };
+    const fk = [s.sel, w.leaf.id, dir, s.view].join(':');
+    if (fk !== this._fk) { this._fk = fk; setTimeout(() => this.follow(), 40); }
+
+    const ZC = { buy: '#15803d', sell: '#c0392b', none: '#9aa7b8', lock: '#cfd8e3' };
+    const zonesOf = (F, at, fr) => {
+      if (F.isBool) return [];
+      const bnd = [F.min, ...F.ts, F.max], segs = [], cur = vals[F.f];
+      for (let i = 0; i < bnd.length - 1; i++) { const a = bnd[i], b = bnd[i + 1]; if (!(b > a)) continue; const lf = this.walk(tr.root, { ...vals, [F.f]: (a + b) / 2 }).leaf; const last = segs[segs.length - 1]; if (last && last.id === lf.id) last.b = b; else segs.push({ a, b, id: lf.id, lf }); }
+      return segs.map((z, i) => { const sg = z.lf.leaf ? z.lf.sig : 'lock', on = (cur > z.a || i === 0) && cur <= z.b; return { l: at(z.a), w: 'calc((100% - 16px) * ' + (fr(z.b) - fr(z.a)).toFixed(4) + ')', c: ZC[sg], op: z.lf.leaf ? (0.35 + 0.65 * Math.min(1, Math.abs(z.lf.v))).toFixed(2) : '1', ring: on ? '0 0 0 2px #16263a' : 'none' }; });
+    };
+    const feats = fi.map(F => {
+      const v = vals[F.f], used = w.used.filter(c => c.f === F.f);
+      let lo = F.min, hi = F.max;
+      used.forEach(c => { if (c.dir === 'le') hi = Math.min(hi, c.t); else lo = Math.max(lo, c.t); });
+      const fr = x => Math.max(0, Math.min(1, (x - F.min) / (F.max - F.min)));
+      const at = x => `calc(8px + (100% - 16px) * ${fr(x).toFixed(4)})`;
+      const set = x => () => this.setState(st => ({ vals: { ...st.vals, [F.f]: x } }));
+      const yes = v > 0.5;
+      return {
+        name: nice(F.f), full: F.f, isBool: F.isBool, isNum: !F.isBool, label: fdesc(F.f)[0],
+        onInfo: e => this.showTip(e, { kind: 'feat', f: F.f }, true), onEnter: e => this.showTip(e, { kind: 'feat', f: F.f }), onLeave: () => this.hideTip(),
+        nameColor: used.length ? '#0950e3' : '#16263a',
+        valueLabel: F.isBool ? (yes ? L.yes : L.no) : (v == null ? '' : fmt(v)),
+        min: F.min, max: F.max, value: v == null ? F.min : v,
+        onChange: e => { const x = +e.target.value; this.setState(st => ({ vals: { ...st.vals, [F.f]: x } })); },
+        zones: zonesOf(F, at, fr), bandL: at(lo), bandW: `calc((100% - 16px) * ${(fr(hi) - fr(lo)).toFixed(4)})`,
+        ticks: F.ts.map(t => { const a = used.some(c => c.t === t); return { left: at(t), bg: a ? '#0950e3' : 'rgba(22,38,58,.45)', h: a ? '14px' : '10px', title: fmt(t), onEnter: e => this.showTip(e, { kind: 'tick', f: F.f, t }), onLeave: () => this.hideTip() }; }),
+        setNo: set(0), setYes: set(1),
+        noBg: yes ? 'transparent' : '#0950e3', noColor: yes ? '#5a6b80' : '#ffffff',
+        yesBg: yes ? '#0950e3' : 'transparent', yesColor: yes ? '#ffffff' : '#5a6b80'
+      };
+    });
+    const unusedList = tr.signature.filter(f => !fi.some(F => F.f === f)).map(nice);
+    const boolTxt = (f, d) => `${fdesc(f)[0]}: ${d === 'le' ? L.no : L.yes}`;
+    const pathChips = w.used.map(c => ({ text: isBoolF(c.f) && c.t > 0 && c.t < 1 ? boolTxt(c.f, c.dir) : `${fdesc(c.f)[0]} ${c.dir === 'le' ? '≤' : '>'} ${fmt(c.t)}` }));
+    const LF = w.leaf, LS = LF.leaf ? SIG[LF.sig] : null;
+
+    const FR = {}; fi.forEach(F => { FR[F.f] = F; });
+    const constraints = n => { const by = {}, order = []; this.pathTo(tr.root, n.id).forEach(c => { if (!by[c.f]) { by[c.f] = { lo: -Infinity, hi: Infinity }; order.push(c.f); } if (c.dir === 'le') by[c.f].hi = Math.min(by[c.f].hi, c.t); else by[c.f].lo = Math.max(by[c.f].lo, c.t); }); return order.map(f => ({ f, ...by[f] })); };
+    const partTxt = c => { const nm = fdesc(c.f)[0]; if (isBoolF(c.f) && (c.hi === 0.5 || c.lo === 0.5)) return `${nm}: ${(c.hi < Infinity ? L.no : L.yes).toLowerCase()}`; if (c.lo > -Infinity && c.hi < Infinity) return `${nm} ${rpl(L.between, { a: fmt(c.lo), b: fmt(c.hi) })}`; return c.hi < Infinity ? `${nm} ≤ ${fmt(c.hi)}` : `${nm} > ${fmt(c.lo)}`; };
+    const joinA = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' ' + L.and + ' ' + a[a.length - 1] : (a[0] || '');
+    const LEAD = { buy: L.leadBuy, sell: L.leadSell, none: L.leadNone };
+    const barsOf = cs => cs.map(c => { const F = FR[c.f]; if (!F) return null; const fr = x => Math.max(0, Math.min(100, (x - F.min) / (F.max - F.min) * 100)); const a = c.lo > -Infinity ? fr(c.lo) : 0, b = c.hi < Infinity ? fr(c.hi) : 100; const B = F.isBool; return { name: fdesc(c.f)[0], range: B ? (c.hi < Infinity ? L.no : L.yes) : c.lo > -Infinity && c.hi < Infinity ? rpl(L.between, { a: fmt(c.lo), b: fmt(c.hi) }) : c.hi < Infinity ? rpl(L.orLess, { v: fmt(c.hi) }) : rpl(L.moreThan, { v: fmt(c.lo) }), l: (B ? (c.hi < Infinity ? 0 : 50) : a) + '%', w: (B ? 50 : Math.max(2, b - a)) + '%' }; }).filter(Boolean);
+    const strW = v => { const a = Math.abs(v); return a >= 0.9 ? L.strVery : a >= 0.7 ? L.strStrong : a >= 0.4 ? L.strMod : L.strWeak; };
+    const strLabel = n => n.sig === 'none' ? (n.v > 0.2 ? L.leanBuy : n.v < -0.2 ? L.leanSell : L.neutral) : rpl(L.sigStr || '{s}', { s: strW(n.v) });
+    const phraseOf = n => { const cs = constraints(n), k = { buy: 'leadBuy', sell: 'leadSell', none: 'leadNone' }[n.sig]; return { text: rpl(L[k + (cs.length === 1 ? '1' : 'N')] || '', { n: cs.length }), str: strLabel(n), bars: barsOf(cs) }; };
+    const leavesAll = all.filter(n => n.leaf);
+    const groups = ['buy', 'sell', 'none'].map(sig => {
+      const S = SIG[sig], list = leavesAll.filter(n => n.sig === sig).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
+      return { verb: S[0], c: S[1], ic: ICO[sig], has: list.length > 0, count: rpl(list.length === 1 ? L.rulesOne : L.rulesN, { n: list.length }),
+        rules: list.map(n => { const ph = phraseOf(n), now = w.leaf.id === n.id; return { text: ph.text, bars: ph.bars, str: ph.str, val: fmtV(n.v), c: S[1], deg: Math.round(Math.min(1, Math.abs(n.v)) * 360) + 'deg', now, bd: now ? '2px solid #0950e3' : '1px solid #e2e9f0', sh: now ? '0 8px 22px rgba(9,80,227,.12)' : 'none', jump: () => this.jump(n.id) }; }) };
+    }).filter(g => g.has);
+    const BW = Math.max(sm ? 112 : 120, Math.min(sm ? 160 : 190, Math.ceil(mName) + 42, Math.floor((s.aw || 922) / (maxD + 1)))), BU = 42;
+    const blocks = all.map(n => {
+      const on = w.ids.has(n.id), pr = all.find(x => x.le === n || x.gt === n);
+      const inc = !pr ? L.start : isBoolN(pr) ? `${fdesc(pr.f)[0]}: ${pr.gt === n ? L.yes : L.no}` : `${fdesc(pr.f)[0]} ${pr.le === n ? '≤' : '>'} ${fmt(pr.t)}`;
+      const base = { x: n.depth * BW + 'px', y: n.first * BU + 'px', w: (n.le ? 1 : (maxD + 1 - n.depth)) * BW + 'px', h: n.cnt * BU + 'px', inc, op: on ? 1 : 0.8, ws: n.cnt > 1 ? 'normal' : 'nowrap', lc: n.cnt > 1 ? 2 : 1 };
+      if (n.le) return { ...base, main: fdesc(n.f)[0], val: '', ic: 'fa-solid fa-chart-line', c: on ? '#0950e3' : '#16263a', subC: on ? '#0950e3' : '#8d9cae', bg: on ? '#e9f0fd' : '#f7f9fc', bd: on ? '1.5px solid #0950e3' : '1px solid #e2e9f0', onClick: e => this.clickNode(e, n.id, 'node'), onEnter: e => this.showTip(e, { kind: 'node', id: n.id }), onLeave: () => this.hideTip() };
+      if (n.leaf) { const S = SIG[n.sig]; return { ...base, main: S[0], val: fmtV(n.v), ic: ICO[n.sig], c: S[1], subC: '#5a6b80', bg: S[2], bd: on ? '2px solid #0950e3' : '1px solid ' + S[3], onClick: e => this.clickNode(e, n.id, 'leaf'), onEnter: e => this.showTip(e, { kind: 'leaf', id: n.id }), onLeave: () => this.hideTip() }; }
+      return { ...base, main: L.paid, val: '', ic: 'fa-solid fa-lock', c: '#5a6b80', subC: '#8d9cae', bg: '#f7f9fc', bd: '1px dashed #b8c4d3', onClick: e => this.clickNode(e, n.id, 'lock'), onEnter: e => this.showTip(e, { kind: 'lock' }), onLeave: () => this.hideTip() };
+    });
+    const bw = (maxD + 1) * BW, bh = row * BU;
+
+    const TP = s.tip;
+    const thrOf = f => ((fi.find(F => F.f === f) || { ts: [] }).ts).map(fmt).join(' · ');
+    const curOf = f => { const F = fi.find(x => x.f === f), v = vals[f]; return v == null ? '–' : (F && F.isBool ? (v > 0.5 ? L.yes : L.no) : fmt(v)); };
+    const upW = dir === 'vertical' ? L.lB : L.upB, dnW = dir === 'vertical' ? L.rB : L.dnB;
+    let tip = null;
+    if (TP) {
+      const nd = TP.id != null ? all.find(n => n.id === TP.id) : null;
+      if (TP.kind === 'feat') { const d = fdesc(TP.f); tip = { title: d[0], code: TP.f, text: d[1], rows: [[L.curVal, curOf(TP.f)], [L.checksAt, thrOf(TP.f)]] }; }
+      else if (TP.kind === 'tick') { const d = fdesc(TP.f); tip = { title: rpl(L.tickTitle, { f: nice(TP.f), t: fmt(TP.t) }), code: 'if( ' + TP.f + ' <= ' + TP.t + ' )', text: rpl(L.tickText, { name: d[0], t: fmt(TP.t) }), rows: [[L.curVal, curOf(TP.f)], [L.onPath, w.used.some(c => c.f === TP.f && c.t === TP.t) ? L.yes : L.no]] }; }
+      else if (TP.kind === 'node' && nd) {
+        const d = fdesc(nd.f), isB = isBoolF(nd.f) && nd.t > 0 && nd.t < 1, go = (vals[nd.f] <= nd.t) !== isB ? upW : dnW;
+        tip = { title: d[0], code: 'if( ' + nd.f + ' <= ' + nd.raw + ' )', text: d[1], rows: isB ? [[L.yes, upW], [L.no, dnW], [L.now, curOf(nd.f) + ' → ' + go]] : [[L.yes + ' (≤ ' + fmt(nd.t) + ')', upW], [L.no + ' (> ' + fmt(nd.t) + ')', dnW], [L.now, curOf(nd.f) + ' → ' + go]] };
+      }
+      else if (TP.kind === 'leaf' && nd) { const S = SIG[nd.sig], ph = phraseOf(nd); tip = { title: S[0] + ' · ' + ph.str + ' (' + fmtV(nd.v) + ')', code: '', text: ph.text, bars: ph.bars, rows: [], foot: L.leafFoot }; }
+      else if (TP.kind === 'lock') tip = { title: L.paid, code: '', text: L.lockText, rows: [], cta: unlockLabel };
+      else if (TP.kind === 'download') tip = { title: L.download, code: '', text: L.dlText, rows: [] };
+    }
+    const unlock = () => {
+      this.setState({ tip: null, added: true });
+      if (P.onBuy) { if (!s.added) P.onBuy({ stopPropagation() {}, preventDefault() {} }); }
+      else if (!P.embedded) window.location.href = 'Storefront v7.dc.html';
+    };
+    const tipOut = tip ? { tipOn: true, tipTitle: tip.title, tipCode: tip.code, tipHasCode: !!tip.code, tipText: tip.text, tipRows: tip.rows.map(r => ({ k: r[0], v: r[1] })), tipBars: tip.bars || [], tipHasBars: !!(tip.bars && tip.bars.length), tipFoot: tip.foot || '', tipHasFoot: !!tip.foot, tipPinned: !!TP.pin, tipHasCta: !!tip.cta, tipCtaLabel: tip.cta || '', tipCta: unlock, tipX: TP.x + 'px', tipY: TP.y + 'px', tipTf: TP.up ? 'translateY(-100%)' : 'none' } : { tipOn: false, tipRows: [], tipBars: [] };
+
+    const params = tr.params.split(',').map(x => x.trim()).filter(x => x && !/^random_state/.test(x)).join(' · ');
+    const created = tr.created ? new Intl.DateTimeFormat(L.locale, { dateStyle: 'medium' }).format(new Date(tr.created + 'T12:00:00')) : '';
+
+    return {
+      ...base, picks, feats, nodes, edges, labels, pathChips, groups, blocks, bwPx: bw + 'px', bhPx: bh + 'px', nW: W + 'px', nH: H + 'px', bW: BW + 'px',
+      allRulesOpen: s.allRules, toggleAllRules: () => this.setState(st => ({ allRules: !st.allRules })), allRulesLabel: s.allRules ? L.hideRules : rpl(L.allRules, { n: leavesAll.length }),
+      hasLockedNote: tr.locked > 0, lockedNote: rpl(L.lockedRules, { n: tr.locked }),
+      cw, ch, cwPx: cw + 'px', chPx: ch + 'px', heads, ...tipOut, unlock,
+      title: `${tr.ticker} · ${tr.pattern}`,
+      summary: (tr.locked ? rpl(L.visible, { n: tr.leaves }) + ' · ' + rpl(tr.locked === 1 ? L.paid1 : L.paidN, { n: tr.locked }) : rpl(L.complete, { n: tr.leaves })) + (created ? ' · ' + rpl(L.created, { d: created }) : ''),
+      params: `${tr.ticker}_1Day_${tr.key}_${tr.hash} · ${params}`,
+      about: (FX.patterns[tr.base] || [])[es ? 1 : 0] || '',
+      sigLabel: LS ? LS[0] : L.paid, sigValue: LS ? fmtV(LF.v) : '', sigColor: LS ? LS[1] : '#8d9cae',
+      hasMarker: !!LS, markerLeft: LS ? ((LF.v + 1) / 2 * 100).toFixed(2) + '%' : '0%',
+      hasUnused: unusedList.length > 0, unused: unusedList.join(', '),
+      isOwner: s.owner, showCta: !s.owner && tr.locked > 0,
+      ctaText: rpl(tr.locked === 1 ? L.cta1 : L.ctaN, { n: tr.locked }) + L.ctaRest,
+      ownerText: tr.locked ? L.ownLocked : L.ownFull,
+      download: e => this.showTip(e, { kind: 'download' }, true)
+    };
+  }
+}
+</script>
+</body>
+</html>

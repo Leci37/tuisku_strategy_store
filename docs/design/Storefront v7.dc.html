@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<meta name="ext-resource-dependency" content="storefront/assets/icons/AAPL_big.svg" data-resource-id="r-icons-AAPL-big-svg">
+<meta name="ext-resource-dependency" content="storefront/assets/icons/ADBE_big.svg" data-resource-id="r-icons-ADBE-big-svg">
+<meta name="ext-resource-dependency" content="storefront/assets/icons/AMZN_big.svg" data-resource-id="r-icons-AMZN-big-svg">
+<meta name="ext-resource-dependency" content="storefront/assets/icons/BTC+USDT_big.svg" data-resource-id="r-icons-BTC-USDT-big-svg">
+<meta name="ext-resource-dependency" content="storefront/assets/icons/CRSR_big.svg" data-resource-id="r-icons-CRSR-big-svg">
+<meta name="ext-resource-dependency" content="storefront/assets/icons/ETH+USDT_big.svg" data-resource-id="r-icons-ETH-USDT-big-svg">
+<meta name="ext-resource-dependency" content="storefront/assets/icons/NVDA_big.svg" data-resource-id="r-icons-NVDA-big-svg">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/AAPL_1Day_1C00_ac87f0dc_candel.png" data-resource-id="r-charts-AAPL-1Day-1C00-ac87f0dc-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/AAPL_1Day_1C00_ac87f0dc_profit.png" data-resource-id="r-charts-AAPL-1Day-1C00-ac87f0dc-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/ADBE_1Day_1T00_751f3295_candel.png" data-resource-id="r-charts-ADBE-1Day-1T00-751f3295-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/ADBE_1Day_1T00_751f3295_profit.png" data-resource-id="r-charts-ADBE-1Day-1T00-751f3295-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/AMZN_1Day_1BOL_9d10c25f_candel.png" data-resource-id="r-charts-AMZN-1Day-1BOL-9d10c25f-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/AMZN_1Day_1BOL_9d10c25f_profit.png" data-resource-id="r-charts-AMZN-1Day-1BOL-9d10c25f-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/AMZN_1Day_1T00_912096cc_candel.png" data-resource-id="r-charts-AMZN-1Day-1T00-912096cc-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/AMZN_1Day_1T00_912096cc_profit.png" data-resource-id="r-charts-AMZN-1Day-1T00-912096cc-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/BTCUSDT_1Day_1BOL_4166b2d5_candel.png" data-resource-id="r-charts-BTCUSDT-1Day-1BOL-4166b2d5-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/BTCUSDT_1Day_1BOL_4166b2d5_profit.png" data-resource-id="r-charts-BTCUSDT-1Day-1BOL-4166b2d5-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/ETHUSDT_1Day_1T00_9cc24d8a_candel.png" data-resource-id="r-charts-ETHUSDT-1Day-1T00-9cc24d8a-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/ETHUSDT_1Day_1T00_9cc24d8a_profit.png" data-resource-id="r-charts-ETHUSDT-1Day-1T00-9cc24d8a-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/NVDA_1Day_1M00_14639a7a_candel.png" data-resource-id="r-charts-NVDA-1Day-1M00-14639a7a-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/NVDA_1Day_1M00_14639a7a_profit.png" data-resource-id="r-charts-NVDA-1Day-1M00-14639a7a-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/NVDA_1Day_1S00_1b1cceca_candel.png" data-resource-id="r-charts-NVDA-1Day-1S00-1b1cceca-candel-png">
+<meta name="ext-resource-dependency" content="storefront/assets/charts/NVDA_1Day_1S00_1b1cceca_profit.png" data-resource-id="r-charts-NVDA-1Day-1S00-1b1cceca-profit-png">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/Q1JTUiAtIDFEYXkgLSAxTUFDIC0gZmZlZGMwMTU.pine" data-resource-id="r-previews-Q1JTUiAtIDFEYXkgLSAxTUFDIC0gZmZlZGMwMTU-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/Q1JTUiAtIDFEYXkgLSAxVDAwIC0gM2Y0ZWYwMGY.pine" data-resource-id="r-previews-Q1JTUiAtIDFEYXkgLSAxVDAwIC0gM2Y0ZWYwMGY-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/Q1JTUiAtIDFEYXkgLSAxVjAwIC0gMTVlYTNmMjI.pine" data-resource-id="r-previews-Q1JTUiAtIDFEYXkgLSAxVjAwIC0gMTVlYTNmMjI-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/QU1aTiAtIDFEYXkgLSAxQk9MIC0gOWQxMGMyNWY.pine" data-resource-id="r-previews-QU1aTiAtIDFEYXkgLSAxQk9MIC0gOWQxMGMyNWY-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/QU1aTiAtIDFEYXkgLSAxVDAwIC0gOTEyMDk2Y2M.pine" data-resource-id="r-previews-QU1aTiAtIDFEYXkgLSAxVDAwIC0gOTEyMDk2Y2M-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/QUFQTCAtIDFEYXkgLSAxQzAwIC0gYWM4N2YwZGM.pine" data-resource-id="r-previews-QUFQTCAtIDFEYXkgLSAxQzAwIC0gYWM4N2YwZGM-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/QURCRSAtIDFEYXkgLSAxVDAwIC0gNzUxZjMyOTU.pine" data-resource-id="r-previews-QURCRSAtIDFEYXkgLSAxVDAwIC0gNzUxZjMyOTU-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/QlRDVVNEVCAtIDFEYXkgLSAxQk9MIC0gNDE2NmIyZDU.pine" data-resource-id="r-previews-QlRDVVNEVCAtIDFEYXkgLSAxQk9MIC0gNDE2NmIyZDU-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/RVRIVVNEVCAtIDFEYXkgLSAxVDAwIC0gOWNjMjRkOGE.pine" data-resource-id="r-previews-RVRIVVNEVCAtIDFEYXkgLSAxVDAwIC0gOWNjMjRkOGE-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/TlZEQSAtIDFEYXkgLSAxTTAwIC0gMTQ2MzlhN2E.pine" data-resource-id="r-previews-TlZEQSAtIDFEYXkgLSAxTTAwIC0gMTQ2MzlhN2E-pine">
+<meta name="ext-resource-dependency" content="storefront/assets/previews/TlZEQSAtIDFEYXkgLSAxUzAwIC0gMWIxY2NlY2E.pine" data-resource-id="r-previews-TlZEQSAtIDFEYXkgLSAxUzAwIC0gMWIxY2NlY2E-pine">
+<meta name="ext-resource-dependency" content="i18n/storefront.ui.json" data-resource-id="r-i18n-storefront-ui-json">
+<meta name="ext-resource-dependency" content="zlecitool_core/i18n/common.json" data-resource-id="r-zlecitool-core-i18n-common-json">
+<meta name="ext-resource-dependency" content="trees/previews.json" data-resource-id="r-trees-previews-json">
+<meta name="ext-resource-dependency" content="trees/features.json" data-resource-id="r-trees-features-json">
+<meta name="ext-resource-dependency" content="trees/ui.json" data-resource-id="r-trees-ui-json">
+<template id="__bundler_thumbnail" data-bg-color="#f4f8fb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><rect width="200" height="200" fill="#f4f8fb"/><rect x="60" y="60" width="80" height="80" rx="20" fill="#0950e3"/><text x="100" y="117" text-anchor="middle" font-family="Ubuntu, system-ui, sans-serif" font-size="46" font-weight="700" fill="#ffffff">E</text></svg></template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+<style>
+@font-face{font-family:"Ubuntu";font-weight:400;font-display:swap;src:url("zlecitool_core/ui/static/fonts/Ubuntu-400-latin.woff2") format("woff2")}
+@font-face{font-family:"Ubuntu";font-weight:500;font-display:swap;src:url("zlecitool_core/ui/static/fonts/Ubuntu-500-latin.woff2") format("woff2")}
+@font-face{font-family:"Ubuntu";font-weight:700;font-display:swap;src:url("zlecitool_core/ui/static/fonts/Ubuntu-700-latin.woff2") format("woff2")}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#f4f8fb}
+a{color:#0950e3;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</helmet>
+<div lang="{{ lang }}" dir="{{ dir }}" data-screen-label="Edgefolio storefront" style="min-height:100vh;display:flex;flex-direction:column;background:#f4f8fb;font-family:Ubuntu,system-ui,'Segoe UI',Roboto,Arial,sans-serif;color:#16263a;font-size:14px;line-height:1.5">
+
+  <header style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #e2e9f0">
+    <div style="max-width:1320px;margin:0 auto;padding:10px 28px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px">
+      <a onClick="{{ goShop }}" style="display:flex;align-items:center;gap:12px;color:#16263a;text-decoration:none;min-width:0;cursor:pointer">
+        <span translate="no" style="font-weight:700;font-size:21px;letter-spacing:-.5px;line-height:1;flex-shrink:0">Edge<span style="color:#0950e3">folio</span></span>
+        <span style="width:1px;height:20px;background:#e2e9f0;flex-shrink:0"></span>
+        <span style="font-weight:500;font-size:13px;color:#5a6b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ tx.toolName }}</span>
+      </a>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 10px;font-size:11px;margin-inline-start:auto">
+        <div role="radiogroup" aria-label="{{ tx.view }}" style="display:flex;background:#e9eef4;border-radius:12px;padding:3px;gap:2px">
+          <sc-for list="{{ modeTabs }}" as="md" hint-placeholder-count="2"><button role="radio" aria-checked="{{ md.on }}" onClick="{{ md.go }}" style="font-family:inherit;border:none;border-radius:10px;padding:8px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;background:{{ md.bg }};color:{{ md.color }};box-shadow:{{ md.shadow }}"><i class="{{ md.icon }}"></i>{{ md.label }}</button></sc-for>
+        </div>
+        <button onClick="{{ goMine }}" style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600;background:#fff;border:1px solid #e2e9f0;display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:#16263a;white-space:nowrap" style-hover="border-color:#cfd6e6"><i class="fa-regular fa-folder-open" style="color:#0950e3"></i>{{ tx.myStrategies }}</button>
+        <button onClick="{{ openTour }}" title="{{ tx.tourOpen }}" style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600;background:#fff;border:1px solid #e2e9f0;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:#0950e3;white-space:nowrap" style-hover="border-color:#cfd6e6"><span style="width:15px;height:15px;border-radius:50%;display:grid;place-items:center;background:#0950e3;color:#fff;font-size:10px;font-weight:700;line-height:1">?</span>{{ tx.tourOpen }}</button>
+        <button onClick="{{ toggleTv }}" title="{{ tvTitle }}" style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600;background:#fff;border:1px solid #e2e9f0;display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:#16263a;white-space:nowrap" style-hover="border-color:#cfd6e6">
+          <img src="storefront/assets/icons/TW_ICO.svg" alt="TradingView" style="width:15px;height:15px;display:block">
+          <sc-if value="{{ tv }}" hint-placeholder-val="{{ true }}"><span translate="no">TradingView</span><span style="width:7px;height:7px;border-radius:50%;background:#12b76a"></span><span style="color:#5a6b80;font-weight:500">{{ tx.tvConnected }}</span></sc-if>
+          <sc-if value="{{ tvOff }}" hint-placeholder-val="{{ false }}"><span style="color:#0950e3">{{ tx.tvConnect }}</span></sc-if>
+        </button>
+        <button onClick="{{ toggleCur }}" title="{{ tx.currencyLabel }}" style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;background:#fff;border:1px solid #e2e9f0;cursor:pointer;color:#16263a">{{ curLabel }}</button>
+        <div style="position:relative">
+          <button onClick="{{ toggleLangMenu }}" aria-label="{{ tx.language }}" aria-haspopup="true" style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600;background:#fff;border:1px solid #e2e9f0;display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:#16263a">
+            <span aria-hidden="true">{{ langFlag }}</span><span>{{ langName }}</span><span style="font-size:10px;color:#8d9cae">▾</span>
+          </button>
+          <sc-if value="{{ langOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset-inline-end:0;top:calc(100% + 12px);width:210px;background:#fff;border:1px solid #e2e9f0;border-radius:14px;box-shadow:0 18px 48px rgba(26,35,56,.2);padding:8px;z-index:60">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#8d9cae;padding:4px 10px 8px">{{ tx.language }}</div>
+              <sc-for list="{{ languages }}" as="lg" hint-placeholder-count="8">
+                <button onClick="{{ lg.go }}" lang="{{ lg.code }}" style="display:flex;align-items:center;gap:10px;width:100%;border:none;cursor:pointer;font-family:inherit;padding:9px 12px;border-radius:9px;font-size:13.5px;text-align:start;background:{{ lg.bg }};color:{{ lg.color }};font-weight:{{ lg.weight }}" style-hover="background:#f4f6fb"><span aria-hidden="true">{{ lg.flag }}</span>{{ lg.name }}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;inset-inline:0;bottom:-1px;height:3px;background:linear-gradient({{ g90 }},#47f9e5,#0950e3)"></div>
+  </header>
+  <sc-if value="{{ anyMenu }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeMenus }}" style="position:fixed;inset:0;z-index:15"></div></sc-if>
+
+  <!-- ===================== LITE ===================== -->
+  <sc-if value="{{ isLite }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#fff;border-bottom:1px solid #e2e9f0;overflow:hidden">
+      <div style="max-width:1320px;margin:0 auto;padding:8px 28px;display:flex;gap:24px;white-space:nowrap;font-size:12.5px;overflow-x:auto;scrollbar-width:none">
+        <sc-for list="{{ tape }}" as="tp" hint-placeholder-count="0"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:4px;background-image:url('{{ tp.icon }}');background-size:cover;flex-shrink:0"></span><strong>{{ tp.ticker }}</strong><span style="color:#15803d;font-weight:600;font-variant-numeric:tabular-nums">{{ tp.pct }}</span></span></sc-for>
+      </div>
+    </div>
+
+    <section style="position:relative;overflow:hidden;background:#fff;border-bottom:1px solid #e2e9f0">
+      <img src="storefront/assets/charts/AMZN_1Day_1BOL_9d10c25f_candel.png" alt="" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.2;mask-image:linear-gradient({{ g90 }},transparent 15%,#000 75%)">
+      <div style="position:relative;max-width:1320px;margin:0 auto;padding:44px 28px 28px;display:flex;flex-direction:column;gap:14px">
+        <h1 style="margin:0;font-size:40px;font-weight:700;letter-spacing:-.6px;line-height:1.1;max-width:640px;text-wrap:balance">{{ tx.liteTitle }}</h1>
+        <p style="margin:0;font-size:16px;color:#5a6b80;max-width:540px;text-wrap:pretty">{{ tx.liteSub }}</p>
+        <label style="margin-top:8px;max-width:640px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e2e9f0;border-radius:14px;padding:12px 16px;box-shadow:0 12px 32px rgba(22,38,58,.08)"><i class="fa-solid fa-magnifying-glass" style="color:#8d9cae"></i><input data-search="lite" value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ tx.searchPh }}" style="flex:1;min-width:0;border:none;outline:none;font-family:inherit;font-size:15px;color:#16263a;background:transparent"></label>
+      </div>
+    </section>
+
+    <section style="width:100%;max-width:1320px;margin:0 auto;padding:12px 28px 0;display:flex;flex-direction:column;gap:16px">
+      <div role="tablist" style="display:flex;gap:26px;border-bottom:1px solid #e2e9f0;overflow-x:auto;overflow-y:hidden">
+        <sc-for list="{{ liteTabs }}" as="lt" hint-placeholder-count="5"><button role="tab" aria-selected="{{ lt.sel }}" onClick="{{ lt.go }}" style="font-family:inherit;border:none;background:none;padding:12px 0 10px;margin-bottom:-1px;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap;color:{{ lt.color }};border-bottom:2px solid {{ lt.line }}">{{ lt.label }}</button></sc-for>
+      </div>
+      <div role="note" style="display:flex;gap:12px;align-items:flex-start;border-radius:14px;padding:14px 16px;background:#fff7ec;border:1px solid #f6d9ae"><i class="fa-solid fa-triangle-exclamation" style="color:#f79009;font-size:18px;margin-top:1px"></i><div style="display:flex;flex-direction:column;gap:2px;font-size:13.5px;color:#16263a"><strong style="font-size:14.5px">{{ tx.riskTitle }}</strong><span style="text-wrap:pretty">{{ tx.riskText }}</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80">{{ tx.bundles }}</span>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px">
+          <sc-for list="{{ bundles }}" as="bd" hint-placeholder-count="3">
+            <div style="background:linear-gradient(135deg,#0950e3,#0e7c98);color:#fff;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div style="display:flex;padding-inline-start:8px"><sc-for list="{{ bd.icons }}" as="ic" hint-placeholder-count="3"><span role="img" aria-hidden="true" style="width:30px;height:30px;border-radius:9px;border:2px solid #fff;background:#fff;margin-inline-start:-8px;display:inline-block;flex-shrink:0;background-image:url('{{ ic.src }}');background-size:cover;background-position:center"></span></sc-for></div>
+                <span style="font-size:12px;font-weight:700;background:#fff;color:#0950e3;border-radius:999px;padding:3px 9px;white-space:nowrap">{{ bd.save }}</span>
+              </div>
+              <div style="line-height:1.3"><div style="font-weight:700;font-size:17px">{{ bd.name }}</div><div style="font-size:12.5px">{{ bd.count }} · {{ bd.tickers }}</div></div>
+              <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;line-height:1.15"><div style="font-size:12px;text-decoration:line-through">{{ bd.was }}</div><div style="font-size:22px;font-weight:700;letter-spacing:-.3px">{{ bd.price }}</div></div><button onClick="{{ bd.go }}" style="font-family:inherit;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;background:#fff;color:#0950e3;display:inline-flex;align-items:center;gap:7px;white-space:nowrap"><i class="{{ bd.btnIcon }}"></i>{{ bd.label }}</button></div>
+            </div>
+          </sc-for>
+          <div style="background:#fff;border:2px dashed #9fb8ef;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong style="font-size:17px">{{ tx.packTitle }}</strong><span style="font-size:12px;font-weight:700;background:#e9f0fd;color:#0950e3;border-radius:999px;padding:3px 9px;white-space:nowrap">{{ packSave }}</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ packSlots }}" as="ps" hint-placeholder-count="5"><button onClick="{{ openPack }}" style="width:44px;height:44px;border-radius:12px;border:{{ ps.border }};background:#fff;display:grid;place-items:center;cursor:pointer;font-size:18px;color:#0950e3;padding:0"><sc-if value="{{ ps.filled }}" hint-placeholder-val="{{ false }}"><span role="img" aria-hidden="true" style="width:28px;height:28px;border-radius:7px;display:inline-block;flex-shrink:0;background-image:url('{{ ps.icon }}');background-size:cover;background-position:center"></span></sc-if><sc-if value="{{ ps.empty }}" hint-placeholder-val="{{ true }}">+</sc-if></button></sc-for></div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;font-size:13px;color:#5a6b80">{{ packHint }}</span><button onClick="{{ addPack }}" style="font-family:inherit;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;background:{{ packBtnBg }};color:#fff;white-space:nowrap">{{ packBtnLabel }}</button></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px">
+        <sc-for list="{{ liteRows }}" as="r" hint-placeholder-count="8">
+          <div style="position:relative;background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px" style-hover="box-shadow:0 14px 36px rgba(22,38,58,.10);border-color:#cfd6e6">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span role="img" aria-hidden="true" style="width:36px;height:36px;border-radius:10px;flex-shrink:0;display:inline-block;flex-shrink:0;background-image:url('{{ r.icon }}');background-size:cover;background-position:center"></span>
+              <div style="min-width:0;flex:1;line-height:1.25"><div onClick="{{ r.onOpen }}" style="font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:6px;flex-wrap:wrap">{{ r.ticker }}<sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:700;letter-spacing:.3px;color:#0950e3;background:#e9f0fd;border:1px solid #c5d6f8;border-radius:999px;padding:0 7px;line-height:17px">{{ tx.tabNew }}</span></sc-if></div><div style="font-size:12px;color:#5a6b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div></div>
+              <button onClick="{{ r.tipNpp }}" title="{{ tx.npPct }}" style="font-family:inherit;border:none;cursor:pointer;font-size:15px;font-weight:700;color:#15803d;background:#e8f7ef;border-radius:8px;padding:4px 8px;white-space:nowrap;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:5px">{{ r.nppSigned }}<i class="fa-regular fa-circle-question" style="font-size:11px"></i></button>
+            </div>
+            <div onClick="{{ r.onOpen }}" title="{{ tx.openPage }}" style="position:relative;aspect-ratio:1466/260;border-radius:12px;overflow:hidden;border:1px solid #e2e9f0;background:#fff;cursor:pointer"><span style="position:absolute;top:6px;inset-inline-start:6px;font-size:10.5px;font-weight:700;background:rgba(255,255,255,.94);color:#5a6b80;border:1px solid #e2e9f0;border-radius:6px;padding:1px 6px;display:inline-flex;align-items:center;gap:4px"><i class="fa-solid fa-triangle-exclamation" style="color:#f79009;font-size:9px"></i>{{ tx.colBacktest }}</span><img loading="lazy" decoding="async" src="{{ r.profit }}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 82%;display:block"></div>
+            <div style="display:flex;gap:14px;font-size:12px;color:#5a6b80;flex-wrap:wrap;align-items:center"><button onClick="{{ r.tipWin }}" style="font-family:inherit;border:none;background:none;padding:0;cursor:pointer;color:#5a6b80;font-size:12px;display:inline-flex;align-items:center;gap:4px">{{ tx.sortWin }} <strong style="color:#16263a">{{ r.win }}</strong><i class="fa-regular fa-circle-question" style="color:#8d9cae"></i></button><button onClick="{{ r.tipTrades }}" style="font-family:inherit;border:none;background:none;padding:0;cursor:pointer;color:#5a6b80;font-size:12px;display:inline-flex;align-items:center;gap:4px"><strong style="color:#16263a">{{ r.trades }}</strong> {{ tx.tradesWord }}<i class="fa-regular fa-circle-question" style="color:#8d9cae"></i></button><span>{{ r.interval }} · {{ r.index }}</span></div>
+            <sc-if value="{{ r.tipOpen }}" hint-placeholder-val="{{ false }}"><div role="tooltip" style="position:absolute;inset-inline:14px;top:62px;z-index:5;background:#16263a;color:#fff;border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.45;box-shadow:0 12px 30px rgba(22,38,58,.3);display:flex;gap:10px;align-items:flex-start"><span style="flex:1">{{ r.tipText }}</span><button onClick="{{ r.tipClose }}" aria-label="×" style="border:none;background:none;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:0">×</button></div></sc-if>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
+              <span title="{{ r.gradeTip }}" style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:12.5px;color:#fff;background:{{ r.gradeBg }};cursor:help">{{ r.grade }}</span>
+              <span style="color:#5a6b80">{{ tx.sinceRelease }} <strong style="color:{{ r.liveColor }}">{{ r.live }}</strong></span>
+              <span style="margin-inline-start:auto;display:flex;gap:6px">
+                <button onClick="{{ r.onFav }}" title="{{ tx.favourites }}" style="font-family:inherit;width:30px;height:30px;border-radius:9px;cursor:pointer;display:inline-grid;place-items:center;font-size:13px;border:1px solid #e2e9f0;background:#fff;color:{{ r.favColor }}"><i class="{{ r.favIcon }}"></i></button>
+                <button onClick="{{ r.onCompare }}" title="{{ tx.compare }}" style="font-family:inherit;width:30px;height:30px;border-radius:9px;cursor:pointer;display:inline-grid;place-items:center;font-size:13px;border:1px solid #e2e9f0;background:{{ r.cmpBg }};color:{{ r.cmpColor }}"><i class="fa-solid fa-code-compare"></i></button>
+              </span>
+            </div>
+            <span style="display:inline-flex;flex-wrap:wrap;gap:6px;align-self:flex-start"><button onClick="{{ r.onOpen }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #c5d6f8;background:#e9f0fd;color:#0950e3" style-hover="background:#0950e3;color:#ffffff;border-color:#0950e3"><i class="fa-regular fa-file-lines"></i>{{ tx.overviewTab }}</button><button onClick="{{ r.onTree }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #b5e0ea;background:#e3f4f8;color:#0e7c98" style-hover="background:#0e7c98;color:#ffffff;border-color:#0e7c98"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}</button></span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:18px;font-weight:700;flex:1;white-space:nowrap">{{ r.priceLabel }}</span>
+              <sc-if value="{{ r.isPaid }}" hint-placeholder-val="{{ true }}"><button onClick="{{ r.onCart }}" style="font-family:inherit;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;border:1px solid {{ r.buyBorder }};background:{{ r.buyBg }};color:{{ r.buyColor }}"><i class="{{ r.cartIcon }}"></i>{{ r.buyLabel }}</button></sc-if>
+              <sc-if value="{{ r.isFree }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.onFree }}" style="font-family:inherit;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>{{ tx.download }}</button></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ liteEmpty }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:32px 0;text-align:center;color:#8d9cae">{{ tx.noMatch }}</p></sc-if>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0"><span style="font-size:12.5px;color:#5a6b80">{{ liteShowing }}</span><button style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:10px 20px;font-size:13.5px;cursor:pointer">{{ tx.loadMore }}</button></div>
+    </section>
+
+    <sc-if value="{{ cartHas }}" hint-placeholder-val="{{ true }}">
+      <div style="position:sticky;bottom:{{ dockBottom }};z-index:10;width:calc(100% - 32px);max-width:780px;margin:24px auto 0;display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+        <sc-if value="{{ cmpHas }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openCmp }}" style="font-family:inherit;border:none;border-radius:999px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;background:#16263a;color:#fff;box-shadow:0 12px 30px rgba(22,38,58,.3);display:inline-flex;gap:8px;align-items:center"><i class="fa-solid fa-code-compare"></i>{{ tx.compare }} · {{ cmpCount }}</button></sc-if>
+        <div style="align-self:stretch;background:#fff;border:1px solid #e2e9f0;border-radius:16px;box-shadow:0 18px 48px rgba(26,35,56,.2);padding-block:10px;padding-inline:16px 12px;display:flex;align-items:center;gap:12px 14px;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap"><span style="width:34px;height:34px;border-radius:10px;background:#e9f0fd;color:#0950e3;display:grid;place-items:center"><i class="fa-solid fa-cart-shopping"></i></span>{{ tx.cart }} · {{ cartCount }}</span>
+          <sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ true }}"><span style="font-size:12px;font-weight:700;color:#15603c;background:#e8f7ef;border-radius:999px;padding:3px 9px">{{ liteOff }}</span></sc-if>
+          <sc-if value="{{ codeClosed }}" hint-placeholder-val="{{ true }}"><button onClick="{{ openCode }}" style="font-family:inherit;border:none;background:none;padding:0;color:#0950e3;font-weight:600;font-size:12.5px;cursor:pointer">{{ tx.haveCode }}</button></sc-if>
+          <sc-if value="{{ codeOpen }}" hint-placeholder-val="{{ false }}"><span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><input value="{{ code }}" onChange="{{ onCode }}" placeholder="{{ tx.codePh }}" style="width:100px;font-family:inherit;font-size:13px;color:#16263a;border:1px solid #e2e9f0;border-radius:10px;padding:6px 9px"><button onClick="{{ applyCode }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer">{{ tx.apply }}</button><span style="font-size:11px;font-weight:600;color:{{ codeMsgColor }}">{{ codeMsg }}</span></span></sc-if>
+          <span style="margin-inline-start:auto;text-align:end;line-height:1.15"><sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ true }}"><span style="display:block;font-size:11.5px;color:#5a6b80;text-decoration:line-through">{{ subtotal }}</span></sc-if><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">{{ total }}</span><sc-if value="{{ isLocal }}" hint-placeholder-val="{{ false }}"><span style="display:block;font-size:10.5px;color:#5a6b80">{{ payNote }}</span></sc-if></span>
+          <button onClick="{{ checkout }}" style="font-family:inherit;background:#0950e3;border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 20px;font-size:14px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22);display:inline-flex;gap:8px;align-items:center"><i class="fa-brands fa-paypal"></i>{{ tx.checkout }}</button>
+          <div style="flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px 16px;padding-top:8px;border-top:1px solid #eef2f6;font-size:11.5px;color:#5a6b80">
+            <span style="display:inline-flex;gap:6px;align-items:center"><i class="fa-brands fa-paypal" style="color:#0950e3"></i>{{ tx.trustPaypal }}</span>
+            <span style="display:inline-flex;gap:6px;align-items:center"><i class="fa-solid fa-link" style="color:#0950e3"></i>{{ tx.trustLinks }}</span>
+            <span style="display:inline-flex;gap:6px;align-items:center"><i class="fa-solid fa-file-invoice" style="color:#0950e3"></i>{{ tx.trustInvoice }}</span>
+            <a href="mailto:sales@tuisku.eu" dir="ltr" style="display:inline-flex;gap:6px;align-items:center;color:#5a6b80;text-decoration:none"><i class="fa-regular fa-envelope" style="color:#0950e3"></i>sales@tuisku.eu</a>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <!-- ===================== PRO ===================== -->
+  <sc-if value="{{ isPro }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border-bottom:1px solid #e2e9f0">
+      <div style="max-width:1320px;margin:0 auto;padding:12px 28px 10px;display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px;flex:0 0 auto"><span style="width:36px;height:36px;border-radius:10px;background:#e9f0fd;color:#0950e3;display:grid;place-items:center"><i class="fa-solid fa-cart-shopping"></i></span><div style="line-height:1.25"><div style="font-weight:700">{{ tx.cart }} · {{ cartCount }}</div><button onClick="{{ emptyCart }}" style="font-family:inherit;border:none;background:none;padding:0;color:#c0392b;font-weight:600;font-size:12px;cursor:pointer">{{ tx.emptyCart }}</button></div></div>
+        <div style="flex:1 1 360px;display:flex;flex-direction:column;gap:7px;min-width:0">
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px"><span style="font-weight:600">{{ tierLabel }}</span><span style="color:#0950e3;font-weight:600">{{ nextTierMsg }}</span></div>
+          <div style="position:relative;height:8px;border-radius:999px;background:#e2e9f0;margin-inline-start:2px">
+            <div style="position:absolute;inset-inline-start:0;top:0;bottom:0;width:{{ ladderPct }};border-radius:999px;background:linear-gradient({{ g90 }},#47f9e5,#0950e3)"></div>
+            <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="5"><span style="position:absolute;inset-inline-start:{{ t.pos }};top:50%;width:14px;height:14px;margin-inline-start:-14px;margin-top:-7px;border-radius:50%;background:{{ t.tickBg }};border:2px solid #0950e3"></span></sc-for>
+          </div>
+          <div style="position:relative;height:28px;font-size:10.5px;color:#5a6b80"><sc-for list="{{ tiers }}" as="t" hint-placeholder-count="5"><span style="position:absolute;inset-inline-start:{{ t.pos }};transform:{{ tickShift }};white-space:nowrap;text-align:end;line-height:1.2"><strong style="display:block;color:#16263a;font-size:11px">{{ t.rate }}</strong>{{ t.amt }}</span></sc-for></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex:0 0 auto;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;gap:6px"><input value="{{ code }}" onChange="{{ onCode }}" placeholder="{{ tx.codePh }}" style="width:110px;font-family:inherit;font-size:13px;color:#16263a;border:1px solid #e2e9f0;border-radius:10px;padding:7px 9px"><button onClick="{{ applyCode }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:7px 10px;font-size:12px;cursor:pointer">{{ tx.apply }}</button></div><span style="font-size:11px;font-weight:600;color:{{ codeMsgColor }}">{{ codeMsg }}</span></div>
+          <div style="text-align:end;line-height:1.15"><sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:#5a6b80;text-decoration:line-through">{{ subtotal }}</div></sc-if><div style="font-size:22px;font-weight:700;letter-spacing:-.3px">{{ total }}</div><sc-if value="{{ isLocal }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px;color:#5a6b80">{{ payNote }}</div></sc-if></div>
+          <button onClick="{{ checkout }}" style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 20px;font-size:14px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22);display:inline-flex;gap:8px;align-items:center"><i class="fa-brands fa-paypal"></i>{{ tx.checkout }}</button>
+        </div>
+        <div style="flex:1 1 100%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 16px;font-size:11.5px;color:#5a6b80;margin-top:-4px">
+          <span style="display:inline-flex;gap:6px;align-items:center"><i class="fa-brands fa-paypal" style="color:#0950e3"></i>{{ tx.trustPaypal }}</span>
+          <span style="display:inline-flex;gap:6px;align-items:center"><i class="fa-solid fa-link" style="color:#0950e3"></i>{{ tx.trustLinks }}</span>
+          <span style="display:inline-flex;gap:6px;align-items:center"><i class="fa-solid fa-file-invoice" style="color:#0950e3"></i>{{ tx.trustInvoice }}</span>
+          <a href="mailto:sales@tuisku.eu" dir="ltr" style="display:inline-flex;gap:6px;align-items:center;color:#5a6b80;text-decoration:none"><i class="fa-regular fa-envelope" style="color:#0950e3"></i>sales@tuisku.eu</a>
+        </div>
+      </div>
+    </div>
+
+    <main style="flex:1 0 auto;width:100%;max-width:1320px;margin:0 auto;padding:24px 28px 0;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+      <aside style="flex:1 1 260px;max-width:100%;background:#fff;border:1px solid #e2e9f0;border-radius:16px;overflow:visible">
+        <div style="padding:16px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-bottom:1px solid #e2e9f0"><div style="line-height:1.15"><div style="font-size:26px;font-weight:700;letter-spacing:-.4px">{{ shownCount }}</div><div style="font-size:12px;color:#5a6b80">{{ tx.shown }}</div></div><a onClick="{{ resetAll }}" style="font-size:12.5px;font-weight:600;cursor:pointer">{{ tx.reset }}</a></div>
+        <div onClick="{{ toggleFree }}" style="padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;border-bottom:1px solid #e2e9f0"><span style="font-weight:600;font-size:13.5px;display:flex;gap:8px;align-items:center"><i class="fa-solid fa-file-arrow-down" style="color:#0e7c98"></i>{{ tx.onlyFree }}</span><span style="width:34px;height:20px;border-radius:999px;background:{{ freeTrack }};position:relative;flex-shrink:0;transition:background .15s"><span style="position:absolute;top:2px;inset-inline-start:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(22,38,58,.3);transform:{{ freeKnob }};transition:transform .15s"></span></span></div>
+        <sc-for list="{{ rangeTop }}" as="rg" hint-placeholder-count="2">
+          <div style="padding:12px 18px;border-bottom:1px solid #e2e9f0;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px"><span style="font-weight:600">{{ rg.label }}</span><span style="font-size:12px;font-weight:600;color:{{ rg.valColor }};white-space:nowrap">{{ rg.value }}</span></div>
+            <div style="display:flex;align-items:flex-end;gap:2px;height:40px;border-bottom:1px solid #e2e9f0;margin:0 2px"><sc-for list="{{ rg.bars }}" as="b" hint-placeholder-count="30"><span title="{{ b.tip }}" style="flex:1;height:{{ b.h }};opacity:{{ b.op }};border-radius:2px 2px 0 0;background:{{ b.bg }};transition:opacity .15s"></span></sc-for></div>
+            <div onPointerDown="{{ rg.onDown }}" style="position:relative;height:22px;margin:0 9px;touch-action:none;cursor:pointer">
+              <span style="position:absolute;inset-inline:0;top:9px;height:4px;border-radius:999px;background:#e2e9f0"></span>
+              <span style="position:absolute;top:9px;height:4px;border-radius:999px;background:linear-gradient({{ g90 }},#47f9e5,#0950e3);inset-inline-start:{{ rg.loPct }};width:{{ rg.wPct }}"></span>
+              <span style="position:absolute;top:2px;inset-inline-start:{{ rg.loPct }};margin-inline-start:-9px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #0950e3;box-shadow:0 2px 6px rgba(9,80,227,.25)"></span>
+              <span style="position:absolute;top:2px;inset-inline-start:{{ rg.hiPct }};margin-inline-start:-9px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #0950e3;box-shadow:0 2px 6px rgba(9,80,227,.25)"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;gap:8px"><input value="{{ rg.loIn }}" onChange="{{ rg.loOn }}" onBlur="{{ rg.loDone }}" onKeyDown="{{ rg.onInKey }}" aria-label="{{ rg.label }}" style="width:46%;min-width:0;font-family:inherit;font-size:12.5px;font-weight:600;color:#16263a;border:1px solid #e2e9f0;border-radius:8px;padding:3px 8px;font-variant-numeric:tabular-nums;background:#ffffff;outline:none;text-align:start" style-focus="border-color:#0950e3;box-shadow:0 0 0 3px rgba(9,80,227,.15)"><input value="{{ rg.hiIn }}" onChange="{{ rg.hiOn }}" onBlur="{{ rg.hiDone }}" onKeyDown="{{ rg.onInKey }}" aria-label="{{ rg.label }}" style="width:46%;min-width:0;font-family:inherit;font-size:12.5px;font-weight:600;color:#16263a;border:1px solid #e2e9f0;border-radius:8px;padding:3px 8px;font-variant-numeric:tabular-nums;background:#ffffff;outline:none;text-align:end" style-focus="border-color:#0950e3;box-shadow:0 0 0 3px rgba(9,80,227,.15)"></div>
+          </div>
+        </sc-for>
+        <sc-for list="{{ selF }}" as="sl" hint-placeholder-count="5">
+          <div style="position:relative;border-bottom:1px solid #e2e9f0">
+            <div onClick="{{ sl.toggle }}" style="padding:11px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;cursor:pointer;background:{{ sl.rowBg }}"><span style="font-weight:600">{{ sl.label }}</span><span style="color:{{ sl.valColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600">{{ sl.value }} <span style="font-size:10px;color:#8d9cae">{{ sl.caret }}</span></span></div>
+            <sc-if value="{{ sl.open }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset-inline:10px;top:calc(100% - 2px);z-index:40;background:#fff;border:1px solid #e2e9f0;border-radius:14px;box-shadow:0 18px 48px rgba(26,35,56,.2);padding:8px;display:flex;flex-direction:column;gap:6px">
+                <label style="display:flex;align-items:center;gap:8px;border:1px solid #e2e9f0;border-radius:9px;padding:6px 9px"><i class="fa-solid fa-magnifying-glass" style="color:#8d9cae;font-size:11px"></i><input value="{{ sl.q }}" onChange="{{ sl.onQ }}" placeholder="{{ tx.searchSmall }}" style="flex:1;min-width:0;border:none;outline:none;font-family:inherit;font-size:13px;color:#16263a;background:transparent"></label>
+                <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding:0 4px"><a onClick="{{ sl.all }}" style="cursor:pointer">{{ tx.selAll }}</a><a onClick="{{ sl.none }}" style="cursor:pointer">{{ tx.selNone }}</a></div>
+                <div style="max-height:230px;overflow:auto;display:flex;flex-direction:column">
+                  <sc-for list="{{ sl.opts }}" as="op" hint-placeholder-count="5"><button onClick="{{ op.toggle }}" style="display:flex;align-items:center;gap:9px;border:none;background:none;cursor:pointer;font-family:inherit;padding:7px 8px;border-radius:9px;font-size:13px;color:#16263a;text-align:start" style-hover="background:#f4f6fb"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ op.bd }};background:{{ op.bg }};display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0">{{ op.check }}</span><sc-if value="{{ op.hasIcon }}" hint-placeholder-val="{{ false }}"><span role="img" aria-hidden="true" style="width:18px;height:18px;border-radius:4px;display:inline-block;flex-shrink:0;background-image:url('{{ op.icon }}');background-size:cover;background-position:center"></span></sc-if><span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ op.label }}</span><span style="font-size:11.5px;color:#8d9cae">{{ op.count }}</span></button></sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-for list="{{ moreF }}" as="mf" hint-placeholder-count="14">
+          <div style="border-bottom:1px solid #e2e9f0">
+            <div onClick="{{ mf.toggle }}" style="padding:9px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;cursor:pointer;background:{{ mf.rowBg }}"><span style="font-weight:{{ mf.weight }}">{{ mf.label }}</span><span style="color:{{ mf.valColor }};font-size:12px;font-weight:600;white-space:nowrap">{{ mf.value }} <span style="font-size:10px;color:#8d9cae">{{ mf.caret }}</span></span></div>
+            <sc-if value="{{ mf.open }}" hint-placeholder-val="{{ false }}"><div style="padding:4px 18px 14px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:flex-end;gap:2px;height:40px;border-bottom:1px solid #e2e9f0;margin:0 2px"><sc-for list="{{ mf.bars }}" as="b" hint-placeholder-count="30"><span title="{{ b.tip }}" style="flex:1;height:{{ b.h }};opacity:{{ b.op }};border-radius:2px 2px 0 0;background:{{ b.bg }};transition:opacity .15s"></span></sc-for></div>
+            <div onPointerDown="{{ mf.onDown }}" style="position:relative;height:22px;margin:0 9px;touch-action:none;cursor:pointer">
+              <span style="position:absolute;inset-inline:0;top:9px;height:4px;border-radius:999px;background:#e2e9f0"></span>
+              <span style="position:absolute;top:9px;height:4px;border-radius:999px;background:linear-gradient({{ g90 }},#47f9e5,#0950e3);inset-inline-start:{{ mf.loPct }};width:{{ mf.wPct }}"></span>
+              <span style="position:absolute;top:2px;inset-inline-start:{{ mf.loPct }};margin-inline-start:-9px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #0950e3;box-shadow:0 2px 6px rgba(9,80,227,.25)"></span>
+              <span style="position:absolute;top:2px;inset-inline-start:{{ mf.hiPct }};margin-inline-start:-9px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #0950e3;box-shadow:0 2px 6px rgba(9,80,227,.25)"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;gap:8px"><input value="{{ mf.loIn }}" onChange="{{ mf.loOn }}" onBlur="{{ mf.loDone }}" onKeyDown="{{ mf.onInKey }}" aria-label="{{ mf.label }}" style="width:46%;min-width:0;font-family:inherit;font-size:12.5px;font-weight:600;color:#16263a;border:1px solid #e2e9f0;border-radius:8px;padding:3px 8px;font-variant-numeric:tabular-nums;background:#ffffff;outline:none;text-align:start" style-focus="border-color:#0950e3;box-shadow:0 0 0 3px rgba(9,80,227,.15)"><input value="{{ mf.hiIn }}" onChange="{{ mf.hiOn }}" onBlur="{{ mf.hiDone }}" onKeyDown="{{ mf.onInKey }}" aria-label="{{ mf.label }}" style="width:46%;min-width:0;font-family:inherit;font-size:12.5px;font-weight:600;color:#16263a;border:1px solid #e2e9f0;border-radius:8px;padding:3px 8px;font-variant-numeric:tabular-nums;background:#ffffff;outline:none;text-align:end" style-focus="border-color:#0950e3;box-shadow:0 0 0 3px rgba(9,80,227,.15)"></div>
+            </div></sc-if>
+          </div>
+        </sc-for>
+      </aside>
+      <section style="flex:10 1 560px;min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.3px">{{ tx.strategies }}</h1>
+        <div style="display:flex;background:#e9eef4;border-radius:10px;padding:3px;flex-wrap:wrap">
+          <sc-for list="{{ sortTabs }}" as="st" hint-placeholder-count="4"><button onClick="{{ st.go }}" style="font-family:inherit;border:none;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;background:{{ st.bg }};color:{{ st.color }};box-shadow:{{ st.shadow }}">{{ st.label }}</button></sc-for>
+        </div>
+        <label style="margin-inline-start:auto;width:240px;max-width:100%;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e9f0;border-radius:10px;padding:6px 10px"><i class="fa-solid fa-magnifying-glass" style="color:#8d9cae;font-size:12px"></i><input data-search="pro" value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ tx.searchSmall }}" title="{{ tx.searchPh }}" style="flex:1;min-width:0;border:none;outline:none;font-family:inherit;font-size:13px;color:#16263a;background:transparent"></label>
+        <div role="group" aria-label="{{ tx.view }}" style="display:flex;background:#e9eef4;border-radius:10px;padding:3px">
+          <sc-for list="{{ viewTabs }}" as="vt" hint-placeholder-count="3"><button onClick="{{ vt.go }}" aria-pressed="{{ vt.pressed }}" style="font-family:inherit;border:none;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;background:{{ vt.bg }};color:{{ vt.color }};box-shadow:{{ vt.shadow }}"><i class="{{ vt.icon }}"></i>{{ vt.label }}</button></sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <sc-for list="{{ activeChips }}" as="ac" hint-placeholder-count="2"><span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding-block:4px;padding-inline:10px 5px;font-size:12.5px;background:#e9f0fd;color:#0950e3;font-weight:600;white-space:nowrap">{{ ac.label }}<button onClick="{{ ac.clear }}" aria-label="×" style="border:none;background:#fff;color:#0950e3;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;padding:0">×</button></span></sc-for>
+        <a onClick="{{ resetAll }}" style="font-size:12.5px;font-weight:600;cursor:pointer">{{ tx.clearAll }}</a>
+      </div></sc-if>
+      <div role="note" style="display:flex;gap:12px;align-items:flex-start;border-radius:12px;padding:12px 14px;background:#eef3fd;border:1px solid #d6e2fb">
+        <i class="fa-solid fa-triangle-exclamation" style="color:#f79009;font-size:16px;margin-top:2px"></i>
+        <div style="display:flex;flex-direction:column;gap:2px;font-size:13px"><strong style="font-size:13.5px">{{ tx.riskTitle }}</strong><span style="text-wrap:pretty">{{ tx.riskText }}</span></div>
+      </div>
+
+      <sc-if value="{{ proEmpty }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:32px 0;text-align:center;color:#8d9cae">{{ tx.noMatch }}</p></sc-if>
+      <sc-if value="{{ isTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #e2e9f0;border-radius:14px;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table style="width:100%;min-width:1100px;border-collapse:collapse;font-size:13px">
+              <thead><tr>
+                <th style="text-align:start;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#5a6b80;font-weight:700;padding:10px 14px;border-bottom:1px solid #e2e9f0;background:#fbfcfe;white-space:nowrap">{{ tx.fSymbol }}</th>
+                <th style="text-align:start;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#5a6b80;font-weight:700;padding:10px 12px;border-bottom:1px solid #e2e9f0;background:#fbfcfe;white-space:nowrap">{{ tx.fTimeframe }}</th>
+                <th style="text-align:start;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#5a6b80;font-weight:700;padding:10px 12px;border-bottom:1px solid #e2e9f0;background:#fbfcfe;white-space:nowrap">{{ tx.fIndicators }}</th>
+                <th style="text-align:start;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#5a6b80;font-weight:700;padding:10px 12px;border-bottom:1px solid #e2e9f0;background:#fbfcfe;white-space:nowrap">{{ tx.colBacktest }}</th>
+                <sc-for list="{{ numCols }}" as="nc" hint-placeholder-count="7"><th onClick="{{ nc.go }}" style="text-align:end;font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;padding:10px 12px;border-bottom:1px solid #e2e9f0;background:#fbfcfe;white-space:nowrap;cursor:{{ nc.cursor }};color:{{ nc.color }}">{{ nc.label }} {{ nc.arrow }}</th></sc-for>
+                <th style="padding:10px 14px;border-bottom:1px solid #e2e9f0;background:#fbfcfe"></th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ proRows }}" as="r" hint-placeholder-count="8">
+                  <tr onClick="{{ r.onToggle }}" style="cursor:pointer;background:{{ r.openBg }}" style-hover="background:#f7faff">
+                    <td style="padding:9px 14px;border-bottom:1px solid #e2e9f0"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span role="img" aria-hidden="true" style="width:24px;height:24px;border-radius:6px;display:inline-block;flex-shrink:0;background-image:url('{{ r.icon }}');background-size:cover;background-position:center"></span><div style="line-height:1.25"><div style="font-weight:700;display:flex;gap:6px;align-items:center">{{ r.ticker }}<span title="{{ r.gradeTip }}" style="width:18px;height:18px;border-radius:5px;display:inline-grid;place-items:center;font-size:10.5px;color:#fff;background:{{ r.gradeBg }}">{{ r.grade }}</span></div><div style="font-size:11.5px;color:#5a6b80">{{ r.name }}</div></div></div></td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;white-space:nowrap">{{ r.interval }}</td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;max-width:220px"><div title="{{ r.ex }}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="color:#8d9cae">{{ r.key }}</span> {{ r.ind }}</div></td>
+                    <td style="padding:6px 12px;border-bottom:1px solid #e2e9f0"><div style="width:128px;height:34px;border-radius:6px;overflow:hidden;border:1px solid #e2e9f0;background:#fff"><img loading="lazy" decoding="async" src="{{ r.profit }}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 80%;display:block"></div></td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;text-align:end;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.np }}</td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;text-align:end;font-weight:600;color:#15803d;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.nppSigned }}</td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;text-align:end;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.win }}</td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;text-align:end;font-variant-numeric:tabular-nums">{{ r.trades }}</td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;text-align:end;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.avg }}</td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;text-align:end;font-variant-numeric:tabular-nums">{{ r.months }}</td>
+                    <td style="padding:9px 12px;border-bottom:1px solid #e2e9f0;text-align:end;font-weight:700;white-space:nowrap">{{ r.priceLabel }}</td>
+                    <td style="padding:9px 14px;border-bottom:1px solid #e2e9f0;text-align:end;white-space:nowrap"><button onClick="{{ r.onCompare }}" title="{{ tx.compare }}" style="font-family:inherit;width:30px;height:30px;border-radius:9px;cursor:pointer;display:inline-grid;place-items:center;font-size:13px;border:1px solid #e2e9f0;width:32px;height:32px;margin-inline-end:6px;background:{{ r.cmpBg }};color:{{ r.cmpColor }}"><i class="fa-solid fa-code-compare"></i></button>
+                      <sc-if value="{{ r.isPaid }}" hint-placeholder-val="{{ true }}"><button onClick="{{ r.onCart }}" title="{{ r.cartLabel }}" style="font-family:inherit;width:32px;height:32px;border-radius:9px;cursor:pointer;display:inline-grid;place-items:center;font-size:12.5px;border:1px solid {{ r.cartBorder }};background:{{ r.cartBg }};color:{{ r.cartColor }}"><i class="{{ r.cartIcon }}"></i></button></sc-if>
+                      <sc-if value="{{ r.isFree }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.onFree }}" title="{{ tx.download }}" style="font-family:inherit;width:32px;height:32px;border-radius:9px;cursor:pointer;display:inline-grid;place-items:center;font-size:12.5px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i></button></sc-if>
+                    </td>
+                  </tr>
+                  <sc-if value="{{ r.isOpen }}" hint-placeholder-val="{{ false }}">
+                    <tr><td colSpan="12" style="padding:16px 14px;background:#f7faff;border-bottom:1px solid #e2e9f0">
+                      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 260px;gap:16px;align-items:start">
+                        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">{{ tx.strategyChart }}</span><img loading="lazy" decoding="async" src="{{ r.profit }}" alt="" style="width:100%;aspect-ratio:1466/438;border-radius:10px;border:1px solid #e2e9f0;background:#fff;display:block"></div>
+                        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">{{ tx.candleChart }}</span><img loading="lazy" decoding="async" src="{{ r.candle }}" alt="" style="width:100%;aspect-ratio:1424/362;border-radius:10px;border:1px solid #e2e9f0;background:#fff;display:block"></div>
+                        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+                          <strong>{{ r.key }} · {{ r.ind }}</strong>
+                          <span style="color:#5a6b80;text-wrap:pretty">{{ r.ex }}</span>
+                          <a href="{{ r.tvUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-weight:600"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:14px;height:14px">{{ tx.openTv }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px"></i></a>
+                          <span style="display:inline-flex;flex-wrap:wrap;gap:6px;align-self:flex-start"><button onClick="{{ r.onOpen }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #c5d6f8;background:#e9f0fd;color:#0950e3" style-hover="background:#0950e3;color:#ffffff;border-color:#0950e3"><i class="fa-regular fa-file-lines"></i>{{ tx.overviewTab }}</button><button onClick="{{ r.onTree }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #b5e0ea;background:#e3f4f8;color:#0e7c98" style-hover="background:#0e7c98;color:#ffffff;border-color:#0e7c98"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}</button></span>
+                        </div>
+                      </div>
+                    </td></tr>
+                  </sc-if>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;justify-content:flex-end;padding:10px 14px;border-top:1px solid #e2e9f0;font-size:12.5px;color:#5a6b80;flex-wrap:wrap">
+            <span>{{ tx.rowsPerPage }} <strong style="color:#16263a">25 ▾</strong></span>
+            <span>{{ rangeLabel2 }}</span>
+            <span style="display:flex;gap:4px;align-items:center">
+              <sc-for list="{{ pages }}" as="pg" hint-placeholder-count="6"><button style="font-family:inherit;min-width:28px;height:28px;padding:0 6px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid {{ pg.border }};background:{{ pg.bg }};color:{{ pg.color }}">{{ pg.label }}</button></sc-for>
+            </span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRows }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ proRows }}" as="r" hint-placeholder-count="6">
+            <div style="position:relative;overflow:hidden;background:#fff;border:1px solid #e2e9f0;border-radius:16px">
+              <img loading="lazy" decoding="async" src="{{ r.candle }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22;mask-image:linear-gradient({{ g90 }},transparent 20%,#000 78%)">
+              <div style="position:relative;padding:18px 20px;display:flex;flex-wrap:wrap;gap:16px 18px;align-items:center">
+                <div style="flex:1 1 200px;display:flex;flex-direction:column;gap:6px;min-width:0">
+                  <div style="display:flex;align-items:center;gap:10px"><span role="img" aria-hidden="true" style="width:40px;height:40px;border-radius:10px;flex-shrink:0;display:inline-block;flex-shrink:0;background-image:url('{{ r.icon }}');background-size:cover;background-position:center"></span><div style="line-height:1.25;min-width:0"><div style="font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div><div style="display:flex;flex-wrap:wrap;align-items:center;column-gap:5px;font-size:12.5px;font-weight:600"><a href="{{ r.tvUrl }}" target="_blank" style="display:inline-flex;gap:5px;align-items:center"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:13px;height:13px">{{ r.ticker }}</a><span style="color:#5a6b80;font-weight:500;white-space:nowrap">· {{ r.interval }} · {{ r.index }}</span></div></div></div>
+                  <span title="{{ r.ex }}" style="font-size:12.5px;color:#5a6b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.key }} · {{ r.ind }}</span>
+                  <span style="display:inline-flex;flex-wrap:wrap;gap:6px;align-self:flex-start"><button onClick="{{ r.onOpen }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #c5d6f8;background:#e9f0fd;color:#0950e3" style-hover="background:#0950e3;color:#ffffff;border-color:#0950e3"><i class="fa-regular fa-file-lines"></i>{{ tx.overviewTab }}</button><button onClick="{{ r.onTree }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #b5e0ea;background:#e3f4f8;color:#0e7c98" style-hover="background:#0e7c98;color:#ffffff;border-color:#0e7c98"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}</button></span>
+                </div>
+                <img loading="lazy" decoding="async" src="{{ r.profit }}" alt="" style="flex:1 1 240px;min-width:0;max-width:320px;width:100%;aspect-ratio:1466/438;border-radius:10px;border:1px solid #e2e9f0;background:#fff;display:block;box-shadow:0 6px 16px rgba(22,38,58,.08)">
+                <div style="flex:1 1 180px;display:grid;grid-template-columns:1fr 1fr;gap:8px 14px">
+                  <div style="line-height:1.2"><div style="font-size:11px;color:#5a6b80">{{ tx.sortNp }}</div><div style="font-weight:700;font-size:15px;font-variant-numeric:tabular-nums">{{ r.np }}</div></div>
+                  <div style="line-height:1.2"><div style="font-size:11px;color:#5a6b80">{{ tx.sortWin }}</div><div style="font-weight:700;font-size:15px">{{ r.win }}</div></div>
+                  <div style="line-height:1.2"><div style="font-size:11px;color:#5a6b80">{{ tx.npPct }}</div><div style="font-weight:700;font-size:15px;color:#15803d">{{ r.nppSigned }}</div></div>
+                  <div style="line-height:1.2"><div style="font-size:11px;color:#5a6b80">{{ tx.sortTrades }}</div><div style="font-weight:700;font-size:15px">{{ r.trades }}</div></div>
+                </div>
+                <div style="flex:0 0 150px;display:flex;flex-direction:column;gap:8px;align-items:stretch">
+                  <span style="font-size:22px;font-weight:700;letter-spacing:-.3px;text-align:end">{{ r.priceLabel }}</span>
+                  <sc-if value="{{ r.isPaid }}" hint-placeholder-val="{{ true }}"><button onClick="{{ r.onCart }}" style="font-family:inherit;border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:7px;border:1px solid {{ r.cartBorder }};background:{{ r.cartBg }};color:{{ r.cartColor }}"><i class="{{ r.cartIcon }}"></i>{{ r.cartLabel }}</button></sc-if>
+                  <sc-if value="{{ r.isFree }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.onFree }}" style="font-family:inherit;border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:7px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>{{ tx.download }}</button></sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCards }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+          <sc-for list="{{ proRows }}" as="r" hint-placeholder-count="6">
+            <div style="background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px" style-hover="box-shadow:0 12px 32px rgba(22,38,58,.10);border-color:#cfd6e6">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span role="img" aria-hidden="true" style="width:32px;height:32px;border-radius:8px;flex-shrink:0;display:inline-block;flex-shrink:0;background-image:url('{{ r.icon }}');background-size:cover;background-position:center"></span>
+                <div style="min-width:0;flex:1;line-height:1.3"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div><div style="font-size:12px;color:#5a6b80;display:flex;flex-wrap:wrap;align-items:center;column-gap:5px"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:12px;height:12px"><a href="{{ r.tvUrl }}" target="_blank" style="font-weight:600">{{ r.ticker }}</a><span style="white-space:nowrap">· {{ r.interval }} · {{ r.index }}</span></div></div>
+                <span style="font-size:18px;font-weight:700;white-space:nowrap">{{ r.priceLabel }}</span>
+              </div>
+              <img loading="lazy" decoding="async" src="{{ r.profit }}" alt="" style="width:100%;aspect-ratio:1466/438;border-radius:10px;border:1px solid #e2e9f0;display:block">
+              <img loading="lazy" decoding="async" src="{{ r.candle }}" alt="" style="width:100%;aspect-ratio:1424/362;border-radius:10px;border:1px solid #e2e9f0;display:block">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px">
+                <div><div style="font-size:11px;color:#5a6b80">{{ tx.sortNp }}</div><div style="font-weight:700;font-size:13.5px">{{ r.np }}</div></div>
+                <div><div style="font-size:11px;color:#5a6b80">{{ tx.sortWin }}</div><div style="font-weight:700;font-size:13.5px">{{ r.win }}</div></div>
+                <div><div style="font-size:11px;color:#5a6b80">{{ tx.sortTrades }}</div><div style="font-weight:700;font-size:13.5px">{{ r.trades }}</div></div>
+                <div><div style="font-size:11px;color:#5a6b80">{{ tx.npPct }}</div><div style="font-weight:700;font-size:13.5px;color:#15803d">{{ r.nppSigned }}</div></div>
+                <div><div style="font-size:11px;color:#5a6b80">{{ tx.avgProfit }}</div><div style="font-weight:700;font-size:13.5px">{{ r.avg }}</div></div>
+                <div><div style="font-size:11px;color:#5a6b80">{{ tx.monthsTrained }}</div><div style="font-weight:700;font-size:13.5px">{{ r.months }}</div></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0"><a href="{{ r.indUrl }}" target="_blank" rel="noopener" title="{{ r.ex }}" style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ r.key }} · {{ r.ind }}</a><button onClick="{{ r.onOpen }}" style="flex-shrink:0;font-family:inherit;border:none;background:none;padding:0;color:#0950e3;font-weight:600;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i class="fa-regular fa-file-lines"></i>{{ tx.openPage }}</button></div>
+              <span style="display:inline-flex;flex-wrap:wrap;gap:6px;align-self:flex-start"><button onClick="{{ r.onOpen }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #c5d6f8;background:#e9f0fd;color:#0950e3" style-hover="background:#0950e3;color:#ffffff;border-color:#0950e3"><i class="fa-regular fa-file-lines"></i>{{ tx.overviewTab }}</button><button onClick="{{ r.onTree }}" style="font-family:inherit;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap;border:1px solid #b5e0ea;background:#e3f4f8;color:#0e7c98" style-hover="background:#0e7c98;color:#ffffff;border-color:#0e7c98"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}</button></span>
+              <sc-if value="{{ r.isPaid }}" hint-placeholder-val="{{ true }}"><button onClick="{{ r.onCart }}" style="font-family:inherit;width:100%;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid {{ r.cartBorder }};background:{{ r.cartBg }};color:{{ r.cartColor }}"><i class="{{ r.cartIcon }}"></i>{{ r.cartLabel }}</button></sc-if>
+              <sc-if value="{{ r.isFree }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.onFree }}" style="font-family:inherit;width:100%;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>{{ tx.download }}</button></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ proListPager }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 0;font-size:12.5px;color:#5a6b80"><span>{{ rangeLabel2 }}</span><button style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:6px 13px;font-size:12px;cursor:pointer">{{ tx.loadMore }}</button></div>
+      </sc-if>
+      </section>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isThanks }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1 0 auto;width:100%;max-width:1000px;margin:0 auto;padding:32px 28px 0;display:flex;flex-direction:column;gap:18px">
+      <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:24px 26px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        <span style="width:52px;height:52px;border-radius:50%;background:#e8f7ef;color:#15803d;display:grid;place-items:center;font-size:22px;flex-shrink:0"><i class="fa-solid fa-check"></i></span>
+        <div style="flex:1 1 320px"><h1 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-.3px">{{ tx.thanksTitle }}</h1><p style="margin:2px 0 0;color:#5a6b80">{{ tx.thanksSub }}</p></div>
+        <div style="text-align:end;line-height:1.3"><div style="font-size:12px;color:#5a6b80">{{ tx.totalPaid }}</div><div style="font-size:26px;font-weight:700;letter-spacing:-.4px">{{ orderTotal }}</div><div style="font-size:12px;color:#5a6b80;display:flex;gap:6px;align-items:center;justify-content:flex-end"><img src="storefront/assets/icons/a_logo_paypal.png" alt="PayPal" style="height:14px">{{ tx.paidWith }} · {{ orderLabel }}</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;overflow:hidden">
+        <div style="padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #e2e9f0"><span style="font-size:13px;color:#5a6b80;flex:1 1 300px">{{ linksNote }}</span><button style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:10px 18px;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center"><i class="fa-solid fa-download"></i>{{ tx.downloadAll }}</button></div>
+        <sc-for list="{{ orderRows }}" as="o" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #e2e9f0;flex-wrap:wrap">
+            <span role="img" aria-hidden="true" style="width:32px;height:32px;border-radius:8px;display:inline-block;flex-shrink:0;background-image:url('{{ o.icon }}');background-size:cover;background-position:center"></span>
+            <div style="flex:1 1 240px;min-width:0;line-height:1.3"><div style="font-weight:700">{{ o.name }} · {{ o.ticker }}</div><div style="font-size:12px;color:#5a6b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.key }} · {{ o.ind }} · {{ o.interval }}</div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+              <button style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-file-code" style="color:#0950e3"></i>.pine</button>
+              <button title="{{ tyZip }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-file-zipper" style="color:#0950e3"></i>.zip</button>
+              <a href="{{ o.tabHref }}" target="_blank" rel="noopener" title="{{ tyNewTab }}" style="border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;display:inline-flex;gap:5px;align-items:center;white-space:nowrap;text-decoration:none;border:1px solid #c5d6f8;background:#e9f0fd;color:#0950e3" style-hover="background:#0950e3;color:#ffffff;border-color:#0950e3;text-decoration:none"><i class="fa-regular fa-file-lines"></i>{{ tx.overviewTab }}<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px"></i></a>
+              <a href="{{ o.treeHref }}" target="_blank" rel="noopener" title="{{ tyNewTab }}" style="border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;display:inline-flex;gap:5px;align-items:center;white-space:nowrap;text-decoration:none;border:1px solid #b5e0ea;background:#e3f4f8;color:#0e7c98" style-hover="background:#0e7c98;color:#ffffff;border-color:#0e7c98;text-decoration:none"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px"></i></a>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap">
+          <h2 style="margin:0;font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:18px;height:18px">{{ tx.installTitle }}</h2>
+          <button onClick="{{ openInst0 }}" style="margin-inline-start:auto;font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:9px 16px;font-size:13.5px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;box-shadow:0 8px 20px rgba(9,80,227,.22)"><i class="fa-solid fa-circle-play"></i>{{ instWatch }}</button>
+        </div>
+        <ol style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:{{ instCols }};gap:10px">
+          <sc-for list="{{ instCards }}" as="st" hint-placeholder-count="5"><li style="display:flex"><button onClick="{{ st.go }}" style="font-family:inherit;flex:1;display:flex;flex-direction:{{ instTileDir }};gap:10px;align-items:flex-start;text-align:start;background:#f4f8fb;border:1px solid transparent;border-radius:12px;padding:12px;font-size:13.5px;color:#16263a;cursor:pointer" style-hover="border-color:#c5d6f8;background:#f5f8ff"><span style="width:24px;height:24px;border-radius:50%;background:#0950e3;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0">{{ st.n }}</span><span style="text-wrap:pretty;font-weight:600;line-height:1.35">{{ st.title }}</span></button></li></sc-for>
+        </ol>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button onClick="{{ goMine }}" style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 22px;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22)">{{ tx.goMine }}</button><button onClick="{{ goShop }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 20px;font-size:14px;cursor:pointer">{{ tx.backShop }}</button></div>
+      <p style="margin:0;font-size:12.5px;color:#5a6b80">{{ tx.contactProblems }}</p>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isMine }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1 0 auto;width:100%;max-width:1000px;margin:0 auto;padding:32px 28px 0;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div><h1 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-.3px">{{ tx.myStrategies }}</h1><p style="margin:2px 0 0;color:#5a6b80">{{ tx.mineSub }}</p></div>
+        <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#5a6b80"><span style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#0950e3,#0e7c98);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">A</span>{{ signedAs }}</span>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;overflow:hidden">
+        <sc-for list="{{ mineRows }}" as="m" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid #e2e9f0;flex-wrap:wrap">
+            <span role="img" aria-hidden="true" style="width:36px;height:36px;border-radius:9px;display:inline-block;flex-shrink:0;background-image:url('{{ m.icon }}');background-size:cover;background-position:center"></span>
+            <div style="flex:1 1 240px;min-width:0;line-height:1.3"><div style="font-weight:700">{{ m.name }} · {{ m.ticker }}</div><div style="font-size:12px;color:#5a6b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.key }} · {{ m.ind }} · {{ m.interval }}</div></div>
+            <div style="flex:0 1 220px;font-size:12.5px;color:#5a6b80;line-height:1.35"><div>{{ m.when }}</div><div>{{ m.order }}</div></div>
+            <span style="font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap;background:{{ m.stBg }};color:{{ m.stColor }}">{{ m.status }}</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><sc-if value="{{ m.hasUpdate }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.getUpdate }}" style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-arrows-rotate"></i>{{ tx.getUpdate }} · v2</button></sc-if>
+            <sc-if value="{{ m.valid }}" hint-placeholder-val="{{ true }}"><button style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-file-code" style="color:#0950e3"></i>.pine</button><button title="{{ tyZip }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-file-zipper" style="color:#0950e3"></i>.zip</button></sc-if>
+            <sc-if value="{{ m.expired }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.renew }}" style="font-family:inherit;background:#e9f0fd;border:1px solid #c5d6f8;color:#0950e3;font-weight:700;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-rotate"></i>{{ tx.newLink }}</button></sc-if><a href="{{ m.tabHref }}" target="_blank" rel="noopener" title="{{ tyNewTab }}" style="border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;display:inline-flex;gap:5px;align-items:center;white-space:nowrap;text-decoration:none;border:1px solid #c5d6f8;background:#e9f0fd;color:#0950e3" style-hover="background:#0950e3;color:#ffffff;border-color:#0950e3;text-decoration:none"><i class="fa-regular fa-file-lines"></i>{{ tx.overviewTab }}<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px"></i></a><a href="{{ m.treeHref }}" target="_blank" rel="noopener" title="{{ tyNewTab }}" style="border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;display:inline-flex;gap:5px;align-items:center;white-space:nowrap;text-decoration:none;border:1px solid #b5e0ea;background:#e3f4f8;color:#0e7c98" style-hover="background:#0e7c98;color:#ffffff;border-color:#0e7c98;text-decoration:none"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px"></i></a></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80"><i class="fa-solid fa-heart" style="color:#c0392b"></i> {{ tx.favourites }}</span>
+        <sc-if value="{{ favEmpty }}" hint-placeholder-val="{{ false }}"><p style="margin:0;color:#8d9cae;font-size:13px">{{ tx.favEmpty }}</p></sc-if>
+        <sc-for list="{{ favRows }}" as="f" hint-placeholder-count="1">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-top:1px solid #e2e9f0">
+            <span role="img" aria-hidden="true" style="width:28px;height:28px;border-radius:7px;display:inline-block;flex-shrink:0;background-image:url('{{ f.icon }}');background-size:cover;background-position:center"></span>
+            <button onClick="{{ f.onOpen }}" style="font-family:inherit;border:none;background:none;padding:0;cursor:pointer;font-weight:700;font-size:13.5px;color:#16263a;flex:1 1 160px;text-align:start">{{ f.ticker }} · {{ f.key }}</button>
+            <span style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ f.alerts }}" as="al" hint-placeholder-count="3"><button onClick="{{ al.toggle }}" style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid {{ al.bd }};background:{{ al.bg }};color:{{ al.color }};display:inline-flex;gap:6px;align-items:center"><i class="{{ al.icon }}"></i>{{ al.label }}</button></sc-for></span>
+            <button onClick="{{ f.onFav }}" title="{{ tx.favourites }}" style="font-family:inherit;width:30px;height:30px;border-radius:9px;cursor:pointer;display:inline-grid;place-items:center;font-size:13px;border:1px solid #e2e9f0;background:#fff;color:#c0392b"><i class="fa-solid fa-heart"></i></button>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button onClick="{{ openInst0 }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 18px;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:16px;height:16px">{{ tx.installTitle }}</button><button onClick="{{ goShop }}" style="font-family:inherit;background:none;border:none;color:#0950e3;font-weight:600;font-size:14px;cursor:pointer">{{ tx.backShop }}</button></div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <main style="flex:1 0 auto;width:100%;max-width:{{ detMaxW }};margin:0 auto;padding:22px 28px 0;display:flex;flex-direction:column;gap:16px">
+      <button onClick="{{ goShop }}" style="align-self:flex-start;font-family:inherit;border:none;background:none;padding:0;color:#0950e3;font-weight:600;font-size:13.5px;cursor:pointer">{{ tx.backShop }}</button>
+      <section style="position:relative;overflow:hidden;background:#fff;border:1px solid #e2e9f0;border-radius:18px">
+        <sc-if value="{{ det.candle }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="" style="position:absolute;inset:0;width:100%;height:100%;opacity:.2;mask-image:linear-gradient({{ g90 }},transparent 20%,#000 80%);background-image:url('{{ det.candle }}');background-size:cover;background-repeat:no-repeat;background-position:center;display:block"></span></sc-if>
+        <div style="position:relative;padding:22px 24px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center">
+          <span role="img" aria-hidden="true" style="width:56px;height:56px;border-radius:14px;flex-shrink:0;display:inline-block;flex-shrink:0;background-image:url('{{ det.icon }}');background-size:cover;background-position:center"></span>
+          <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:6px">
+            <h1 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-.4px;line-height:1.15">{{ det.name }} · {{ det.ticker }}</h1>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px">
+              <a href="{{ det.tvUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-weight:600"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:14px;height:14px">{{ tx.openTv }}</a>
+              <span style="border:1px solid #e2e9f0;border-radius:999px;padding:2px 9px;font-weight:600;color:#5a6b80;background:#fff">{{ det.interval }}</span>
+              <span style="border:1px solid #e2e9f0;border-radius:999px;padding:2px 9px;font-weight:600;color:#5a6b80;background:#fff">{{ det.index }}</span>
+              <span style="border:1px solid #e2e9f0;border-radius:999px;padding:2px 9px;font-weight:600;color:#5a6b80;background:#fff">{{ det.key }}</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:200px">
+            <span style="font-size:28px;font-weight:700;letter-spacing:-.4px;text-align:end">{{ det.priceLabel }}</span>
+            <sc-if value="{{ det.isPaid }}" hint-placeholder-val="{{ true }}"><button onClick="{{ det.onCart }}" style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid {{ det.cartBorder }};background:{{ det.cartBg }};color:{{ det.cartColor }}"><i class="{{ det.cartIcon }}"></i>{{ det.cartLabel }}</button></sc-if>
+            <sc-if value="{{ det.isFree }}" hint-placeholder-val="{{ false }}"><button onClick="{{ det.onFree }}" style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>{{ tx.download }}</button></sc-if>
+            <a href="{{ det.tabHref }}" target="_blank" rel="noopener" style="font-size:12px;font-weight:600;text-align:end;display:inline-flex;gap:6px;align-items:center;justify-content:flex-end"><i class="fa-solid fa-up-right-from-square" style="font-size:10px"></i>{{ tx.newTab }}</a>
+            <button onClick="{{ det.onFav }}" style="font-family:inherit;border:none;background:none;padding:0;cursor:pointer;font-size:12.5px;font-weight:600;color:{{ det.favColor }};display:inline-flex;gap:6px;align-items:center;justify-content:flex-end"><i class="{{ det.favIcon }}"></i>{{ tx.favourites }}</button>
+          </div>
+        </div>
+      </section>
+      <div role="tablist" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button role="tab" aria-selected="{{ detOverview }}" onClick="{{ showOverview }}" style="font-family:inherit;border-radius:999px;padding:9px 18px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;font-size:15px;font-weight:700;background:{{ ovBg }};color:{{ ovColor }};border:1.5px solid {{ ovLine }}"><i class="fa-regular fa-file-lines"></i>{{ tx.overviewTab }}</button>
+        <button role="tab" aria-selected="{{ detTreeTab }}" onClick="{{ showHowTab }}" style="font-family:inherit;border-radius:999px;padding:9px 18px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;font-size:15px;font-weight:700;background:{{ hwBg }};color:{{ hwColor }};border:1.5px solid {{ hwLine }}"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}</button>
+      </div>
+      <sc-if value="{{ detOverview }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ showHowTab }}" style="font-family:inherit;text-align:start;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1.5px solid #b5e0ea;background:#e3f4f8;border-radius:16px;padding:14px 16px;cursor:pointer;color:#16263a" style-hover="border-color:#0e7c98;box-shadow:0 8px 22px rgba(14,124,152,.14)"><span style="width:40px;height:40px;border-radius:12px;background:#0e7c98;color:#ffffff;display:grid;place-items:center;font-size:17px;flex-shrink:0"><i class="fa-solid fa-sitemap"></i></span><span style="flex:1 1 240px;display:flex;flex-direction:column;gap:2px"><strong style="font-size:15px">{{ tx.howTeaserTitle }}</strong><span style="font-size:13px;color:#5a6b80;text-wrap:pretty">{{ tx.howTeaserText }}</span></span><span style="border-radius:999px;background:#0e7c98;color:#ffffff;font-weight:700;font-size:13.5px;padding:8px 16px;display:inline-flex;gap:7px;align-items:center;white-space:nowrap"><i class="fa-solid fa-sitemap"></i>{{ tx.howItDecides }}</span></button>
+      <div style="display:flex;gap:10px;align-items:center;border-radius:12px;padding:11px 14px;background:#eef3fd;border:1px solid #d6e2fb;font-size:13.5px"><i class="fa-regular fa-clock" style="color:#0950e3"></i><span>{{ detTf }}</span></div>
+      <div role="note" style="display:flex;gap:12px;align-items:flex-start;border-radius:14px;padding:14px 16px;background:#fff7ec;border:1px solid #f6d9ae"><i class="fa-solid fa-triangle-exclamation" style="color:#f79009;font-size:18px;margin-top:1px"></i><div style="display:flex;flex-direction:column;gap:2px;font-size:13.5px"><strong style="font-size:14.5px">{{ tx.riskTitle }}</strong><span style="text-wrap:pretty">{{ tx.riskText }}</span></div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+        <div style="flex:1 1 360px;background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80;flex:1">{{ tx.liveVsBacktest }}</span><span title="{{ det.gradeTip }}" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#5a6b80">{{ tx.grade }}<span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:700;color:#fff;background:{{ det.gradeBg }}">{{ det.grade }}</span></span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span>{{ tx.colBacktest }}</span><strong style="color:#15803d">{{ det.nppSigned }}</strong></div>
+          <div style="height:8px;border-radius:999px;background:#e2e9f0;overflow:hidden"><div style="width:{{ det.barBt }};height:100%;background:linear-gradient({{ g90 }},#47f9e5,#0950e3)"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span>{{ tx.sinceRelease }}</span><strong style="color:{{ det.liveColor }}">{{ det.live }}</strong></div>
+          <div style="height:8px;border-radius:999px;background:#e2e9f0;overflow:hidden"><div style="width:{{ det.barLive }};height:100%;background:{{ det.liveColor }}"></div></div>
+          <span style="font-size:11.5px;color:#8d9cae">{{ tx.demoFigures }}</span>
+        </div>
+        <div style="flex:1 1 300px;background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">{{ tx.versions }}</span>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:10px;height:10px;border-radius:50%;background:#0950e3;margin-top:5px;flex-shrink:0"></span><div style="flex:1;font-size:13px"><strong>v2</strong><div style="color:#5a6b80">{{ tx.v2note }}</div></div><sc-if value="{{ detOwnOld }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:#0950e3;background:#e9f0fd;border-radius:999px;padding:2px 8px;white-space:nowrap">{{ tx.updateAvail }}</span></sc-if></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:10px;height:10px;border-radius:50%;background:#cfd8e3;margin-top:5px;flex-shrink:0"></span><div style="flex:1;font-size:13px"><strong>v1 · {{ det.releaseLabel }}</strong><div style="color:#5a6b80">{{ tx.v1note }}</div></div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+        <div style="flex:10 1 520px;min-width:0;display:flex;flex-direction:column;gap:14px">
+          <div style="background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">{{ tx.strategyChart }}</span><sc-if value="{{ det.profit }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="" style="width:100%;aspect-ratio:1466/438;border-radius:10px;border:1px solid #e2e9f0;display:block;background-image:url('{{ det.profit }}');background-size:cover;background-repeat:no-repeat;background-position:center"></span></sc-if></div>
+          <div style="background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">{{ tx.candleChart }}</span><sc-if value="{{ det.candle }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="" style="width:100%;aspect-ratio:1424/362;border-radius:10px;border:1px solid #e2e9f0;display:block;background-image:url('{{ det.candle }}');background-size:cover;background-repeat:no-repeat;background-position:center"></span></sc-if></div>
+        </div>
+        <div style="flex:1 1 300px;min-width:0;background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">{{ tx.allResults }}</span>
+          <sc-for list="{{ detMetrics }}" as="dm" hint-placeholder-count="14"><div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #e2e9f0;font-size:13px"><span style="color:#5a6b80">{{ dm.label }}</span><strong style="font-variant-numeric:tabular-nums;text-align:end;color:{{ dm.color }}">{{ dm.value }}</strong></div></sc-for>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">{{ tx.aboutInd }}</span>
+        <strong style="font-size:15px">{{ det.key }} · {{ det.ind }}</strong>
+        <p style="margin:0;color:#5a6b80;font-size:13.5px;text-wrap:pretty">{{ det.ex }}</p>
+        <a href="{{ det.indUrl }}" target="_blank" rel="noopener" style="font-size:13px;font-weight:600;display:inline-flex;gap:6px;align-items:center"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:14px;height:14px">{{ tx.seeInd }}</a>
+      </div>
+      <div style="border-radius:18px;overflow:hidden;border:1px solid #16263a;box-shadow:0 14px 36px rgba(15,27,45,.18)">
+        <div style="padding:11px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#16263a">
+          <span style="display:flex;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></span><span style="width:10px;height:10px;border-radius:50%;background:#febc2e"></span><span style="width:10px;height:10px;border-radius:50%;background:#28c840"></span></span>
+          <span dir="ltr" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;color:#dbe4ef;overflow-wrap:anywhere">{{ pineFile }}</span>
+          <span style="margin-inline-start:auto;font-size:11.5px;font-weight:700;color:#47f9e5;border:1px solid rgba(71,249,229,.35);border-radius:999px;padding:2px 10px">Pine Script v5</span>
+        </div>
+        <div style="position:relative;background:#0f1b2d">
+          <div dir="ltr" style="padding:12px 0 18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7;text-align:left;overflow-x:auto">
+            <sc-for list="{{ pineLines }}" as="ln" hint-placeholder-count="0"><div style="display:flex;filter:{{ ln.blur }};opacity:{{ ln.op }};user-select:{{ ln.sel }}"><span style="width:48px;flex-shrink:0;text-align:right;padding-right:16px;color:#4c5d74;user-select:none">{{ ln.no }}</span><span style="white-space:pre;tab-size:4;color:#dbe4ef;padding-right:16px"><sc-for list="{{ ln.toks }}" as="tk" hint-placeholder-count="0"><span style="color:{{ tk.c }};font-style:{{ tk.fs }}">{{ tk.t }}</span></sc-for></span></div></sc-for>
+          </div>
+          <div style="position:absolute;inset-inline:0;bottom:0;height:110px;background:linear-gradient(180deg,rgba(15,27,45,0),#0f1b2d 78%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px">
+            <span style="display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#ffffff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600"><i class="fa-solid fa-lock"></i>{{ tx.scriptRest }}</span>
+          </div>
+        </div>
+        <div style="background:#ffffff;padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:36px;height:36px;border-radius:10px;background:#e9f0fd;color:#0950e3;display:grid;place-items:center;flex-shrink:0"><i class="fa-solid fa-box-open"></i></span><div style="display:flex;flex-direction:column;gap:2px"><strong style="font-size:15.5px">{{ tx.buyScriptTitle }}</strong><span style="font-size:13px;color:#5a6b80;text-wrap:pretty">{{ tx.buyScriptText }}</span></div></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+            <sc-for list="{{ formats }}" as="fm" hint-placeholder-count="0"><div style="border:1px solid {{ fm.bd }};background:{{ fm.bg }};border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:center;gap:8px"><span style="width:32px;height:32px;border-radius:9px;background:{{ fm.icBg }};color:#ffffff;display:grid;place-items:center;font-size:15px;flex-shrink:0"><i class="{{ fm.ic }}"></i></span><strong style="font-size:14px;flex:1">{{ fm.name }}</strong><sc-if value="{{ fm.beta }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#9a5b00;background:#fff3dd;border:1px solid #f6d9ae;border-radius:999px;padding:1px 7px">BETA</span></sc-if></div><span style="font-size:12.5px;color:#5a6b80;text-wrap:pretty">{{ fm.desc }}</span><span dir="ltr" style="font-size:11.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8d9cae">{{ fm.ext }}</span></div></sc-for>
+          </div>
+          <span style="font-size:12.5px;color:#5a6b80;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-lock" style="color:#8d9cae"></i>{{ tx.formatsNote }}</span>
+        </div>
+      </div>
+          </sc-if>
+      <sc-if value="{{ detTreeTab }}" hint-placeholder-val="{{ false }}">
+        <dc-import name="Strategy Tree" embedded="{{ true }}" strategy="{{ det.treeKey }}" lang="{{ treeLang }}" on-buy="{{ det.onBuy }}" hint-size="100%,900px"></dc-import>
+        <button onClick="{{ backToSheet }}" style="align-self:flex-start;font-family:inherit;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;border:1.5px solid #0950e3;background:#e9f0fd;color:#0950e3" style-hover="background:#0950e3;color:#ffffff"><i class="fa-regular fa-file-lines"></i>{{ tx.toSheet }}</button>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <footer style="border-top:1px solid #e2e9f0;margin-top:36px;background:#fff">
+    <div style="max-width:1320px;margin:0 auto;padding:16px 28px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:12.5px;color:#5a6b80">
+      <nav style="display:flex;gap:16px;flex-wrap:wrap"><a style="color:#5a6b80">{{ tx.legalPrivacy }}</a><a style="color:#5a6b80">{{ tx.legalCookies }}</a><a style="color:#5a6b80">{{ tx.legalTerms }}</a><a style="color:#5a6b80">{{ tx.legalNotice }}</a><a style="color:#5a6b80">{{ tx.contactMenu }}</a></nav>
+      <div style="display:flex;flex-direction:column;line-height:1.35;text-align:end"><strong translate="no" style="color:#16263a;font-weight:700">Edge<span style="color:#0950e3">folio</span></strong><span style="font-size:11.5px">{{ tx.toolName }}</span></div>
+    </div>
+  </footer>
+
+  <sc-if value="{{ freeOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:90;background:rgba(22,38,58,.45);display:grid;place-items:center;padding:16px">
+      <div role="dialog" aria-modal="true" aria-label="{{ tx.freeTitle }}" style="width:100%;max-width:420px;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.3);padding:22px;display:flex;flex-direction:column;gap:14px;position:relative">
+        <button onClick="{{ closeFree }}" aria-label="×" style="position:absolute;top:12px;inset-inline-end:12px;width:32px;height:32px;border-radius:50%;border:1px solid #e2e9f0;background:#fff;cursor:pointer;font-size:16px;line-height:1;color:#5a6b80">×</button>
+        <div style="display:flex;align-items:center;gap:10px"><sc-if value="{{ freeRow.icon }}" hint-placeholder-val="{{ false }}"><span role="img" aria-label="" style="width:40px;height:40px;border-radius:10px;background-image:url('{{ freeRow.icon }}');background-size:cover;background-repeat:no-repeat;background-position:center;display:block"></span></sc-if><div style="line-height:1.3"><div style="font-weight:700">{{ freeRow.name }} · {{ freeRow.ticker }}</div><div style="font-size:12px;color:#5a6b80">{{ freeRow.key }} · {{ freeRow.ind }}</div></div></div>
+        <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px">{{ tx.freeTitle }}</h2>
+        <sc-if value="{{ freeNotSent }}" hint-placeholder-val="{{ true }}">
+          <p style="margin:0;color:#5a6b80;font-size:14px">{{ tx.freeText }}</p>
+          <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:600;color:#5a6b80">{{ tx.email }}</span><input type="email" value="{{ freeEmail }}" onChange="{{ onFreeEmail }}" onKeyDown="{{ freeKey }}" aria-invalid="{{ freeErrOn }}" placeholder="ana@example.com" style="font-family:inherit;font-size:14px;color:#16263a;border:1px solid {{ freeBd }};border-radius:10px;padding:10px 12px"><sc-if value="{{ freeErrOn }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:12px;font-weight:600;color:#c0392b">{{ freeErr }}</span></sc-if></label>
+          <div onClick="{{ toggleNews }}" role="checkbox" aria-checked="{{ newsOn }}" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:13px"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid {{ newsBorder }};background:{{ newsBg }};display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">{{ newsCheck }}</span>{{ tx.newsOpt }}</div>
+          <button onClick="{{ sendFree }}" style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 22px;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22)">{{ tx.sendLink }}</button>
+          <a style="font-size:12px;color:#5a6b80;cursor:pointer">{{ tx.legalPrivacy }}</a>
+        </sc-if>
+        <sc-if value="{{ freeSentNow }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:10px;align-items:flex-start;background:#e8f7ef;color:#15603c;border-radius:12px;padding:12px 14px;font-size:13.5px;font-weight:600"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i>{{ tx.freeSent }}</div>
+          <button onClick="{{ closeFree }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 20px;font-size:14px;cursor:pointer">{{ tx.backShop }}</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tourOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:95;background:rgba(22,38,58,.5);display:grid;place-items:center;padding:16px">
+      <div role="dialog" aria-modal="true" aria-label="{{ tx.tourOpen }}" style="width:100%;max-width:480px;background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden;position:relative">
+        <button onClick="{{ closeTour }}" title="{{ tx.tourClose }}" aria-label="{{ tx.tourClose }}" style="position:absolute;top:12px;inset-inline-end:12px;z-index:2;width:32px;height:32px;border-radius:50%;border:1px solid #e2e9f0;background:#fff;cursor:pointer;font-size:16px;line-height:1;color:#5a6b80">×</button>
+        <div onPointerDown="{{ tourPD }}" onPointerUp="{{ tourPU }}" style="aspect-ratio:16/10;background:#f4f8fb;border-bottom:1px solid #e2e9f0;display:grid;place-items:center;overflow:hidden;cursor:pointer;touch-action:pan-y;user-select:none">
+          <sc-if value="{{ tourS1 }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:repeat(3,64px);gap:14px">
+            <sc-for list="{{ tourIcons }}" as="ti" hint-placeholder-count="6"><div style="width:64px;height:64px;border-radius:16px;background:#fff;border:1px solid #e2e9f0;display:grid;place-items:center;box-shadow:0 6px 16px rgba(22,38,58,.08)"><span role="img" aria-hidden="true" style="width:34px;height:34px;border-radius:8px;display:inline-block;flex-shrink:0;background-image:url('{{ ti.src }}');background-size:cover;background-position:center"></span></div></sc-for>
+          </div></sc-if>
+          <sc-if value="{{ tourS2 }}" hint-placeholder-val="{{ false }}"><img src="storefront/assets/charts/AMZN_1Day_1BOL_9d10c25f_profit.png" alt="" style="width:88%;border-radius:12px;border:1px solid #e2e9f0;box-shadow:0 10px 28px rgba(22,38,58,.12);display:block"></sc-if>
+          <sc-if value="{{ tourS3 }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:16px">
+            <div style="width:88px;height:64px;border-radius:16px;background:#fff;border:1px solid #e2e9f0;display:grid;place-items:center"><img src="storefront/assets/icons/a_logo_paypal.png" alt="PayPal" style="max-width:64px;max-height:28px"></div>
+            <i class="fa-solid fa-arrow-right" style="color:#8d9cae"></i>
+            <div style="width:64px;height:64px;border-radius:16px;background:#fff;border:1px solid #e2e9f0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#0950e3;font-size:11px;font-weight:700"><i class="fa-solid fa-file-code" style="font-size:22px"></i>.pine</div>
+            <i class="fa-solid fa-arrow-right" style="color:#8d9cae"></i>
+            <div style="width:64px;height:64px;border-radius:16px;background:#fff;border:1px solid #e2e9f0;display:grid;place-items:center"><img src="storefront/assets/icons/TW_ICO.svg" alt="TradingView" style="width:32px;height:32px"></div>
+          </div></sc-if>
+        </div>
+        <div style="padding:20px 22px 18px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:12px;font-weight:700;color:#0950e3">{{ tourStepLabel }}</span>
+          <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px">{{ tourTitle }}</h2>
+          <p style="margin:0;font-size:14px;color:#5a6b80;text-wrap:pretty">{{ tourText }}</p>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+            <div style="display:flex;gap:6px"><sc-for list="{{ tourDots }}" as="dt" hint-placeholder-count="3"><span style="height:8px;border-radius:999px;width:{{ dt.w }};background:{{ dt.bg }};transition:width .3s"></span></sc-for></div>
+            <div style="margin-inline-start:auto;display:flex;gap:8px">
+              <sc-if value="{{ tourHasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tourBack }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:10px 16px;font-size:14px;cursor:pointer">{{ tx.tourBack }}</button></sc-if>
+              <button onClick="{{ tourNext }}" style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:10px 18px;font-size:14px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22)">{{ tourNextLabel }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ instOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:96;background:rgba(22,38,58,.5);display:grid;place-items:center;padding:16px">
+      <div role="dialog" aria-modal="true" aria-label="{{ instTourTitle }}" style="width:100%;max-width:480px;max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.3);position:relative">
+        <button onClick="{{ closeInst }}" title="{{ tx.tourClose }}" aria-label="{{ tx.tourClose }}" style="position:absolute;top:12px;inset-inline-end:12px;z-index:2;width:32px;height:32px;border-radius:50%;border:1px solid #e2e9f0;background:#fff;cursor:pointer;font-size:16px;line-height:1;color:#5a6b80">×</button>
+        <div onPointerDown="{{ instPD }}" onPointerUp="{{ instPU }}" style="position:relative;aspect-ratio:16/10;background:#f4f8fb;border-bottom:1px solid #e2e9f0;overflow:hidden;container-type:inline-size;cursor:pointer;touch-action:pan-y;user-select:none">
+          <sc-if value="{{ inst1 }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;inset:0;padding:6cqw 8cqw;display:flex;flex-direction:column;justify-content:center;gap:5cqw">
+            <div style="background:#fff;border:1px solid #e2e9f0;border-radius:2.6cqw;box-shadow:0 1.6cqw 4cqw rgba(22,38,58,.08);padding:2.6cqw 3cqw;display:flex;align-items:center;gap:2.4cqw">
+              <span style="width:7cqw;height:7cqw;border-radius:1.6cqw;flex-shrink:0;background-image:url('{{ instIcon }}');background-size:cover;background-position:center"></span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1.2cqw"><strong style="font-size:3cqw;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ instName }}</strong><span style="height:1.4cqw;width:60%;border-radius:1cqw;background:#e2e9f0"></span></span>
+              <span style="position:relative;flex-shrink:0;border:1px solid #e2e9f0;background:#fff;border-radius:1.8cqw;padding:1.4cqw 2.4cqw;font-size:2.8cqw;font-weight:700;display:inline-flex;gap:1.2cqw;align-items:center;box-shadow:0 0 0 0.5cqw #0950e3,0 0 0 1.8cqw rgba(9,80,227,.2)"><i class="fa-solid fa-file-code" style="color:#0950e3"></i>.pine<i class="fa-solid fa-hand-pointer" style="position:absolute;right:-1.6cqw;bottom:-4.4cqw;font-size:4.4cqw;color:#16263a;text-shadow:0 0 0.6cqw #fff"></i></span>
+              <span style="flex-shrink:0;border:1px solid #e2e9f0;background:#fff;border-radius:1.8cqw;padding:1.4cqw 2.4cqw;font-size:2.8cqw;font-weight:700;display:inline-flex;gap:1.2cqw;align-items:center;color:#5a6b80"><i class="fa-solid fa-file-zipper"></i>.zip</span>
+            </div>
+            <div style="display:flex;gap:3cqw;align-items:center">
+              <div style="flex:1;min-width:0;background:#fff;border:1px solid #e2e9f0;border-radius:2.6cqw;box-shadow:0 1.6cqw 4cqw rgba(22,38,58,.08);overflow:hidden">
+                <div style="height:5.4cqw;background:#eef3f8;display:flex;align-items:center;gap:1.2cqw;padding:0 2.4cqw;font-size:2.2cqw;color:#5a6b80;white-space:nowrap;overflow:hidden"><i class="fa-regular fa-file-lines"></i><span style="overflow:hidden;text-overflow:ellipsis">{{ instFile }}</span></div>
+                <div style="padding:2.4cqw 3cqw;display:flex;flex-direction:column;gap:1.4cqw;background:rgba(9,80,227,.08)"><span style="height:1.5cqw;width:50%;border-radius:1cqw;background:#9db9f3"></span><span style="height:1.5cqw;width:80%;border-radius:1cqw;background:#9db9f3"></span><span style="height:1.5cqw;width:66%;border-radius:1cqw;background:#9db9f3"></span><span style="height:1.5cqw;width:38%;border-radius:1cqw;background:#9db9f3"></span></div>
+              </div>
+              <div style="flex-shrink:0;display:flex;flex-direction:column;gap:2.4cqw;font-size:2.6cqw;font-weight:700;color:#5a6b80">
+                <span style="display:inline-flex;gap:1cqw;align-items:center;direction:ltr"><kbd style="font-family:inherit;font-size:2.6cqw;font-weight:700;color:#16263a;border:1px solid #cfd8e3;border-bottom-width:0.6cqw;border-radius:1.2cqw;background:#fff;padding:0.6cqw 1.4cqw;line-height:1.2">Ctrl</kbd>+<kbd style="font-family:inherit;font-size:2.6cqw;font-weight:700;color:#16263a;border:1px solid #cfd8e3;border-bottom-width:0.6cqw;border-radius:1.2cqw;background:#fff;padding:0.6cqw 1.4cqw;line-height:1.2">A</kbd></span>
+                <span style="display:inline-flex;gap:1cqw;align-items:center;direction:ltr"><kbd style="font-family:inherit;font-size:2.6cqw;font-weight:700;color:#16263a;border:1px solid #cfd8e3;border-bottom-width:0.6cqw;border-radius:1.2cqw;background:#fff;padding:0.6cqw 1.4cqw;line-height:1.2">Ctrl</kbd>+<kbd style="font-family:inherit;font-size:2.6cqw;font-weight:700;color:#16263a;border:1px solid #cfd8e3;border-bottom-width:0.6cqw;border-radius:1.2cqw;background:#fff;padding:0.6cqw 1.4cqw;line-height:1.2">C</kbd></span>
+              </div>
+            </div>
+          </div></sc-if>
+          <sc-if value="{{ inst2 }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:5cqw 9cqw;background:#fff;border:1px solid #e2e9f0;border-radius:2.6cqw;box-shadow:0 1.6cqw 4cqw rgba(22,38,58,.08);overflow:hidden;display:flex;flex-direction:column">
+            <div style="height:6.4cqw;flex-shrink:0;background:#eef3f8;display:flex;align-items:center;gap:1.2cqw;padding:0 2.4cqw">
+              <span style="width:1.4cqw;height:1.4cqw;border-radius:50%;background:#cfd8e3"></span><span style="width:1.4cqw;height:1.4cqw;border-radius:50%;background:#cfd8e3"></span><span style="width:1.4cqw;height:1.4cqw;border-radius:50%;background:#cfd8e3"></span>
+              <span style="flex:1;height:3.8cqw;border-radius:2cqw;background:#fff;display:flex;align-items:center;gap:1.2cqw;padding:0 2cqw;font-size:2.4cqw;color:#5a6b80;direction:ltr"><i class="fa-solid fa-lock" style="font-size:2cqw;color:#15803d"></i>tradingview.com</span>
+            </div>
+            <div style="flex:1;display:grid;place-items:center">
+              <div style="width:52%;display:flex;flex-direction:column;align-items:center;gap:2.2cqw">
+                <img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:7cqw;height:7cqw;display:block">
+                <span style="width:100%;height:4.8cqw;border-radius:1.4cqw;border:1px solid #e2e9f0;background:#f8fafc;display:flex;align-items:center;gap:1.4cqw;padding:0 1.8cqw;font-size:2.4cqw;color:#8d9cae"><i class="fa-regular fa-envelope"></i><span style="height:1.2cqw;width:45%;border-radius:1cqw;background:#e2e9f0"></span></span>
+                <span style="width:100%;height:4.8cqw;border-radius:1.4cqw;border:1px solid #e2e9f0;background:#f8fafc;display:flex;align-items:center;gap:1.4cqw;padding:0 1.8cqw;font-size:2.4cqw;color:#8d9cae;letter-spacing:0.4cqw"><i class="fa-solid fa-key" style="letter-spacing:0"></i>••••••</span>
+                <span style="position:relative;width:100%;display:flex;gap:2cqw;border-radius:1.6cqw;box-shadow:0 0 0 0.5cqw #0950e3,0 0 0 1.8cqw rgba(9,80,227,.2)">
+                  <span style="flex:1;height:5.2cqw;border-radius:1.4cqw;background:#16263a;color:#fff;display:grid;place-items:center;font-size:2.8cqw"><i class="fa-solid fa-right-to-bracket"></i></span>
+                  <span style="flex:1;height:5.2cqw;border-radius:1.4cqw;border:1px solid #16263a;background:#fff;color:#16263a;display:grid;place-items:center;font-size:2.8cqw"><i class="fa-solid fa-user-plus"></i></span>
+                  <i class="fa-solid fa-hand-pointer" style="position:absolute;right:-1.6cqw;bottom:-4.4cqw;font-size:4.4cqw;color:#16263a;text-shadow:0 0 0.6cqw #fff"></i>
+                </span>
+              </div>
+            </div>
+          </div></sc-if>
+          <sc-if value="{{ inst3 }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;direction:ltr;background-color:#fff;background-image:url('{{ instCandle }}');background-size:300% auto;background-position:0 0;background-repeat:no-repeat">
+            <span style="position:absolute;top:0.3cqw;left:0.4cqw;width:62cqw;height:5.6cqw;border-radius:1.4cqw;box-shadow:0 0 0 0.5cqw #0950e3,0 0 0 1.8cqw rgba(9,80,227,.2)"></span>
+            <span style="position:absolute;top:9.5cqw;left:3cqw;background:#0950e3;color:#fff;font-size:2.8cqw;font-weight:700;border-radius:1.4cqw;padding:1.2cqw 2.2cqw;display:inline-flex;gap:1.4cqw;align-items:center;box-shadow:0 1.2cqw 3cqw rgba(9,80,227,.3)"><i class="fa-solid fa-magnifying-glass"></i>{{ instSym }} · {{ instInt }}</span>
+          </div></sc-if>
+          <sc-if value="{{ inst4 }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:flex;direction:ltr">
+            <div style="flex:1;min-width:0;position:relative;background-color:#fff;background-image:url('{{ instCandle }}');background-size:260% auto;background-position:0 40%;background-repeat:no-repeat"><span style="position:absolute;inset:0;background:rgba(244,248,251,.5)"></span></div>
+            <div style="width:44cqw;flex-shrink:0;background:#fff;border-left:1px solid #e2e9f0;display:flex;flex-direction:column;box-shadow:-1.6cqw 0 4cqw rgba(22,38,58,.08)">
+              <div style="display:flex;align-items:center;gap:1.4cqw;padding:2cqw 2.2cqw;border-bottom:1px solid #e2e9f0">
+                <span style="font-size:2.5cqw;font-weight:700;display:inline-flex;gap:1cqw;align-items:center;white-space:nowrap"><i class="fa-solid fa-code" style="color:#0950e3"></i>Pine Editor</span>
+                <span style="position:relative;margin-left:auto;font-size:2.4cqw;font-weight:700;border-radius:1.2cqw;padding:1cqw 2cqw;background:#0950e3;color:#fff;box-shadow:0 0 0 0.5cqw #0950e3,0 0 0 1.8cqw rgba(9,80,227,.2)">Save<span style="position:absolute;left:-5.4cqw;top:50%;transform:translateY(-50%);width:3.8cqw;height:3.8cqw;border-radius:50%;background:#16263a;color:#fff;font-size:2.2cqw;font-weight:700;display:grid;place-items:center;font-style:normal">3</span></span>
+              </div>
+              <div style="flex:1;display:flex;gap:1.8cqw;padding:2.2cqw;background:rgba(9,80,227,.04);overflow:hidden">
+                <div style="display:flex;flex-direction:column;gap:1.6cqw;font-size:1.9cqw;line-height:1.5cqw;color:#8d9cae;text-align:right"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:1.6cqw;opacity:.6"><span style="height:1.5cqw;width:38%;border-radius:1cqw;background:#0950e3"></span><span style="height:1.5cqw;width:72%;border-radius:1cqw;background:#9aa7b8"></span><span style="height:1.5cqw;width:56%;border-radius:1cqw;background:#15803d"></span><span style="height:1.5cqw;width:84%;border-radius:1cqw;background:#9aa7b8"></span><span style="height:1.5cqw;width:30%;border-radius:1cqw;background:#c0392b"></span><span style="height:1.5cqw;width:64%;border-radius:1cqw;background:#9aa7b8"></span><span style="height:1.5cqw;width:48%;border-radius:1cqw;background:#0e7c98"></span><span style="height:1.5cqw;width:70%;border-radius:1cqw;background:#9aa7b8"></span></div>
+              </div>
+              <div style="padding:1.8cqw 2.2cqw;border-top:1px solid #e2e9f0;display:flex;justify-content:flex-end;align-items:center;gap:1cqw;font-size:2.6cqw;font-weight:700;color:#5a6b80"><span style="position:relative;width:3.8cqw;height:3.8cqw;margin-right:1cqw"><span style="position:absolute;left:0;top:0;width:3.8cqw;height:3.8cqw;border-radius:50%;background:#16263a;color:#fff;font-size:2.2cqw;font-weight:700;display:grid;place-items:center;font-style:normal">2</span></span><kbd style="font-family:inherit;font-size:2.6cqw;font-weight:700;color:#16263a;border:1px solid #cfd8e3;border-bottom-width:0.6cqw;border-radius:1.2cqw;background:#fff;padding:0.6cqw 1.4cqw;line-height:1.2">Ctrl</kbd>+<kbd style="font-family:inherit;font-size:2.6cqw;font-weight:700;color:#16263a;border:1px solid #cfd8e3;border-bottom-width:0.6cqw;border-radius:1.2cqw;background:#fff;padding:0.6cqw 1.4cqw;line-height:1.2">V</kbd></div>
+            </div>
+            <div style="width:6cqw;flex-shrink:0;background:#fff;border-left:1px solid #e2e9f0;display:flex;flex-direction:column;align-items:center;gap:3cqw;padding-top:3cqw;font-size:2.6cqw;color:#8d9cae">
+              <i class="fa-regular fa-star"></i><i class="fa-regular fa-clock"></i>
+              <span style="position:relative;width:4.4cqw;height:4.4cqw;border-radius:1.2cqw;background:#e9f0fd;color:#0950e3;display:grid;place-items:center;box-shadow:0 0 0 0.5cqw #0950e3,0 0 0 1.8cqw rgba(9,80,227,.2)"><i class="fa-solid fa-code"></i><span style="position:absolute;left:-5.6cqw;top:50%;transform:translateY(-50%);width:3.8cqw;height:3.8cqw;border-radius:50%;background:#16263a;color:#fff;font-size:2.2cqw;font-weight:700;display:grid;place-items:center;font-style:normal">1</span></span>
+              <i class="fa-regular fa-bell"></i><i class="fa-regular fa-comment"></i>
+            </div>
+          </div></sc-if>
+          <sc-if value="{{ inst5 }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:flex;flex-direction:column;direction:ltr">
+            <div style="flex:1;position:relative;background-color:#fff;background-image:url('{{ instCandle }}');background-size:200% auto;background-position:0 30%;background-repeat:no-repeat">
+              <span style="position:absolute;top:2.6cqw;right:3.4cqw;font-size:2.6cqw;font-weight:700;border-radius:1.4cqw;padding:1.2cqw 2.2cqw;background:#fff;color:#16263a;border:1px solid #e2e9f0;display:inline-flex;gap:1.2cqw;align-items:center;box-shadow:0 0 0 0.5cqw #0950e3,0 0 0 1.8cqw rgba(9,80,227,.2)"><i class="fa-solid fa-chart-line" style="color:#0950e3"></i>Add to chart<i class="fa-solid fa-hand-pointer" style="position:absolute;right:-1.6cqw;bottom:-4.4cqw;font-size:4.4cqw;color:#16263a;text-shadow:0 0 0.6cqw #fff"></i></span>
+            </div>
+            <div style="height:27cqw;flex-shrink:0;position:relative;border-top:2px solid #16263a;background-color:#fff;background-image:url('{{ instProfit }}');background-size:150% auto;background-position:0 0;background-repeat:no-repeat">
+              <span style="position:absolute;bottom:100%;left:3cqw;font-size:2.2cqw;font-weight:700;background:#16263a;color:#fff;border-radius:1cqw 1cqw 0 0;padding:0.8cqw 1.8cqw">Strategy Tester</span>
+            </div>
+          </div></sc-if>
+        </div>
+        <div style="padding:20px 22px 18px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:12px;font-weight:700;color:#0950e3;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:14px;height:14px">{{ instTourTitle }} · {{ instStepLabel }}</span>
+          <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px">{{ instTitle }}</h2>
+          <p style="margin:0;font-size:14px;color:#5a6b80;text-wrap:pretty">{{ instText }}</p>
+          <sc-if value="{{ inst3 }}" hint-placeholder-val="{{ false }}"><a href="{{ instChartUrl }}" target="_blank" rel="noopener" style="align-self:flex-start;display:inline-flex;gap:8px;align-items:center;font-weight:700;font-size:13.5px;border:1px solid #c5d6f8;background:#f5f8ff;border-radius:10px;padding:8px 12px;text-decoration:none" style-hover="background:#e9f0fd;text-decoration:none"><img src="storefront/assets/icons/TW_ICO.svg" alt="" style="width:16px;height:16px">{{ instTvLabel }}<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px"></i></a></sc-if>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+            <div style="display:flex;gap:2px"><sc-for list="{{ instDots }}" as="dt" hint-placeholder-count="5"><button onClick="{{ dt.go }}" aria-label="{{ dt.label }}" title="{{ dt.label }}" style="border:none;background:none;padding:10px 2px;cursor:pointer;display:block"><span style="display:block;height:8px;border-radius:999px;width:{{ dt.w }};background:{{ dt.bg }};transition:width .3s"></span></button></sc-for></div>
+            <div style="margin-inline-start:auto;display:flex;gap:8px">
+              <sc-if value="{{ instHasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ instBack }}" style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:10px 16px;font-size:14px;cursor:pointer">{{ tx.tourBack }}</button></sc-if>
+              <button onClick="{{ instNext }}" style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:10px 18px;font-size:14px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22)">{{ instNextLabel }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ cmpFloat }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openCmp }}" style="position:fixed;bottom:{{ cmpBottom }};inset-inline-start:16px;z-index:30;font-family:inherit;border:none;border-radius:999px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;background:#16263a;color:#fff;box-shadow:0 12px 30px rgba(22,38,58,.3);display:inline-flex;gap:8px;align-items:center"><i class="fa-solid fa-code-compare"></i>{{ tx.compare }} · {{ cmpCount }}</button></sc-if>
+  <sc-if value="{{ cmpOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:90;background:rgba(22,38,58,.45);display:grid;place-items:center;padding:16px">
+      <div role="dialog" aria-modal="true" aria-label="{{ tx.compareTitle }}" style="width:100%;max-width:760px;max-height:90vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.3);padding:20px;display:flex;flex-direction:column;gap:14px;position:relative">
+        <button onClick="{{ closeCmp }}" aria-label="×" style="position:absolute;top:12px;inset-inline-end:12px;width:32px;height:32px;border-radius:50%;border:1px solid #e2e9f0;background:#fff;cursor:pointer;font-size:16px;line-height:1;color:#5a6b80">×</button>
+        <div><h2 style="margin:0;font-size:20px;font-weight:700">{{ tx.compareTitle }}</h2><span style="font-size:12.5px;color:#5a6b80">{{ tx.compareMax }}</span></div>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tr><th style="padding:8px 10px;border-bottom:1px solid #e2e9f0"></th><sc-for list="{{ cmpCols }}" as="cc" hint-placeholder-count="2"><th style="padding:8px 10px;border-bottom:1px solid #e2e9f0;white-space:nowrap"><span style="display:inline-flex;gap:6px;align-items:center"><span role="img" aria-hidden="true" style="width:22px;height:22px;border-radius:6px;display:inline-block;flex-shrink:0;background-image:url('{{ cc.icon }}');background-size:cover;background-position:center"></span>{{ cc.ticker }} · {{ cc.key }}</span><button onClick="{{ cc.remove }}" aria-label="×" style="margin-inline-start:6px;border:none;background:none;color:#8d9cae;cursor:pointer">×</button></th></sc-for></tr>
+          <sc-for list="{{ cmpRows }}" as="cr" hint-placeholder-count="6"><tr><td style="padding:8px 10px;color:#5a6b80;border-bottom:1px solid #e2e9f0;white-space:nowrap">{{ cr.label }}</td><sc-for list="{{ cr.cells }}" as="ce" hint-placeholder-count="2"><td style="padding:8px 10px;text-align:center;border-bottom:1px solid #e2e9f0;font-variant-numeric:tabular-nums;font-weight:{{ ce.weight }};color:{{ ce.color }};background:{{ ce.bg }}">{{ ce.value }}</td></sc-for></tr></sc-for>
+        </table></div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ packOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:90;background:rgba(22,38,58,.45);display:grid;place-items:center;padding:16px">
+      <div role="dialog" aria-modal="true" aria-label="{{ tx.packTitle }}" style="width:100%;max-width:460px;max-height:90vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.3);padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2 style="margin:0;font-size:20px;font-weight:700">{{ tx.packTitle }}</h2><span style="font-size:13px;font-weight:700;color:#0950e3">{{ packCount }} / 5</span></div>
+        <sc-for list="{{ packList }}" as="pl" hint-placeholder-count="7"><button onClick="{{ pl.toggle }}" style="display:flex;align-items:center;gap:10px;border:1px solid {{ pl.bd }};background:{{ pl.bg }};border-radius:12px;padding:8px 10px;cursor:pointer;font-family:inherit;text-align:start;color:#16263a"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid {{ pl.ck }};background:{{ pl.ckBg }};display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0">{{ pl.check }}</span><span role="img" aria-hidden="true" style="width:26px;height:26px;border-radius:7px;display:inline-block;flex-shrink:0;background-image:url('{{ pl.icon }}');background-size:cover;background-position:center"></span><span style="flex:1;min-width:0"><strong>{{ pl.ticker }} · {{ pl.key }}</strong><span style="display:block;font-size:12px;color:#5a6b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pl.ind }}</span></span><span style="font-size:12.5px;font-weight:700;color:#15803d">{{ pl.nppSigned }}</span></button></sc-for>
+        <button onClick="{{ closePack }}" style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 22px;font-size:14.5px;cursor:pointer">{{ tx.done }}</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isPhone }}" hint-placeholder-val="{{ false }}">
+    <nav style="position:fixed;inset-inline:0;bottom:0;z-index:40;background:#fff;border-top:1px solid #e2e9f0;display:grid;grid-template-columns:repeat(4,1fr);padding:6px 0 10px;box-shadow:0 -8px 24px rgba(22,38,58,.08)">
+      <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="4"><button onClick="{{ nv.go }}" style="font-family:inherit;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:{{ nv.color }};position:relative;min-height:44px;justify-content:center"><i class="{{ nv.icon }}" style="font-size:17px"></i>{{ nv.label }}<sc-if value="{{ nv.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:2px;inset-inline-start:calc(50% + 6px);background:#0950e3;color:#fff;border-radius:999px;font-size:9.5px;padding:0 5px;line-height:15px">{{ nv.badge }}</span></sc-if></button></sc-for>
+    </nav>
+    <div style="height:64px"></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    cart: ['amzn-bol', 'amzn-t00', 'adbe-t00'],
+    code: 'demo20', applied: 'demo20', codeState: 'ok', codeOpen: false,
+    freeOnly: false, sort: 'np', pview: 'rows', liteTab: 'hot', mode: 'lite', q: '',
+    lang: 'en', langOpen: false, addOpen: false, openPill: '', tv: true, expanded: 'aapl-c00',
+    dict: {}, common: {},
+    page: 'shop', detail: '', detTab: 'overview', compare: [], cmpOpen: false, favs: ['amzn-bol'], alerts: { 'amzn-bol': { nv: true, pd: true } }, packIds: ['aapl-c00', 'nvda-m00', 'eth-t00'], packOpen: false, cur: 'local', vw: 1400, updated: {}, tourStep: -1, instStep: -1, sel: {}, rg: {}, openSel: '', selQ: '', moreOpen: '', tip: '', freeFor: '', freeEmail: '', freeNews: false, freeSent: false, bundles: [], lastOrder: null,
+    purchased: [{ id: 'nvda-s00', date: '2026-10-02', kind: 'free' }, { id: 'eth-t00', date: '2026-09-21', order: 'EF-48213', kind: 'paid' }]
+  };
+
+  componentWillUnmount() { if (this._rs) window.removeEventListener('resize', this._rs); if (this._kd) window.removeEventListener('keydown', this._kd); if (this._hc) { window.removeEventListener('hashchange', this._hc); window.removeEventListener('popstate', this._hc); } }
+  componentDidMount() {
+    this._rs = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this._rs); this._rs();
+    this._kd = e => this.onKey(e); window.addEventListener('keydown', this._kd);
+    this._want = '';
+    try {
+      const patch = {};
+      const v = localStorage.getItem('tuisku-sf-pview5'), l = localStorage.getItem('tuisku-sf-lang'), m = localStorage.getItem('tuisku-sf-mode');
+      if (['table', 'rows', 'cards'].includes(v)) patch.pview = v;
+      if (l) patch.lang = l;
+      if (m === 'lite' || m === 'pro') patch.mode = m;
+      const rt = this.routeFromHash();
+      if (rt) Object.assign(patch, rt);
+      else if (!localStorage.getItem('edgefolio-tour-v1')) patch.tourStep = 0;
+      this._want = rt ? (location.hash || '') : '';
+      this.setState(patch);
+    } catch (e) {}
+    this._hc = () => { const rt = this.routeFromHash(), s = this.state; this._want = rt ? (location.hash || '') : ''; if (rt) { if (s.page !== 'detail' || s.detail !== rt.detail || s.detTab !== rt.detTab) { this.setState(rt); try { window.scrollTo(0, 0); } catch (x) {} } } else if (s.page === 'detail') this.setState({ page: 'shop' }); };
+    window.addEventListener('hashchange', this._hc); window.addEventListener('popstate', this._hc);
+    Promise.all([
+      fetch(this.R('i18n/storefront.ui.json')).then(r => r.json()),
+      fetch(this.R('zlecitool_core/i18n/common.json')).then(r => r.json())
+    ]).then(([dict, common]) => this.setState({ dict, common })).catch(() => {});
+  }
+
+  R(p) { const id = 'r-' + String(p).replace(/^storefront\/assets\//, '').replace(/[^A-Za-z0-9]+/g, '-'); return (window.__resources && window.__resources[id]) || p; }
+  routeFromHash() {
+    const hm = (location.hash || '').match(/^#s=([\w-]+)(?:\/(tree))?/);
+    return hm && this.base().some(r => r.id === hm[1]) ? { page: 'detail', detail: hm[1], detTab: hm[2] ? 'tree' : 'overview' } : null;
+  }
+  syncHash(want) {
+    try { const cur = location.hash || ''; if (cur === want) return; if (want) location.hash = want; else if (/^#s=/.test(cur)) history.pushState(null, '', location.pathname + location.search); } catch (e) {}
+  }
+  sendFree() {
+    const em = (this.state.freeEmail || '').trim();
+    if (!em) { this.setState({ freeErr: 'errEmailRequired' }); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { this.setState({ freeErr: 'errEmailInvalid' }); return; }
+    this.setState(st => ({ freeSent: true, freeErr: '', purchased: st.purchased.some(p => p.id === st.freeFor) ? st.purchased.map(p => p.id === st.freeFor ? { ...p, linkDate: '2026-10-05' } : p) : [{ id: st.freeFor, date: '2026-10-05', kind: 'free' }, ...st.purchased] }));
+  }
+  swDown(e) { this._sw = { x: e.clientX, y: e.clientY }; }
+  swUp(e, which) {
+    const p = this._sw; this._sw = null; if (!p) return;
+    const s = this.state, cur = s[which], max = which === 'instStep' ? 4 : 2; if (cur < 0) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y, rtl = s.lang === 'ar';
+    let d = 0;
+    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) d = 1;
+    else if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) d = ((dx < 0) !== rtl) ? 1 : -1;
+    const n = Math.min(max, Math.max(0, cur + d)); if (n !== cur) this.setState({ [which]: n });
+  }
+  onKey(e) {
+    const s = this.state, which = s.instStep >= 0 ? 'instStep' : s.tourStep >= 0 ? 'tourStep' : '';
+    if (!which) { if (e.key === 'Escape') { if (s.cmpOpen) this.setState({ cmpOpen: false }); else if (s.packOpen) this.setState({ packOpen: false }); else if (s.freeFor) this.setState({ freeFor: '', freeSent: false, freeErr: '' }); else if (s.langOpen || s.openSel) this.setState({ langOpen: false, openSel: '' }); } return; }
+    if (e.key === 'Escape') { try { localStorage.setItem(which === 'instStep' ? 'edgefolio-install-v1' : 'edgefolio-tour-v1', '1'); } catch (x) {} this.setState({ [which]: -1 }); return; }
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const max = which === 'instStep' ? 4 : 2, fwd = (e.key === 'ArrowRight') !== (s.lang === 'ar');
+    const n = Math.min(max, Math.max(0, s[which] + (fwd ? 1 : -1))); if (n !== s[which]) { e.preventDefault(); this.setState({ [which]: n }); }
+  }
+
+  base() {
+    const TEMA = ['Triple Exponential Moving Average (TEMA)', 'The Triple Exponential Moving Average (TEMA) smooths price data to reduce lag in moving averages, providing faster trend reaction.'];
+    const BOL = ['Bollinger RSI Double Strategy', 'The Bollinger RSI Double Strategy combines Bollinger Bands and the RSI (Relative Strength Index) to identify potential trend reversals and market conditions.'];
+    const S = { mkt: 'stocks', idx: 'NASDAQ', icon: null };
+    return [
+      { ...S, pf: 180.808, mdd: 4817.78, mddp: 0.33, avgp: 8859.45, bars: 3656, prc: 78, tdep: 5, id: 'amzn-bol', t: 'AMZN', n: 'Amazon.com', k: '1BOL', ind: BOL[0], ex: BOL[1], p: 79, np: 710576.58, npp: 71.06, tr: 91, w: 100, avg: 7808, m: 103, f: 'AMZN_1Day_1BOL_9d10c25f' },
+      { ...S, pf: 160.2, mdd: 5480.1, mddp: 0.38, avgp: 9637, bars: 2900, prc: 74, tdep: 5, id: 'amzn-t00', t: 'AMZN', n: 'Amazon.com', k: '1T00', ind: TEMA[0], ex: TEMA[1], p: 79, np: 721958.20, npp: 72.20, tr: 85, w: 100, avg: 8493, m: 104, f: 'AMZN_1Day_1T00_912096cc' },
+      { ...S, pf: 48.6, mdd: 9120.6, mddp: 0.62, avgp: 8135, bars: 2400, prc: 71, tdep: 6, id: 'adbe-t00', t: 'ADBE', n: 'Adobe', k: '1T00', ind: TEMA[0], ex: TEMA[1], p: 79, np: 781447.60, npp: 78.14, tr: 109, w: 97.25, avg: 7169, m: 104, f: 'ADBE_1Day_1T00_751f3295' },
+      { ...S, pf: 131.5, mdd: 3980.2, mddp: 0.27, avgp: 6085, bars: 1650, prc: 76, tdep: 5, id: 'aapl-c00', t: 'AAPL', n: 'Apple', k: '1C00', ind: 'Chaikin Money Flow (CMF)', ex: 'The Chaikin Money Flow (CMF) measures money flow volume over a specific period to confirm price trends or indicate potential reversals.', p: 79, np: 857985.34, npp: 85.80, tr: 160, w: 99.38, avg: 5362, m: 104, f: 'AAPL_1Day_1C00_ac87f0dc' },
+      { ...S, pf: 96.3, mdd: 6655.0, mddp: 0.45, avgp: 10901, bars: 3100, prc: 73, tdep: 6, id: 'nvda-m00', t: 'NVDA', n: 'NVIDIA Corporation', k: '1M00', ind: 'Money Flow Index (MFI)', ex: 'The Money Flow Index (MFI) combines price and volume data to identify overbought or oversold conditions in an asset.', p: 79, np: 835728.60, npp: 83.57, tr: 87, w: 97.70, avg: 9606, m: 104, f: 'NVDA_1Day_1M00_14639a7a' },
+      { mkt: 'crypto', idx: 'CRYPTO', icon: 'ETH+USDT', pf: 42.855, mdd: 7941.35, mddp: 0.56, avgp: 1481.72, bars: 118, prc: 62, tdep: 4, id: 'eth-t00', t: 'ETHUSDT', n: 'Ethereum', k: '1T00', ind: TEMA[0], ex: TEMA[1], p: 79, np: 431439.70, npp: 43.14, tr: 36, w: 75, avg: 11984.44, m: 104, f: 'ETHUSDT_1Day_1T00_9cc24d8a' },
+      { mkt: 'crypto', idx: 'CRYPTO', icon: 'BTC+USDT', pf: 3.699, mdd: 3375.36, mddp: 0.33, avgp: 6.25, bars: 13, prc: 51, tdep: 4, id: 'btc-bol', t: 'BTCUSDT', n: 'Bitcoin', k: '1BOL', ind: BOL[0], ex: BOL[1], p: 79, np: 18126.17, npp: 1.81, tr: 29, w: 48.28, avg: 625.04, m: 104, f: 'BTCUSDT_1Day_1BOL_4166b2d5' },
+      { ...S, pf: 1.036, mdd: 16251.62, mddp: 1.62, avgp: 0.12, bars: 4, prc: 47, tdep: 5, id: 'nvda-s00', t: 'NVDA', n: 'NVIDIA Corporation', k: '1S00', ind: 'Stochastic RSI', ex: 'The Stochastic RSI generates signals for overbought or oversold conditions based on the RSI formula, increasing sensitivity to price movements.', p: 0, np: 4858.74, npp: 0.49, tr: 499, w: 36.67, avg: 9.74, m: 104, f: 'NVDA_1Day_1S00_1b1cceca' }
+    ].map(r => ({ ...r, actv: r.tr / r.m, cand: Math.round(r.m * (r.mkt === 'crypto' ? 30.4 : 21)) }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    if (this._want !== undefined) { const want = s.page === 'detail' ? '#s=' + s.detail + (s.detTab === 'tree' ? '/tree' : '') : ''; if (this._want !== want) { this._want = want; setTimeout(() => this.syncHash(want), 0); } }
+    const LANGS = s.common._languages || ['es', 'en', 'pt', 'fr', 'de', 'zh', 'ar', 'hi'];
+    const lang = LANGS.includes(s.lang) ? s.lang : 'en';
+    const rtl = (s.common._rtl_languages || ['ar']).includes(lang);
+    const LOC = { es: 'es-ES', en: 'en-US', pt: 'pt-PT', fr: 'fr-FR', de: 'de-DE', zh: 'zh-CN', ar: 'ar-u-nu-latn', hi: 'hi-IN' }[lang];
+    const t = (key, vars) => {
+      const e = s.dict[key] || s.common[key];
+      let v = e ? (e[lang] ?? e.es ?? e.en ?? '') : '';
+      if (typeof v === 'object') v = v.other || '';
+      if (vars) Object.keys(vars).forEach(k => { v = v.split('{' + k + '}').join(vars[k]); });
+      return v;
+    };
+    const money = n => new Intl.NumberFormat(LOC, { style: 'currency', currency: 'USD' }).format(n);
+    const money0 = n => new Intl.NumberFormat(LOC, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+    const pct = (n, d = 2) => new Intl.NumberFormat(LOC, { style: 'percent', minimumFractionDigits: d, maximumFractionDigits: d }).format(n / 100);
+    const pctS = n => new Intl.NumberFormat(LOC, { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(n / 100);
+    const int = n => new Intl.NumberFormat(LOC).format(n);
+    const CUR = { es: ['EUR', 0.92], pt: ['EUR', 0.92], fr: ['EUR', 0.92], de: ['EUR', 0.92], hi: ['INR', 83.5], zh: ['CNY', 7.2], ar: ['SAR', 3.75], en: ['USD', 1] }[lang];
+    const isLocal = s.cur === 'local' && CUR[0] !== 'USD';
+    const fmtDate = iso => new Intl.DateTimeFormat(LOC, { dateStyle: 'medium' }).format(new Date(iso + 'T12:00:00'));
+    const pmoney = n => isLocal ? '≈ ' + new Intl.NumberFormat(LOC, { style: 'currency', currency: CUR[0], maximumFractionDigits: 0 }).format(n * CUR[1]) : new Intl.NumberFormat(LOC, { style: 'currency', currency: 'USD' }).format(n);
+    const pct0 = n => pct(n, 0);
+
+    const keys = ['toolName', 'tvConnect', 'tvConnected', 'tvDisconnect', 'language', 'cart', 'emptyCart', 'codePh', 'apply', 'checkout', 'shown', 'reset', 'onlyFree', 'strategies', 'sortNp', 'sortWin', 'sortPrice', 'sortTrades', 'npPct', 'avgProfit', 'monthsTrained', 'view', 'viewRows', 'viewCards', 'viewTableTab', 'addToCart', 'inCartBtn', 'download', 'riskTitle', 'riskText', 'riskShort', 'legalPrivacy', 'legalCookies', 'legalTerms', 'legalNotice', 'contactMenu', 'proView', 'liteTitle', 'liteSub', 'searchPh', 'loadMore', 'haveCode', 'noMatch', 'tradesWord', 'rowsPerPage', 'addFilter', 'colBacktest', 'strategyChart', 'candleChart', 'openTv', 'fSymbol', 'fTimeframe', 'fIndicators', 'any', 'tourOpen', 'tourBack', 'tourClose', 'email', 'bundles', 'freeTitle', 'freeText', 'newsOpt', 'sendLink', 'freeSent', 'myStrategies', 'mineSub', 'newLink', 'backShop', 'thanksTitle', 'thanksSub', 'downloadAll', 'totalPaid', 'paidWith', 'installTitle', 'goMine', 'selAll', 'selNone', 'searchSmall', 'clearAll', 'openPage', 'newTab', 'allResults', 'aboutInd', 'seeInd', 'scriptPreview', 'lockedNote', 'strategyChart', 'candleChart', 'sinceRelease', 'liveVsBacktest', 'demoFigures', 'compare', 'compareTitle', 'compareMax', 'grade', 'packTitle', 'done', 'favourites', 'favEmpty', 'versions', 'v2note', 'v1note', 'updateAvail', 'getUpdate', 'trustPaypal', 'trustLinks', 'trustInvoice', 'currencyLabel', 'colBacktest', 'howItDecides', 'overviewTab', 'howTeaserTitle', 'howTeaserText', 'toSheet', 'scriptRest', 'buyScriptTitle', 'buyScriptText', 'formatsNote', 'fmtPineDesc', 'fmtMd', 'fmtMdDesc', 'fmtPyDesc', 'fmtJsDesc', 'tabNew'];
+    const tx = {};
+    keys.forEach(k => { tx[k] = t(k); });
+    tx.contactProblems = t('contactProblems', { e: 'sales@tuisku.eu' });
+
+    const TIERS = [[160, 15], [290, 20], [500, 25], [1000, 40], [2500, 70]];
+    const C = 'storefront/assets/charts/';
+    const all = this.base();
+    const BUN = {
+      top5: { key: 'bundleTop', ids: ['aapl-c00', 'nvda-m00', 'adbe-t00', 'amzn-t00', 'amzn-bol'], price: 249 },
+      crypto: { key: 'bundleCrypto', ids: ['eth-t00', 'btc-bol'], price: 119 },
+      amzn: { key: 'bundleAmzn', ids: ['amzn-bol', 'amzn-t00'], price: 119 }
+    };
+    if (s.bundles.includes('custom') && s.packIds.length === 5) BUN.custom = { key: 'packTitle', ids: s.packIds, price: 249 };
+    const inBundle = id => s.bundles.some(b => BUN[b] && BUN[b].ids.includes(id));
+    const inCart = id => s.cart.includes(id) || inBundle(id);
+    const toggleCart = id => this.setState(st => st.bundles.some(b => BUN[b] && BUN[b].ids.includes(id))
+      ? { bundles: st.bundles.filter(b => !(BUN[b] && BUN[b].ids.includes(id))) }
+      : { cart: st.cart.includes(id) ? st.cart.filter(x => x !== id) : [...st.cart, id] });
+    const tipFor = (id, m) => () => this.setState(st => ({ tip: st.tip === id + ':' + m ? '' : id + ':' + m }));
+    const mk = r => {
+      const c = inCart(r.id), open = s.expanded === r.id;
+      const LV = {"aapl-c00":9.4,"nvda-m00":12.1,"adbe-t00":6.3,"amzn-t00":7.8,"amzn-bol":5.2,"eth-t00":18.6,"btc-bol":-3.1,"nvda-s00":-1.4}, live = LV[r.id] || 0, fav = s.favs.includes(r.id), cmp = s.compare.includes(r.id);
+      const grade = r.tr >= 300 ? 'A' : r.tr >= 100 ? 'B' : r.tr >= 30 ? 'C' : 'D';
+      return {
+        id: r.id, ticker: r.t, name: r.n, key: r.k, ind: r.ind, ex: r.ex,
+        icon: this.R('storefront/assets/icons/' + (r.icon || r.t) + '_big.svg'), interval: '1Day', index: r.idx,
+        priceLabel: r.p === 0 ? t('landingFree') : pmoney(r.p),
+        grade, gradeBg: { A: '#15803d', B: '#0e7c98', C: '#5a6b80', D: '#c0392b' }[grade], gradeTip: t('gradeTip', { n: int(r.tr) }),
+        live: pctS(live), liveColor: live >= 0 ? '#15803d' : '#c0392b',
+        barBt: Math.min(100, r.npp) + '%', barLive: Math.min(100, Math.abs(live)) + '%', releaseLabel: fmtDate('2024-09-27'),
+        isNew: ['eth-t00', 'btc-bol', 'nvda-m00'].includes(r.id),
+        hasTree: true, treeKey: r.t + '_' + r.k,
+        favIcon: fav ? 'fa-solid fa-heart' : 'fa-regular fa-heart', favColor: fav ? '#c0392b' : '#5a6b80',
+        onFav: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(st => ({ favs: st.favs.includes(r.id) ? st.favs.filter(x => x !== r.id) : [...st.favs, r.id] })); },
+        cmpBg: cmp ? '#16263a' : '#ffffff', cmpColor: cmp ? '#ffffff' : '#5a6b80',
+        onCompare: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(st => ({ compare: st.compare.includes(r.id) ? st.compare.filter(x => x !== r.id) : st.compare.length >= 3 ? st.compare : [...st.compare, r.id] })); }, isFree: r.p === 0, isPaid: r.p > 0,
+        np: money(r.np), npp: pct(r.npp), nppSigned: pctS(r.npp), trades: int(r.tr), win: pct(r.w), avg: money(r.avg), months: int(r.m),
+        profit: this.R(C + r.f + '_profit.png'), candle: this.R(C + r.f + '_candel.png'),
+        tvUrl: r.mkt === 'crypto' ? 'https://www.tradingview.com/symbols/' + r.t + '/?exchange=BINANCE' : 'https://www.tradingview.com/symbols/NASDAQ-' + r.t + '/',
+        cartLabel: c ? tx.inCartBtn : tx.addToCart, buyLabel: c ? tx.inCartBtn : t('buy'),
+        cartIcon: c ? 'fa-solid fa-check' : 'fa-solid fa-cart-plus',
+        cartBg: c ? '#e9f0fd' : 'linear-gradient(135deg,#0950e3,#0e7c98)', buyBg: c ? '#e9f0fd' : '#0950e3',
+        cartColor: c ? '#0950e3' : '#ffffff', buyColor: c ? '#0950e3' : '#ffffff',
+        cartBorder: c ? '#c5d6f8' : 'transparent', buyBorder: c ? '#c5d6f8' : '#0950e3',
+        onCart: e => { if (e && e.stopPropagation) e.stopPropagation(); toggleCart(r.id); },
+        isOpen: open, openBg: open ? '#f7faff' : 'transparent',
+        onToggle: () => this.setState(st => ({ expanded: st.expanded === r.id ? '' : r.id })),
+        onOpen: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ page: 'detail', detail: r.id, tip: '', detTab: 'overview' }); try { window.scrollTo(0, 0); } catch (x) {} },
+        tabHref: '#s=' + r.id,
+        onTree: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ page: 'detail', detail: r.id, tip: '', detTab: 'tree' }); try { window.scrollTo(0, 0); } catch (x) {} },
+        treeHref: '#s=' + r.id + '/tree',
+        indUrl: ({ '1BOL': 'https://www.tradingview.com/script/uCV8I4xA-Bollinger-RSI-Double-Strategy-by-ChartArt-v1-1/', '1C00': 'https://www.tradingview.com/scripts/chaikinmoneyflow/', '1M00': 'https://www.tradingview.com/scripts/moneyflowindex/', '1S00': 'https://www.tradingview.com/scripts/stochasticrsi/', '1T00': 'https://www.tradingview.com/scripts/tripleema/' })[r.k] || 'https://www.tradingview.com/scripts/',
+        codeHead: '//@version=5\nstrategy("Tuisku_' + r.f + '", overlay = true)\n\n// ' + r.k + ' · ' + r.ind + '\n// ' + r.t + ' · 1Day',
+        onFree: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({ freeFor: r.id, freeSent: false, freeErr: '' }); },
+        onBuy: e => { if (e && e.stopPropagation) e.stopPropagation(); if (r.p === 0) { this.setState({ freeFor: r.id, freeSent: false, freeErr: '' }); return; } this.setState(st => st.cart.includes(r.id) || st.bundles.some(b => BUN[b] && BUN[b].ids.includes(r.id)) ? {} : { cart: [...st.cart, r.id] }); },
+        tipOpen: s.tip.startsWith(r.id + ':'),
+        tipText: s.tip === r.id + ':npp' ? t('expNpp') : s.tip === r.id + ':win' ? t('expWin') : t('expTrades'),
+        tipNpp: tipFor(r.id, 'npp'), tipWin: tipFor(r.id, 'win'), tipTrades: tipFor(r.id, 'trades'), tipClose: () => this.setState({ tip: '' })
+      };
+    };
+    const q = s.q.trim().toLowerCase();
+    const match = r => !q || (r.n + ' ' + r.t + ' ' + r.ind + ' ' + r.k).toLowerCase().includes(q);
+    const sorters = { np: r => r.np, price: r => r.p, win: r => r.w, trades: r => r.tr, npp: r => r.npp, avg: r => r.avg, months: r => r.m };
+
+    const tab = s.liteTab;
+    const liteRaw = all.filter(r => match(r) && (tab !== 'stocks' || r.mkt === 'stocks') && (tab !== 'crypto' || r.mkt === 'crypto') && (tab !== 'free' || r.p === 0) && (tab !== 'new' || ['eth-t00', 'btc-bol', 'nvda-m00'].includes(r.id)))
+      .sort((a, b) => tab === 'win' ? b.w - a.w : b.npp - a.npp);
+    const proRaw = all.filter(r => match(r) && (!s.freeOnly || r.p === 0)).sort((a, b) => sorters[s.sort](b) - sorters[s.sort](a));
+
+    const cartRows = all.filter(r => s.cart.includes(r.id));
+    const bunIds = [...new Set(s.bundles.filter(b => BUN[b]).flatMap(b => BUN[b].ids))];
+    const sub = cartRows.reduce((a, r) => a + r.p, 0) + s.bundles.reduce((a, b) => a + (BUN[b] ? BUN[b].price : 0), 0);
+    let tier = 0; TIERS.forEach(([o, r]) => { if (sub > o) tier = r; });
+    const codeRate = s.applied === 'demo20' ? 20 : 0;
+    const rate = Math.min(70, tier + codeRate);
+    const total = sub * (1 - rate / 100);
+    const next = TIERS.find(([o]) => o > sub);
+    const xs = [0, 160, 290, 500, 1000, 2500];
+    let lp = sub >= 2500 ? 100 : 0;
+    for (let i = 0; i < 5; i++) if (sub >= xs[i] && sub < xs[i + 1]) lp = (i + (sub - xs[i]) / (xs[i + 1] - xs[i])) * 20;
+
+    const seg = (items, cur, set) => items.map(([k, label, icon]) => ({
+      label, icon, go: () => set(k), pressed: String(cur === k),
+      bg: cur === k ? '#ffffff' : 'transparent', color: cur === k ? '#0950e3' : '#5a6b80', shadow: cur === k ? '0 1px 3px rgba(22,38,58,.12)' : 'none'
+    }));
+    const setPview = v => { try { localStorage.setItem('tuisku-sf-pview5', v); } catch (e) {} this.setState({ pview: v }); };
+    const setLang = l => { try { localStorage.setItem('tuisku-sf-lang', l); } catch (e) {} this.setState({ lang: l, langOpen: false }); };
+    const labels = s.common._language_labels || {};
+
+    const bars = (arr, floor) => arr.map(v => ({ h: Math.max(floor, Math.round(v)) + '%' }));
+    const priceArr = Array(36).fill(0); [[1, 6], [9, 5], [12, 5], [13, 7], [15, 10], [16, 14], [17, 8], [21, 100], [23, 8], [24, 12], [26, 16], [27, 5]].forEach(([i, v]) => priceArr[i] = v);
+    const histNp = bars(Array.from({ length: 36 }, (_, i) => 100 * Math.exp(-i / 2.3)), 4);
+    const pillDefs = [
+      ['index', t('fIndex'), 'NASDAQ, NYSE, CRYPTO'],
+      ['symbol', t('fSymbol'), t('selectedN', { n: int(60) })],
+      ['tf', t('fTimeframe'), t('selectedN', { n: int(6) })],
+      ['ind', t('fIndicators'), t('selectedN', { n: int(37) })],
+      ['np', t('fNetProfitUsd'), money0(200) + ' – ' + money0(6500000), histNp],
+      ['price', t('fPrice'), money0(0) + ' – ' + money0(140), bars(priceArr, 0)]
+    ];
+    const pills = pillDefs.map(([k, label, value, hb]) => {
+      const open = s.openPill === k;
+      return { label, value, bars: hb || [], lo: hb ? value.split(' – ')[0] : '', hi: hb ? value.split(' – ')[1] : '', showHist: open && !!hb,
+        bg: open ? '#f5f8ff' : '#ffffff', border: open ? '#9fb8ef' : '#e2e9f0',
+        go: () => this.setState(st => ({ openPill: st.openPill === k ? '' : k, addOpen: false })) };
+    });
+    const numCols = [['np', tx.sortNp], ['npp', tx.npPct], ['win', tx.sortWin], ['trades', tx.sortTrades], ['avg', tx.avgProfit], ['months', tx.monthsTrained], ['price', tx.sortPrice]]
+      .map(([k, label]) => ({ label, arrow: s.sort === k ? '▼' : '', color: s.sort === k ? '#0950e3' : '#5a6b80', cursor: 'pointer', go: () => this.setState({ sort: k }) }));
+    const totalCount = s.freeOnly || q ? proRaw.length : 2834;
+    const pagesOf = n => ['‹', ...Array.from({ length: Math.max(1, Math.ceil(n / 25)) }, (_, i) => int(i + 1)), '›'].map((label, i) => ({ label, bg: i === 1 ? '#0950e3' : '#ffffff', color: i === 1 ? '#ffffff' : '#16263a', border: i === 1 ? '#0950e3' : '#e2e9f0' }));
+
+    const TODAY = new Date('2026-10-05T12:00:00');
+    const iconOf = r => this.R('storefront/assets/icons/' + (r.icon || r.t) + '_big.svg');
+    const lo = s.lastOrder || { id: 'EF-51427', ids: ['amzn-bol', 'amzn-t00', 'adbe-t00'], total: 154.05 };
+    const fr = all.find(r => r.id === s.freeFor) || all[7];
+    const TS = s.tourStep;
+    const closeTour = () => { try { localStorage.setItem('edgefolio-tour-v1', '1'); } catch (e) {} this.setState({ tourStep: -1 }); };
+    const scrollTop = () => { try { window.scrollTo(0, 0); } catch (e) {} };
+    const SH = (n, fn) => Array.from({ length: n }, (_, i) => Math.max(0, fn(i / (n - 1), i) * (0.82 + 0.36 * Math.abs(Math.sin(i * 12.9898) * 43758.5453 % 1))));
+    const decay = s2 => SH(32, x => 100 * Math.exp(-x * s2));
+    const bell = (m, w) => SH(32, x => 100 * Math.exp(-((x - m) ** 2) / (2 * w * w)));
+    const npCounts = Array.from({ length: 36 }, (_, i) => 100 * Math.exp(-i / 2.3));
+    const RDEF = {
+      np: { key: 'fNetProfitUsd', min: 200, max: 6500000, log: true, f: money0, get: r => r.np, counts: npCounts },
+      price: { key: 'fPrice', min: 0, max: 140, f: money0, get: r => r.p, counts: priceArr },
+      npp: { key: 'fNetProfitPct', min: 0.1, max: 6500, log: true, f: v => pct(v, v < 10 ? 2 : 0), get: r => r.npp, counts: decay(9) },
+      trades: { key: 'fClosedTrades', min: 0, max: 2000, f: v => int(Math.round(v)), get: r => r.tr, counts: bell(0.08, 0.07) },
+      win: { key: 'fWinRate', min: 0, max: 100, f: v => pct(v, 0), get: r => r.w, counts: bell(0.82, 0.14) },
+      pf: { key: 'fProfitFactor', get: r => r.pf, min: 1, max: 35000, log: true, f: v => int(Math.round(v)), counts: decay(5) },
+      months: { key: 'fTrainingMonths', min: 0, max: 400, f: v => int(Math.round(v)), get: r => r.m, counts: bell(0.26, 0.05) },
+      mlu: { key: 'fMaxLossUsd', get: r => r.mdd, min: 0, max: 40000, f: money0, counts: decay(7) },
+      mlp: { key: 'fMaxLossPct', get: r => r.mddp, min: 0, max: 4, f: v => pct(v, 2), counts: decay(6) },
+      avg: { key: 'fAvgProfitUsd', min: 1, max: 2100000, log: true, f: money0, get: r => r.avg, counts: bell(0.45, 0.16) },
+      avgp: { key: 'fAvgProfitPct', get: r => r.avgp, min: 0, max: 5000, f: v => pct(v, 0), counts: decay(11) },
+      bars: { key: 'fAvgBars', get: r => r.bars, min: 0, max: 8000, f: v => int(Math.round(v)), counts: decay(8) },
+      act: { key: 'fActivity', get: r => r.actv, min: 0, max: 3, f: v => new Intl.NumberFormat(LOC, { maximumFractionDigits: 1 }).format(v), counts: bell(0.12, 0.09) },
+      candles: { key: 'fCandles', get: r => r.cand, min: 0, max: 500000, f: v => int(Math.round(v)), counts: bell(0.1, 0.06) },
+      prec: { key: 'fPrecision', get: r => r.prc, min: 40, max: 100, f: v => pct(v, 0), counts: bell(0.35, 0.18) },
+      tree: { key: 'fTreeDepth', get: r => r.tdep, min: 1, max: 10, f: v => int(Math.round(v)), counts: [4, 18, 36, 62, 100, 88, 54, 30, 14, 6] }
+    };
+    const val = (dd, fr) => dd.log ? Math.pow(10, Math.log10(dd.min) + fr * (Math.log10(dd.max) - Math.log10(dd.min))) : dd.min + fr * (dd.max - dd.min);
+    const fracOf = (dd, v) => { const f = dd.log ? (Math.log10(Math.max(v, dd.min)) - Math.log10(dd.min)) / (Math.log10(dd.max) - Math.log10(dd.min)) : (v - dd.min) / (dd.max - dd.min); return Math.min(1, Math.max(0, f)); };
+    const histOf = dd => { const n = (dd.counts || []).length || 24, hh = Array(n).fill(0); if (dd.get) all.forEach(r => { const v = dd.get(r); if (v != null && !isNaN(v)) hh[Math.min(n - 1, Math.floor(fracOf(dd, v) * n))]++; }); return hh; };
+    const DEC = (new Intl.NumberFormat(LOC).formatToParts(1.5).find(p => p.type === 'decimal') || { value: '.' }).value;
+    const parseNum = str => { let x = String(str).replace(/\u2212/g, '-').split('').filter(ch => /[0-9-]/.test(ch) || ch === DEC).join(''); if (DEC !== '.') x = x.replace(DEC, '.'); const v = parseFloat(x); return isNaN(v) ? null : v; };
+    const rgOf = k => s.rg[k] || [0, 1];
+    const isOn = k => { const [a, b] = rgOf(k); return a > 0.001 || b < 0.999; };
+    const passR = (k, r) => { const dd = RDEF[k]; if (!dd.get || !isOn(k)) return true; const [a, b] = rgOf(k), v = dd.get(r); if (v == null || isNaN(v)) return false; return (a <= 0.001 || v >= val(dd, a) * 0.999999) && (b >= 0.999 || v <= val(dd, b) * 1.000001); };
+    const slider = k => {
+      const dd = RDEF[k], [a, b] = rgOf(k), on = isOn(k), cnt = histOf(dd), hl = cnt.length, mx = Math.max(1, ...cnt), dr = s.draft || {};
+      const setD = (i, v) => this.setState(st => ({ draft: { ...(st.draft || {}), [k + i]: v } }));
+      const commit = i => this.setState(st => { const d = { ...(st.draft || {}) }, raw = d[k + i]; delete d[k + i]; const v = raw == null ? null : parseNum(raw); if (v == null) return { draft: d }; const r = (st.rg[k] || [0, 1]).slice(), f = fracOf(dd, v); if (i === 0) r[0] = Math.min(f, r[1]); else r[1] = Math.max(f, r[0]); return { draft: d, rg: { ...st.rg, [k]: r } }; });
+      return {
+        label: t(dd.key), active: on, valColor: on ? '#0950e3' : '#8d9cae',
+        loPct: (a * 100).toFixed(2) + '%', hiPct: (b * 100).toFixed(2) + '%', wPct: ((b - a) * 100).toFixed(2) + '%',
+        loLabel: dd.f(val(dd, a)), hiLabel: dd.f(val(dd, b)), value: on ? dd.f(val(dd, a)) + ' – ' + dd.f(val(dd, b)) : tx.any,
+        bars: cnt.map((c, i) => {
+          const mid = (i + 0.5) / hl, inR = mid >= a && mid <= b, n = c, small = c > 0 && c / mx < 0.15;
+          return { h: c <= 0 ? '0px' : Math.max(4, Math.round(c / mx * 40)) + 'px', op: inR ? '1' : '.25',
+            bg: small ? '#0950e3' : 'linear-gradient(180deg,#47f9e5,#0950e3)', tip: t('nStrategies', { n: int(n) }) };
+        }),
+        onDown: e => {
+          const el = e.currentTarget, rect = el.getBoundingClientRect();
+          const at = x => { let f = (x - rect.left) / rect.width; if (rtl) f = 1 - f; return Math.min(1, Math.max(0, f)); };
+          const f0 = at(e.clientX), cur = this.state.rg[k] || [0, 1];
+          const which = f0 > cur[1] ? 1 : f0 < cur[0] ? 0 : (Math.abs(f0 - cur[0]) <= Math.abs(f0 - cur[1]) ? 0 : 1);
+          const apply = f => this.setState(st => { const r = (st.rg[k] || [0, 1]).slice(); if (which === 0) r[0] = Math.min(f, r[1]); else r[1] = Math.max(f, r[0]); return { rg: { ...st.rg, [k]: r } }; });
+          apply(f0);
+          const move = ev => apply(at(ev.clientX));
+          const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+          window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+          if (e.preventDefault) e.preventDefault();
+        },
+        clear: () => this.setState(st => { const n = { ...st.rg }; delete n[k]; return { rg: n }; }),
+        loIn: dr[k + 0] != null ? dr[k + 0] : dd.f(val(dd, a)), hiIn: dr[k + 1] != null ? dr[k + 1] : dd.f(val(dd, b)),
+        loOn: e => setD(0, e.target.value), hiOn: e => setD(1, e.target.value), loDone: () => commit(0), hiDone: () => commit(1),
+        onInKey: e => { if (e.key === 'Enter' && e.target && e.target.blur) e.target.blur(); }
+      };
+    };
+    const uniq = arr => [...new Set(arr)];
+    const SDEF = {
+      sym: { key: 'fSymbol', get: r => r.t, opts: uniq(all.map(r => r.t)).map(v => { const r = all.find(x => x.t === v); return { v, label: r.n + ' (' + v + ')', icon: iconOf(r) }; }) },
+      tf: { key: 'fTimeframe', get: () => '1Day', opts: [{ v: '1Day', label: '1Day' }] },
+      ind: { key: 'fIndicators', get: r => r.k, opts: uniq(all.map(r => r.k)).map(v => ({ v, label: v + ' – ' + all.find(r => r.k === v).ind })) },
+      idx: { key: 'fIndex', get: r => r.idx, opts: uniq(all.map(r => r.idx)).map(v => ({ v, label: v })) },
+      rel: { key: 'fReleaseDate', get: () => '2024-09-27', opts: [{ v: '2024-09-27', label: fmtDate('2024-09-27') }] }
+    };
+    const selOf = k => s.sel[k];
+    const passS = (k, r) => { const v = selOf(k); return !v || v.includes(SDEF[k].get(r)); };
+    const selObj = k => {
+      const dd = SDEF[k], cur = selOf(k), open = s.openSel === k, qq = (s.selQ || '').toLowerCase();
+      const n = cur ? cur.length : dd.opts.length;
+      const value = !cur ? t('selectedN', { n: int(dd.opts.length) }) : n === 0 ? '—' : n <= 2 ? cur.join(', ') : t('selectedN', { n: int(n) });
+      const setSel = v => this.setState(st => { const c = st.sel[k] ? st.sel[k].slice() : dd.opts.map(o => o.v); const i = c.indexOf(v); if (i >= 0) c.splice(i, 1); else c.push(v); const ns = { ...st.sel }; if (c.length === dd.opts.length) delete ns[k]; else ns[k] = c; return { sel: ns }; });
+      return { label: t(dd.key), value, open, caret: open ? '▴' : '▾', rowBg: open ? '#f5f8ff' : '#ffffff', valColor: cur ? '#0950e3' : '#5a6b80',
+        toggle: () => this.setState(st => ({ openSel: st.openSel === k ? '' : k, selQ: '' })),
+        q: s.selQ || '', onQ: e => this.setState({ selQ: e.target.value }),
+        all: () => this.setState(st => { const ns = { ...st.sel }; delete ns[k]; return { sel: ns }; }),
+        none: () => this.setState(st => ({ sel: { ...st.sel, [k]: [] } })),
+        opts: dd.opts.filter(o => !qq || o.label.toLowerCase().includes(qq)).map(o => { const on = !cur || cur.includes(o.v); return { label: o.label, icon: o.icon || '', hasIcon: !!o.icon, count: int(all.filter(r => dd.get(r) === o.v).length), check: on ? '✓' : '', bg: on ? '#0950e3' : '#ffffff', bd: on ? '#0950e3' : '#cfd6e6', toggle: () => setSel(o.v) }; }) };
+    };
+    const proF = all.filter(r => match(r) && (!s.freeOnly || r.p === 0) && Object.keys(SDEF).every(k => passS(k, r)) && Object.keys(RDEF).every(k => passR(k, r)))
+      .sort((a, b) => sorters[s.sort](b) - sorters[s.sort](a));
+    const anyF = s.freeOnly || !!q || Object.keys(SDEF).some(k => selOf(k)) || Object.keys(RDEF).some(isOn);
+    const chips = [];
+    Object.keys(SDEF).forEach(k => { const c = selOf(k); if (c) chips.push({ label: t(SDEF[k].key) + ': ' + (c.length ? (c.length <= 2 ? c.join(', ') : t('selectedN', { n: int(c.length) })) : '—'), clear: () => this.setState(st => { const ns = { ...st.sel }; delete ns[k]; return { sel: ns }; }) }); });
+    Object.keys(RDEF).forEach(k => { if (isOn(k)) { const sl = slider(k); chips.push({ label: sl.label + ': ' + sl.loLabel + ' – ' + sl.hiLabel, clear: sl.clear }); } });
+    if (s.freeOnly) chips.push({ label: tx.onlyFree, clear: () => this.setState({ freeOnly: false }) });
+    if (q) chips.push({ label: '“' + s.q.trim() + '”', clear: () => this.setState({ q: '' }) });
+    const filterVals = {
+      proRows: proF.map(mk), proEmpty: proF.length === 0,
+      shownCount: int(proF.length),
+      rangeLabel2: t('rangeOf', { from: int(proF.length ? 1 : 0), to: int(proF.length), total: int(proF.length) }),
+      rangeTop: [slider('np'), slider('price')],
+      selF: Object.keys(SDEF).map(selObj),
+      moreF: ['npp', 'trades', 'win', 'pf', 'months', 'mlu', 'mlp', 'avg', 'avgp', 'bars', 'act', 'candles', 'prec', 'tree'].map(k => {
+        const sl = slider(k), open = s.moreOpen === k;
+        return { ...sl, open, caret: open ? '▴' : '▾', weight: sl.active ? '700' : '400', rowBg: open ? '#f5f8ff' : '#ffffff', toggle: () => this.setState(st => ({ moreOpen: st.moreOpen === k ? '' : k })) };
+      }),
+      activeChips: chips, hasActive: chips.length > 0,
+      resetAll: () => this.setState({ sel: {}, rg: {}, draft: {}, freeOnly: false, q: '', openSel: '', moreOpen: '' }),
+      anyMenu: s.langOpen || s.addOpen || !!s.openPill || !!s.openSel,
+      closeMenus: () => this.setState({ langOpen: false, addOpen: false, openPill: '', openSel: '' })
+    };
+    const dRow = all.find(r => r.id === s.detail) || all[0];
+    const PK = /^(if|else|var|varip|float|int|bool|string|color|and|or|not|true|false|for|to|by|while|switch|import|export|na)$/;
+    const tokz = line => { const out = []; const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b\d+(?:\.\d+)?(?:e[-+]?\d+)?\b)|(:=|<=|>=|==|!=|=>|[-+*\/<>=?:])|([A-Za-z_][\w.]*)(?=\s*\()|([A-Za-z_][\w.]*)|(\s+)|(.)/g; let m;
+      while ((m = re.exec(line))) { if (m[1]) out.push({ t: m[1], c: '#7f93ad', fs: 'italic' }); else if (m[2]) out.push({ t: m[2], c: '#9be3b0', fs: 'normal' }); else if (m[3]) out.push({ t: m[3], c: '#f5b971', fs: 'normal' }); else if (m[4]) out.push({ t: m[4], c: '#ff8fa3', fs: 'normal' }); else if (m[5]) out.push({ t: m[5], c: '#47f9e5', fs: 'normal' }); else if (m[6]) out.push({ t: m[6], c: PK.test(m[6]) ? '#7cc4ff' : '#dbe4ef', fs: 'normal' }); else out.push({ t: m[7] || m[8], c: '#dbe4ef', fs: 'normal' }); }
+      return out; };
+    const pf = dRow && dRow.f ? 'storefront/assets/previews/' + btoa(dRow.f.split('_1Day_')[0] + ' - 1Day - ' + dRow.k + ' - ' + dRow.f.slice(-8)).replace(/=+$/, '') + '.pine' : '';
+    this._pine = this._pine || {};
+    if (s.page === 'detail' && pf && this._pine[pf] === undefined) { this._pine[pf] = null; fetch(this.R(pf)).then(r => r.ok ? r.text() : '').then(x => { this._pine[pf] = x || ''; this.forceUpdate(); }).catch(() => { this._pine[pf] = ''; this.forceUpdate(); }); }
+    const pineLines = ((this._pine[pf] || '').replace(/\r/g, '').split('\n')).slice(4, 21).map((l, i) => ({ no: String(i + 5), toks: tokz(l || ' '), blur: i >= 12 ? 'blur(' + ((i - 11) * 0.8 + 1.4).toFixed(1) + 'px)' : 'none', op: i >= 12 ? String(Math.max(0.35, 1 - (i - 11) * 0.13)) : '1', sel: i >= 12 ? 'none' : 'text' }));
+    const formats = [
+      { name: 'Pine Script', desc: tx.fmtPineDesc, ext: '.pine', ic: 'fa-solid fa-chart-line', icBg: '#0950e3', bg: '#f5f8ff', bd: '#c5d6f8', beta: false },
+      { name: tx.fmtMd, desc: tx.fmtMdDesc, ext: '.md', ic: 'fa-brands fa-markdown', icBg: '#16263a', bg: '#ffffff', bd: '#e2e9f0', beta: false },
+      { name: 'Python', desc: tx.fmtPyDesc, ext: '.py', ic: 'fa-brands fa-python', icBg: '#0e7c98', bg: '#ffffff', bd: '#e2e9f0', beta: true },
+      { name: 'JavaScript', desc: tx.fmtJsDesc, ext: '.js', ic: 'fa-brands fa-js', icBg: '#b86e00', bg: '#ffffff', bd: '#e2e9f0', beta: true }
+    ];
+    const dash = '—';
+    const detail = {
+      isDetail: s.page === 'detail', det: mk(dRow),
+      detOverview: s.detTab !== 'tree', detTreeTab: s.detTab === 'tree',
+      showOverview: () => this.setState({ detTab: 'overview' }), showHowTab: () => this.setState({ detTab: 'tree' }),
+      ovBg: s.detTab !== 'tree' ? '#0950e3' : '#e9f0fd', ovColor: s.detTab !== 'tree' ? '#ffffff' : '#0950e3', ovLine: '#0950e3',
+      hwBg: s.detTab === 'tree' ? '#0e7c98' : '#e3f4f8', hwColor: s.detTab === 'tree' ? '#ffffff' : '#0e7c98', hwLine: '#0e7c98',
+      backToSheet: () => { this.setState({ detTab: 'overview' }); try { window.scrollTo(0, 0); } catch (x) {} },
+      detMaxW: s.detTab === 'tree' ? '1320px' : '1120px', treeLang: lang, pineLines, formats, pineFile: (dRow && dRow.f ? 'Tuisku_' + dRow.f : 'strategy') + '.pine',
+      detTf: t('tfNote', { tf: '1Day' }), detOwnOld: s.purchased.some(p => p.id === dRow.id && p.kind === 'paid' && p.date < '2026-10-01') && !s.updated[dRow.id],
+      detMetrics: [
+        [t('fNetProfitUsd'), money(dRow.np)], [t('fNetProfitPct'), pctS(dRow.npp), '#15803d'], [t('fClosedTrades'), int(dRow.tr)], [t('fWinRate'), pct(dRow.w)],
+        [t('fProfitFactor'), dRow.pf ? new Intl.NumberFormat(LOC, { maximumFractionDigits: 3 }).format(dRow.pf) : dash],
+        [t('fMaxLossUsd'), dRow.mdd ? money(dRow.mdd) : dash, dRow.mdd ? '#c0392b' : ''], [t('fMaxLossPct'), dRow.mddp ? pct(dRow.mddp) : dash, dRow.mddp ? '#c0392b' : ''],
+        [t('fAvgProfitUsd'), money(dRow.avg)], [t('fAvgProfitPct'), dRow.avgp ? pct(dRow.avgp) : dash], [t('fAvgBars'), dRow.bars ? int(dRow.bars) : dash],
+        [t('fReleaseDate'), fmtDate('2024-09-27')], [t('fTrainingMonths'), int(dRow.m)], [t('fTimeframe'), '1Day'], [t('fIndex'), dRow.idx]
+      ].map(([label, value, color]) => ({ label, value, color: color || '#16263a' }))
+    };
+    const cmpR = s.compare.map(id => all.find(r => r.id === id));
+    const best = (vals, low) => { const m = low ? Math.min(...vals) : Math.max(...vals); return vals.map(v => v === m && vals.length > 1); };
+    const cmpDef = [[t('fNetProfitPct'), r => r.npp, r => pctS(r.npp)], [t('fWinRate'), r => r.w, r => pct(r.w)], [t('fClosedTrades'), r => r.tr, r => int(r.tr)], [t('fAvgProfitUsd'), r => r.avg, r => money(r.avg)], [tx.sinceRelease, r => ({ 'aapl-c00': 9.4, 'nvda-m00': 12.1, 'adbe-t00': 6.3, 'amzn-t00': 7.8, 'amzn-bol': 5.2, 'eth-t00': 18.6, 'btc-bol': -3.1, 'nvda-s00': -1.4 })[r.id], null], [tx.sortPrice, r => r.p, r => r.p ? pmoney(r.p) : t('landingFree'), true]];
+    const packRows = s.packIds.map(id => all.find(r => r.id === id));
+    const v7 = {
+      cmpHas: s.compare.length > 0, cmpFloat: s.compare.length > 0 && !(s.page === 'shop' && s.mode !== 'pro' && cartRows.length + s.bundles.length > 0), cmpCount: int(s.compare.length), cmpBottom: (s.vw < 640 ? 76 : 16) + 'px', dockBottom: (s.vw < 640 ? 76 : 16) + 'px',
+      openCmp: () => this.setState({ cmpOpen: true }), closeCmp: () => this.setState({ cmpOpen: false }), cmpOpen: s.cmpOpen,
+      cmpCols: cmpR.map(r => ({ icon: iconOf(r), ticker: r.t, key: r.k, remove: () => this.setState(st => ({ compare: st.compare.filter(x => x !== r.id), cmpOpen: st.compare.length > 1 })) })),
+      cmpRows: cmpDef.map(([label, get, fmt, low]) => { const vals = cmpR.map(get), b = best(vals, low); return { label, cells: cmpR.map((r, i) => ({ value: fmt ? fmt(r) : pctS(vals[i]), weight: b[i] ? '700' : '400', color: b[i] ? '#15803d' : '#16263a', bg: b[i] ? '#e8f7ef' : 'transparent' })) }; }),
+      packSlots: [0, 1, 2, 3, 4].map(i => { const r = packRows[i]; return { filled: !!r, empty: !r, icon: r ? iconOf(r) : '', border: r ? '1px solid #e2e9f0' : '2px dashed #9fb8ef' }; }),
+      packSave: t('saveP', { p: pct0(Math.round((1 - 249 / 395) * 100)) }),
+      packHint: s.packIds.length < 5 ? t('packHint', { n: int(5 - s.packIds.length), price: pmoney(249) }) : t('packReady', { price: pmoney(249) }),
+      packBtnLabel: s.bundles.includes('custom') ? tx.inCartBtn : t('addPack'), packBtnBg: s.packIds.length === 5 ? '#0950e3' : '#9aa7b8',
+      addPack: () => { if (s.packIds.length < 5) { this.setState({ packOpen: true }); return; } this.setState(st => st.bundles.includes('custom') ? { bundles: st.bundles.filter(b => b !== 'custom') } : { bundles: [...st.bundles.filter(b => !(BUN[b] && BUN[b].ids.some(id => st.packIds.includes(id)))), 'custom'], cart: st.cart.filter(id => !st.packIds.includes(id)) }); },
+      openPack: () => this.setState({ packOpen: true }), closePack: () => this.setState({ packOpen: false }), packOpen: s.packOpen, packCount: int(s.packIds.length),
+      packList: all.filter(r => r.p > 0).map(r => { const on = s.packIds.includes(r.id); return { ...mk(r), check: on ? '✓' : '', ck: on ? '#0950e3' : '#cfd6e6', ckBg: on ? '#0950e3' : '#ffffff', bd: on ? '#c5d6f8' : '#e2e9f0', bg: on ? '#f5f8ff' : '#ffffff',
+        toggle: () => this.setState(st => ({ packIds: st.packIds.includes(r.id) ? st.packIds.filter(x => x !== r.id) : st.packIds.length >= 5 ? st.packIds : [...st.packIds, r.id], bundles: st.bundles.filter(b => b !== 'custom') })) }; }),
+      favEmpty: s.favs.length === 0,
+      favRows: s.favs.map(id => all.find(r => r.id === id)).filter(Boolean).map(r => { const al = s.alerts[r.id] || {}; return { ...mk(r),
+        alerts: [['nv', t('alertNew')], ['pd', t('alertPrice')], ['bd', t('alertBundle')]].map(([k, label]) => ({ label, icon: al[k] ? 'fa-solid fa-bell' : 'fa-regular fa-bell', bg: al[k] ? '#e9f0fd' : '#ffffff', color: al[k] ? '#0950e3' : '#5a6b80', bd: al[k] ? '#c5d6f8' : '#e2e9f0',
+          toggle: () => this.setState(st => ({ alerts: { ...st.alerts, [r.id]: { ...(st.alerts[r.id] || {}), [k]: !(st.alerts[r.id] || {})[k] } } })) })) }; }),
+      isLocal, curLabel: isLocal ? CUR[0] : 'USD', toggleCur: () => this.setState(st => ({ cur: st.cur === 'local' ? 'usd' : 'local' })),
+      payNote: t('payNote', { amount: money(total) }),
+      isPhone: s.vw < 640,
+      navItems: [
+        ['shop', t('navShop'), 'fa-solid fa-house', () => { this.setState({ page: 'shop' }); scrollTop(); }],
+        ['search', t('searchSmall'), 'fa-solid fa-magnifying-glass', () => { this.setState({ page: 'shop' }); scrollTop(); setTimeout(() => { const i = document.querySelector('input[data-search]'); if (i) i.focus(); }, 60); }],
+        ['cart', tx.cart, 'fa-solid fa-cart-shopping', () => { const away = s.page !== 'shop'; this.setState({ page: 'shop' }); if (away || s.mode === 'pro') scrollTop(); }],
+        ['mine', t('navMine'), 'fa-regular fa-folder-open', () => { this.setState({ page: 'mine' }); scrollTop(); }]
+      ].map(([k, label, icon, go]) => ({ label, icon, go, color: (k === 'shop' && s.page === 'shop') || (k === 'mine' && s.page === 'mine') ? '#0950e3' : '#5a6b80', hasBadge: k === 'cart' && cartRows.length + bunIds.length > 0, badge: int(cartRows.length + bunIds.length) }))
+    };
+    const extra = {
+      ...filterVals, ...detail, ...v7,
+      isThanks: s.page === 'thanks', isMine: s.page === 'mine',
+      goShop: () => { this.setState({ page: 'shop' }); scrollTop(); },
+      goMine: () => { this.setState({ page: 'mine', langOpen: false }); scrollTop(); },
+      checkout: () => {
+        const ids = [...new Set([...s.cart, ...bunIds])];
+        if (!ids.length) return;
+        const oid = 'EF-' + String(Date.now()).slice(-5);
+        this.setState(st => ({ page: 'thanks', instStep: (() => { try { return localStorage.getItem('edgefolio-install-v1') ? -1 : 0; } catch (x) { return 0; } })(), lastOrder: { id: oid, ids, total }, cart: [], bundles: [],
+          purchased: [...ids.map(id => ({ id, date: '2026-10-05', order: oid, kind: 'paid' })), ...st.purchased.filter(p => !ids.includes(p.id))] }));
+        scrollTop();
+      },
+      bundles: Object.keys(BUN).filter(k => k !== 'custom').map(k => {
+        const b = BUN[k], on = s.bundles.includes(k), was = b.ids.length * 79;
+        const rowsB = b.ids.map(id => all.find(r => r.id === id));
+        const tick = [...new Set(rowsB.map(r => r.t))];
+        return { name: t(b.key), count: t('nStrategies', { n: int(b.ids.length) }), tickers: tick.join(' · '),
+          icons: tick.map(tk => ({ src: iconOf(rowsB.find(r => r.t === tk)) })),
+          was: pmoney(was), price: pmoney(b.price), save: t('saveP', { p: pct0(Math.round((1 - b.price / was) * 100)) }),
+          label: on ? tx.inCartBtn : t('addBundle'), btnIcon: on ? 'fa-solid fa-check' : 'fa-solid fa-cart-plus',
+          go: () => this.setState(st => on ? { bundles: st.bundles.filter(x => x !== k) } : { bundles: [...st.bundles.filter(x => !(x === 'custom' ? st.packIds : (BUN[x] || { ids: [] }).ids).some(id => b.ids.includes(id))), k], cart: st.cart.filter(id => !b.ids.includes(id)) }) };
+      }),
+      orderRows: lo.ids.map(id => mk(all.find(r => r.id === id))),
+      orderTotal: money(lo.total), orderLabel: t('orderN', { id: lo.id }),
+      linksNote: t('linksNote', { n: int(7), m: int(10) }),
+      installSteps: ['inst1', 'inst2', 'inst3', 'inst4'].map((k, i) => ({ n: int(i + 1), text: t(k) })),
+      mineRows: s.purchased.map(p => {
+        const r = all.find(x => x.id === p.id);
+        const days = 7 - Math.round((TODAY - new Date((p.linkDate || p.date) + 'T12:00:00')) / 86400000), valid = days > 0;
+        return { ...mk(r), when: t(p.kind === 'free' ? 'freeOn' : 'boughtOn', { date: fmtDate(p.date) }), order: p.order ? t('orderN', { id: p.order }) : '',
+          valid, expired: !valid, hasUpdate: p.kind === 'paid' && p.date < '2026-10-01' && !s.updated[p.id],
+          getUpdate: () => this.setState(st => ({ updated: { ...st.updated, [p.id]: true } })), status: valid ? t('linkValid', { n: int(days) }) : t('linkExpired'),
+          stBg: valid ? '#e8f7ef' : '#f1f4f8', stColor: valid ? '#15603c' : '#5a6b80',
+          renew: () => this.setState(st => ({ purchased: st.purchased.map(x => x.id === p.id ? { ...x, linkDate: '2026-10-05' } : x) })) };
+      }),
+      signedAs: t('signedAs', { e: 'ana@example.com' }),
+      freeOpen: !!s.freeFor, freeRow: mk(fr), freeEmail: s.freeEmail, onFreeEmail: e => this.setState({ freeEmail: e.target.value, freeErr: '' }), freeErrOn: !!s.freeErr, freeErr: s.freeErr ? t(s.freeErr) : '', freeBd: s.freeErr ? '#c0392b' : '#e2e9f0',
+      freeSentNow: s.freeSent, freeNotSent: !s.freeSent, newsOn: String(s.freeNews),
+      newsBg: s.freeNews ? '#0950e3' : '#ffffff', newsBorder: s.freeNews ? '#0950e3' : '#cfd6e6', newsCheck: s.freeNews ? '✓' : '',
+      toggleNews: () => this.setState(st => ({ freeNews: !st.freeNews })),
+      sendFree: () => this.sendFree(), freeKey: e => { if (e.key === 'Enter') this.sendFree(); },
+      closeFree: () => this.setState({ freeFor: '', freeSent: false, freeErr: '' }),
+      ...(() => {
+        const IS = s.instStep, r0 = all.find(x => x.id === lo.ids[0]) || all[0], m0 = mk(r0);
+        const ivTv = iv => ({ '1Day': '1D', '1Week': '1W' })[iv] || iv;
+        const closeInst = () => { try { localStorage.setItem('edgefolio-install-v1', '1'); } catch (e) {} this.setState({ instStep: -1 }); };
+        const go = n => this.setState({ instStep: n }), k = Math.max(0, IS) + 1, v = { sym: m0.ticker, int: ivTv(m0.interval) };
+        return {
+          instOpen: IS >= 0, inst1: IS <= 0, inst2: IS === 1, inst3: IS === 2, inst4: IS === 3, inst5: IS === 4, instHasBack: IS > 0,
+          instTourTitle: t('instTourTitle'), instWatch: t('instWatch'),
+          instStepLabel: t('tourStepOf', { n: int(k), total: int(5) }), instTitle: t('i' + k + 'T'), instText: t('i' + k + 'X', v),
+          instNextLabel: IS >= 4 ? t('instDone') : t('tourNext'),
+          instNext: () => { if (IS >= 4) closeInst(); else go(IS + 1); }, instBack: () => go(Math.max(0, IS - 1)), closeInst,
+          openInst0: () => this.setState({ instStep: 0, langOpen: false }),
+          instDots: [0, 1, 2, 3, 4].map(i => ({ w: i === IS ? '22px' : '8px', bg: i === IS ? '#0950e3' : '#cfd8e3', go: () => go(i), label: t('tourStepOf', { n: int(i + 1), total: int(5) }) })),
+          instCards: [1, 2, 3, 4, 5].map(i => ({ n: int(i), title: t('i' + i + 'T'), go: () => go(i - 1) })),
+          instIcon: m0.icon, instName: m0.name + ' · ' + m0.ticker, instFile: 'Tuisku_' + r0.f + '.pine', instCandle: m0.candle, instProfit: m0.profit,
+          instSym: m0.ticker, instInt: ivTv(m0.interval),
+          instChartUrl: 'https://www.tradingview.com/chart/?symbol=' + encodeURIComponent((r0.mkt === 'crypto' ? 'BINANCE:' : 'NASDAQ:') + r0.t) + '&interval=' + (({ '1Day': 'D', '1Week': 'W' })[m0.interval] || 'D'),
+          instTvLabel: t('instOpenTv', { sym: m0.ticker }),
+          instPD: e => this.swDown(e), instPU: e => this.swUp(e, 'instStep'), tourPD: e => this.swDown(e), tourPU: e => this.swUp(e, 'tourStep'),
+          instCols: s.vw >= 900 ? 'repeat(5,minmax(0,1fr))' : 'minmax(0,1fr)', instTileDir: s.vw >= 900 ? 'column' : 'row',
+          tyZip: t('zipTitle'), tyNewTab: t('newTab')
+        };
+      })(),
+      tourOpen: TS >= 0, tourS1: TS <= 0, tourS2: TS === 1, tourS3: TS === 2, tourHasBack: TS > 0,
+      tourStepLabel: t('tourStepOf', { n: int(Math.max(0, TS) + 1), total: int(3) }),
+      tourTitle: t(['tour1Title', 'tour2Title', 'tour3Title'][Math.max(0, TS)]),
+      tourText: TS <= 0 ? t(s.mode === 'pro' ? 'tour1Pro' : 'tour1Lite') : TS === 1 ? t('tour2Text') : t('tour3Text'),
+      tourNextLabel: TS === 2 ? t('tourStart') : t('tourNext'),
+      tourNext: () => { if (TS >= 2) closeTour(); else this.setState({ tourStep: TS + 1 }); },
+      tourBack: () => this.setState({ tourStep: Math.max(0, TS - 1) }),
+      closeTour, openTour: () => this.setState({ tourStep: 0, langOpen: false }), openTour3: () => this.setState({ tourStep: 2 }),
+      tourDots: [0, 1, 2].map(i => ({ w: i === TS ? '22px' : '8px', bg: i === TS ? '#0950e3' : '#cfd8e3' })),
+      tourIcons: ['AAPL', 'NVDA', 'AMZN', 'ADBE', 'BTC+USDT', 'ETH+USDT'].map(k => ({ src: this.R('storefront/assets/icons/' + k + '_big.svg') }))
+    };
+    return {
+      lang, dir: rtl ? 'rtl' : 'ltr', g90: rtl ? '270deg' : '90deg', tickShift: rtl ? 'translateX(100%)' : 'translateX(-100%)',
+      tx,
+      languages: LANGS.map(code => ({ code, flag: (labels[code] || {}).flag || '🌐', name: (labels[code] || {}).endonym || code, go: () => setLang(code),
+        bg: code === lang ? '#eef3fd' : 'transparent', color: code === lang ? '#0950e3' : '#16263a', weight: code === lang ? '600' : '400' })),
+      langFlag: (labels[lang] || {}).flag || '🌐', langName: (labels[lang] || {}).endonym || lang,
+      langOpen: s.langOpen, toggleLangMenu: () => this.setState(st => ({ langOpen: !st.langOpen, addOpen: false, openPill: '' })),
+      anyMenu: s.langOpen || s.addOpen || !!s.openPill, closeMenus: () => this.setState({ langOpen: false, addOpen: false, openPill: '' }),
+      tv: s.tv, tvOff: !s.tv, toggleTv: () => this.setState(st => ({ tv: !st.tv })), tvTitle: s.tv ? tx.tvDisconnect : tx.tvConnect,
+      isPro: s.page === 'shop' && s.mode === 'pro', isLite: s.page === 'shop' && s.mode !== 'pro', proChecked: String(s.mode === 'pro'),
+      toggleMode: () => { const m = s.mode === 'pro' ? 'lite' : 'pro'; try { localStorage.setItem('tuisku-sf-mode', m); } catch (e) {} this.setState({ mode: m }); },
+      proTrack: s.mode === 'pro' ? '#0950e3' : '#cfd8e3',
+      proKnob: s.mode === 'pro' ? (rtl ? 'translateX(-12px)' : 'translateX(12px)') : 'translateX(0px)',
+      q: s.q, onQ: e => this.setState({ q: e.target.value }),
+      tape: all.filter(r => r.p > 0).sort((a, b) => b.npp - a.npp).map(r => ({ icon: this.R('storefront/assets/icons/' + (r.icon || r.t) + '_big.svg'), ticker: r.t + ' · ' + r.k, pct: pctS(r.npp) })),
+      liteTabs: [['hot', t('tabHot')], ['win', tx.sortWin], ['stocks', t('tabStocks')], ['crypto', t('tabCrypto')], ['new', t('tabNew') + ' · ' + int(3)], ['free', t('landingFree')]].map(([k, label]) => ({
+        label, sel: String(tab === k), color: tab === k ? '#16263a' : '#5a6b80', line: tab === k ? '#0950e3' : 'transparent', go: () => this.setState({ liteTab: k }) })),
+      liteRows: liteRaw.map(mk), liteEmpty: liteRaw.length === 0,
+      liteShowing: t('showingN', { n: int(liteRaw.length), total: int(q || tab !== 'hot' && tab !== 'win' ? liteRaw.length : 2834) }),
+      proRows: proRaw.map(mk),
+      cartCount: int(cartRows.length + bunIds.length), cartHas: cartRows.length + s.bundles.length > 0,
+      shownCount: int(totalCount),
+      subtotal: pmoney(sub), total: pmoney(total),
+      tierLabel: (tier ? t('tierOn', { p: pct0(tier) }) : t('tierNone')) + (codeRate ? ' ' + t('plusCode', { p: pct0(codeRate) }) : ''),
+      nextTierMsg: next ? t('nextTier', { amount: money(next[0] - sub), p: pct0(next[1]) }) : t('topTier'),
+      ladderPct: lp.toFixed(1) + '%',
+      tiers: TIERS.map(([o, r], i) => ({ label: money0(o) + ' · ' + pct0(r), rate: pct0(r), amt: money0(o), pos: ((i + 1) * 20) + '%', tickBg: sub > o ? '#0950e3' : '#ffffff' })),
+      hasDiscount: rate > 0, liteOff: '−' + pct0(rate),
+      code: s.code, onCode: e => this.setState({ code: e.target.value }),
+      applyCode: () => { const c = s.code.trim(), ok = c.toLowerCase() === 'demo20'; this.setState({ applied: ok ? 'demo20' : '', codeState: c ? (ok ? 'ok' : 'bad') : '' }); },
+      codeMsg: s.codeState === 'ok' ? t('codeOk') : s.codeState === 'bad' ? t('codeBad') : '',
+      codeMsgColor: s.codeState === 'bad' ? '#c0392b' : '#15603c',
+      codeOpen: s.codeOpen, codeClosed: !s.codeOpen, openCode: () => this.setState({ codeOpen: true }),
+      emptyCart: () => this.setState({ cart: [], bundles: [] }),
+      toggleFree: () => this.setState(st => ({ freeOnly: !st.freeOnly })),
+      freeTrack: s.freeOnly ? '#0950e3' : '#cfd8e3',
+      freeKnobSm: s.freeOnly ? (rtl ? 'translateX(-12px)' : 'translateX(12px)') : 'translateX(0px)',
+      modeTabs: [['lite', 'Lite', 'fa-solid fa-bolt'], ['pro', 'Pro', 'fa-solid fa-chart-line']].map(([k, label, icon]) => {
+        const on = (s.mode === 'pro' ? 'pro' : 'lite') === k;
+        return { label, icon, on: String(on), bg: on ? '#0950e3' : 'transparent', color: on ? '#ffffff' : '#5a6b80', shadow: on ? '0 4px 12px rgba(9,80,227,.25)' : 'none',
+          go: () => { try { localStorage.setItem('tuisku-sf-mode', k); } catch (e) {} this.setState({ mode: k, page: 'shop' }); } };
+      }),
+      sortTabs: seg([['np', tx.sortNp], ['win', tx.sortWin], ['price', tx.sortPrice], ['trades', tx.sortTrades]], s.sort, k => this.setState({ sort: k })),
+      rangesHist: [
+        { label: t('fNetProfitUsd'), lo: money0(200), hi: money0(6500000), bars: histNp },
+        { label: t('fPrice'), lo: money0(0), hi: money0(140), bars: bars(priceArr, 0) }
+      ],
+      selects: [
+        { label: t('fSymbol'), value: t('selectedN', { n: int(60) }) },
+        { label: t('fTimeframe'), value: t('selectedN', { n: int(6) }) },
+        { label: t('fIndicators'), value: t('selectedN', { n: int(37) }) },
+        { label: t('fIndex'), value: 'NASDAQ, NYSE, CRYPTO' }
+      ],
+      freeKnob: s.freeOnly ? (rtl ? 'translateX(-14px)' : 'translateX(14px)') : 'translateX(0px)',
+      pills, addOpen: s.addOpen,
+      ...extra, toggleAdd: () => this.setState(st => ({ addOpen: !st.addOpen, openPill: '' })),
+      moreFilters: ['fNetProfitPct', 'fClosedTrades', 'fWinRate', 'fProfitFactor', 'fReleaseDate', 'fTrainingMonths', 'fMaxLossUsd', 'fMaxLossPct', 'fAvgProfitUsd', 'fAvgProfitPct', 'fAvgBars', 'fActivity', 'fCandles', 'fPrecision', 'fTreeDepth'].map(k => ({ label: t(k) })),
+      moreCount: int(15),
+      numCols, pages: pagesOf(proF.length),
+      rangeLabel: t('rangeOf', { from: int(proRaw.length ? 1 : 0), to: int(proRaw.length), total: int(totalCount) }),
+      viewTabs: seg([['rows', tx.viewRows, 'fa-solid fa-list'], ['cards', tx.viewCards, 'fa-solid fa-grip'], ['table', tx.viewTableTab, 'fa-solid fa-table']], s.pview, setPview),
+      isTable: s.pview === 'table', isRows: s.pview === 'rows', isCards: s.pview === 'cards', proListPager: s.pview !== 'table'
+    };
+  }
+}
+</script>
+</body>
+</html>

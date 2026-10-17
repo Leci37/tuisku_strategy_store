@@ -39,7 +39,4 @@ a:hover{text-decoration:underline}
 /* Los huecos de la barra del núcleo (topbar_start, topbar_end): sin caja propia, sus chips son de la
    fila de la barra, como en el diseño. */
 .ef-bar{display:contents}
-/* En un móvil, la barra de abajo de la tienda (fija) tapa los últimos 64 px: el hueco, debajo del pie del
-   núcleo, como en el diseño (con el aviso de cookies a la vista, la carcasa ya deja más). */
-@media (max-width:639.98px){body.app-shell{padding-bottom:64px}}
 .ef-noscript{padding:24px}

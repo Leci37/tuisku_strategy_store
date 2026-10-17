@@ -92,3 +92,14 @@ def test_the_page_keeps_its_hooks():
     for view in ("lite.js", "pro.js"):
         assert "data-sf-cart" in (views / view).read_text(encoding="utf-8")
     assert app.count("[data-sf-cart]") >= 2
+
+
+def test_the_bottom_bar_takes_its_room_with_the_core_hook():
+    """La barra de abajo del móvil (la del diseño) lleva data-zt-bottom (núcleo 0.28): la carcasa mide lo que
+    tapa y deja ese sitio. Nada de dejarlo a mano en el CSS (CONTRATO.md del núcleo, §26): con un alto
+    escrito, el aviso de cookies y los avisos del núcleo quedaban debajo de la barra (tests/test_phone_bar.py
+    lo mira en un navegador)."""
+    bar = (ROOT / "static" / "js" / "views" / "phonebar.js").read_text(encoding="utf-8")
+    assert re.search(r"<nav data-zt-bottom style=\"position:fixed;[^\"]*bottom:0;", bar)
+    css = (ROOT / "static" / "css" / "edgefolio.css").read_text(encoding="utf-8")
+    assert not re.search(r"body\.app-shell\s*\{[^}]*padding-bottom", css)

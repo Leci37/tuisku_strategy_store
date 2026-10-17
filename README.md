@@ -164,7 +164,7 @@ scripts de pago todo funciona, y una descarga contesta que el fichero no está.
 
 ```
 pip install -r requirements-dev.txt
-python -m playwright install chromium        # sólo para tools/screenshots.py
+python -m playwright install chromium        # tests/test_phone_bar.py y tools/screenshots.py
 pytest
 ```
 
@@ -172,12 +172,14 @@ Ninguna prueba sale a la red: PayPal es el de prueba y los correos se quedan en
 `testing.mail_outbox()`. `tests/test_smoke.py` lleva `testing.check_tool(app, privacy_sample=sample)`, el
 contrato del núcleo hecho prueba (desde la 0.30, también «Tus datos»: exporta lo de una cuenta, la borra y
 comprueba que no queda nada fuera de los pedidos). Las de los scripts de pago (`test_formats.py`,
-`test_cli.py`) los sacan de la historia del repo; en un clon sin ella, se saltan.
+`test_cli.py`) los sacan de la historia del repo; en un clon sin ella, se saltan. `test_phone_bar.py` abre
+un Chromium (el kit del núcleo, `testing.mobile`); sin él, se salta.
 
 | Fichero | Qué prueba |
 |---|---|
 | `test_smoke.py` | el contrato del núcleo (con «Tus datos»); la ficha (pública, sin precios en créditos, la palabra Edgefolio); lo público y lo que pide sesión; la página en el idioma de la carcasa |
 | `test_privacy.py` | «Tus datos»: lo que sale en «Descargar mis datos» (lo de la cuenta y lo hecho sin ella con un correo demostrado, aquí o en el núcleo; nunca con uno sin demostrar, ni lo de otra cuenta, ni un enlace o un hash); al borrar la cuenta, los pedidos se quedan sin quién los hizo y lo demás se va; el pedido de una cuenta borrada no se cobra; los avisos no le escriben |
+| `test_phone_bar.py` | en un Chromium, la barra de abajo del móvil con el gancho del núcleo (`data-zt-bottom`): la página deja lo que tapa, y el pie queda encima; en un ordenador, ni barra ni sitio |
 | `test_pricing.py`, `test_bundles.py` | los precios sólo del catálogo; los escalones y el código sumados con el tope del 70 %; los códigos de precio único; los lotes y el pack; una estrategia nunca dos veces; los lotes que se publican |
 | `test_search.py` | los filtros, el orden, las páginas y los histogramas contra el catálogo de verdad; que sean rápidos |
 | `test_orders.py` | pagar y descargar; el importe de PayPal comprobado; los enlaces que caducan y se gastan (también a la vez); el recibo con enlaces sólo para el navegador que compró, la cuenta que compró o la que demostró el correo |

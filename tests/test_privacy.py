@@ -193,7 +193,8 @@ def test_deleting_my_account_keeps_my_orders_without_who_made_them(app, client, 
     follow(luis, MSFT, pd=True)
     before = {oid: order_row(app, oid) for oid in (anonymous["order_id"], mine["order_id"], his["order_id"])}
 
-    assert not testing.close_account(app, ana.user_id), "no queda nada suyo"
+    left = testing.close_account(app, ana.user_id)
+    assert isinstance(left, testing.Leftovers) and not left, left.summary()
 
     for oid, owner in ((mine["order_id"], ana.user_id), (anonymous["order_id"], None)):
         now = order_row(app, oid)
@@ -251,7 +252,9 @@ def test_a_closed_account_s_order_is_not_charged(app, paypal):
 
 def test_the_alerts_never_write_to_a_closed_account(app, settings, paypal):
     """Entre «Borrar mi cuenta» y la parte de la tienda pasan minutos (núcleo 0.30): sus favoritas y la
-    prueba de su correo siguen ahí, y el trabajo de los avisos no le escribe (``privacy.closed``)."""
+    prueba de su correo siguen ahí, y el trabajo de los avisos no le escribe (``privacy.closed``). Al día
+    siguiente el núcleo mira otra vez lo que queda de la cuenta: lo vuelve a poner en la cola, y el ``erase``
+    de la tienda, que se puede repetir, se lo lleva."""
     ana = account(app)
     follow(ana, TSLA, pd=True)
     run(app)                                         # la primera vuelta: la foto
@@ -268,6 +271,13 @@ def test_the_alerts_never_write_to_a_closed_account(app, settings, paypal):
     republish(app, settings, paypal, rows, BUNDLES)
     assert "1 estrategias cambiaron; 0 correos" in run(app)
     assert mails("ana@example.com") == [], "ni con su prueba ni con su favorita aún ahí"
+
+    tomorrow = utcnow() + timedelta(days=1, minutes=1)
+    served = [part for _ in range(3) for part in testing.run_privacy(app, at=tomorrow)]
+    assert [(part.kind, part.status) for part in served] == [("erase", "done")]
+    with app.app_context():
+        assert Favourite.query.filter_by(user_id=ana.user_id).count() == 0
+        assert EmailProof.query.filter_by(user_id=ana.user_id).count() == 0
 
 
 def test_the_sample_is_what_the_shop_writes(app):

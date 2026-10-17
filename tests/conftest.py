@@ -81,8 +81,10 @@ def proof_token(email: str) -> str:
 
 
 def outbox(to=None) -> list:
-    """Los correos que la tienda «mandó» (no sale ninguno): {to, subject, body}."""
-    out = [{"to": str(m["To"]), "subject": str(m["Subject"]), "body": m.get_content()} for m in testing.mail_outbox()]
+    """Los correos que la tienda «mandó» (no sale ninguno): {to, subject, body}. De uno con su versión en HTML
+    (los del núcleo, como el adiós de una cuenta borrada), su texto."""
+    out = [{"to": str(m["To"]), "subject": str(m["Subject"]),
+            "body": m.get_body(preferencelist=("plain",)).get_content()} for m in testing.mail_outbox()]
     return [m for m in out if to is None or m["to"] == to]
 
 

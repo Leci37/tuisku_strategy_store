@@ -22,7 +22,7 @@ from edgefolio.models import Download, EmailProof, Favourite, FreeClaim, Mailbox
 from edgefolio.paypal import Capture
 from edgefolio.web import digest
 from tests.conftest import BUNDLES, ROWS, prove, signed, visitor
-from tests.test_alerts import account, follow, republish, run
+from tests.test_alerts import account, follow, mails, republish, run
 from tests.test_free import claim, confirm_link, free_file  # noqa: F401 (free_file es un fixture)
 from tests.test_mine import AAPL, MSFT, buy
 
@@ -267,7 +267,7 @@ def test_the_alerts_never_write_to_a_closed_account(app, settings, paypal):
     rows[3]["Price"] = "40"                          # TSLA, más barata
     republish(app, settings, paypal, rows, BUNDLES)
     assert "1 estrategias cambiaron; 0 correos" in run(app)
-    assert [m for m in testing.mail_outbox() if m["X-ZT-Kind"] == "edgefolio-alert"] == []
+    assert mails("ana@example.com") == [], "ni con su prueba ni con su favorita aún ahí"
 
 
 def test_the_sample_is_what_the_shop_writes(app):

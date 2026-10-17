@@ -8,13 +8,14 @@ ahora: un cambio se avisa una vez. La primera vuelta sólo toma la foto: aún no
 
 Los avisos van al correo de la cuenta sólo si la cuenta ha demostrado que es suyo (``proofs``): el
 núcleo no lo comprueba al darse de alta, y nadie tiene que recibir correos porque otro se registrara
-con su dirección y marcara unas casillas.
+con su dirección y marcara unas casillas. Y nunca a una cuenta borrada (``privacy.closed``, núcleo 0.30).
 """
 from __future__ import annotations
 
 from decimal import Decimal
 
 from zlecitool_core.db import db, utcnow
+from zlecitool_core.privacy import closed
 
 from . import proofs
 from .models import AlertState, Favourite
@@ -88,10 +89,14 @@ def run(shop, base_url: str, mail) -> dict:
     found = changes(before, now)
     per_person = {}  # user_id -> (correo, idioma, [líneas])
     unconfirmed = set()
-    for sub in subscriptions():
+    subs = subscriptions()
+    # Entre «Borrar mi cuenta» y la parte de la tienda (núcleo 0.30) pasan minutos: sus favoritas siguen
+    # aquí, y su correo no recibe nada más.
+    gone = closed({sub.user_id for sub in subs})
+    for sub in subs:
         news = found.get(sub.item_key)
         s = catalogue.items.get(sub.item_key)
-        if not news or not s:
+        if not news or not s or sub.user_id in gone:
             continue
         if not proofs.is_proven(sub.user_id, sub.email):
             unconfirmed.add(sub.user_id)

@@ -169,13 +169,15 @@ pytest
 ```
 
 Ninguna prueba sale a la red: PayPal es el de prueba y los correos se quedan en
-`testing.mail_outbox()`. `tests/test_smoke.py` lleva `testing.check_tool(app)`, el contrato del núcleo
-hecho prueba. Las de los scripts de pago (`test_formats.py`, `test_cli.py`) los sacan de la historia del
-repo; en un clon sin ella, se saltan.
+`testing.mail_outbox()`. `tests/test_smoke.py` lleva `testing.check_tool(app, privacy_sample=sample)`, el
+contrato del núcleo hecho prueba (desde la 0.30, también «Tus datos»: exporta lo de una cuenta, la borra y
+comprueba que no queda nada fuera de los pedidos). Las de los scripts de pago (`test_formats.py`,
+`test_cli.py`) los sacan de la historia del repo; en un clon sin ella, se saltan.
 
 | Fichero | Qué prueba |
 |---|---|
-| `test_smoke.py` | el contrato del núcleo; la ficha (pública, sin precios en créditos, la palabra Edgefolio); lo público y lo que pide sesión; la página en el idioma de la carcasa |
+| `test_smoke.py` | el contrato del núcleo (con «Tus datos»); la ficha (pública, sin precios en créditos, la palabra Edgefolio); lo público y lo que pide sesión; la página en el idioma de la carcasa |
+| `test_privacy.py` | «Tus datos»: lo que sale en «Descargar mis datos» (lo de la cuenta y lo hecho sin ella con un correo demostrado, aquí o en el núcleo; nunca con uno sin demostrar, ni lo de otra cuenta, ni un enlace o un hash); al borrar la cuenta, los pedidos se quedan sin quién los hizo y lo demás se va; el pedido de una cuenta borrada no se cobra; los avisos no le escriben |
 | `test_pricing.py`, `test_bundles.py` | los precios sólo del catálogo; los escalones y el código sumados con el tope del 70 %; los códigos de precio único; los lotes y el pack; una estrategia nunca dos veces; los lotes que se publican |
 | `test_search.py` | los filtros, el orden, las páginas y los histogramas contra el catálogo de verdad; que sean rápidos |
 | `test_orders.py` | pagar y descargar; el importe de PayPal comprobado; los enlaces que caducan y se gastan (también a la vez); el recibo con enlaces sólo para el navegador que compró, la cuenta que compró o la que demostró el correo |
@@ -258,6 +260,28 @@ registró con su dirección y marcó unas casillas.
 Desde Mis estrategias se pide un enlace nuevo cuando uno caduca o se gasta (o hay una versión nueva; uno
 que funciona no se cambia, para que el botón no reinicie el límite), se lee el script entero (la vista de
 propietario de «Cómo decide») y se guardan las favoritas con sus avisos.
+
+### Tus datos: descargarlos y borrar la cuenta
+
+«Mis datos» (en la cuenta, del núcleo 0.30) da a cada cuenta **«Descargar mis datos»** y **«Borrar mi
+cuenta»** en todas las herramientas. Las páginas, el zip, la cola y la comprobación son del núcleo; lo de
+la tienda lo hace `edgefolio/your_data.py`, registrado en `app.py` con `privacy.add_privacy`, en el reloj
+de la tienda (sin la petición de nadie):
+
+- **Qué es de la cuenta:** lo hecho con la sesión abierta y lo hecho sin cuenta con un correo demostrado:
+  el de la cuenta, si lo demostró el núcleo (al entrar con un enlace por correo), y los que demostró aquí
+  («¿Compraste sin cuenta?»). Nunca lo que sólo coincide con un correo sin demostrar.
+- **El zip** lleva, en `edgefolio/`: sus pedidos y sus enlaces de descarga, sus gratis, sus favoritas, las
+  pruebas de sus correos y, de cada correo demostrado, su alta en las novedades y su fila del buzón. Sin
+  los enlaces, ni el hash de la cookie de quien compra, ni el de un enlace de confirmar.
+- **Al borrar la cuenta, los pedidos se quedan**: son el registro de una venta, que pide la ley fiscal
+  (lo vendido, el importe, la fecha). Pierden quién los hizo: el correo, el de PayPal y el hash de la
+  cookie del navegador que compró; los hechos con la sesión abierta siguen apuntando a la cuenta borrada,
+  y sus enlaces, que ya no ve nadie, caducan solos. Lo demás se va: sus gratis, sus favoritas, sus pruebas,
+  y sus novedades y su fila del buzón. Lo hecho sin cuenta con un correo demostrado se va también si otra
+  cuenta demostró el mismo correo (es de quien lo controla).
+- Desde el borrado, los avisos de las favoritas no le escriben (también antes de que se sirva la parte de
+  la tienda: pasan minutos), y un pedido suyo que vuelve de PayPal no se cobra (409 `errAccountClosed`).
 
 ### Las gratis y las novedades
 
@@ -360,6 +384,12 @@ cuentas, la sesión, el idioma elegido y lo demás de la familia los lleva el n�
 | `edgefolio_alert_state` | `item_key` (clave), `version`, `price`, `bundles` (JSON), `updated_at` | cómo era cada estrategia en la última vuelta de los avisos: un cambio se avisa una vez |
 | `edgefolio_email_proof` | `id`, `user_id` → `core_user`, `email` (únicos juntos), `token_hash`, `requested_at`, `expires_at`, `verified_at` | que una cuenta ha demostrado un correo (`verified_at`); hasta entonces, el hash del enlace mandado |
 | `edgefolio_mailbox` | `email` (clave), `first_seen_at`, `last_seen_at` | una fila por dirección a la que escribe la tienda: se bloquea para contar lo que va por dirección (las gratis del día) de una vez, en SQLite y en Postgres |
+
+Al borrar una cuenta («Tus datos», arriba), `edgefolio_order` se queda sin correo, sin `payer` y sin
+`buyer_hash`, y `edgefolio_download` con él; las filas de la cuenta de `edgefolio_free_claim`,
+`edgefolio_favourite` y `edgefolio_email_proof` se van, y las de sus correos demostrados en
+`edgefolio_free_claim`, `edgefolio_subscriber` y `edgefolio_mailbox`, también. `edgefolio_alert_state` no
+guarda nada de nadie.
 
 Los enlaces de un solo uso y la cookie de quien compra se guardan sólo como hash. Fuera de la base de
 datos, en `<ZLECITOOL_DATA_DIR>/edgefolio/`: `strategies/` (los scripts de pago), `thumbs/` (las
@@ -476,7 +506,7 @@ Otras dos formas, sin Flask (sólo pandas):
 
 1. **El servidor**: Python 3.10 o más (3.11 recomendado), con HTTPS delante.
 2. **El núcleo** es privado: un token de GitHub con lectura de `Leci37/zlecitool-core` para que `pip` lo
-   instale en la etiqueta que fija `requirements.txt` (**v0.23.0**).
+   instale en la etiqueta que fija `requirements.txt` (**v0.30.0**).
 3. `pip install -r requirements.txt`
 4. **El entorno**: el común de la familia (`FLASK_SECRET_KEY` el mismo que las otras, `DATABASE_URL` a
    Postgres, `ZLECITOOL_PUBLIC_URL`, el SMTP, `ZLECITOOL_TRUSTED_PROXIES=1` detrás de nginx, los datos
@@ -487,8 +517,10 @@ Otras dos formas, sin Flask (sólo pandas):
    los copia, comprobados con el manifiesto del paquete, al `STRATEGIES_DIR` de la máquina donde se
    importa: al servidor se llevan de ahí); los del de ahora, con `flask --app app edgefolio
    restore-scripts` desde un clon con la historia.
-6. **Arrancar**: `gunicorn -c gunicorn.conf.py "app:create_app()"` (el `Procfile`). Las tablas se crean
-   solas.
+6. **Arrancar**: `gunicorn -c gunicorn.conf.py "app:create_app()"` (el `Procfile`), sin `--preload`: el
+   reloj del núcleo vive en cada proceso, y con él «Tus datos». Las tablas se crean solas. «Borrar mi
+   cuenta» sale sola cuando todas las herramientas de la base de datos van en la 0.30 o más nueva y han
+   latido; después de volver a una copia, `flask --app app zt privacy reclose` antes de abrir las puertas.
 7. **Los trabajos diarios**: `flask --app app edgefolio send-alerts` y `fx-update`, con cron.
 8. **Los datos de la versión FastAPI** (`private/shop.db`) no se traen solos: sus pedidos no tienen cuenta
    del núcleo, así que pasarían a ser pedidos sin cuenta (que cada comprador ve al demostrar su correo).
@@ -555,6 +587,7 @@ app.py, tool.json          el arranque y la ficha
 edgefolio/                 la tienda: routes.py (las rutas), models.py (las tablas), cli.py (los comandos);
                            catalogue, search, pricing, paypal, orders, downloads, formats, free, mine,
                            proofs, alerts, media, fx, settings, shop, web (el trabajo, sin Flask);
+                           your_data (lo de una cuenta en «Tus datos»: exportarlo y borrarlo);
                            release.py (importar un paquete del generador)
 templates/edgefolio/       shop.html, la página sobre zt/base.html
 static/                    la página tal cual (sin compilar): js/ (Preact + htm, las vistas del diseño),

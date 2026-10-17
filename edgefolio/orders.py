@@ -24,6 +24,7 @@ from urllib.parse import urlencode
 from sqlalchemy import update
 
 from zlecitool_core.db import db, utcnow
+from zlecitool_core.privacy import closed
 
 from . import pricing
 from .models import Download, Order
@@ -111,12 +112,17 @@ def find(paypal_id: str) -> Optional[Order]:
 def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = None) -> Order:
     """Cobrar en PayPal y comprobar que se pagó el total del pedido, en su moneda. Repetirlo (un fallo de
     red) no cobra otra vez: un pedido pagado se devuelve tal cual. ``on_paid(order)`` corre una sola vez
-    por pedido, en el cobro que lo pasó a pagado (el recibo por correo)."""
+    por pedido, en el cobro que lo pasó a pagado (el recibo por correo). El de una cuenta borrada no se
+    cobra (409 ``errAccountClosed``)."""
     order = find(paypal_id)
     if order is None:
         raise Refusal("errUnknownOrder", 404)
     if order.status == "PAID":
         return order
+    if order.user_id is not None and closed([order.user_id]):
+        # La cuenta que lo pidió se borró mientras pagaba en PayPal: no se cobra (el dinero no se mueve y
+        # PayPal deja caducar lo aprobado), y su pedido, que se queda sin correo, no vuelve a tenerlo.
+        raise Refusal("errAccountClosed", 409)
     try:
         cap = shop.paypal.capture(paypal_id)
     except PayPalError as e:

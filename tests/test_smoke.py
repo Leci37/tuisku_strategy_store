@@ -3,18 +3,22 @@
 
 testing.check_tool(app) es el contrato del núcleo hecho prueba (que cada página pide sesión salvo lo
 @public, que cada texto está en los 8 idiomas, la barra, el pie, las cabeceras de seguridad…). Crece con
-cada versión del núcleo: no se quita ni se rodea.
+cada versión del núcleo: no se quita ni se rodea. Desde la 0.30 recibe ``privacy_sample``: lo de una cuenta
+como lo de verdad (``sample``, en tests/test_privacy.py), con lo que exporta, borra la cuenta y comprueba que
+no queda nada fuera de los pedidos (``keep``), y que ésos se quedan sin correo.
 """
 from pathlib import Path
 
 from zlecitool_core import load_ficha, testing
+
+from tests.test_privacy import sample
 
 ROOT = Path(__file__).resolve().parent.parent
 FICHA = load_ficha(ROOT)
 
 
 def test_the_tool_meets_the_core_contract(app):
-    testing.check_tool(app)
+    testing.check_tool(app, privacy_sample=sample)
 
 
 def test_the_package_is_named_after_the_slug():

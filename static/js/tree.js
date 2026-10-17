@@ -81,11 +81,12 @@ const TEXT = {
 // Every tree shares these two files; one request each per visit, not per strategy.
 let shared = null;
 const sharedData = () => shared || (shared = Promise.all([
-  fetch('/static/trees/features.json').then(r => { if (!r.ok) throw new Error('/static/trees/features.json'); return r.json(); }),
+  fetch('/static/trees/features.json').then(r => (r.ok ? r.json() : r.text().then(() => { throw new Error('/static/trees/features.json'); }))),
   fetch('/static/trees/ui.json').then(r => r.json()).catch(() => ({}))
 ]).catch(e => { shared = null; throw e; }));
 
-const text = (url, init) => fetch(url, init).then(r => { if (!r.ok) throw new Error(url + ' (' + r.status + ')'); return r.text(); });
+// La respuesta de un fallo también se lee: Chromium no da por acabada una no-store que nadie lee (núcleo 0.28).
+const text = (url, init) => fetch(url, init).then(r => (r.ok ? r.text() : r.text().then(() => { throw new Error(url + ' (' + r.status + ')'); })));
 const rowId = P => (P.strategy && P.strategy.id) || '';
 
 // What the script does with a score. Every script of the catalogue (all 4,578 checked) buys at

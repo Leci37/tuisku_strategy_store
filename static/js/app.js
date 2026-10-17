@@ -268,7 +268,8 @@ export class App extends Component {
 
   fetchPreview(url) {
     this.asked.add(url);
-    fetch(url).then(r => (r.ok ? r.text() : '')).catch(() => '')
+    // la respuesta de un fallo también se lee: Chromium no da por acabada una no-store que nadie lee (núcleo 0.28)
+    fetch(url).then(r => (r.ok ? r.text() : r.text().then(() => ''))).catch(() => '')
       .then(text => this.setState(st => ({ pine: { ...st.pine, [url]: text } })));
   }
 

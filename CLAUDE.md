@@ -41,13 +41,19 @@ README de aquí: la base de datos, las compras, la prueba de un correo.
    script.
 10. **Toda ruta pide sesión** sin hacer nada; lo que usa quien entra sin
     cuenta (mirar, comprar, descargar con su enlace, la gratis) se marca con
-    `@public`. Nada de `login_required` a mano. Lo hecho con la sesión abierta
-    lleva `user_id` → `core_user.id`.
+    `@public`. Nada de `login_required` a mano. Entrar es del núcleo, también
+    con un enlace por correo (0.26): nada de `login_user` ni de un «entrar por
+    correo» propio (la tienda perdió el suyo al pasar al núcleo); para llevar a
+    él, `url_for('zlecitool_accounts.link_request', next=…)`. Lo hecho con la
+    sesión abierta lleva `user_id` → `core_user.id`.
 11. **Un correo no es una cuenta.** El núcleo no comprueba el correo al darse
     de alta: lo hecho sin cuenta con un correo (un pedido, una gratis) sólo es
     de una cuenta que ha **demostrado** ese correo (`proofs`, tabla
     `edgefolio_email_proof`). Nunca se enseña nada sólo porque el correo de la
     cuenta coincide. Los avisos de las favoritas, tampoco sin demostrarlo.
+    Desde la 0.26 el núcleo demuestra el correo de la cuenta al entrar con un
+    enlace (`accounts.email_proven()`); Mis estrategias sigue pidiendo la
+    prueba de la tienda, y «Tus datos» (regla 23) vale con las dos.
 12. **Los precios, sólo en el servidor.** El navegador manda ids, claves de
     lotes y el código tecleado; el servidor pone el precio, el descuento (con
     el tope de `MAX_DISCOUNT`) y el total que se pide a PayPal, y comprueba el
@@ -73,12 +79,69 @@ README de aquí: la base de datos, las compras, la prueba de un correo.
     lo que adaptó la tienda se queda (rutas, ganchos `data-*`, `dir="auto"`,
     «Pagar» ocupado, avisos) y el cambio del diseño entra. El zip va tal cual
     a `docs/handoff/<fecha>/` con su `CAMBIOS.md` («Para el núcleo»: barra,
-    pie, cuenta, idioma, cookies, el tutorial del núcleo).
+    pie, cuenta, idioma, cookies, el tutorial del núcleo). Una pantalla de app
+    (en el móvil, con `"app"` en la ficha) extiende `zt/app.html` (barra
+    compacta, pestañas de la ficha, sin pie).
 18. **Nada de JavaScript en línea** (ni `<script>…</script>` ni `onclick=`):
     va en `static/js/`, con módulos.
 19. **Los correos** con `zlecitool_core.mail.send`, en el idioma de la
     petición; sus enlaces, con `http.external_url(…, trusted_host_ok=False)`:
     con `ZLECITOOL_PUBLIC_URL`, nunca con la cabecera Host.
+20. **Lo que toca a una hora o cada N minutos** se declara en `"schedule"` de
+    `tool.json`, y su función, en `edgefolio/`, se registra con
+    `add_task(app, "nombre", función)` en `create_app()`, antes de
+    `create_tables(app)` (núcleo 0.25). Nada de hilos con `sleep`, `cron` ni
+    APScheduler: con dos procesos o dos servidores correría dos veces. Corre en
+    otro hilo, sin la petición de nadie ni `current_user`, y **puede
+    repetirse**: se cuenta desde `run.scheduled_for` (cuándo tocaba), nunca
+    desde «ahora», y lo hecho se apunta con `run.key` en una columna única de
+    su tabla, en la misma transacción. Antes de esperar algo lento que no es
+    del núcleo (el BCE o PayPal, con httpx), `db.end_idle_transaction()`. Sus
+    enlaces, con `external_url(…, trusted_host_ok=False)`. En sus pruebas,
+    `testing.run_task(app, "nombre", at=…)` dos veces y `testing.tick(app, at)`.
+    `fx-update` y `send-alerts` son de antes y van aún con `cron`, en un solo
+    servidor (README, «Comandos»): pasarlos a `"schedule"` (con sus enlaces de
+    `public_base()` a `external_url()`) está pendiente, y se hace a la vez que
+    se quita su `cron`.
+21. **El móvil es del núcleo** (0.28). La app se pide en la ficha (`"app"`;
+    la tienda no la tiene); ni *service worker* ni manifiesto propios; nada de
+    nadie en las cachés del navegador (lo que es de alguien, nunca
+    `Cache-Control: public`). Las claves nuevas de `localStorage`, con el slug
+    (`edgefolio.algo`; las de antes, `tuisku-sf-…` y `edgefolio-…`, se quedan:
+    cambiarlas olvidaría lo elegido). La barra de abajo del diseño
+    (`views/phonebar.js`) lleva `data-zt-bottom`: la carcasa mide lo que tapa
+    y deja su sitio, nunca un `padding-bottom` a mano. Los diálogos y las hojas
+    nuevos, con `zt.openDialog`; las pruebas en un navegador, con
+    `testing.mobile` (`tests/test_phone_bar.py`).
+22. **Los avisos y el dispositivo, del núcleo** (0.29). Un aviso de la bandeja
+    o del móvil, con `notices.send` (sus tipos en `"notices"` de `tool.json` y
+    sus textos en `i18n/ui.json`; en una tarea o un trabajo, con `key`): nada
+    de push, campana ni permiso de avisos propios (el permiso, con
+    `zt.push.ask()` dentro de un toque). Los correos de la tienda (las
+    gratis, los avisos de las favoritas, el recibo) siguen siendo correos
+    (regla 19). El movimiento, la cámara, compartir y la pantalla encendida,
+    con `zt.motion`, `zt.scan`, `zt.share` y `zt.keepAwake`, con su permiso en
+    `"permissions"`; lo leído de un código es de fuera: se comprueba en el
+    servidor.
+23. **Tus datos, del núcleo** (0.30). «Mis datos» (descargar mis datos y
+    borrar la cuenta) es del núcleo; lo de la tienda lo exporta y lo borra
+    `edgefolio/your_data.py`, registrado con `privacy.add_privacy(app,
+    export=…, erase=…, keep=…)` en `create_app()`, antes de
+    `create_tables(app)`. Las dos corren en su reloj, sin `current_user`, y
+    **pueden repetirse**; `erase` no confirma. Cada columna con el id de una
+    cuenta, con `db.ForeignKey("core_user.id")`. Lo hecho sin cuenta es de una
+    cuenta sólo por un correo demostrado: el de la cuenta si lo demostró el
+    núcleo (`subject.email`) o uno de sus pruebas (regla 11); nunca por uno sin
+    demostrar. **Los pedidos se quedan** (`keep`: los pide la ley fiscal), sin
+    correo, sin el de PayPal y sin el hash de la cookie de quien compró; los de
+    la cuenta, apuntando a la cuenta borrada. Lo demás de la cuenta se va. Una
+    tabla o una columna nueva con algo de una persona entra en `export` y
+    `erase` en el mismo cambio. Lo que escribe o manda un correo a cuentas
+    fuera de una petición (los avisos de las favoritas) mira antes
+    `privacy.closed(ids)`, y el pedido de una cuenta borrada no se cobra. Nada
+    de borrar ni exportar por su cuenta. `check_tool(app, privacy_sample=…)` lo
+    comprueba (`tests/test_privacy.py`, con `testing.export_account` y
+    `testing.close_account`).
 
 ## La aplicación gemela
 

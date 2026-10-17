@@ -42,6 +42,16 @@ def test_production_runs_gunicorn_with_its_config(monkeypatch):
     assert conf["worker_class"] == "gthread" and conf["bind"] == "0.0.0.0:5105"
 
 
+def test_gunicorn_does_not_preload_the_app(monkeypatch):
+    """Con ``preload_app``, la app arrancaría en el proceso padre, y su reloj de las tareas (núcleo 0.25) con
+    ella: sus hilos no pasan de un fork, y ningún proceso que atiende serviría «Tus datos» (núcleo 0.30) ni
+    latiría."""
+    for name in ("WEB_CONCURRENCY", "GUNICORN_THREADS", "GUNICORN_TIMEOUT", "GUNICORN_MAX_REQUESTS", "PORT"):
+        monkeypatch.delenv(name, raising=False)
+    assert not runpy.run_path(str(ROOT / "gunicorn.conf.py")).get("preload_app")
+    assert "--preload" not in (ROOT / "Procfile").read_text(encoding="utf-8")
+
+
 def test_the_local_port_is_the_launchers():
     assert 'os.environ.get("PORT", "5105")' in (ROOT / "app.py").read_text(encoding="utf-8")
     assert "PORT=5105" in (ROOT / ".env.example").read_text(encoding="utf-8")

@@ -8,7 +8,8 @@ from PIL import Image
 from edgefolio import fx, media
 from edgefolio.settings import STATIC
 
-STEM = "AAPL_1Day_1C00_ac87f0dc_profit"
+# un gráfico del catálogo publicado (el primero que tenga), no uno con nombre fijo: el catálogo cambia
+STEM = sorted((STATIC / "assets" / "charts").glob("*_profit.png"))[0].stem
 
 
 def test_thumbnail_is_a_small_webp_made_once(client, settings):

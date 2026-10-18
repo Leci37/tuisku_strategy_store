@@ -8,6 +8,11 @@ La fábrica escribe cada árbol como una función Pine `decision_tree_N_...(...)
 `op_operation` de los árboles, compra con `op_operation >= X` y cierra con `op_operation <= Y`. Con
 `op_operation <= 0` arma su orden de salida: un stop loss y un take profit (las entradas `sl`,
 `tp1`..`tp3`, en % del precio de entrada) que pasan por tres etapas (getCurrentStage) según sube el precio.
+
+La plantilla de la fábrica de 2026 lo escribe de otra forma, y también se lee: los umbrales son entradas
+(`buyThreshold`, `sellThreshold`), compra con `op_operation >= buyThreshold` (y sólo desde `tradeFrom` y
+hasta que caduca), cierra con `op_operation <= sellThreshold`, y las salidas (`slPercent`..`tp3Percent`)
+van con la entrada y se mueven por etapas en cada vela mientras hay posición (`if strategy.position_size > 0`).
 """
 from __future__ import annotations
 
@@ -40,6 +45,13 @@ RE_CUR_STAGE = re.compile(r"^(?:else\s+)?if\s+curStage\s*==\s*(\d+)")
 RE_STOP_LEVEL = re.compile(r"^stopLevel\s*:=\s*calcStopLossPrice\(\s*(-?\w+(?:\.\d+)?)\s*\)")
 RE_EXIT = re.compile(r"^strategy\.exit\((.*)\)")
 RE_ENTRY_STOP = re.compile(r"^stop\s*:=\s*close\s*\*\s*" + NUM)
+# La plantilla de 2026: umbrales y salidas como entradas, y las salidas puestas mientras hay posición.
+RE_THRESHOLD = re.compile(r"^(buy|sell)Threshold\s*=\s*input(?:\.float)?\(\s*" + NUM)
+RE_INPUT_PCT = re.compile(r"^(sl|tp1|tp2|tp3)Percent\s*=\s*input(?:\.float)?\(\s*" + NUM +
+                          r'(?:.*?title\s*=\s*"([^"]*)")?')
+RE_BUY_INPUT = re.compile(r"^if\b.*\bop_operation\s*>=\s*buyThreshold\b")
+RE_CLOSE_INPUT = re.compile(r"^if\b.*\bop_operation\s*<=\s*sellThreshold\b")
+RE_IN_POSITION = re.compile(r"^if\s+strategy\.position_size\s*>\s*0\s*$")
 
 BETA = ("BETA: generated automatically from the Pine script. Check its signals against the strategy "
         "running in TradingView before relying on them; the Pine script is the reference.")
@@ -104,6 +116,8 @@ class Script:
     exits: Optional[Exits] = None
     pyramiding: Optional[int] = None
     entry_stop: Optional[str] = None  # el stop de la orden de entrada = close * esto (un precio de entrada, no un stop loss)
+    exits_always: bool = False     # las salidas van con la entrada y se mueven en cada vela con posición (plantilla de 2026)
+    dated: bool = False            # sólo abre posiciones desde su fecha "trade from" y hasta que caduca
 
 
 def _lines(src: str) -> list:
@@ -189,7 +203,7 @@ def _exits(lines: list, arm_block: list) -> Optional[Exits]:
     exits = Exits()
     ups = {}
     for _, text in lines:
-        if m := RE_INPUT.match(text):
+        if m := RE_INPUT.match(text) or RE_INPUT_PCT.match(text):
             exits.pct[m.group(1)] = m.group(2)
             exits.titles[m.group(1)] = (m.group(3) or m.group(1)).replace("%", "").strip()
         if m := RE_TRAIL.match(text):
@@ -210,6 +224,7 @@ def parse(src: str) -> Script:
     name = next((m.group(1) for _, t in lines if (m := RE_NAME.match(t))), "")
     script = Script(name, [_tree(lines, n) for n, (_, t) in enumerate(lines) if RE_TREE.match(t)])
     arm_block = []
+    thresholds = {m.group(1): m.group(2) for _, t in lines if (m := RE_THRESHOLD.match(t))}
     for n, (ind, text) in enumerate(lines):
         if (m := RE_PYRAMIDING.match(text)) and script.pyramiding is None:
             script.pyramiding = int(m.group(1))
@@ -225,6 +240,16 @@ def parse(src: str) -> Script:
             stop = next((e.group(1) for t in entry if (e := RE_ENTRY_STOP.match(t))), None)
             if stop and any(t.startswith("strategy.entry(") and re.search(r"\bstop\s*=\s*stop\b", t) for t in entry):
                 script.entry_stop = stop
+        if RE_BUY_INPUT.match(text) and script.buy is None and "buy" in thresholds:
+            script.buy = thresholds["buy"]
+            script.dated = "tradeFrom" in text and "isExpired" in text
+        if RE_CLOSE_INPUT.match(text) and script.close is None and "sell" in thresholds:
+            if any("strategy.close" in s for s in _block(lines, n)):
+                script.close = thresholds["sell"]
+        if RE_IN_POSITION.match(text) and not arm_block:
+            block = _block(lines, n)
+            if any(RE_CUR_STAGE.match(s) for s in block) and any(s.startswith("strategy.exit(") for s in block):
+                script.exits_always, arm_block = True, block
         if m := RE_LOW.match(text):
             block = _block(lines, n)
             if script.close is None and any("strategy.close" in s for s in block):
@@ -337,10 +362,14 @@ def how_it_decides(script: Script) -> list:
         return out
     out[0] += " At the bar's close the script acts on it; the orders it sends are filled from the next bar on:"
     one = "only one at a time: a buy signal while a position is open adds nothing" if script.pyramiding == 1 else ""
-    out += ["", f"- **{script.buy} or more: Buy.** It opens a long position" + (f" ({one})." if one else ".")]
+    out += ["", f"- **{script.buy} or more: Buy.** It opens a long position" + (f" ({one})." if one else ".")
+            + (" Its stop loss and take profit go with the entry order (see Exits)." if script.exits_always else "")
+            + (" Only from the script's \"trade from\" date (an input) and until the script expires."
+               if script.dated else "")]
     low = [x for x in (script.arm, script.close) if x is not None]
     out.append(f"- **Above {max(low, key=float) if low else '-1'} and below {script.buy}: Wait.** No new order"
-               + ("; an open position keeps the exits it already has." if script.arm is not None else "."))
+               + ("; an open position keeps the exits it already has." if script.arm is not None or script.exits_always
+                  else "."))
     if script.arm is not None:
         out.append(f"- **{script.arm} or less: {ARM.lower()}.** With a position open, it places or moves its "
                    "stop loss and take profit (see Exits); with no position, it cancels any pending order.")
@@ -357,12 +386,19 @@ def how_it_decides(script: Script) -> list:
 
 def exits_section(script: Script) -> list:
     exits = script.exits
-    if not exits or script.arm is None:
+    if not exits or (script.arm is None and not script.exits_always):
         return []
     values = ", ".join(f"{exits.titles[k]} {v} %" for k, v in exits.pct.items())
     out = ["## Exits", "", f"The exits are inputs of the script, in % of the entry price (in TradingView: the "
                            f"strategy's Settings, Inputs tab): {values}."]
-    if exits.stages:
+    if exits.stages and script.exits_always:
+        out += ["", f"The exit order moves through {len(exits.stages)} stages:", ""]
+        out += [_stage_line(stage, exits) for stage in exits.stages]
+        out += ["", "The stop loss and the take profit are sent with the entry order, so they act from the bar "
+                    "the position opens. At every bar's close, while a position is open, the stage is updated "
+                    "(one step at most per bar) and the exit order is moved to that stage's stop; it stays in "
+                    "force until it is filled, moved, or the position is closed."]
+    elif exits.stages:
         out += ["", f"The exit order moves through {len(exits.stages)} stages:", ""]
         out += [_stage_line(stage, exits) for stage in exits.stages]
         out += ["", "The stage is updated on every bar, one step at most per bar, but the exit order is only "
@@ -370,6 +406,9 @@ def exits_section(script: Script) -> list:
                     "the entry the position has no stop loss and no take profit; once placed, the order stays "
                     f"in force while the score is above {script.arm} again, until it is filled, moved, or the "
                     "position is closed."]
+    elif script.exits_always:
+        out += ["", "While a position is open, the script places or moves its exit order with them (see the "
+                    "Pine script for how)."]
     else:
         out += ["", f"On a bar whose score is {script.arm} or less, the script places or moves its exit order "
                     "with them (see the Pine script for how)."]
@@ -456,14 +495,15 @@ def _constants(script: Script, lang: str) -> list:
         return f"{start}{name} = {value if value is not None else none}{end}" + (f"  # {note}" if lang == "py" and
                                                                                   note else f" // {note}" if note else "")
     out = [const("BUY_AT", script.buy, "opens a long position when score() is at least this"),
-           const("ARM_EXITS_AT", script.arm, "at most this: places or moves the stop loss and take profit"),
+           const("ARM_EXITS_AT", script.arm, "the exits go with the entry and are kept while a position is open"
+                 if script.exits_always else "at most this: places or moves the stop loss and take profit"),
            const("CLOSE_AT", script.close, "closes the position when score() is at most this"), ""]
     out.append(("# " if lang == "py" else "// ") + "The exits, in % of the entry price (the script's inputs). "
                "Not simulated here.")
     for key, name in PCT_NAMES.items():
         out.append(const(name, exits.pct.get(key) if exits else None, exits.titles.get(key, "") if exits else ""))
     rows = []
-    for stage in exits.stages if exits and script.arm is not None else []:
+    for stage in exits.stages if exits and (script.arm is not None or script.exits_always) else []:
         reached = exits.pct[stage.reached_at] if stage.reached_at else none
         rows.append(f'    {{"stage": {stage.n}, "from_high_pct": {reached}, "stop_pct": {stop_pct(stage, exits)}, '
                     f'"take_profit_pct": {exits.pct[stage.profit]}}},')
@@ -524,7 +564,8 @@ def readme(stem: str, title: str, contact: str) -> str:
         f"{stem}.js     JavaScript version of the trees. Beta as well, same caveat.", "",
         "Add it to TradingView:",
         f"1. Open {stem}.pine and copy all of it.",
-        "2. Sign in to TradingView (the free plan works).",
+        "2. Sign in to TradingView (the free plan works; on an intraday chart of a stock the strategy needs the",
+        "   exchange's full real-time data, a paid plan: with Cboe BZX data only it trades differently).",
         "3. Open the chart of the strategy's symbol and interval.",
         "4. Open the Pine Editor, paste the script and click \"Save\".",
         "5. Click \"Add to chart\" and look at the Strategy Tester.", "",

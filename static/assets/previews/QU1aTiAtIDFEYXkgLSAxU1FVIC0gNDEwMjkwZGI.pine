@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 5 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Squeeze_Momentum_Indicator
+// ID_model: AMZN_1Day_1SQU_410290db Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2016-12-08 to 2022-10-28. By default the backtest starts on 2024-11-07, on data the model never saw.
+//@version=5
+strategy("Tuisku_AMZN_1Day_1SQU_410290db", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 5 tree(s), averaged as scikit-learn does
+decision_tree_0_AMZN_1Day_410290db(sqzOnInt, sqzOffInt, noSqzInt, basis__close, dev__close, upperBB__close, lowerBB__close, ma__close, priceRange__close, rangema__close, upperKC__close, lowerKC__close, avgHighLow__close, val__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.7, max_leaf_nodes=45,min_samples_leaf=4, min_samples_split=10,random_state=843828734)
+	if( dev__close <= 0.0186488451436162 )
+		if( priceRange__close <= 0.007965547032654285 )
+			if( rangema__close <= 0.01124618947505951 )
+				ret := 0
+			if( rangema__close > 0.01124618947505951 )
+				ret := 0.8 // buy
+		if( priceRange__close > 0.007965547032654285 )
+			if( val__close <= -0.00027052599398302846 )
+				if( dev__close <= 0.017934530042111874 )
+					if( dev__close <= 0.006488746032118797 )
+						ret := 0.6
+					if( dev__close > 0.006488746032118797 )
+						ret := 0.9285714285714286 // buy
+				if( dev__close > 0.017934530042111874 )
+					ret := 0.5
+			if( val__close > -0.00027052599398302846 )
+				if( dev__close <= 0.014382004737854004 )
+					ret := 0
+				if( dev__close > 0.014382004737854004 )
+					if( upperBB__close <= 1.003542184829712 )
+						ret := 0.85 // buy
+					if( upperBB__close > 1.003542184829712 )
+						ret := 0.3
+	if( dev__close > 0.0186488451436162 )
+		if( upperBB__close <= 1.1135332584381104 )
+			if( basis__close <= 1.0275616645812988 )
+				if( dev__close <= 0.07208386063575745 )
+					if( val__close <= 0.01621290761977434 )
+						ret := -0.06135986733001658
+					if( val__close > 0.01621290761977434 )
+						ret := 0.17133956386292834
+				if( dev__close > 0.07208386063575745 )
+					if( rangema__close <= 0.049431076273322105 )
+						ret := -0.48717948717948717
+					if( rangema__close > 0.049431076273322105 )
+						ret := 0.9166666666666666 // buy
+			if( basis__close > 1.0275616645812988 )
+				if( val__close <= -0.033301908522844315 )
+					if( upperBB__close <= 1.1111680269241333 )
+						ret := -0.3829787234042553
+					if( upperBB__close > 1.1111680269241333 )
+						ret := 0.42857142857142855
+				if( val__close > -0.033301908522844315 )
+					if( rangema__close <= 0.022846044972538948 )
+						ret := -0.46875
+					if( rangema__close > 0.022846044972538948 )
+						ret := -0.9047619047619048 // sell
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

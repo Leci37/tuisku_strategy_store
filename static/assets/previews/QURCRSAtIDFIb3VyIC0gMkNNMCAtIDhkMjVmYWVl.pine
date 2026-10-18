@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Chaikin_Money_Flow, L_Money_Flow_Index
+// ID_model: ADBE_1Hour_2CM0_8d25faee Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-10-15 to 2024-05-17. By default the backtest starts on 2025-08-05, on data the model never saw.
+//@version=5
+strategy("Tuisku_ADBE_1Hour_2CM0_8d25faee", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_ADBE_1Hour_8d25faee(ad, mf, ad_mf, Raw_Money_Flow, Positive_Money_Flow, Negative_Money_Flow, Positive_Money_Flow_Sum, Negative_Money_Flow_Sum, Money_Flow_Ratio, MFI, MFI_High, MFI_Low, Typical_Price__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=6, max_features=0.82, max_leaf_nodes=30,min_samples_leaf=7, min_samples_split=10,random_state=843828734)
+	if( Positive_Money_Flow_Sum <= 285428208 )
+		if( Positive_Money_Flow_Sum <= 148168752 )
+			if( Negative_Money_Flow_Sum <= 2069841664 )
+				ret := -0.2727272727272727
+			if( Negative_Money_Flow_Sum > 2069841664 )
+				ret := 0.8125 // buy
+		if( Positive_Money_Flow_Sum > 148168752 )
+			if( Typical_Price__close <= 1.0050296783447266 )
+				ret := -0.6861313868613139
+			if( Typical_Price__close > 1.0050296783447266 )
+				ret := 0.2857142857142857
+	if( Positive_Money_Flow_Sum > 285428208 )
+		if( MFI_High <= -41.30479621887207 )
+			if( Raw_Money_Flow <= 156885008 )
+				if( Positive_Money_Flow <= 99406504 )
+					if( mf <= -0.133688323199749 )
+						if( Negative_Money_Flow_Sum <= 756002848 )
+							ret := -0.8235294117647058 // sell
+						if( Negative_Money_Flow_Sum > 756002848 )
+							ret := -0.049217002237136466
+					if( mf > -0.133688323199749 )
+						if( MFI_Low <= 17.67921257019043 )
+							ret := 0.09644670050761421
+						if( MFI_Low > 17.67921257019043 )
+							ret := 0.5344827586206896
+				if( Positive_Money_Flow > 99406504 )
+					if( Positive_Money_Flow_Sum <= 862376704 )
+						if( Typical_Price__close <= 0.9959823489189148 )
+							ret := 1 // buy
+						if( Typical_Price__close > 0.9959823489189148 )
+							ret := -0.416
+					if( Positive_Money_Flow_Sum > 862376704 )
+						if( Positive_Money_Flow_Sum <= 1151213952 )
+							ret := 0.5068493150684932
+						if( Positive_Money_Flow_Sum > 1151213952 )
+							ret := -0.5172413793103449
+			if( Raw_Money_Flow > 156885008 )
+				if( Negative_Money_Flow_Sum <= 1458329088 )
+					if( Negative_Money_Flow <= 170749536 )
+						if( ad <= 432651.0625 )
+							ret := 0.20388349514563106
+						if( ad > 432651.0625 )
+							ret := 0.9285714285714286 // buy
+					if( Negative_Money_Flow > 170749536 )
+						if( MFI <= 24.93935775756836 )
+							ret := -0.7647058823529411 // sell
+						if( MFI > 24.93935775756836 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

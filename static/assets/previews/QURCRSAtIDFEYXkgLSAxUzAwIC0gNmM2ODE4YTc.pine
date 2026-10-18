@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Stochastic_RSI
+// ID_model: ADBE_1Day_1S00_6c6818a7 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2016-11-29 to 2022-10-26. By default the backtest starts on 2024-11-07, on data the model never saw.
+//@version=5
+strategy("Tuisku_ADBE_1Day_1S00_6c6818a7", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_ADBE_1Day_6c6818a7(rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=843828734)
+	if( rsi1 <= 36.34848976135254 )
+		ret := 0.5714285714285714
+	if( rsi1 > 36.34848976135254 )
+		if( smoothD_d <= 34.68714141845703 )
+			ret := -0.22722620266120777
+		if( smoothD_d > 34.68714141845703 )
+			ret := 0.07799586776859505
+	ret //return
+
+decision_tree_1_ADBE_1Day_6c6818a7(rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
+	if( rsi1 <= 37.72455024719238 )
+		ret := 0.47767857142857145
+	if( rsi1 > 37.72455024719238 )
+		if( d <= 33.72922897338867 )
+			ret := -0.26974483596597815
+		if( d > 33.72922897338867 )
+			if( d_k <= 10.619085311889648 )
+				ret := -0.012665862484921592
+			if( d_k > 10.619085311889648 )
+				ret := 0.30751708428246016
+	ret //return
+
+decision_tree_2_ADBE_1Day_6c6818a7(rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=1228959102)
+	if( rsi1 <= 36.47228240966797 )
+		ret := 0.38738738738738737
+	if( rsi1 > 36.47228240966797 )
+		if( d <= 33.525604248046875 )
+			ret := -0.23404255319148937
+		if( d > 33.525604248046875 )
+			ret := 0.049132947976878616
+	ret //return
+
+// Define expected timeframe based on the selected interval: 1Day pine_value: D   Trigger an alert and show a label if the timeframe is incorrect
+alert_message_time_wrong = "The current candle TIMEframe is WRONG: "+ str.tostring(timeframe.period) + ", CHANGE it to the CORRECT one:  1DAY !!"
+if (str.tostring(timeframe.period) != "D")
+    alert(alert_message_time_wrong, alert.freq_once_per_bar_close)
+    label.new(bar_index -300, high+30, text = alert_message_time_wrong, style = label.style_label_down,size = size.large, color = color.red, textcolor = color.white)
+    log.error(alert_message_time_wrong)
+
+//CODE associated with the technical indicator L_Stochastic_RSI 
+//@version=5
+//indicator title="Stochastic RSI", shorttitle="Stoch RSI", format=format.price, precision=2, timeframe="", timeframe_gaps=true)
+smoothK = input.int(3, "K", minval=1)
+smoothD = input.int(3, "D", minval=1)
+lengthRSI = input.int(14, "RSI Length", minval=1)
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

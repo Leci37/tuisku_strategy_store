@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Money_Flow_Index, L_Triple_EMA
+// ID_model: AVAXUSDT_1Day_2MT0_db14fd5f Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-10-16 to 2024-05-19. By default the backtest starts on 2025-08-14, on data the model never saw.
+//@version=5
+strategy("Tuisku_AVAXUSDT_1Day_2MT0_db14fd5f", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_AVAXUSDT_1Day_db14fd5f(Raw_Money_Flow, Positive_Money_Flow, Negative_Money_Flow, Positive_Money_Flow_Sum, Negative_Money_Flow_Sum, Money_Flow_Ratio, MFI, MFI_High, MFI_Low, Typical_Price__close, ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=843828734)
+	if( Negative_Money_Flow_Sum <= 145747560 )
+		if( ema13__close <= 0.0767410658299923 )
+			if( Money_Flow_Ratio <= 2.568674683570862 )
+				ret := 0.1372093023255814
+			if( Money_Flow_Ratio > 2.568674683570862 )
+				ret := -0.6375
+		if( ema13__close > 0.0767410658299923 )
+			ret := 0.8375 // buy
+	if( Negative_Money_Flow_Sum > 145747560 )
+		if( Negative_Money_Flow <= 275458432 )
+			if( Raw_Money_Flow <= 89526012 )
+				ret := 0.03389830508474576
+			if( Raw_Money_Flow > 89526012 )
+				if( MFI <= 34.08473777770996 )
+					ret := -0.630901287553648
+				if( MFI > 34.08473777770996 )
+					ret := -0.20238095238095238
+		if( Negative_Money_Flow > 275458432 )
+			ret := 0.475177304964539
+	ret //return
+
+decision_tree_1_AVAXUSDT_1Day_db14fd5f(Raw_Money_Flow, Positive_Money_Flow, Negative_Money_Flow, Positive_Money_Flow_Sum, Negative_Money_Flow_Sum, Money_Flow_Ratio, MFI, MFI_High, MFI_Low, Typical_Price__close, ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
+	if( Negative_Money_Flow <= 16559219 )
+		if( ema13__close <= 0.0940060243010521 )
+			if( Negative_Money_Flow_Sum <= 13771926 )
+				ret := -0.703125 // sell
+			if( Negative_Money_Flow_Sum > 13771926 )
+				ret := 0.08042635658914729
+		if( ema13__close > 0.0940060243010521 )
+			if( Positive_Money_Flow_Sum <= 642365696 )
+				ret := 0.8953488372093024 // buy
+			if( Positive_Money_Flow_Sum > 642365696 )
+				ret := 0.043478260869565216
+	if( Negative_Money_Flow > 16559219 )
+		if( Negative_Money_Flow <= 275458432 )
+			if( Raw_Money_Flow <= 88920252 )
+				ret := 0.008928571428571428
+			if( Raw_Money_Flow > 88920252 )
+				ret := -0.43823529411764706
+		if( Negative_Money_Flow > 275458432 )
+			ret := 0.6115702479338843
+	ret //return
+
+decision_tree_2_AVAXUSDT_1Day_db14fd5f(Raw_Money_Flow, Positive_Money_Flow, Negative_Money_Flow, Positive_Money_Flow_Sum, Negative_Money_Flow_Sum, Money_Flow_Ratio, MFI, MFI_High, MFI_Low, Typical_Price__close, ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=1228959102)
+	if( Raw_Money_Flow <= 68563828 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

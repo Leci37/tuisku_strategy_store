@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Williams_Vix_Fix
+// ID_model: ADBE_1Day_1WIL_b6954763 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2017-01-26 to 2022-11-16. By default the backtest starts on 2024-11-18, on data the model never saw.
+//@version=5
+strategy("Tuisku_ADBE_1Day_1WIL_b6954763", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_ADBE_1Day_b6954763(Color_con1, Color_con2, colInt, wvf, midLine, lowerBand, upperBand, rangeHigh, rangeLow, sDev)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.4, max_leaf_nodes=20,random_state=843828734)
+	if( Color_con2 <= -18.318772315979004 )
+		if( lowerBand <= -10.068443298339844 )
+			ret := -1 // sell
+		if( lowerBand > -10.068443298339844 )
+			if( wvf <= 2.167303681373596 )
+				ret := 0.13333333333333333
+			if( wvf > 2.167303681373596 )
+				if( rangeHigh <= 24.440545082092285 )
+					ret := -1 // sell
+				if( rangeHigh > 24.440545082092285 )
+					ret := 0.9044117647058824 // buy
+	if( Color_con2 > -18.318772315979004 )
+		if( rangeHigh <= 12.62285566329956 )
+			if( upperBand <= 8.551152229309082 )
+				if( midLine <= 1.1007391214370728 )
+					if( sDev <= 1.1162934303283691 )
+						ret := 0.17105263157894737
+					if( sDev > 1.1162934303283691 )
+						ret := 0.8518518518518519 // buy
+				if( midLine > 1.1007391214370728 )
+					if( rangeHigh <= 3.112052798271179 )
+						ret := -0.6896551724137931
+					if( rangeHigh > 3.112052798271179 )
+						ret := -0.11175115207373272
+			if( upperBand > 8.551152229309082 )
+				if( Color_con1 <= -9.068909645080566 )
+					if( rangeLow <= 0.34777186810970306 )
+						ret := 0.6842105263157895
+					if( rangeLow > 0.34777186810970306 )
+						ret := -0.5357142857142857
+				if( Color_con1 > -9.068909645080566 )
+					if( rangeLow <= 0.5540981292724609 )
+						ret := 0.6415094339622641
+					if( rangeLow > 0.5540981292724609 )
+						ret := 0.2073732718894009
+		if( rangeHigh > 12.62285566329956 )
+			if( midLine <= 8.403526306152344 )
+				if( lowerBand <= -2.016264855861664 )
+					if( lowerBand <= -3.007552742958069 )
+						ret := -0.22916666666666666
+					if( lowerBand > -3.007552742958069 )
+						ret := 0.56
+				if( lowerBand > -2.016264855861664 )
+					if( wvf <= 2.629415988922119 )
+						ret := -0.1958762886597938
+					if( wvf > 2.629415988922119 )
+						ret := -0.7060518731988472 // sell
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

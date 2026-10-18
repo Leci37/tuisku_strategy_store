@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Chaikin_Money_Flow, L_Stochastic_RSI
+// ID_model: GOOG_1Hour_2CS0_8397cb20 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-10-19 to 2024-05-20. By default the backtest starts on 2025-08-05, on data the model never saw.
+//@version=5
+strategy("Tuisku_GOOG_1Hour_2CS0_8397cb20", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_GOOG_1Hour_8397cb20(ad, mf, ad_mf, rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=6, max_features=0.82, max_leaf_nodes=30,min_samples_leaf=7, min_samples_split=10,random_state=843828734)
+	if( rsi1 <= 54.78849983215332 )
+		if( d <= 34.793907165527344 )
+			if( mf <= 0.2905064821243286 )
+				if( ad_mf <= -242062.1953125 )
+					if( mf <= -0.14344394952058792 )
+						if( rsi1 <= 24.667336463928223 )
+							ret := 0.37209302325581395
+						if( rsi1 > 24.667336463928223 )
+							ret := -0.009157509157509158
+					if( mf > -0.14344394952058792 )
+						if( ad <= -385395.953125 )
+							ret := -0.11926605504587157
+						if( ad > -385395.953125 )
+							ret := -0.5147058823529411
+				if( ad_mf > -242062.1953125 )
+					if( ad <= -153089.046875 )
+						ret := 0.4153846153846154
+					if( ad > -153089.046875 )
+						if( ad_mf <= -128828.83203125 )
+							ret := -0.8333333333333334 // sell
+						if( ad_mf > -128828.83203125 )
+							ret := 0.028708133971291867
+			if( mf > 0.2905064821243286 )
+				ret := 0.9 // buy
+		if( d > 34.793907165527344 )
+			if( d <= 94.73265838623047 )
+				if( d_k <= -4.992290735244751 )
+					if( ad_mf <= 1575087.5 )
+						if( ad_mf <= 881176.125 )
+							ret := 0.20212765957446807
+						if( ad_mf > 881176.125 )
+							ret := -0.06358381502890173
+					if( ad_mf > 1575087.5 )
+						if( ad <= 4615961.5 )
+							ret := 0.4984984984984985
+						if( ad > 4615961.5 )
+							ret := -0.21875
+				if( d_k > -4.992290735244751 )
+					ret := 0.08628244017526121
+			if( d > 94.73265838623047 )
+				if( mf <= 0.027215530164539814 )
+					ret := -0.4580152671755725
+				if( mf > 0.027215530164539814 )
+					ret := 0.15
+	if( rsi1 > 54.78849983215332 )
+		if( mf <= 0.02272085379809141 )
+			if( smoothD_d <= 93.97439575195312 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

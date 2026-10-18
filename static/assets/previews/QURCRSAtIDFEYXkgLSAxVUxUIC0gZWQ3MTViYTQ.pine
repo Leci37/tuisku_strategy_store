@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Ultimate_MA_MTF_V2
+// ID_model: ADBE_1Day_1ULT_ed715ba4 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2016-12-23 to 2022-11-04. By default the backtest starts on 2024-11-12, on data the model never saw.
+//@version=5
+strategy("Tuisku_ADBE_1Day_1ULT_ed715ba4", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_ADBE_1Day_ed715ba4(ma_upInt, ma_downInt, cr_upInt, cr_downInt, cr_up2Int, cr_down2Int, avg__close, avg2__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.5, max_leaf_nodes=20,min_samples_leaf=4, min_samples_split=10,random_state=843828734)
+	if( cr_upInt <= 0.5 )
+		if( avg__close <= 1.0917061567306519 )
+			if( avg__close <= 1.023708999156952 )
+				if( avg2__close <= 0.9886732995510101 )
+					if( avg__close <= 0.9791793525218964 )
+						ret := 0.030845771144278607
+					if( avg__close > 0.9791793525218964 )
+						ret := -0.18058252427184465
+				if( avg2__close > 0.9886732995510101 )
+					if( avg__close <= 0.9758187234401703 )
+						ret := -0.2767857142857143
+					if( avg__close > 0.9758187234401703 )
+						ret := 0.306
+			if( avg__close > 1.023708999156952 )
+				if( avg__close <= 1.0552388429641724 )
+					if( avg2__close <= 1.1110366582870483 )
+						ret := -0.20424403183023873
+					if( avg2__close > 1.1110366582870483 )
+						ret := -0.5735294117647058
+				if( avg__close > 1.0552388429641724 )
+					if( avg__close <= 1.069881796836853 )
+						ret := 0.13380281690140844
+					if( avg__close > 1.069881796836853 )
+						ret := -0.29411764705882354
+		if( avg__close > 1.0917061567306519 )
+			if( ma_upInt <= 0.5 )
+				ret := 0.5502958579881657
+			if( ma_upInt > 0.5 )
+				ret := 0
+	if( cr_upInt > 0.5 )
+		if( ma_upInt <= 0.5 )
+			if( avg2__close <= 1.0020952820777893 )
+				if( avg__close <= 0.9972923398017883 )
+					ret := 0.6363636363636364
+				if( avg__close > 0.9972923398017883 )
+					ret := -0.16666666666666666
+			if( avg2__close > 1.0020952820777893 )
+				if( avg2__close <= 1.0272947549819946 )
+					ret := -0.9333333333333333 // sell
+				if( avg2__close > 1.0272947549819946 )
+					if( avg__close <= 0.9941613376140594 )
+						ret := -0.13333333333333333
+					if( avg__close > 0.9941613376140594 )
+						ret := -0.7857142857142857 // sell
+		if( ma_upInt > 0.5 )
+			if( avg2__close <= 0.9405890107154846 )
+				if( avg__close <= 0.9691619277000427 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Bollinger_Bands, L_Bull_Bear_Power
+// ID_model: U_1Day_2BB0_9b0ea91f Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-10-15 to 2024-05-16. By default the backtest starts on 2025-08-20, on data the model never saw.
+//@version=5
+strategy("Tuisku_U_1Day_2BB0_9b0ea91f", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_U_1Day_9b0ea91f(BBPower_Color, basis__close, Upper_Band__close, Lower_Band__close, bullPower__close, bearPower__close, bbp__close, bbm__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=843828734)
+	if( bullPower__close <= -0.09017925709486008 )
+		ret := 0.47580645161290325
+	if( bullPower__close > -0.09017925709486008 )
+		if( Lower_Band__close <= 0.566510409116745 )
+			ret := -0.8541666666666666 // sell
+		if( Lower_Band__close > 0.566510409116745 )
+			if( Lower_Band__close <= 0.9033011496067047 )
+				if( bearPower__close <= -0.08995984122157097 )
+					ret := 0.6031746031746031
+				if( bearPower__close > -0.08995984122157097 )
+					ret := 0.0438871473354232
+			if( Lower_Band__close > 0.9033011496067047 )
+				ret := -0.20532915360501566
+	ret //return
+
+decision_tree_1_U_1Day_9b0ea91f(BBPower_Color, basis__close, Upper_Band__close, Lower_Band__close, bullPower__close, bearPower__close, bbp__close, bbm__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
+	if( bullPower__close <= -0.08976075425744057 )
+		if( bbm__close <= 0.1271199807524681 )
+			ret := 0.6637168141592921
+		if( bbm__close > 0.1271199807524681 )
+			ret := -0.5
+	if( bullPower__close > -0.08976075425744057 )
+		if( Lower_Band__close <= 0.9032749831676483 )
+			if( Lower_Band__close <= 0.564201682806015 )
+				ret := -0.9714285714285714 // sell
+			if( Lower_Band__close > 0.564201682806015 )
+				if( basis__close <= 1.1324322819709778 )
+					if( bearPower__close <= -0.08935149759054184 )
+						ret := 0.7647058823529411 // buy
+					if( bearPower__close > -0.08935149759054184 )
+						ret := 0.12445887445887446
+				if( basis__close > 1.1324322819709778 )
+					ret := -0.6097560975609756
+		if( Lower_Band__close > 0.9032749831676483 )
+			ret := -0.20987654320987653
+	ret //return
+
+decision_tree_2_U_1Day_9b0ea91f(BBPower_Color, basis__close, Upper_Band__close, Lower_Band__close, bullPower__close, bearPower__close, bbp__close, bbm__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=1228959102)
+	if( bullPower__close <= -0.09017925709486008 )
+		ret := 0.5488721804511278
+	if( bullPower__close > -0.09017925709486008 )
+		if( basis__close <= 0.8085875511169434 )
+			ret := -0.582089552238806
+		if( basis__close > 0.8085875511169434 )
+			if( Lower_Band__close <= 0.8665359020233154 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

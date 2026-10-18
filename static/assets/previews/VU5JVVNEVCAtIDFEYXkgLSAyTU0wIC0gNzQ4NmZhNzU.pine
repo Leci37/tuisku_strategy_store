@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_MA_Cross_SMA, L_Money_Flow_Index
+// ID_model: UNIUSDT_1Day_2MM0_7486fa75 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-11-12 to 2024-05-30. By default the backtest starts on 2025-08-20, on data the model never saw.
+//@version=5
+strategy("Tuisku_UNIUSDT_1Day_2MM0_7486fa75", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_UNIUSDT_1Day_7486fa75(Raw_Money_Flow, Positive_Money_Flow, Negative_Money_Flow, Positive_Money_Flow_Sum, Negative_Money_Flow_Sum, Money_Flow_Ratio, MFI, MFI_High, MFI_Low, Short_MA__close, Long_MA__close, Short_Long_Diff__close, MA_Cross__close, Typical_Price__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.5, max_leaf_nodes=20,min_samples_leaf=4, min_samples_split=10,random_state=843828734)
+	if( Long_MA__close <= 0.8118807375431061 )
+		if( MA_Cross__close <= 0.1714870110154152 )
+			ret := -0.782608695652174 // sell
+		if( MA_Cross__close > 0.1714870110154152 )
+			if( Negative_Money_Flow_Sum <= 174125376 )
+				if( Short_MA__close <= 0.921891063451767 )
+					ret := 0.4
+				if( Short_MA__close > 0.921891063451767 )
+					ret := -0.8333333333333334 // sell
+			if( Negative_Money_Flow_Sum > 174125376 )
+				if( Long_MA__close <= 0.7669093608856201 )
+					ret := 0.851063829787234 // buy
+				if( Long_MA__close > 0.7669093608856201 )
+					if( MA_Cross__close <= 0.5809956789016724 )
+						ret := 0.8529411764705882 // buy
+					if( MA_Cross__close > 0.5809956789016724 )
+						ret := 0.03571428571428571
+	if( Long_MA__close > 0.8118807375431061 )
+		if( Long_MA__close <= 1.2025766372680664 )
+			if( MA_Cross__close <= 0.42928120493888855 )
+				if( MFI_High <= -26.689865112304688 )
+					if( Short_Long_Diff__close <= 0.008047237526625395 )
+						ret := 0.07692307692307693
+					if( Short_Long_Diff__close > 0.008047237526625395 )
+						ret := -0.9166666666666666 // sell
+				if( MFI_High > -26.689865112304688 )
+					if( MFI_Low <= 50.11893272399902 )
+						ret := 0.868421052631579 // buy
+					if( MFI_Low > 50.11893272399902 )
+						ret := -0.18181818181818182
+			if( MA_Cross__close > 0.42928120493888855 )
+				if( Positive_Money_Flow_Sum <= 177122888 )
+					if( Positive_Money_Flow_Sum <= 32381191 )
+						ret := -0.5460992907801419
+					if( Positive_Money_Flow_Sum > 32381191 )
+						ret := 0.11609756097560976
+				if( Positive_Money_Flow_Sum > 177122888 )
+					if( MFI <= 76.06603240966797 )
+						ret := -0.3106893106893107
+					if( MFI > 76.06603240966797 )
+						ret := 0.35714285714285715
+		if( Long_MA__close > 1.2025766372680664 )
+			if( Money_Flow_Ratio <= 0.23975908756256104 )
+				if( MA_Cross__close <= 1.386608600616455 )
+					ret := 0.3333333333333333
+				if( MA_Cross__close > 1.386608600616455 )
+					if( Short_Long_Diff__close <= -0.14183087646961212 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Triple_EMA
+// ID_model: NIO_1Day_1T00_8c43883a Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2018-10-16 to 2023-07-31. By default the backtest starts on 2025-03-27, on data the model never saw.
+//@version=5
+strategy("Tuisku_NIO_1Day_1T00_8c43883a", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_NIO_1Day_8c43883a(ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=843828734)
+	if( ema3__close <= 1.023712158203125 )
+		if( tema__close <= 1.011435866355896 )
+			if( ema1__close <= 0.9609077572822571 )
+				if( tema__close <= 0.9513338804244995 )
+					ret := 0.5576923076923077
+				if( tema__close > 0.9513338804244995 )
+					ret := -0.007481296758104738
+			if( ema1__close > 0.9609077572822571 )
+				ret := 0.486284289276808
+		if( tema__close > 1.011435866355896 )
+			if( tema__close <= 1.0305783152580261 )
+				ret := -0.309375
+			if( tema__close > 1.0305783152580261 )
+				ret := 0.21674876847290642
+	if( ema3__close > 1.023712158203125 )
+		if( ema3__close <= 1.3951772451400757 )
+			ret := -0.23173076923076924
+		if( ema3__close > 1.3951772451400757 )
+			ret := 0.35555555555555557
+	ret //return
+
+decision_tree_1_NIO_1Day_8c43883a(ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
+	if( ema13__close <= 0.04257718473672867 )
+		if( tema__close <= 1.0142697095870972 )
+			if( tema__close <= 0.9758844077587128 )
+				if( ema2__close <= 0.9245645403862 )
+					ret := 0.41818181818181815
+				if( ema2__close > 0.9245645403862 )
+					ret := -0.31746031746031744
+			if( tema__close > 0.9758844077587128 )
+				ret := 0.12517193947730398
+		if( tema__close > 1.0142697095870972 )
+			ret := -0.3094017094017094
+	if( ema13__close > 0.04257718473672867 )
+		if( ema2__close <= 0.8712175786495209 )
+			if( ema1__close <= 0.8829181790351868 )
+				ret := 0.4322033898305085
+			if( ema1__close > 0.8829181790351868 )
+				ret := -0.3575757575757576
+		if( ema2__close > 0.8712175786495209 )
+			ret := 0.4463276836158192
+	ret //return
+
+decision_tree_2_NIO_1Day_8c43883a(ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=1228959102)
+	if( ema13__close <= 0.04846804589033127 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

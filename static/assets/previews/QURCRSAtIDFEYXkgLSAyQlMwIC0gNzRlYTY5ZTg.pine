@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Bull_Bear_Power, L_Stochastic_RSI
+// ID_model: ADBE_1Day_2BS0_74ea69e8 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2016-11-29 to 2022-10-26. By default the backtest starts on 2024-11-07, on data the model never saw.
+//@version=5
+strategy("Tuisku_ADBE_1Day_2BS0_74ea69e8", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_ADBE_1Day_74ea69e8(BBPower_Color, rsi1, k, d, d_k, smoothD_d, smoothK_k, bullPower__close, bearPower__close, bbp__close, bbm__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.4, max_leaf_nodes=20,random_state=843828734)
+	if( smoothK_k <= 31.693767547607422 )
+		if( rsi1 <= 37.82560729980469 )
+			if( bbp__close <= -0.23379575461149216 )
+				ret := -0.6363636363636364
+			if( bbp__close > -0.23379575461149216 )
+				if( bbm__close <= 0.02700664382427931 )
+					ret := 0.15789473684210525
+				if( bbm__close > 0.02700664382427931 )
+					if( k <= 27.684840202331543 )
+						ret := 0.7972972972972973 // buy
+					if( k > 27.684840202331543 )
+						ret := -1 // sell
+		if( rsi1 > 37.82560729980469 )
+			if( bbm__close <= 0.03304038941860199 )
+				if( d <= 36.91555404663086 )
+					if( k <= 0.47930510342121124 )
+						ret := -0.6557377049180327
+					if( k > 0.47930510342121124 )
+						ret := -0.16594827586206898
+				if( d > 36.91555404663086 )
+					if( bbm__close <= 0.024377970956265926 )
+						ret := 0.045454545454545456
+					if( bbm__close > 0.024377970956265926 )
+						ret := 0.696969696969697
+			if( bbm__close > 0.03304038941860199 )
+				if( d_k <= 23.36477565765381 )
+					if( d <= 11.470976829528809 )
+						ret := -0.015625
+					if( d > 11.470976829528809 )
+						ret := -0.7068062827225131 // sell
+				if( d_k > 23.36477565765381 )
+					ret := 0.8181818181818182 // buy
+	if( smoothK_k > 31.693767547607422 )
+		if( rsi1 <= 39.553260803222656 )
+			if( k <= 77.70285034179688 )
+				ret := 0.7011494252873564 // buy
+			if( k > 77.70285034179688 )
+				ret := -0.4
+		if( rsi1 > 39.553260803222656 )
+			if( d_k <= 8.977889060974121 )
+				if( bbm__close <= 0.02450649067759514 )
+					if( k <= 47.930978775024414 )
+						ret := 0.4827586206896552
+					if( k > 47.930978775024414 )
+						ret := 0.07035175879396985
+				if( bbm__close > 0.02450649067759514 )
+					if( smoothD_d <= 87.17069625854492 )
+						ret := -0.23415492957746478
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

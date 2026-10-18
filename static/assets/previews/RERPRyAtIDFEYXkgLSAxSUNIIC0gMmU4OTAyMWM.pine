@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Ichimoku_Cloud
+// ID_model: DDOG_1Day_1ICH_2e89021c Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-01-09 to 2024-01-25. By default the backtest starts on 2025-06-25, on data the model never saw.
+//@version=5
+strategy("Tuisku_DDOG_1Day_1ICH_2e89021c", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_DDOG_1Day_2e89021c(cross_up_tenkan_kinjunInt, cross_dn_tenkan_kinjunInt, tenkan_sen__close, kinjun_sen__close, senkou_span_a__close, senkou_span_b__close, senkou_span_a_displaced__close, senkou_span_b_displaced__close, chinkou_span__close, basis_minus__close, basis_max__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.4, max_leaf_nodes=20,random_state=843828734)
+	if( senkou_span_a_displaced__close <= 1.3420932292938232 )
+		if( senkou_span_a_displaced__close <= 0.6286372244358063 )
+			if( chinkou_span__close <= 0.5944721102714539 )
+				if( senkou_span_a_displaced__close <= 0.5517059564590454 )
+					ret := 0
+				if( senkou_span_a_displaced__close > 0.5517059564590454 )
+					ret := 1 // buy
+			if( chinkou_span__close > 0.5944721102714539 )
+				ret := 1 // buy
+		if( senkou_span_a_displaced__close > 0.6286372244358063 )
+			if( chinkou_span__close <= 0.9167369604110718 )
+				if( kinjun_sen__close <= 0.9110842347145081 )
+					if( tenkan_sen__close <= 0.9271597266197205 )
+						ret := 0.2702702702702703
+					if( tenkan_sen__close > 0.9271597266197205 )
+						ret := -0.09009009009009009
+				if( kinjun_sen__close > 0.9110842347145081 )
+					if( basis_minus__close <= 0.044719697907567024 )
+						ret := -0.5686274509803921
+					if( basis_minus__close > 0.044719697907567024 )
+						ret := -0.26455026455026454
+			if( chinkou_span__close > 0.9167369604110718 )
+				if( tenkan_sen__close <= 1.0965183973312378 )
+					if( basis_minus__close <= 0.06393484771251678 )
+						ret := -0.09615384615384616
+					if( basis_minus__close > 0.06393484771251678 )
+						ret := 0.49586776859504134
+				if( tenkan_sen__close > 1.0965183973312378 )
+					if( chinkou_span__close <= 1.1775540709495544 )
+						ret := 0.7457627118644068 // buy
+					if( chinkou_span__close > 1.1775540709495544 )
+						ret := 0.19047619047619047
+	if( senkou_span_a_displaced__close > 1.3420932292938232 )
+		if( senkou_span_b_displaced__close <= 1.2893503904342651 )
+			ret := 0
+		if( senkou_span_b_displaced__close > 1.2893503904342651 )
+			if( senkou_span_a_displaced__close <= 1.4478411078453064 )
+				if( kinjun_sen__close <= 1.1798596382141113 )
+					if( kinjun_sen__close <= 1.1762192249298096 )
+						ret := 0.9285714285714286 // buy
+					if( kinjun_sen__close > 1.1762192249298096 )
+						ret := 0
+				if( kinjun_sen__close > 1.1798596382141113 )
+					ret := 1 // buy
+			if( senkou_span_a_displaced__close > 1.4478411078453064 )
+				if( senkou_span_b__close <= 1.3222481608390808 )
+					ret := 0
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

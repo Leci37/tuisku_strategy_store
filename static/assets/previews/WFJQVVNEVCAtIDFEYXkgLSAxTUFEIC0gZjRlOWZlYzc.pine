@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Madrid_Moving_Average_Ribbon
+// ID_model: XRPUSDT_1Day_1MAD_f4e9fec7 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2018-08-11 to 2023-07-06. By default the backtest starts on 2025-03-09, on data the model never saw.
+//@version=5
+strategy("Tuisku_XRPUSDT_1Day_1MAD_f4e9fec7", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_XRPUSDT_1Day_f4e9fec7(ma05_colorInt, ma10_colorInt, ma15_colorInt, ma20_colorInt, ma25_colorInt, ma30_colorInt, ma35_colorInt, ma40_colorInt, ma45_colorInt, ma50_colorInt, ma55_colorInt, ma60_colorInt, ma65_colorInt, ma70_colorInt, ma75_colorInt, ma80_colorInt, ma85_colorInt, ma90_colorInt, ma05__close, ma10__close, ma15__close, ma20__close, ma25__close, ma30__close, ma35__close, ma40__close, ma45__close, ma50__close, ma55__close, ma60__close, ma65__close, ma70__close, ma75__close, ma80__close, ma85__close, ma90__close, ma100__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.4, max_leaf_nodes=20,random_state=843828734)
+	if( ma65__close <= 0.7806938886642456 )
+		if( ma10__close <= 0.9183341264724731 )
+			if( ma70_colorInt <= 2.5 )
+				if( ma100__close <= 0.378903865814209 )
+					ret := -1 // sell
+				if( ma100__close > 0.378903865814209 )
+					if( ma10__close <= 0.7741183936595917 )
+						ret := 0.8275862068965517 // buy
+					if( ma10__close > 0.7741183936595917 )
+						ret := 0.1414141414141414
+			if( ma70_colorInt > 2.5 )
+				if( ma90__close <= 0.7922447919845581 )
+					if( ma90__close <= 0.7497597336769104 )
+						ret := -0.9714285714285714 // sell
+					if( ma90__close > 0.7497597336769104 )
+						ret := -0.43333333333333335
+				if( ma90__close > 0.7922447919845581 )
+					ret := 1 // buy
+		if( ma10__close > 0.9183341264724731 )
+			if( ma25__close <= 0.9551273584365845 )
+				ret := -0.7444444444444445 // sell
+			if( ma25__close > 0.9551273584365845 )
+				ret := -0.1875
+	if( ma65__close > 0.7806938886642456 )
+		if( ma10__close <= 1.0083985328674316 )
+			if( ma65_colorInt <= 2.5 )
+				if( ma75_colorInt <= 1.5 )
+					if( ma35__close <= 0.8686861991882324 )
+						ret := 0.7627118644067796 // buy
+					if( ma35__close > 0.8686861991882324 )
+						ret := 0.06303724928366762
+				if( ma75_colorInt > 1.5 )
+					ret := -0.6396396396396397
+			if( ma65_colorInt > 2.5 )
+				if( ma15__close <= 0.9129051566123962 )
+					if( ma70__close <= 1.0911714434623718 )
+						ret := -0.25862068965517243
+					if( ma70__close > 1.0911714434623718 )
+						ret := 1 // buy
+				if( ma15__close > 0.9129051566123962 )
+					if( ma35_colorInt <= 3.5 )
+						ret := 0.4281098546042003
+					if( ma35_colorInt > 3.5 )
+						ret := 0.15233415233415235
+		if( ma10__close > 1.0083985328674316 )
+			if( ma75__close <= 1.552361011505127 )
+				if( ma85__close <= 0.8587751984596252 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

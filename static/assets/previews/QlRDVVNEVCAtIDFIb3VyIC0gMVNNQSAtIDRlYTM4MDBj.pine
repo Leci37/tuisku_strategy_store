@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Smart_Money_Concepts
+// ID_model: BTCUSDT_1Hour_1SMA_4ea3800c Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2021-10-13 to 2024-10-11. By default the backtest starts on 2025-10-12, on data the model never saw.
+//@version=5
+strategy("Tuisku_BTCUSDT_1Hour_1SMA_4ea3800c", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_BTCUSDT_1Hour_4ea3800c(Bullish_BOSInt, Bearish_BOSInt, Bullish_CHoCHInt, Bearish_CHoCHInt, FVG_UpInt, FVG_DownInt, Premium_Zone, Discount_Zone, Equilibrium_Zone, atr__close, Swing_High__close, Swing_Low__close, Internal_Swing_High__close, Internal_Swing_Low__close, Order_Block_High__close, Order_Block_Low__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=6, max_features=0.82, max_leaf_nodes=30,min_samples_leaf=7, min_samples_split=10,random_state=843828734)
+	if( Order_Block_Low__close <= 1.0821430683135986 )
+		if( atr__close <= 0.02461012452840805 )
+			if( atr__close <= 0.021247267723083496 )
+				if( Bullish_BOSInt <= 0.5 )
+					if( Order_Block_Low__close <= 0.4650140106678009 )
+						if( atr__close <= 0.010478022508323193 )
+							ret := -0.006392173338935238
+						if( atr__close > 0.010478022508323193 )
+							ret := 0.06792045999041686
+					if( Order_Block_Low__close > 0.4650140106678009 )
+						if( Order_Block_High__close <= 0.9809114933013916 )
+							ret := -0.2889952153110048
+						if( Order_Block_High__close > 0.9809114933013916 )
+							ret := -0.0335301771594435
+				if( Bullish_BOSInt > 0.5 )
+					if( Swing_High__close <= 1.0000309944152832 )
+						if( atr__close <= 0.008066966664046049 )
+							ret := 0.5506072874493927
+						if( atr__close > 0.008066966664046049 )
+							ret := 0.03488372093023256
+					if( Swing_High__close > 1.0000309944152832 )
+						if( Swing_High__close <= 1.004063367843628 )
+							ret := 0.0345679012345679
+						if( Swing_High__close > 1.004063367843628 )
+							ret := 0.4020100502512563
+			if( atr__close > 0.021247267723083496 )
+				if( Bearish_BOSInt <= 0.5 )
+					if( Order_Block_High__close <= 1.058951497077942 )
+						if( Internal_Swing_Low__close <= 0.985798567533493 )
+							ret := -0.6906077348066298
+						if( Internal_Swing_Low__close > 0.985798567533493 )
+							ret := -0.375
+					if( Order_Block_High__close > 1.058951497077942 )
+						ret := 1 // buy
+				if( Bearish_BOSInt > 0.5 )
+					ret := 1 // buy
+		if( atr__close > 0.02461012452840805 )
+			if( atr__close <= 0.024715006351470947 )
+				ret := 0.6666666666666666
+			if( atr__close > 0.024715006351470947 )
+				if( Internal_Swing_Low__close <= 0.9912769496440887 )
+					if( atr__close <= 0.02510763332247734 )
+						if( Internal_Swing_High__close <= 0.5009495615959167 )
+							ret := 0.8571428571428571 // buy
+						if( Internal_Swing_High__close > 0.5009495615959167 )
+							ret := 1 // buy
+					if( atr__close > 0.02510763332247734 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

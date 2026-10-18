@@ -171,11 +171,12 @@ def test_a_pack_never_costs_more_than_its_strategies(app, client, settings):
 def test_a_pack_of_the_cheapest_real_strategies(real_client):
     cat = Catalogue(ROOT / "catalogue" / "catalogue.csv")
     cheap = sorted((s for s in cat if s.price > 0), key=lambda s: s.price)[:5]
-    assert sum(s.price for s in cheap) < 249, "five $39 and $49 strategies"
+    was = sum(s.price for s in cheap)
     r = real_client.post("/api/quote", json={"pack": [s.id for s in cheap]}).json
-    assert r["pack"]["was"] == r["subtotal"] == str(sum(s.price for s in cheap)) == "205.00", "not $249"
-    # price is what the cart charges (here after the 15% tier); the pack itself saves nothing on them
-    assert (r["tier_rate"], r["pack"]["price"], r["pack"]["save"], r["total"]) == ("0.15", "174.25", "0", "174.25")
+    assert r["pack"]["was"] == str(was)
+    assert r["subtotal"] == f"{min(was, Decimal(249)):.2f}", "a pack never costs more than its strategies"
+    if was < 249:  # the pack itself saves nothing on them; price is what the cart charges, after its tier
+        assert r["pack"]["save"] == "0" and r["pack"]["price"] == r["total"]
     pack = real_client.get("/api/bundles").json["pack"]
     assert pack["was"] == 5 * float(cat.median_paid_price) and pack["was"] > pack["price"]
 

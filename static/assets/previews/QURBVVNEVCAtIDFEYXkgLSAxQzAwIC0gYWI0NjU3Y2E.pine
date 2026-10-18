@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Chaikin_Money_Flow
+// ID_model: ADAUSDT_1Day_1C00_ab4657ca Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2018-05-06 to 2023-05-28. By default the backtest starts on 2025-02-17, on data the model never saw.
+//@version=5
+strategy("Tuisku_ADAUSDT_1Day_1C00_ab4657ca", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_ADAUSDT_1Day_ab4657ca(ad, mf, ad_mf)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.5, max_leaf_nodes=20,min_samples_leaf=4, min_samples_split=10,random_state=843828734)
+	if( ad <= 84778152 )
+		if( mf <= 0.20675741136074066 )
+			if( ad <= -278443552 )
+				if( mf <= 0.14239586144685745 )
+					if( ad <= -331784016 )
+						ret := 0.25
+					if( ad > -331784016 )
+						ret := 0.6428571428571429
+				if( mf > 0.14239586144685745 )
+					ret := -0.17647058823529413
+			if( ad > -278443552 )
+				if( ad <= -266515712 )
+					ret := -0.9473684210526315 // sell
+				if( ad > -266515712 )
+					if( ad <= -238906616 )
+						ret := 0.5483870967741935
+					if( ad > -238906616 )
+						ret := -0.12444444444444444
+		if( mf > 0.20675741136074066 )
+			if( ad_mf <= -35279586 )
+				if( ad <= -213616896 )
+					if( mf <= 0.22769507765769958 )
+						ret := -0.4
+					if( mf > 0.22769507765769958 )
+						ret := 0.4827586206896552
+				if( ad > -213616896 )
+					ret := 0.7738095238095238 // buy
+			if( ad_mf > -35279586 )
+				ret := 0.3
+	if( ad > 84778152 )
+		if( ad_mf <= 111391908 )
+			if( ad <= 106918432 )
+				if( mf <= -0.01993203442543745 )
+					if( ad_mf <= 96418008 )
+						ret := 0.6666666666666666
+					if( ad_mf > 96418008 )
+						ret := 0
+				if( mf > -0.01993203442543745 )
+					if( ad_mf <= 97030668 )
+						ret := -0.0847457627118644
+					if( ad_mf > 97030668 )
+						ret := 0.41025641025641024
+			if( ad > 106918432 )
+				ret := 0.7297297297297297 // buy
+		if( ad_mf > 111391908 )
+			if( ad <= 111603492 )
+				ret := -0.875 // sell
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

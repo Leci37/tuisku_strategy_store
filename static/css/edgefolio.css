@@ -1,0 +1,42 @@
+/* La tienda de Edgefolio. Los colores, la letra y el espaciado van en línea en las vistas, como en el
+   diseño v7 (docs/design); aquí, lo que no cabe en línea: los estados al pasar el ratón y con el foco.
+   La letra (Ubuntu), el fondo y la página los pone la carcasa del núcleo (shell.css). */
+a{color:#0950e3;text-decoration:none}
+a:hover{text-decoration:underline}
+/* un botón que se lee como un enlace (Salir, Restablecer filtros, Seleccionar todo): el subrayado y el alto
+   de línea del enlace del diseño (un botón no hereda el 1.5 de la página) */
+.sf-link{line-height:inherit}
+.sf-link:hover{text-decoration:underline}
+
+/* los estados al pasar el ratón y con el foco (style-hover / style-focus en el diseño) */
+.sf-hover0:hover{border-color:#cfd6e6 !important}
+.sf-hover1:hover{background:#f4f6fb !important}
+.sf-hover2:hover{box-shadow:0 14px 36px rgba(22,38,58,.10) !important;border-color:#cfd6e6 !important}
+.sf-hover3:hover{background:#0950e3 !important;color:#ffffff !important;border-color:#0950e3 !important}
+.sf-hover4:hover{background:#0e7c98 !important;color:#ffffff !important;border-color:#0e7c98 !important}
+.sf-focus5:focus{border-color:#0950e3 !important;box-shadow:0 0 0 3px rgba(9,80,227,.15) !important}
+.sf-hover6:hover{background:#f7faff !important}
+.sf-hover7:hover{box-shadow:0 12px 32px rgba(22,38,58,.10) !important;border-color:#cfd6e6 !important}
+.sf-hover8:hover{background:#0950e3 !important;color:#ffffff !important;border-color:#0950e3 !important;text-decoration:none !important}
+.sf-hover9:hover{background:#0e7c98 !important;color:#ffffff !important;border-color:#0e7c98 !important;text-decoration:none !important}
+.sf-hover10:hover{border-color:#c5d6f8 !important;background:#f5f8ff !important}
+.sf-hover11:hover{border-color:#0e7c98 !important;box-shadow:0 8px 22px rgba(14,124,152,.14) !important}
+.sf-hover12:hover{background:#0950e3 !important;color:#ffffff !important}
+.sf-hover13:hover{background:#e9f0fd !important;text-decoration:none !important}
+.tr-hover0:hover{transform:translateY(-1px) !important;box-shadow:0 8px 20px rgba(22,38,58,.16) !important;opacity:1 !important}
+.tr-hover1:hover{opacity:1 !important;box-shadow:0 6px 16px rgba(22,38,58,.12) !important}
+.tr-hover2:hover{background:#e9f0fd !important}
+.tr-hover3:hover{border-color:#9fb8ef !important}
+
+/* En un móvil, el código, los totales y «Pagar» de la franja del carrito de Pro necesitan un renglón
+   propio: con flex:0 0 auto (como en el diseño) no podían partirse y empujaban la página de lado. */
+@media (max-width:560px){.sf-cartend{flex:1 1 100% !important}}
+
+/* Los nombres latinos cortados con puntos suspensivos llevan dir="auto", así que en árabe se cortan por
+   su final; siguen alineados con la página (a la derecha en árabe), como el texto de alrededor. */
+[dir="auto"]{text-align:-webkit-match-parent;text-align:match-parent}
+
+/* Los huecos de la barra del núcleo (topbar_start, topbar_end): sin caja propia, sus chips son de la
+   fila de la barra, como en el diseño. */
+.ef-bar{display:contents}
+.ef-noscript{padding:24px}

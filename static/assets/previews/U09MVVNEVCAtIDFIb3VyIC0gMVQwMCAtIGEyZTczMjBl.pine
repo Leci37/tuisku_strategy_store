@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Triple_EMA
+// ID_model: SOLUSDT_1Hour_1T00_a2e7320e Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2021-10-15 to 2024-10-13. By default the backtest starts on 2025-10-13, on data the model never saw.
+//@version=5
+strategy("Tuisku_SOLUSDT_1Hour_1T00_a2e7320e", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_SOLUSDT_1Hour_a2e7320e(ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=6, max_features=0.82, max_leaf_nodes=30,min_samples_leaf=7, min_samples_split=10,random_state=843828734)
+	if( ema1__close <= 1.026332974433899 )
+		if( ema1__close <= 0.9636665284633636 )
+			if( tema__close <= 0.9789261817932129 )
+				if( ema1__close <= 0.9507600665092468 )
+					if( ema12__close <= 0.0328768752515316 )
+						ret := -0.40476190476190477
+					if( ema12__close > 0.0328768752515316 )
+						ret := 0.43478260869565216
+				if( ema1__close > 0.9507600665092468 )
+					ret := 0.24
+			if( tema__close > 0.9789261817932129 )
+				if( ema13__close <= 0.0678449347615242 )
+					if( ema12__close <= 0.031254373490810394 )
+						if( ema12__close <= 0.027658546343445778 )
+							ret := -0.31275720164609055
+						if( ema12__close > 0.027658546343445778 )
+							ret := -0.7735849056603774 // sell
+					if( ema12__close > 0.031254373490810394 )
+						if( ema3__close <= 0.9010230600833893 )
+							ret := 0.5060240963855421
+						if( ema3__close > 0.9010230600833893 )
+							ret := -0.41935483870967744
+				if( ema13__close > 0.0678449347615242 )
+					ret := -0.7011494252873564 // sell
+		if( ema1__close > 0.9636665284633636 )
+			if( ema2__close <= 0.9990672767162323 )
+				if( ema13__close <= -0.006054757861420512 )
+					ret := -0.11368735976065819
+				if( ema13__close > -0.006054757861420512 )
+					if( ema3__close <= 0.9064475893974304 )
+						if( ema3__close <= 0.8860082626342773 )
+							ret := -0.7777777777777778 // sell
+						if( ema3__close > 0.8860082626342773 )
+							ret := 0.72 // buy
+					if( ema3__close > 0.9064475893974304 )
+						if( tema__close <= 0.9814680516719818 )
+							ret := 0.651685393258427
+						if( tema__close > 0.9814680516719818 )
+							ret := 0.0332865538110692
+			if( ema2__close > 0.9990672767162323 )
+				if( ema12__close <= -0.004133146023377776 )
+					if( ema2__close <= 1.0566396117210388 )
+						if( ema13__close <= -0.05155240371823311 )
+							ret := 0.5191256830601093
+						if( ema13__close > -0.05155240371823311 )
+							ret := -0.003803727653100038
+					if( ema2__close > 1.0566396117210388 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

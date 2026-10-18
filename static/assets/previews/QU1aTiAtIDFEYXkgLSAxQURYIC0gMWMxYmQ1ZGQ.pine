@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: ADX_and_DI
+// ID_model: AMZN_1Day_1ADX_1c1bd5dd Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2016-11-02 to 2022-10-14. By default the backtest starts on 2024-10-31, on data the model never saw.
+//@version=5
+strategy("Tuisku_AMZN_1Day_1ADX_1c1bd5dd", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_AMZN_1Day_1c1bd5dd(diPlus, diMinus, dx, adx, trueRange__close, directionalMovementPlus__close, directionalMovementMinus__close, smoothedTrueRange__close, smoothedDirectionalMovementPlus__close, smoothedDirectionalMovementMinus__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.5, max_leaf_nodes=20,min_samples_leaf=4, min_samples_split=10,random_state=843828734)
+	if( dx <= 2.8925204277038574 )
+		if( directionalMovementMinus__close <= 0.004811400314792991 )
+			if( smoothedDirectionalMovementMinus__close <= 0.07394999638199806 )
+				ret := 0.5396825396825397
+			if( smoothedDirectionalMovementMinus__close > 0.07394999638199806 )
+				if( diMinus <= 24.182019233703613 )
+					if( diMinus <= 21.09269905090332 )
+						ret := 0.6842105263157895
+					if( diMinus > 21.09269905090332 )
+						ret := -0.5576923076923077
+				if( diMinus > 24.182019233703613 )
+					ret := 0.575
+		if( directionalMovementMinus__close > 0.004811400314792991 )
+			if( smoothedDirectionalMovementPlus__close <= 0.1565408706665039 )
+				ret := 0.7582417582417582 // buy
+			if( smoothedDirectionalMovementPlus__close > 0.1565408706665039 )
+				ret := -0.6
+	if( dx > 2.8925204277038574 )
+		if( trueRange__close <= 0.016872947104275227 )
+			if( diMinus <= 15.529557228088379 )
+				if( directionalMovementPlus__close <= 0.0013554083416238427 )
+					ret := 0.16981132075471697
+				if( directionalMovementPlus__close > 0.0013554083416238427 )
+					if( dx <= 46.03640365600586 )
+						ret := -0.5869565217391305
+					if( dx > 46.03640365600586 )
+						ret := -0.125
+			if( diMinus > 15.529557228088379 )
+				if( directionalMovementPlus__close <= 0.005255758995190263 )
+					if( adx <= 24.14208698272705 )
+						ret := -0.009523809523809525
+					if( adx > 24.14208698272705 )
+						ret := 0.3869047619047619
+				if( directionalMovementPlus__close > 0.005255758995190263 )
+					if( dx <= 36.751399993896484 )
+						ret := 0.46405228758169936
+					if( dx > 36.751399993896484 )
+						ret := -0.45454545454545453
+		if( trueRange__close > 0.016872947104275227 )
+			if( dx <= 10.384687900543213 )
+				if( adx <= 14.766980171203613 )
+					if( diPlus <= 23.25430393218994 )
+						ret := 0.20967741935483872
+					if( diPlus > 23.25430393218994 )
+						ret := -0.319672131147541
+				if( adx > 14.766980171203613 )
+					if( smoothedTrueRange__close <= 0.2672847509384155 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

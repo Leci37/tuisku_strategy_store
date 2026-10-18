@@ -1,0 +1,29 @@
+{% extends "zt/base.html" %}
+{# La tienda, dentro de la carcasa común. La barra (la palabra Edgefolio, el idioma, la cuenta, la raya),
+   el pie y las páginas legales son del núcleo; lo de la tienda lo pinta su página (static/js/main.js) en
+   tres sitios: al principio de la barra (Lite | Pro y Mis estrategias), justo antes del idioma (Ver
+   tutorial, TradingView y la moneda) y el contenido. A todo lo ancho: las franjas de la página (la del
+   titular, la cinta de tickers) van de borde a borde, y cada una pone su propio ancho dentro.
+
+   Una sola plantilla para /, /mine, /thanks, /s/<id> y /s/<id>/tree: la página lee la ruta. #}
+{% set zt_full_bleed = true %}
+
+{% block title %}Edgefolio · {{ zt_t('toolName') }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edgefolio.css') }}">
+<link rel="modulepreload" href="{{ url_for('static', filename='js/main.js') }}">
+{% endblock %}
+
+{% block topbar_start %}<span class="ef-bar" data-ef-bar="start"></span>{% endblock %}
+{% block topbar_end %}<span class="ef-bar" data-ef-bar="end"></span>{% endblock %}
+
+{% block content %}
+<div id="app" data-signed-in="{{ '1' if current_user.is_authenticated else '' }}"></div>
+<noscript><p class="ef-noscript" data-i18n="noScript">{{ zt_t('noScript') }}</p></noscript>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

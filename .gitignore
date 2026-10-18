@@ -1,7 +1,25 @@
-# The paid scripts and the orders database never go to git (see README: private storage)
-private/
-*.db
+# --- Python ---------------------------------------------------------------
 __pycache__/
-.pytest_cache/
+*.py[cod]
+*.egg-info/
 .venv/
 venv/
+.pytest_cache/
+
+# --- Datos: lo escribe la app (pedidos, enlaces, los scripts de pago, las
+#     miniaturas); nunca en git ------------------------------------------------
+data/
+*.db
+# los de la versión FastAPI, si quedan en una copia de antes
+private/
+cache/
+
+# --- Secretos ---------------------------------------------------------------
+.env
+.env.local
+
+# --- Editores y sistema -----------------------------------------------------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

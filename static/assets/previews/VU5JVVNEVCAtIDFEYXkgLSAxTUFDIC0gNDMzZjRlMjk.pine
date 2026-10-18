@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: MACD_ULT_MTF
+// ID_model: UNIUSDT_1Day_1MAC_433f4e29 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-10-20 to 2024-05-21. By default the backtest starts on 2025-08-15, on data the model never saw.
+//@version=5
+strategy("Tuisku_UNIUSDT_1Day_1MAC_433f4e29", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_UNIUSDT_1Day_433f4e29(histA_IsUpInt, histA_IsDownInt, histB_IsDownInt, histB_IsUpInt, macd_IsAboveInt, macd_IsBelowInt, macd__close, signal__close, hist__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.5, max_leaf_nodes=20,min_samples_leaf=4, min_samples_split=10,random_state=843828734)
+	if( macd__close <= 0.06572351232171059 )
+		if( macd__close <= -0.1349279135465622 )
+			if( macd__close <= -0.1621079295873642 )
+				ret := 0.782608695652174 // buy
+			if( macd__close > -0.1621079295873642 )
+				if( histA_IsDownInt <= 0.5 )
+					if( hist__close <= 0.006153855996672064 )
+						ret := 0.46153846153846156
+					if( hist__close > 0.006153855996672064 )
+						ret := 0.875 // buy
+				if( histA_IsDownInt > 0.5 )
+					if( signal__close <= -0.15678605437278748 )
+						ret := 0
+					if( signal__close > -0.15678605437278748 )
+						ret := -1 // sell
+		if( macd__close > -0.1349279135465622 )
+			if( hist__close <= 0.013652296271175146 )
+				if( hist__close <= -0.025945848785340786 )
+					if( signal__close <= -0.03739473409950733 )
+						ret := 0.7045454545454546 // buy
+					if( signal__close > -0.03739473409950733 )
+						ret := -0.03333333333333333
+				if( hist__close > -0.025945848785340786 )
+					if( signal__close <= 0.0043719245586544275 )
+						ret := -0.31228861330326946
+					if( signal__close > 0.0043719245586544275 )
+						ret := -0.08069164265129683
+			if( hist__close > 0.013652296271175146 )
+				if( histA_IsDownInt <= 0.5 )
+					if( signal__close <= -0.14429879933595657 )
+						ret := -0.875 // sell
+					if( signal__close > -0.14429879933595657 )
+						ret := 0.22254335260115607
+				if( histA_IsDownInt > 0.5 )
+					if( signal__close <= -0.029218417592346668 )
+						ret := -0.3469387755102041
+					if( signal__close > -0.029218417592346668 )
+						ret := 0.32558139534883723
+	if( macd__close > 0.06572351232171059 )
+		if( hist__close <= 0.024833599105477333 )
+			if( hist__close <= 0.010291920509189367 )
+				if( histA_IsUpInt <= 0.5 )
+					if( macd__close <= 0.0763668417930603 )
+						ret := 0.72 // buy
+					if( macd__close > 0.0763668417930603 )
+						ret := 0.42105263157894735
+				if( histA_IsUpInt > 0.5 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

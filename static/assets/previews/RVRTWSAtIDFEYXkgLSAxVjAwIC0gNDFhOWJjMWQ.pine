@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Vortex_Indicator
+// ID_model: ETSY_1Day_1V00_41a9bc1d Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2016-11-03 to 2022-10-17. By default the backtest starts on 2024-11-01, on data the model never saw.
+//@version=5
+strategy("Tuisku_ETSY_1Day_1V00_41a9bc1d", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_ETSY_1Day_41a9bc1d(VIP, VIM, VIP_VIM)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.5, max_leaf_nodes=20,min_samples_leaf=4, min_samples_split=10,random_state=843828734)
+	if( VIP <= 1.1553943157196045 )
+		if( VIM <= 0.8326703906059265 )
+			if( VIP <= 1.1004717946052551 )
+				if( VIP <= 0.9728929102420807 )
+					ret := -0.9444444444444444 // sell
+				if( VIP > 0.9728929102420807 )
+					if( VIP <= 0.9874911904335022 )
+						ret := 0.6666666666666666
+					if( VIP > 0.9874911904335022 )
+						ret := -0.3875
+			if( VIP > 1.1004717946052551 )
+				if( VIP <= 1.134283721446991 )
+					if( VIM <= 0.8057244122028351 )
+						ret := 0.11666666666666667
+					if( VIM > 0.8057244122028351 )
+						ret := 0.6
+				if( VIP > 1.134283721446991 )
+					ret := -0.30666666666666664
+		if( VIM > 0.8326703906059265 )
+			if( VIP_VIM <= -0.662253201007843 )
+				ret := -0.6388888888888888
+			if( VIP_VIM > -0.662253201007843 )
+				if( VIP <= 1.0133305191993713 )
+					if( VIP_VIM <= 0.043252117931842804 )
+						ret := -0.0019230769230769232
+					if( VIP_VIM > 0.043252117931842804 )
+						ret := 0.38222222222222224
+				if( VIP > 1.0133305191993713 )
+					if( VIP <= 1.0641422867774963 )
+						ret := -0.28719723183391005
+					if( VIP > 1.0641422867774963 )
+						ret := 0.003663003663003663
+	if( VIP > 1.1553943157196045 )
+		if( VIP_VIM <= 0.42198537290096283 )
+			ret := 0.4
+		if( VIP_VIM > 0.42198537290096283 )
+			if( VIM <= 0.6884924471378326 )
+				if( VIP_VIM <= 0.6740463674068451 )
+					if( VIP_VIM <= 0.6619746387004852 )
+						ret := 0.39849624060150374
+					if( VIP_VIM > 0.6619746387004852 )
+						ret := 0.8 // buy
+				if( VIP_VIM > 0.6740463674068451 )
+					if( VIP <= 1.2867844700813293 )
+						ret := 0.75 // buy
+					if( VIP > 1.2867844700813293 )
+						ret := -0.06493506493506493
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

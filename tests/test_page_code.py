@@ -1,0 +1,105 @@
+# -*- coding: utf-8 -*-
+"""El código de la página después de mezclar una exportación del diseño (tools/design_update.py): sin
+marcas de conflicto, cada valor y cada texto que leen las vistas lo da static/js, y cada texto de la tienda
+está en los 8 idiomas, con las mismas variables, sin repetir una clave del núcleo. Lo que una mezcla deja
+a medias se ve aquí, no en el navegador."""
+import json
+import re
+import sys
+from pathlib import Path
+
+import zlecitool_core
+
+from edgefolio.settings import ROOT
+
+sys.path.insert(0, str(ROOT / "tools"))
+import design_update  # noqa: E402
+
+TEXTS = json.loads((ROOT / "i18n" / "ui.json").read_text(encoding="utf-8"))
+CORE = json.loads((Path(zlecitool_core.__file__).resolve().parent / "i18n" / "common.json").read_text(encoding="utf-8"))
+MARK = re.compile(r"^(<{7} |={7}$|>{7} |\|{7} )", re.M)
+
+
+def text_files():
+    for pattern in ("static/js/**/*.js", "static/css/*.css", "templates/**/*.html", "i18n/*.json", "edgefolio/*.py",
+                    "tools/*.py", "docs/**/*.md"):
+        for path in ROOT.glob(pattern):
+            if "vendor" not in path.relative_to(ROOT).parts:
+                yield path
+
+
+def test_no_merge_markers_left():
+    marked = [str(p.relative_to(ROOT)) for p in text_files() if MARK.search(p.read_text(encoding="utf-8"))]
+    assert not marked, f"conflictos de una mezcla sin resolver: {marked}"
+
+
+def test_every_value_and_text_the_views_read_is_given():
+    given, given_texts = design_update.given_values(ROOT)
+    values, texts = design_update.used_values(ROOT / "static" / "js" / "views")
+    assert not values - given, f"valores que leen las vistas y static/js no da: {sorted(values - given)}"
+    assert not texts - given_texts, f"textos que leen las vistas y no están en TX_KEYS: {sorted(texts - given_texts)}"
+    # también lo de cada fila (r?.algo, m?.algo…): un nombre que ningún objeto de static/js tiene
+    code = "".join(p.read_text(encoding="utf-8") for p in (ROOT / "static" / "js" / "views").glob("*.js"))
+    fields = set(re.findall(r"\b(?!tx\b)[a-z]{1,2}\?\.([A-Za-z_$][\w$]*)", code))
+    assert not fields - given, f"campos de fila que static/js no da: {sorted(fields - given)}"
+
+
+def test_every_text_the_page_reads_exists_in_every_language():
+    vals = (ROOT / "static" / "js" / "lib" / "vals.js").read_text(encoding="utf-8")
+    keys = re.findall(r"'([^']+)'", re.search(r"TX_KEYS\s*=\s*\[(.*?)\]", vals, re.S).group(1))
+    for key in keys:
+        entry = TEXTS.get(key) or CORE.get(key)
+        assert entry, f"{key}: ni de la tienda ni del núcleo"
+        missing = [lang for lang in TEXTS["_languages"] if not entry.get(lang)]
+        assert not missing, f"{key}: le faltan {missing}"
+
+
+def placeholders(text) -> set:
+    forms = text.values() if isinstance(text, dict) else [text]  # un plural: {one, other…}
+    return set().union(*(set(re.findall(r"\{(\w+)\}", f)) for f in forms))
+
+
+def test_every_shop_text_is_in_the_8_languages_with_the_same_variables():
+    langs = TEXTS["_languages"]
+    assert len(langs) == 8
+    for key, text in TEXTS.items():
+        if key.startswith("_"):
+            continue
+        assert set(text) >= set(langs), f"{key}: le faltan {sorted(set(langs) - set(text))}"
+        found = {lang: placeholders(text[lang]) for lang in langs}
+        assert len({frozenset(v) for v in found.values()}) == 1, f"{key}: variables distintas {found}"
+
+
+def test_no_shop_text_repeats_a_core_key():
+    repeated = {k for k in TEXTS if not k.startswith("_")} & {k for k in CORE if not k.startswith("_")}
+    assert not repeated, f"claves del núcleo repetidas: {sorted(repeated)}"
+
+
+def test_the_table_view_uses_its_own_key():
+    """viewTable era una clave del núcleo: la vista Tabla de Pro lee viewTableTab (exportación del 6 oct)."""
+    assert "viewTableTab" in TEXTS and "pviewTable" not in TEXTS and "viewTable" not in TEXTS
+    assert "tx.viewTableTab" in (ROOT / "static" / "js" / "lib" / "vals_shop.js").read_text(encoding="utf-8")
+
+
+def test_the_page_keeps_its_hooks():
+    """Lo que static/js busca en las vistas: el buscador (data-search, la barra del móvil lo enfoca) y el
+    carrito (data-sf-cart: la barra del móvil, los avisos encima)."""
+    views = ROOT / "static" / "js" / "views"
+    app = (ROOT / "static" / "js" / "app.js").read_text(encoding="utf-8")
+    assert 'data-search="lite"' in (views / "lite.js").read_text(encoding="utf-8")
+    assert 'data-search="pro"' in (views / "pro.js").read_text(encoding="utf-8")
+    assert "input[data-search]" in app
+    for view in ("lite.js", "pro.js"):
+        assert "data-sf-cart" in (views / view).read_text(encoding="utf-8")
+    assert app.count("[data-sf-cart]") >= 2
+
+
+def test_the_bottom_bar_takes_its_room_with_the_core_hook():
+    """La barra de abajo del móvil (la del diseño) lleva data-zt-bottom (núcleo 0.28): la carcasa mide lo que
+    tapa y deja ese sitio. Nada de dejarlo a mano en el CSS (CONTRATO.md del núcleo, §26): con un alto
+    escrito, el aviso de cookies y los avisos del núcleo quedaban debajo de la barra (tests/test_phone_bar.py
+    lo mira en un navegador)."""
+    bar = (ROOT / "static" / "js" / "views" / "phonebar.js").read_text(encoding="utf-8")
+    assert re.search(r"<nav data-zt-bottom style=\"position:fixed;[^\"]*bottom:0;", bar)
+    css = (ROOT / "static" / "css" / "edgefolio.css").read_text(encoding="utf-8")
+    assert not re.search(r"body\.app-shell\s*\{[^}]*padding-bottom", css)

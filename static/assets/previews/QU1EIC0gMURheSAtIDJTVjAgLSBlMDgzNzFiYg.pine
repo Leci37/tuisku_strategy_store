@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 5 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Stochastic_RSI, L_Vortex_Indicator
+// ID_model: AMD_1Day_2SV0_e08371bb Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2016-11-28 to 2022-10-25. By default the backtest starts on 2024-11-06, on data the model never saw.
+//@version=5
+strategy("Tuisku_AMD_1Day_2SV0_e08371bb", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 5 tree(s), averaged as scikit-learn does
+decision_tree_0_AMD_1Day_e08371bb(rsi1, k, d, d_k, smoothD_d, smoothK_k, VIP, VIM, VIP_VIM)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=843828734)
+	if( VIP <= 1.1984702944755554 )
+		if( d <= 3.0131521224975586 )
+			ret := 0.5423728813559322
+		if( d > 3.0131521224975586 )
+			if( d <= 27.504383087158203 )
+				ret := -0.20502645502645503
+			if( d > 27.504383087158203 )
+				if( smoothK_k <= 81.69661712646484 )
+					ret := 0.16638935108153077
+				if( smoothK_k > 81.69661712646484 )
+					ret := -0.25925925925925924
+	if( VIP > 1.1984702944755554 )
+		ret := 0.38545454545454544
+	ret //return
+
+decision_tree_1_AMD_1Day_e08371bb(rsi1, k, d, d_k, smoothD_d, smoothK_k, VIP, VIM, VIP_VIM)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=914636141)
+	if( VIM <= 0.745012491941452 )
+		ret := 0.2803180914512923
+	if( VIM > 0.745012491941452 )
+		if( smoothD_d <= 0.47921547293663025 )
+			ret := 0.4444444444444444
+		if( smoothD_d > 0.47921547293663025 )
+			ret := -0.06753497346840329
+	ret //return
+
+decision_tree_2_AMD_1Day_e08371bb(rsi1, k, d, d_k, smoothD_d, smoothK_k, VIP, VIM, VIP_VIM)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=1228959102)
+	if( rsi1 <= 75.06282043457031 )
+		if( k <= 83.4103012084961 )
+			if( smoothD_d <= 60.712406158447266 )
+				ret := -0.023117960877296978
+			if( smoothD_d > 60.712406158447266 )
+				ret := 0.4060324825986079
+		if( k > 83.4103012084961 )
+			ret := -0.3006993006993007
+	if( rsi1 > 75.06282043457031 )
+		if( d <= 97.25604629516602 )
+			ret := 0.6993464052287581
+		if( d > 97.25604629516602 )
+			ret := -0.4827586206896552
+	ret //return
+
+decision_tree_3_AMD_1Day_e08371bb(rsi1, k, d, d_k, smoothD_d, smoothK_k, VIP, VIM, VIP_VIM)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=1840268610)
+	if( rsi1 <= 74.82540893554688 )
+		if( k <= 82.4691047668457 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

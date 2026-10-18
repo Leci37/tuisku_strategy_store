@@ -1,0 +1,72 @@
+# Las pruebas de la herramienta (su check_tool incluido) en cada push y pull
+# request. El núcleo se clona al lado, como en desarrollo (requirements-dev.txt
+# lo instala desde ../zlecitool-core):
+#
+# * en _ztool_dev y en los pull request, el _ztool_dev del núcleo: lo que se
+#   rompa entre los dos se ve antes de sacar versión;
+# * en _ztool_main, el _ztool_main del núcleo: lo estable contra lo estable
+#   (en producción se instala la etiqueta que fija requirements.txt).
+#
+# El núcleo es privado: hace falta el secreto ZLECITOOL_CORE_TOKEN (un token
+# de GitHub con permiso de lectura de Contents sobre Leci37/zlecitool-core).
+name: pruebas
+
+on:
+  push:
+    # _ztool_dev: donde se trabaja; _ztool_main: lo que el dueño fusiona.
+    branches: [_ztool_dev, _ztool_main]
+  pull_request:
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CORE_TOKEN: ${{ secrets.ZLECITOOL_CORE_TOKEN }}
+    steps:
+      # Con su historia: tests/test_cli.py y test_formats.py sacan de ella los scripts de pago (c3fa796)
+      # con git archive; con un clon de un solo commit se saltarían.
+      - uses: actions/checkout@v5
+        with:
+          path: tool
+          fetch-depth: 0
+      - name: Qué núcleo
+        id: core
+        run: |
+          if [ "${{ github.ref_name }}" = "_ztool_main" ]; then
+            ref=_ztool_main
+          else
+            ref=_ztool_dev
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "Núcleo: $ref"
+      - name: Falta el token del núcleo
+        if: ${{ env.CORE_TOKEN == '' }}
+        run: |
+          echo "::error::Falta el secreto ZLECITOOL_CORE_TOKEN (lectura de Leci37/zlecitool-core): Settings → Secrets and variables → Actions"
+          exit 1
+      - uses: actions/checkout@v5
+        with:
+          repository: Leci37/zlecitool-core
+          ref: ${{ steps.core.outputs.ref }}
+          token: ${{ secrets.ZLECITOOL_CORE_TOKEN }}
+          path: zlecitool-core
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            tool/requirements*.txt
+            zlecitool-core/pyproject.toml
+      - name: Dependencias
+        working-directory: tool
+        run: python -m pip install -r requirements-dev.txt
+      - name: Chromium para los PDF
+        run: python -m playwright install --with-deps chromium
+      - name: pytest
+        working-directory: tool
+        run: python -m pytest -q -rs

@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 5 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Fibonacci_Bollinger
+// ID_model: SPOT_1Day_1FIB_9788bfcf Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2019-01-16 to 2023-09-05. By default the backtest starts on 2025-04-15, on data the model never saw.
+//@version=5
+strategy("Tuisku_SPOT_1Day_1FIB_9788bfcf", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 5 tree(s), averaged as scikit-learn does
+decision_tree_0_SPOT_1Day_9788bfcf(basis__close, upper_1__close, upper_2__close, upper_3__close, upper_4__close, upper_5__close, upper_6__close, lower_1__close, lower_2__close, lower_3__close, lower_4__close, lower_5__close, lower_6__close, basis_minus__close, basis_max__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=843828734)
+	if( lower_4__close <= 0.3579260855913162 )
+		ret := -0.6219512195121951
+	if( lower_4__close > 0.3579260855913162 )
+		if( lower_1__close <= 0.7775606215000153 )
+			if( basis__close <= 0.7865692973136902 )
+				if( basis_minus__close <= 0.6174236238002777 )
+					if( upper_5__close <= 1.1062418222427368 )
+						ret := -0.041666666666666664
+					if( upper_5__close > 1.1062418222427368 )
+						ret := 0.6173913043478261
+				if( basis_minus__close > 0.6174236238002777 )
+					ret := -0.9230769230769231 // sell
+			if( basis__close > 0.7865692973136902 )
+				ret := 0.5482456140350878
+		if( lower_1__close > 0.7775606215000153 )
+			if( upper_3__close <= 2.580642819404602 )
+				if( lower_5__close <= 0.7293121218681335 )
+					if( upper_4__close <= 1.8150156736373901 )
+						ret := -0.04844290657439446
+					if( upper_4__close > 1.8150156736373901 )
+						ret := -0.4657534246575342
+				if( lower_5__close > 0.7293121218681335 )
+					if( lower_5__close <= 0.8038489818572998 )
+						ret := 0.23170731707317074
+					if( lower_5__close > 0.8038489818572998 )
+						ret := -0.141439205955335
+			if( upper_3__close > 2.580642819404602 )
+				ret := 0.82 // buy
+	ret //return
+
+decision_tree_1_SPOT_1Day_9788bfcf(basis__close, upper_1__close, upper_2__close, upper_3__close, upper_4__close, upper_5__close, upper_6__close, lower_1__close, lower_2__close, lower_3__close, lower_4__close, lower_5__close, lower_6__close, basis_minus__close, basis_max__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=914636141)
+	if( upper_5__close <= 2.9612432718276978 )
+		if( lower_6__close <= 0.13914690911769867 )
+			if( upper_6__close <= 2.8671311140060425 )
+				ret := -0.8524590163934426 // sell
+			if( upper_6__close > 2.8671311140060425 )
+				ret := -0.12
+		if( lower_6__close > 0.13914690911769867 )
+			if( lower_4__close <= 0.7261078059673309 )
+				if( upper_6__close <= 1.307078242301941 )
+					if( basis_max__close <= -0.30681678652763367 )
+						ret := -0.007042253521126761
+					if( basis_max__close > -0.30681678652763367 )
+						ret := 0.75 // buy
+				if( upper_6__close > 1.307078242301941 )
+					ret := 0.5171232876712328
+			if( lower_4__close > 0.7261078059673309 )
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

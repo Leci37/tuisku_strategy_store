@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 1 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: Madrid_Moving_Average_Ribbon
+// ID_model: PYPL_1Day_1MAD_1023b1dd Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2017-03-09 to 2022-12-05. By default the backtest starts on 2024-11-26, on data the model never saw.
+//@version=5
+strategy("Tuisku_PYPL_1Day_1MAD_1023b1dd", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 1 tree(s), averaged as scikit-learn does
+decision_tree_0_PYPL_1Day_1023b1dd(ma05_colorInt, ma10_colorInt, ma15_colorInt, ma20_colorInt, ma25_colorInt, ma30_colorInt, ma35_colorInt, ma40_colorInt, ma45_colorInt, ma50_colorInt, ma55_colorInt, ma60_colorInt, ma65_colorInt, ma70_colorInt, ma75_colorInt, ma80_colorInt, ma85_colorInt, ma90_colorInt, ma05__close, ma10__close, ma15__close, ma20__close, ma25__close, ma30__close, ma35__close, ma40__close, ma45__close, ma50__close, ma55__close, ma60__close, ma65__close, ma70__close, ma75__close, ma80__close, ma85__close, ma90__close, ma100__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.4, max_leaf_nodes=20,random_state=843828734)
+	if( ma15__close <= 1.180224061012268 )
+		if( ma100__close <= 0.7671727538108826 )
+			if( ma05__close <= 0.9573689103126526 )
+				ret := 0
+			if( ma05__close > 0.9573689103126526 )
+				if( ma90__close <= 0.7779208719730377 )
+					ret := -1 // sell
+				if( ma90__close > 0.7779208719730377 )
+					if( ma45__close <= 0.8601206243038177 )
+						ret := 0
+					if( ma45__close > 0.8601206243038177 )
+						ret := -1 // sell
+		if( ma100__close > 0.7671727538108826 )
+			if( ma15__close <= 0.9450786113739014 )
+				if( ma80__close <= 0.9178054630756378 )
+					if( ma70_colorInt <= 2.5 )
+						ret := 0.40476190476190477
+					if( ma70_colorInt > 2.5 )
+						ret := -0.6
+				if( ma80__close > 0.9178054630756378 )
+					if( ma35__close <= 0.9533790647983551 )
+						ret := 0.9298245614035088 // buy
+					if( ma35__close > 0.9533790647983551 )
+						ret := -0.10526315789473684
+			if( ma15__close > 0.9450786113739014 )
+				if( ma30_colorInt <= 3.5 )
+					if( ma100__close <= 1.765931785106659 )
+						ret := 0.03645200486026731
+					if( ma100__close > 1.765931785106659 )
+						ret := 1 // buy
+				if( ma30_colorInt > 3.5 )
+					if( ma05__close <= 0.9585938453674316 )
+						ret := 0.5
+					if( ma05__close > 0.9585938453674316 )
+						ret := -0.5219512195121951
+	if( ma15__close > 1.180224061012268 )
+		if( ma50__close <= 1.3746750354766846 )
+			ret := 0
+		if( ma50__close > 1.3746750354766846 )
+			if( ma35__close <= 1.3828937411308289 )
+				ret := -1 // sell
+			if( ma35__close > 1.3828937411308289 )
+				ret := 0
+	ret //return
+
+// Define expected timeframe based on the selected interval: 1Day pine_value: D   Trigger an alert and show a label if the timeframe is incorrect
+alert_message_time_wrong = "The current candle TIMEframe is WRONG: "+ str.tostring(timeframe.period) + ", CHANGE it to the CORRECT one:  1DAY !!"
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

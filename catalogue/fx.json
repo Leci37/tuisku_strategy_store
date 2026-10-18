@@ -1,0 +1,12 @@
+{
+  "base": "USD",
+  "date": null,
+  "rates": {
+    "USD": 1,
+    "EUR": 0.92,
+    "INR": 83.5,
+    "CNY": 7.2,
+    "SAR": 3.75
+  },
+  "source": "example"
+}

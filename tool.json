@@ -1,0 +1,12 @@
+{
+  "_comment": "La ficha de la herramienta: lo que el núcleo necesita saber de ella (CONTRATO.md del núcleo, §2). El slug es también el paquete, el prefijo de las tablas (edgefolio_*) y la carpeta de datos.",
+  "slug": "edgefolio",
+  "name": "Edgefolio",
+  "description": "Estrategias de TradingView en Pine Script con su backtest: fíltralas, mira la curva, mira cómo decide cada una y descarga el script.",
+  "_ads": "El diseño de la tienda no lleva publicidad.",
+  "ads": false,
+  "_wordmark": "La marca de la tienda en la barra y en el pie: «Edge» y «folio», con la segunda parte en el color de la herramienta (núcleo 0.23). name_key: el nombre de la herramienta, en el idioma de quien lee.",
+  "wordmark": ["Edge", "folio"],
+  "name_key": "toolName",
+  "_prices": "Sin prices: la tienda cobra con PayPal, no con créditos. Sin tour: el recorrido de bienvenida y el tutorial de instalación son los del diseño, de la propia página."
+}

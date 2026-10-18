@@ -1,0 +1,31 @@
+{
+  "_comment": "El contrato entre el generador (Leci37/tuisku_strategy_generator) y la tienda: las columnas de catalogue.csv, en qué carpeta de su d_result/ está cada fichero que nombra una fila, a qué carpeta de static/assets/ va y cómo se llama el script completo de cada estrategia. Lo lee catalogue/publish.py (la única fuente de sus columnas y carpetas) y lo comprueba el generador en tests/test_export.py. Un cambio sube version y entra en los dos repos a la vez.",
+  "version": 1,
+  "columns": [
+    "Price", "ticker", "interval", "path_stra", "path_candle", "Net Profit_usd", "Full Indicator Name",
+    "key_techs", "Name", "Index", "Net Profit_per", "Trade Activity Per Candle", "Total Closed Trades",
+    "Percent Profitable_per", "Profit Factor", "Max Drawdown_usd", "Max Drawdown_per", "Avg Trade_usd", "Avg Trade_per",
+    "Avg # Bars in Trades", "Release date", "months_trained", "id_model", "path_ico", "path_ico_big", "pine_path_shadow",
+    "n_candles", "Precision f1_per", "Tree Deep"
+  ],
+  "optional_columns": ["version"],
+  "dropped_columns": ["pine_path"],
+  "folders": {
+    "path_stra": "pine_TW_img",
+    "path_candle": "pine_TW_img",
+    "path_ico": "icons",
+    "path_ico_big": "icons",
+    "pine_path_shadow": "pine_TW_hide"
+  },
+  "assets": {
+    "path_stra": "charts",
+    "path_candle": "charts",
+    "path_ico": "icons",
+    "path_ico_big": "icons",
+    "pine_path_shadow": "previews"
+  },
+  "private": {
+    "folder": "pine_TW_b",
+    "name": "urlsafe base64 without padding of {ticker}_{interval}_{key_techs}tuisku{id_model}, plus .pine"
+  }
+}

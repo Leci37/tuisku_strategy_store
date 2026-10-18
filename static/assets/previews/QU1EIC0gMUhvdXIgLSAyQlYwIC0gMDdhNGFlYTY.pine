@@ -1,0 +1,63 @@
+//Welcome to © Tuisku Trading Strategy, created by the team at Tuisku.eu. The buy and sell decisions come from a random forest of 3 decision tree(s) trained with scikit-learn, translated line by line into Pine Script.
+//Tuisku's commitment to quality and innovation shines through in every aspect of this strategy.
+
+
+// Technical base pattern: L_Bull_Bear_Power, L_Vortex_Indicator
+// ID_model: AMD_1Hour_2BV0_07a4aea6 Date Creation: 2026/10/13 Expiry date: 2027/06/13 (no new trades after it; download the updated version)
+// Trained on 2020-10-14 to 2024-05-16. By default the backtest starts on 2025-08-04, on data the model never saw.
+//@version=5
+strategy("Tuisku_AMD_1Hour_2BV0_07a4aea6", overlay=true, margin_long=1000, margin_short=1000, pyramiding=1, commission_type=strategy.commission.percent, commission_value=0.05, slippage=1)
+//RANDOM FOREST AI: 3 tree(s), averaged as scikit-learn does
+decision_tree_0_AMD_1Hour_07a4aea6(BBPower_Color, VIP, VIM, VIP_VIM, bullPower__close, bearPower__close, bbp__close, bbm__close)=>
+	float ret = na  // # DecisionTreeRegressor(max_depth=6, max_features=0.82, max_leaf_nodes=30,min_samples_leaf=7, min_samples_split=10,random_state=843828734)
+	if( VIP_VIM <= 0.6723725199699402 )
+		if( VIM <= 1.0350787043571472 )
+			if( bbm__close <= 0.004589336924254894 )
+				if( VIP <= 1.168356478214264 )
+					if( VIP_VIM <= 0.33415454626083374 )
+						if( VIP <= 1.159135103225708 )
+							ret := 0.05803571428571429
+						if( VIP > 1.159135103225708 )
+							ret := 0.9 // buy
+					if( VIP_VIM > 0.33415454626083374 )
+						ret := -0.65
+				if( VIP > 1.168356478214264 )
+					ret := 0.5294117647058824
+			if( bbm__close > 0.004589336924254894 )
+				if( bearPower__close <= 0.014297040179371834 )
+					if( VIP <= 1.2938112616539001 )
+						if( VIP <= 1.209732174873352 )
+							ret := -0.07047584715212689
+						if( VIP > 1.209732174873352 )
+							ret := -0.2948517940717629
+					if( VIP > 1.2938112616539001 )
+						if( bullPower__close <= 0.018657809123396873 )
+							ret := -0.20512820512820512
+						if( bullPower__close > 0.018657809123396873 )
+							ret := 0.5657894736842105
+				if( bearPower__close > 0.014297040179371834 )
+					if( VIM <= 0.6789292991161346 )
+						if( bullPower__close <= 0.03983858786523342 )
+							ret := -0.5949367088607594
+						if( bullPower__close > 0.03983858786523342 )
+							ret := 0
+					if( VIM > 0.6789292991161346 )
+						if( VIP <= 1.268145501613617 )
+							ret := 0.09481481481481481
+						if( VIP > 1.268145501613617 )
+							ret := 0.43790849673202614
+		if( VIM > 1.0350787043571472 )
+			if( VIP <= 0.9187556207180023 )
+				if( VIP_VIM <= -0.2393895387649536 )
+					if( VIM <= 1.0848290920257568 )
+						ret := -0.6271186440677966
+					if( VIM > 1.0848290920257568 )
+						if( bbm__close <= 0.03545540198683739 )
+							ret := 0.0533375918236985
+						if( bbm__close > 0.03545540198683739 )
+							ret := 0.41346153846153844
+				if( VIP_VIM > -0.2393895387649536 )
+
+
+	...
+The rest of this Pine script is part of the paid version. Visit the website for more info.

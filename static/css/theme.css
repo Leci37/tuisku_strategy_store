@@ -1,0 +1,12 @@
+/* El tema de Edgefolio: SÓLO los valores de los tokens (los componentes son del núcleo, shell.css).
+
+   --app-max: la tienda es una rejilla de fichas y tablas de 1320 px, como su diseño; la barra, la
+   página y el pie se ensanchan juntos. --pri y --acc son los de la familia (los del diseño de la
+   tienda, los mismos): dos extremos de cada degradado, con texto blanco encima (más de 4,5:1). */
+
+:root {
+  --app-max: 1320px;
+  --pri:     #0950e3;
+  --acc:     #0e7c98;
+  --bg:      #f4f8fb;
+}

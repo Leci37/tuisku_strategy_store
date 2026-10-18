@@ -85,13 +85,31 @@
   - con sesión en el escritorio, baja a dos filas, porque el correo de la cuenta ocupa unos 210 px. Está pedido al núcleo en `CAMBIOS.md`.
 - Los avisos flotantes son de la tienda.
 
+<table>
+<tr>
+<td width="50%"><img src="img/edgefolio_arabic.png" alt="La tienda en árabe, de derecha a izquierda"></td>
+<td width="50%"><img src="img/edgefolio_spanish.png" alt="La ficha de una estrategia en español, con los precios en euros"></td>
+</tr>
+<tr>
+<td><sub>En árabe, de derecha a izquierda, con los precios en moneda local.</sub></td>
+<td><sub>En español, con los precios en euros. El idioma lo cambia el menú del núcleo, al momento.</sub></td>
+</tr>
+</table>
+
 ---
 
 ## 1 · Lite (por defecto)
 
 **Archivos:** `static/js/views/lite.js`, `lib/vals_shop.js` y `lib/vals_cart.js`.
 
+![Lite con tres estrategias y un código en el carrito flotante](img/edgefolio_lite.png)
+
+<sub>Lite con tres estrategias en el carrito y el código «demo20»: −35 % (15 % del tramo y 20 % del código).</sub>
+
 ### Recorrido de bienvenida
+
+![El recorrido de bienvenida, paso 1 de 3](img/edgefolio_tour.png)
+
 - Es el de la tienda, no el del núcleo, porque el del núcleo solo sale con sesión.
 - Sale en la tienda la primera vez que se entra desde este navegador [Navegador `edgefolio-tour-v1`]. Si se entra por otra dirección, no sale.
 - Tiene 3 pasos:
@@ -131,6 +149,8 @@ Solo cuenta la respuesta más nueva: una búsqueda vieja que llega tarde no pisa
   - Se puede marcar una estrategia que ya va en un pack del carrito, que sale marcada «En el carrito». Al añadir el pack propio, ese otro pack sale del carrito.
   - El pack propio solo va al presupuesto con las 5 elegidas.
   - [Servidor] Cuesta 249 US$, o la suma de sus precios si es menor.
+
+![Crea tu pack: el selector con cinco estrategias elegidas](img/edgefolio_pack.png)
 
 ### Tarjetas
 
@@ -173,6 +193,8 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 
 **Archivos:** `views/pro.js`, `lib/filters.js` (arma la consulta) y `lib/vals_shop.js`.
 
+![Pro: el panel de filtros, la lista en filas y la franja del carrito](img/edgefolio_pro.png)
+
 **Panel de filtros** (📱 encima de la lista). Cada cambio vuelve a pedir la lista (API #2) 150 ms después del último cambio, con `facets=1` cuando cambian los filtros.
 - El contador «N · estrategias mostradas» y **Restablecer filtros**.
 - **Solo GRATIS** → `free=1`.
@@ -184,6 +206,10 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
   - Las opciones, su recuento y los iconos los da el servidor.
   - Con todo quitado, la lista se queda vacía.
 - [Servidor] Los filtros se combinan con Y, y las opciones de un mismo desplegable, con O.
+
+![Pro con dos símbolos y una tasa de acierto del 60 % o más](img/edgefolio_pro_filters.png)
+
+<sub>Dos símbolos (ADBE y AMD) y la tasa de acierto desde el 60 %: el recuento, las etiquetas, los histogramas y la lista salen del servidor.</sub>
 
 **Encima de la lista:**
 - **Ordenar** → `sort`, siempre de mayor a menor.
@@ -200,10 +226,14 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
   - 📱 se desplaza de lado.
 - «CLAVE · indicador» abre la página del indicador en TradingView (`ind_url`). Al pasar el ratón, sale su explicación (`ind_text`).
 
+![Los mismos filtros en la vista Tabla](img/edgefolio_table.png)
+
 **Comparar:**
 - Admite hasta 3 estrategias, desde las tarjetas de Lite y desde la Tabla.
 - La píldora **Comparar · N** abre la tabla comparativa, con el mejor valor de cada fila en verde. En el precio, gana el más bajo.
 - No llama al servidor.
+
+![Tres estrategias comparadas, con el mejor valor de cada fila en verde](img/edgefolio_compare.png)
 
 **La franja del carrito y la escalera** se explican en la pantalla 5.
 
@@ -228,6 +258,8 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 - el registro completo (API #3): el indicador, su autor y las versiones;
 - la vista previa, de `/static/assets/previews/…pine` (cortada);
 - con sesión, Mis estrategias (API #15), una vez y en silencio, para saber si hay que mostrar «Actualización disponible».
+
+![La ficha de una estrategia: cabecera, compra, backtest, gráficos y resultados](img/edgefolio_strategy.png)
 
 **Qué ve y qué hace:**
 1. **Cabecera:**
@@ -273,6 +305,8 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 - `static/js/tree.js`, que se carga al abrir la pestaña;
 - `views/tree/*.js`;
 - `static/trees/features.json` y `static/trees/ui.json`.
+
+![Cómo decide: el árbol, los deslizadores y el resultado con su regla](img/edgefolio_tree.png)
 
 **De dónde sale el árbol:**
 - **Visitante:** de la vista previa cortada.
@@ -324,6 +358,10 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 
 Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 53,01 US$ donde el diseño dice 53,00, y con el carrito vacío dice 160,01 US$.
 
+![Pro en español con dos estrategias en el carrito: el total en euros y lo que se paga en dólares con PayPal](img/edgefolio_pro_es.png)
+
+<sub>En moneda local: el total en euros y, debajo, «Pagas … US$ con PayPal». El carrito flotante de Lite, con un código, sale en la pantalla 1.</sub>
+
 **Descuentos** [Servidor]:
 - Por tramos: más de 160 US$ → 15 %; más de 290 → 20 %; más de 500 → 25 %; más de 1.000 → 40 %; más de 2.500 → 70 %.
 - Un código suma su porcentaje al del tramo. El descuento total tiene un tope del 70 %.
@@ -359,6 +397,17 @@ Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 5
 
 **Archivos:** `views/dialogs.js` y `lib/vals_pages.js`.
 
+<table>
+<tr>
+<td width="50%"><img src="img/edgefolio_free_error.png" alt="El diálogo con un correo mal escrito: el aviso bajo el campo y el borde en rojo"></td>
+<td width="50%"><img src="img/edgefolio_free.png" alt="El diálogo después de enviar: el correo ha salido"></td>
+</tr>
+<tr>
+<td><sub>Un correo mal escrito: el texto del núcleo bajo el campo, con el borde rojo.</sub></td>
+<td><sub>Hecho: el enlace va por correo, nunca en la respuesta.</sub></td>
+</tr>
+</table>
+
 1. **Se abre** con **Descargar** en una estrategia gratis (pantallas 1–3), o con «Conseguirla gratis» en el árbol.
    - El cursor va al campo del correo, salvo en pantallas táctiles.
    - Al cerrarse, el foco vuelve al botón que lo abrió.
@@ -390,6 +439,17 @@ Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 5
 ## 7 · Gracias (/thanks)
 
 **Archivos:** `views/thanks.js`; el tutorial de instalación está en `views/dialogs.js`.
+
+<table>
+<tr>
+<td width="50%"><img src="img/edgefolio_install.png" alt="Justo después de pagar: el tutorial de instalación, paso 1 de 5"></td>
+<td width="50%"><img src="img/edgefolio_thanks.png" alt="La página de gracias: el pedido y una fila por estrategia con sus descargas"></td>
+</tr>
+<tr>
+<td><sub>La primera vez, el tutorial de instalación se abre solo.</sub></td>
+<td><sub>Al cerrarlo: el pedido, «Descargar todo» y una fila por estrategia.</sub></td>
+</tr>
+</table>
 
 1. PayPal vuelve a `/thanks?token=<pedido>`. Sin `token`, la página lleva a la tienda.
 2. **El cobro** (API #9) cobra el pedido y devuelve el recibo.
@@ -424,6 +484,17 @@ Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 5
 ## 8 · Mis estrategias (/mine)
 
 **Archivos:** `views/mine.js` y `lib/vals_pages.js`.
+
+<table>
+<tr>
+<td width="50%"><img src="img/edgefolio_mine_proof.png" alt="Mis estrategias al abrir el enlace del correo: confirmar que el correo con el que se pagó es de la cuenta"></td>
+<td width="50%"><img src="img/edgefolio_mine.png" alt="Mis estrategias: cada compra con su .pine y su .zip, su ficha y cómo decide, y las favoritas"></td>
+</tr>
+<tr>
+<td><sub>Se compró sin cuenta: el enlace del correo pregunta si ese correo es de la cuenta.</sub></td>
+<td><sub>Confirmado, las compras de ese correo salen en la lista.</sub></td>
+</tr>
+</table>
 
 **Entrar:**
 - Pide sesión. Sin ella, el núcleo lleva a `/login?next=/mine` y después vuelve aquí.
@@ -482,6 +553,19 @@ Nunca entra algo solo porque coincide con el correo de alta.
 ## 9 · Móvil (390 px) con la barra de abajo
 
 **Archivo:** `views/phonebar.js`. Sale por debajo de 640 px.
+
+<table>
+<tr>
+<td align="center"><img src="img/edgefolio_phone.png" alt="Lite en un móvil, con la barra de abajo" width="240"></td>
+<td align="center"><img src="img/edgefolio_phone_cart.png" alt="El carrito flotante y la píldora Comparar, sobre la barra de abajo" width="240"></td>
+<td align="center"><img src="img/edgefolio_phone_tree.png" alt="Cómo decide en un móvil, con los deslizadores encima del árbol" width="240"></td>
+</tr>
+<tr>
+<td><sub>Lite, con la barra de abajo.</sub></td>
+<td><sub>El carrito flotante y Comparar, encima de la barra.</sub></td>
+<td><sub>Cómo decide: los deslizadores, encima del árbol.</sub></td>
+</tr>
+</table>
 
 | Botón | Qué pasa |
 |---|---|

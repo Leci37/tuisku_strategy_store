@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Recorre la tienda en un navegador de verdad y guarda las capturas del README en docs/img/.
+"""Recorre la tienda en un navegador de verdad y guarda las capturas del README y de docs/FLUJO_USUARIO.md
+en docs/img/.
 
     PORT=5105 python app.py                 # en una terminal, con el .env de desarrollo (PAYPAL_MODE=fake,
                                             # DISCOUNT_CODES=demo20=0.20, sin SMTP: los correos, a <datos>/mail)
@@ -20,6 +21,8 @@ consola del navegador (también de la CSP). Las descargas necesitan los scripts 
 (flask --app app edgefolio restore-scripts).
 
 SHOP_URL (por defecto http://localhost:5105), CHROMIUM_PATH (un navegador) y OUT (por defecto docs/img).
+Todas salen con una base de datos nueva; en otra vuelta, la cuenta ya ha confirmado el correo y la de esa
+confirmación (edgefolio_mine_proof.png) no se repite.
 """
 import email
 import json
@@ -43,7 +46,7 @@ MAIL = Path(os.environ.get("ZLECITOOL_DATA_DIR") or ROOT / "data") / "mail"
 BUYER = "buyer@example.com"            # quien paga en el PayPal de prueba
 ACCOUNT = "ana@example.com"            # la cuenta del núcleo con la que se entra después
 PASSWORD = "probando-la-tienda-1"
-STRATEGY = "AAPL_1Day_2CT0_8a979adf"   # la de la página de la estrategia y el árbol
+STRATEGY = "SNOW_1Day_1BOL_7abec5de"   # la de la página de la estrategia y el árbol (catálogo de 2026-10)
 UI = json.loads((ROOT / "i18n" / "ui.json").read_text(encoding="utf-8"))
 RED = "rgb(192, 57, 43)"               # el borde del campo con un error (#c0392b)
 problems = []
@@ -203,17 +206,17 @@ def main():
         expect(ui("payNote").split("{amount}")[1].strip() not in strip, "English Pro shows the payNote")
         shot(page, "pro", height=1480)
 
-        step("Pro with filters: two symbols and a win rate of 90% or more")
+        step("Pro with filters: two symbols and a win rate of 60% or more")
         panel = page.locator("aside").first
         # dispatched clicks: the sticky cart strip covers the panel's rows once the page has scrolled
         panel.get_by_text("Symbol", exact=True).dispatch_event("click")
         button(page, "Deselect all").dispatch_event("click")
-        for name in ("Apple (AAPL)", "NVIDIA Corporation (NVDA)"):
+        for name in ("Adobe (ADBE)", "Advanced Micro Devices (AMD)"):
             panel.get_by_text(name, exact=True).dispatch_event("click")
         panel.get_by_text("Symbol", exact=True).dispatch_event("click")
         panel.get_by_text("Win Rate (%)", exact=True).dispatch_event("click")
         low = panel.locator("input").nth(-2)
-        low.fill("90")
+        low.fill("60")
         low.press("Enter")
         page.get_by_text("Clear all").first.wait_for()
         page.wait_for_timeout(1200)
@@ -291,7 +294,10 @@ def main():
             button(page, "Send me the link").click()
             page.get_by_text("Check that inbox", exact=False).wait_for()
             page.goto(emailed_link(BUYER, r"/mine\?proof=", asked), wait_until="networkidle")
-            page.get_by_role("button", name=f"Yes, {BUYER} is mine").click()
+            confirm = page.get_by_role("button", name=f"Yes, {BUYER} is mine")
+            confirm.wait_for()
+            shot(page, "mine_proof", height=900)    # sólo con una cuenta nueva: en otra vuelta ya está confirmado
+            confirm.click()
         page.get_by_role("link", name=".pine").first.wait_for()
         # cada fila: .pine y .zip mientras el enlace vale (si no, «Pedir un enlace nuevo»), y su ficha y su
         # árbol, /s/<id> y /s/<id>/tree

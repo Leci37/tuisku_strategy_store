@@ -1,9 +1,10 @@
 # Edgefolio (`edgefolio`) · la tienda de estrategias de TradingView
 
-La tienda de tuisku.eu, que se vende como **Edgefolio**: un catálogo de **2.834 estrategias de
-TradingView** (Pine Script v5) con su backtest. Se miran en una vista sencilla, **Lite**, o se filtran en
-**Pro**; se ve cómo decide cada una; se compran con PayPal y se descarga el script. El servidor pone el
-precio de cada carrito, cobra, y sólo entrega los scripts de pago por enlaces firmados que caducan.
+La tienda de tuisku.eu, que se vende como **Edgefolio**: un catálogo de **estrategias de TradingView**
+(Pine Script v5; 143 en el de octubre de 2026) con su backtest. Se miran en una vista sencilla,
+**Lite**, o se filtran en **Pro**; se ve cómo decide cada una; se compran con PayPal y se descarga el
+script. El servidor pone el precio de cada carrito, cobra, y sólo entrega los scripts de pago por
+enlaces firmados que caducan.
 
 Es una **herramienta zlecitool**: una app Flask sobre [zlecitool-core](https://github.com/Leci37/zlecitool-core),
 como `cv_lin` o `md_pdf`. La barra (con la palabra Edgefolio), el idioma, las cuentas, la seguridad, el
@@ -53,11 +54,11 @@ entero y lo publica; lo que trae lo fija `catalogue/contract.json`, el contrato 
 
 <table>
 <tr>
-<td width="50%"><img src="docs/img/edgefolio_pro_filters.png" alt="Pro con dos símbolos y un porcentaje de aciertos del 90 % o más"></td>
+<td width="50%"><img src="docs/img/edgefolio_pro_filters.png" alt="Pro con dos símbolos y un porcentaje de aciertos del 60 % o más"></td>
 <td width="50%"><img src="docs/img/edgefolio_table.png" alt="Los mismos filtros en la vista de tabla"></td>
 </tr>
 <tr>
-<td><sub><b>Filtrar.</b> Apple y NVIDIA, aciertos ≥ 90 %: el recuento, las etiquetas, los histogramas y la lista salen del servidor.</sub></td>
+<td><sub><b>Filtrar.</b> Adobe y AMD, aciertos ≥ 60 %: el recuento, las etiquetas, los histogramas y la lista salen del servidor.</sub></td>
 <td><sub>El mismo resultado, en una tabla que se ordena.</sub></td>
 </tr>
 <tr>
@@ -74,7 +75,7 @@ entero y lo publica; lo que trae lo fija `catalogue/contract.json`, el contrato 
 </tr>
 <tr>
 <td><sub><b>Comparar</b> hasta 3; lo mejor de cada fila, en verde.</sub></td>
-<td><sub><b>Crea tu pack:</b> 5 estrategias por un precio, buscadas entre las 2.834.</sub></td>
+<td><sub><b>Crea tu pack:</b> 5 estrategias por un precio, buscadas en todo el catálogo de pago.</sub></td>
 </tr>
 <tr>
 <td><img src="docs/img/edgefolio_free.png" alt="Una estrategia gratis: el correo ha salido"></td>
@@ -593,8 +594,8 @@ edgefolio/                 la tienda: routes.py (las rutas), models.py (las tabl
                            release.py (importar un paquete del generador)
 templates/edgefolio/       shop.html, la página sobre zt/base.html
 static/                    la página tal cual (sin compilar): js/ (Preact + htm, las vistas del diseño),
-                           css/ (edgefolio.css y theme.css), vendor/, trees/, img/, assets/ (5.668
-                           gráficos, 2.834 vistas previas, iconos)
+                           css/ (edgefolio.css y theme.css), vendor/, trees/, img/, assets/ (dos
+                           gráficos y una vista previa por estrategia, iconos)
 i18n/ui.json               los textos de la tienda, en 8 idiomas
 catalogue/                 catalogue.csv, indicators.csv, bundles.json, fx.json; contract.json (el contrato
                            con el generador); release.json (de qué ejecución del generador es el catálogo:

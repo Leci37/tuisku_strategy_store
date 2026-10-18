@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Las convenciones del repo que nadie revisa a ojo hasta que fallan."""
+import re
 import runpy
 from pathlib import Path
 
@@ -55,3 +56,14 @@ def test_gunicorn_does_not_preload_the_app(monkeypatch):
 def test_the_local_port_is_the_launchers():
     assert 'os.environ.get("PORT", "5105")' in (ROOT / "app.py").read_text(encoding="utf-8")
     assert "PORT=5105" in (ROOT / ".env.example").read_text(encoding="utf-8")
+
+
+def test_every_screenshot_the_docs_show_exists():
+    """Las capturas del README y de docs/*.md (las de tools/screenshots.py, en docs/img/): una que se
+    renombra o no se hizo deja un hueco en GitHub que nadie ve hasta que lo abre."""
+    missing = []
+    for doc in [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))]:
+        for src in re.findall(r'(?:src="|\]\()([^")\s]+\.png)', doc.read_text(encoding="utf-8")):
+            if not (doc.parent / src).is_file():
+                missing.append(f"{doc.relative_to(ROOT)}: {src}")
+    assert not missing, f"capturas que no están: {missing}"

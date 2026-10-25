@@ -30,7 +30,7 @@ function proVals(c, seg) {
   const { app, s, t, tx, f } = c;
   const fmt = {
     money0: f.money0, round: v => f.int(Math.round(v)), pct0: v => f.pct(v, 0), pct2: v => f.pct(v, 2),
-    pctAuto: v => f.pct(v, v < 10 ? 2 : 0), dec1: v => f.num(v, 1)
+    pctAuto: v => f.pct(v, v < 10 ? 2 : 0), dec3: v => f.num(v, 3), decAuto: v => f.num(v, v < 10 ? 2 : 0)
   };
   const rgOf = k => s.rg[k] || [0, 1];
   const slider = k => {

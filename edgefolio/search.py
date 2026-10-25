@@ -2,8 +2,9 @@
 """El catálogo filtrado en el servidor: GET /api/strategies, /api/strategies/<id> y /api/bundles.
 
 El panel Pro pide cada histograma y cada recuento de opciones en cada cambio, cada uno contado contra
-«todos los demás filtros». Con 2.834 filas basta Python a secas si cada filtro es una máscara de bits
-(un bit por fila): los recuentos son AND y popcount, nunca una vuelta por las filas.
+«todos los demás filtros». Con unos miles de filas como mucho (2.834 el catálogo de 2024; 143 el de 2026-10)
+basta Python a secas si cada filtro es una máscara de bits (un bit por fila): los recuentos son AND y
+popcount, nunca una vuelta por las filas.
 """
 from __future__ import annotations
 
@@ -15,7 +16,8 @@ from typing import Optional
 from .web import Refusal, invalid
 
 # clave -> (campo de la fila, mínimo y máximo de la barra, escala logarítmica, barras): los deslizadores
-# del panel Pro del diseño (§12).
+# del panel Pro del diseño (§12). El mínimo y el máximo de cada barra los pone el catálogo (track()); los de
+# aquí, los del diseño, sólo valen para una columna que no tiene ningún valor.
 RANGES = {
     "np": ("np", 200, 6_500_000, True, 36), "price": ("price", 0, 140, False, 36),
     "npp": ("npp", 0.1, 6500, True, 32), "trades": ("tr", 0, 2000, False, 32), "win": ("w", 0, 100, False, 32),
@@ -42,6 +44,35 @@ def fraction(value: float, lo: float, hi: float, log: bool) -> float:
     return min(1.0, max(0.0, f))
 
 
+def tidy(x: float) -> float:
+    """Sin el ruido de la coma flotante (0,30000000000000004), y entero si lo es: lo que lee el JSON."""
+    x = float(f"{x:.12g}")
+    return int(x) if x.is_integer() else x
+
+
+def round_log(v: float, up: bool) -> float:
+    """El 1, 2 o 5 por una potencia de diez más cercano a v por debajo (con up, por encima)."""
+    e = math.floor(math.log10(v))
+    steps = [m * 10.0 ** k for k in (e - 1, e, e + 1) for m in (1, 2, 5)]
+    return tidy(min(c for c in steps if c >= v * (1 - EPS)) if up else max(c for c in steps if c <= v * (1 + EPS)))
+
+
+def track(values: list, lo: float, hi: float, log: bool) -> tuple:
+    """La barra de un rango en este catálogo: de su mínimo a su máximo, redondeados hacia fuera a un número
+    redondo, para que las estrategias llenen la barra y no un rincón (las del diseño eran las del catálogo de
+    2024: 5–63 operaciones caían en la primera de 32 barras de 0–2000). Logarítmica sólo si el diseño la
+    quiere y los valores, todos positivos, abarcan más de dos órdenes de magnitud. Sin valores, la del diseño."""
+    present = [v for v in values if v is not None]
+    if not present:
+        return lo, hi, log
+    a, b = min(present), max(present)
+    if log and a > 0 and b / a > 100:
+        return round_log(a, False), round_log(b, True), True
+    step = 10.0 ** math.floor(math.log10(b - a if b > a else abs(a) or 1))
+    lo_t, hi_t = math.floor(round(a / step, 9)) * step, math.ceil(round(b / step, 9)) * step
+    return tidy(lo_t), tidy(hi_t if hi_t > lo_t else lo_t + step), False
+
+
 def to_mask(flags) -> int:
     """El bit i, puesto si pasa la fila i; hecho con una cadena porque desplazar en un bucle es cuadrático."""
     return int("".join(["1" if f else "0" for f in flags][::-1]) or "0", 2)
@@ -65,8 +96,9 @@ class Index:
         self.n = len(rows)
         self.everything = (1 << self.n) - 1
         self.values = {k: [r[field] for r in rows] for k, (field, *_) in RANGES.items()}
-        self.bins = {}
+        self.tracks, self.bins = {}, {}
         for k, (field, lo, hi, log, nbins) in RANGES.items():
+            lo, hi, log = self.tracks[k] = track(self.values[k], lo, hi, log)
             which = masks_by([None if v is None else min(nbins - 1, int(fraction(v, lo, hi, log) * nbins))
                               for v in self.values[k]])
             self.bins[k] = [which.get(i, 0) for i in range(nbins)]
@@ -259,7 +291,8 @@ def strategies(catalogue, settings, params) -> dict:
             return passing if i is None else prefix[i] & suffix[i + 1]
 
         body["hist"] = {k: [(others(k) & b).bit_count() for b in ix.bins[k]] for k in RANGES}
-        body["ranges"] = {k: {"min": lo, "max": hi, "log": log, "bins": n} for k, (_, lo, hi, log, n) in RANGES.items()}
+        body["ranges"] = {k: {"min": lo, "max": hi, "log": log, "bins": len(ix.bins[k])}
+                          for k, (lo, hi, log) in ix.tracks.items()}
         body["options"] = {k: ix.option_list(k, others(k)) for k in SELECTS}
     return body
 

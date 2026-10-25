@@ -28,7 +28,10 @@ export function renderVals(app) {
   // the trust row says what the server's settings say, not the design's example figures
   tx.trustLinks = t('trustLinks', { n: f.int((s.cfg && s.cfg.download_days) || 7), m: f.int((s.cfg && s.cfg.max_downloads) || 10) });
 
-  const c = { app, s, t, tx, f, lang, rtl, contact };
+  // la escala de las barras de la página de la estrategia: el mejor backtest del catálogo (del servidor).
+  // Con la del diseño (100 %, para backtests de 71–86 %), los de 0,03–0,44 % del catálogo de 2026-10 no se veían
+  const nppTop = s.cfg && s.cfg.npp_max > 0 ? s.cfg.npp_max : 100;
+  const c = { app, s, t, tx, f, lang, rtl, contact, nppTop };
   c.mk = r => rowVals(c, r);
   const cart = cartVals(c); // also gives c.inCart and c.toggleCart, which every row uses
   const shop = shopVals(c);
@@ -68,7 +71,8 @@ function rowVals(c, r) {
     grade: r.grade, gradeBg: GRADE_BG[r.grade] || '#5a6b80', gradeTip: t('gradeTip', { n: f.int(r.tr) }),
     // since release is measured by a daily job; until it has run there is nothing to show
     live: live == null ? '—' : f.pctS(live), liveColor: live == null ? '#8d9cae' : live >= 0 ? '#15803d' : '#c0392b',
-    barBt: Math.max(0, Math.min(100, r.npp || 0)) + '%', barLive: live == null ? '0%' : Math.min(100, Math.abs(live)) + '%',
+    barBt: Math.max(0, Math.min(100, (r.npp || 0) / c.nppTop * 100)) + '%',
+    barLive: live == null ? '0%' : Math.min(100, Math.abs(live) / c.nppTop * 100) + '%',
     releaseLabel: f.fmtDate(r.release),
     // released in the last NEW_DAYS days: the server says so (the same rule as the New tab's count)
     isNew: !!r.is_new,

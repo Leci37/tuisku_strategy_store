@@ -131,6 +131,17 @@ Se queda como está; el diseño no lo enseña o lo simula:
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:
   `indicators.csv` no les da una dirección. Si se quiere otra, la pone el generador.
 - **Los avisos** (errores, novedades) son de la tienda: el diseño no los tiene.
+- **Las escalas de los rangos de Pro salen del catálogo:** cada barra va del mínimo al máximo de sus
+  estrategias, redondeados hacia fuera (con el catálogo de 2026-10, las operaciones 0–70 y el beneficio
+  neto 0–0,5 %), y es logarítmica sólo si sus valores abarcan más de dos órdenes de magnitud (hoy, el
+  factor de beneficio: 1–200). Las del diseño (§12) eran las del catálogo de 2024, y las 143 estrategias
+  caían en un rincón de cada barra. El factor de beneficio y el beneficio medio (%) enseñan dos decimales
+  por debajo de 10, y la actividad por vela, tres.
+- **«Actividad por vela»** es la columna `Trade Activity Per Candle` del generador (operaciones por vela
+  del backtest: 0,002–0,238); la maqueta, que no la tenía, ponía operaciones por mes de entrenamiento.
+- **Las barras «Backtest» y «Desde su publicación»** de la ficha miden contra el mejor backtest del
+  catálogo (`npp_max` de `/api/config`), no contra el 100 % de la maqueta, dibujado para backtests de
+  71–86 %: los de 0,03–0,44 % de 2026-10 dejaban la barra vacía.
 
 ## Correcciones a la exportación
 

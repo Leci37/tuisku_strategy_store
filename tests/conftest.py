@@ -4,7 +4,8 @@ catálogo pequeño de cuatro estrategias, con PayPal de prueba y sin un solo cor
 
 ``app`` es la tienda con ese catálogo; ``client``, alguien sin cuenta (con su token CSRF, como lo pone
 csrf.js en el navegador); ``signed(app, email)``, una cuenta del núcleo con la sesión abierta; y
-``real_client``, la tienda con el catálogo de verdad (2.834 estrategias), sus lotes y sus gráficos.
+``real_client``, la tienda con el catálogo de verdad (``catalogue/``: 143 estrategias en el de 2026-10),
+sus lotes y sus gráficos.
 """
 import csv
 import json
@@ -149,7 +150,7 @@ def ids():
 
 @pytest.fixture(scope="session")
 def real_app(tmp_path_factory):
-    """La tienda con el catálogo de verdad (2.834 estrategias), sus lotes y sus gráficos."""
+    """La tienda con el catálogo de verdad (el de ``catalogue/``), sus lotes y sus gráficos."""
     tmp = tmp_path_factory.mktemp("real")
     with testing.isolated(tmp / "zt"):
         from app import create_app

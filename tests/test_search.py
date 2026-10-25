@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """La API del catálogo: filtros, orden, páginas y los recuentos del panel Pro, comprobados contra el
 catálogo de verdad contando sus filas en Python a secas."""
+import csv
 import math
 import time
+from decimal import Decimal
 
 import pytest
 
-from edgefolio.catalogue import TV_SCRIPTS, Catalogue
-from edgefolio.search import RANGES
+from edgefolio.catalogue import TV_SCRIPTS, Catalogue, Strategy
+from edgefolio.search import RANGES, track
 from edgefolio.settings import ROOT
 from edgefolio.shop import install
 from tests.conftest import ROWS, TODAY, cart_id, strategy_id
@@ -155,8 +157,9 @@ def test_bad_parameters(real_client):
         assert r.status_code == 400 and r.json["error"] == "errRequest", query
 
 
-def bin_of(value, key):
-    _, lo, hi, log, n = RANGES[key]
+def bin_of(value, served):
+    """La barra del histograma de ``value`` en la escala que mandó el servidor (``ranges``)."""
+    lo, hi, log, n = served["min"], served["max"], served["log"], served["bins"]
     if log:
         f = (math.log10(max(value, lo)) - math.log10(lo)) / (math.log10(hi) - math.log10(lo))
     else:
@@ -175,18 +178,65 @@ def test_histograms_count_every_other_filter(real_client, rows):
         expected = [0] * RANGES[key][4]
         for r in others:
             if r[fields[key]] is not None:
-                expected[bin_of(r[fields[key]], key)] += 1
+                expected[bin_of(r[fields[key]], body["ranges"][key])] += 1
         assert body["hist"][key] == expected, key
-    assert body["ranges"]["np"] == {"min": 200, "max": 6_500_000, "log": True, "bins": 36}
+    assert body["ranges"]["np"]["bins"] == len(body["hist"]["np"]) == 36
     assert body["ranges"]["tree"]["bins"] == len(body["hist"]["tree"]) == 10
 
 
-def test_values_beyond_the_track_count_in_the_end_bins(real_client, rows):
-    hist = get(real_client, "facets=1")["hist"]
-    assert sum(hist["np"]) == len(rows)
-    beyond = sum(r["np"] > 6_500_000 for r in rows)
-    assert hist["np"][-1] == sum(bin_of(r["np"], "np") == 35 for r in rows) >= beyond
-    assert sum(hist["pf"]) == sum(r["pf"] is not None for r in rows)
+def test_each_track_is_the_catalogues_own(real_client, rows):
+    """Cada barra va del mínimo al máximo del catálogo, redondeados hacia fuera: las estrategias la llenan.
+    Con las del diseño (las del catálogo de 2024), las 143 de 2026-10 caían en un rincón: 5–63 operaciones en
+    la primera de 32 barras de 0–2000, y 29 por debajo del mínimo de «Beneficio neto (%)»."""
+    body = get(real_client, "facets=1")
+    for key, (field, *_) in RANGES.items():
+        values = [r[field] for r in rows if r[field] is not None]
+        served, hist = body["ranges"][key], body["hist"][key]
+        assert sum(hist) == len(values), key
+        if not values:
+            continue
+        lo, hi = served["min"], served["max"]
+        assert lo <= min(values) and max(values) <= hi, key
+        if served["log"]:
+            assert math.log10(max(values) / min(values)) / math.log10(hi / lo) > 0.5, key
+        else:
+            assert (max(values) - min(values)) / (hi - lo) >= 1 / 3, key
+        if len(set(values)) > 2:
+            assert max(hist) < len(values), f"{key}: todas en una barra"
+
+
+def test_tracks_are_round_and_logarithmic_only_over_two_orders_of_magnitude():
+    """Con las cifras del catálogo de 2026-10: las operaciones (5–63), el beneficio neto (257,57–4.398,51 $ y
+    0,03–0,44 %), el factor de beneficio, la actividad por vela y la tasa de acierto."""
+    assert track([5, 63], 0, 2000, False) == (0, 70, False)
+    assert track([0.03, 0.44], 0.1, 6500, True) == (0, 0.5, False)
+    assert track([257.57, 4398.51], 200, 6_500_000, True) == (0, 5000, False)   # 17 veces: lineal
+    assert track([1.094, 123.632], 1, 35_000, True) == (1, 200, True)           # 113 veces: logarítmica
+    assert track([0.002, 0.238], 0, 3, False) == (0, 0.3, False)
+    assert track([30.56, 100], 0, 100, False) == (30, 100, False)
+    assert track([-120, None, 340], 0, 1, False) == (-200, 400, False)
+    assert track([0.0001, 0.5], 0.1, 6500, True) == (0.0001, 0.5, True)
+    assert track([0, 0.5], 0.1, 6500, True) == (0, 0.5, False), "un cero no cabe en una escala logarítmica"
+    assert track([5, 5], 1, 10, False) == (5, 6, False), "un solo valor: una barra de un paso"
+    assert track([None], 1, 10, False) == (1, 10, False), "sin valores, la del diseño"
+
+
+def test_activity_is_trades_per_candle(real_client, rows):
+    """«Actividad por vela» es la columna del generador (operaciones por vela del backtest), no las operaciones
+    por mes de entrenamiento con que la suplía la maqueta del diseño."""
+    with open(ROOT / "catalogue" / "catalogue.csv", newline="", encoding="utf-8") as f:
+        column = {f"{r['ticker']}_{r['interval']}_{r['key_techs']}_{r['id_model']}": float(r["Trade Activity Per Candle"])
+                  for r in csv.DictReader(f, delimiter="\t")}
+    assert {r["id"]: r["actv"] for r in rows} == column
+    assert get(real_client, "act_max=0.01")["total"] == sum(v <= 0.01 for v in column.values()) > 0
+    # sin la columna, nada: 50 operaciones en 15 meses no son 3,33 operaciones por vela
+    bare = Strategy("X", "1Hour", "1C00", "h", Decimal("9"), {"Total Closed Trades": "50", "months_trained": "15"})
+    assert bare.numbers["actv"] is None and bare.numbers["tr"] == 50
+
+
+def test_config_gives_the_best_backtest_for_the_bars_of_the_strategy_page(real_client, rows, client):
+    assert real_client.get("/api/config").json["npp_max"] == max(r["npp"] for r in rows)
+    assert client.get("/api/config").json["npp_max"] is None, "sin backtests, la página se queda con su 100 %"
 
 
 def test_options(real_client, rows):

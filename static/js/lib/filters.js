@@ -1,20 +1,24 @@
 // The Pro filters (§12 of the design guide): slider tracks, multi-selects and the query they make.
 // Handles keep a fraction of the track (0–1) as the design does; the server gets values. The server's
 // `ranges` replace these tracks when it sends them, so the two never drift.
+// Esas barras salen del catálogo (su mínimo y su máximo, redondeados hacia fuera): las de aquí, las del
+// diseño, sólo pintan hasta que llegan. Las cifras de cada etiqueta (f) van con los valores del catálogo:
+// la actividad por vela va de 0,002 a 0,238 (dec3); el factor de beneficio y el beneficio medio (%), casi
+// siempre por debajo de 5 (dos decimales hasta 10).
 export const RANGES = {
   np: { key: 'fNetProfitUsd', min: 200, max: 6500000, log: true, f: 'money0' },
   price: { key: 'fPrice', min: 0, max: 140, f: 'money0' },
   npp: { key: 'fNetProfitPct', min: 0.1, max: 6500, log: true, f: 'pctAuto' },
   trades: { key: 'fClosedTrades', min: 0, max: 2000, f: 'round' },
   win: { key: 'fWinRate', min: 0, max: 100, f: 'pct0' },
-  pf: { key: 'fProfitFactor', min: 1, max: 35000, log: true, f: 'round' },
+  pf: { key: 'fProfitFactor', min: 1, max: 35000, log: true, f: 'decAuto' },
   months: { key: 'fTrainingMonths', min: 0, max: 400, f: 'round' },
   mlu: { key: 'fMaxLossUsd', min: 0, max: 40000, f: 'money0' },
   mlp: { key: 'fMaxLossPct', min: 0, max: 4, f: 'pct2' },
   avg: { key: 'fAvgProfitUsd', min: 1, max: 2100000, log: true, f: 'money0' },
-  avgp: { key: 'fAvgProfitPct', min: 0, max: 5000, f: 'pct0' },
+  avgp: { key: 'fAvgProfitPct', min: 0, max: 5000, f: 'pctAuto' },
   bars: { key: 'fAvgBars', min: 0, max: 8000, f: 'round' },
-  act: { key: 'fActivity', min: 0, max: 3, f: 'dec1' },
+  act: { key: 'fActivity', min: 0, max: 3, f: 'dec3' },
   candles: { key: 'fCandles', min: 0, max: 500000, f: 'round' },
   prec: { key: 'fPrecision', min: 40, max: 100, f: 'pct0' },
   tree: { key: 'fTreeDepth', min: 1, max: 10, f: 'round' }
@@ -55,7 +59,7 @@ export function parseNum(str, decimal) {
 
 // The decimals each label shows (fmt in vals_shop.js): the server gets the number the visitor reads
 // on the chip, the label and the min/max boxes, so "4 – 8" on Tree depth includes depth 8.
-const DECIMALS = { money0: () => 0, round: () => 0, pct0: () => 0, pct2: () => 2, dec1: () => 1, pctAuto: v => (v < 10 ? 2 : 0) };
+const DECIMALS = { money0: () => 0, round: () => 0, pct0: () => 0, pct2: () => 2, dec3: () => 3, pctAuto: v => (v < 10 ? 2 : 0), decAuto: v => (v < 10 ? 2 : 0) };
 
 export function snap(dd, v) {
   const m = Math.pow(10, (DECIMALS[dd.f] || (() => 6))(v));

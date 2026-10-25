@@ -168,18 +168,20 @@ def bin_of(value, served):
 
 
 def test_histograms_count_every_other_filter(real_client, rows):
-    body = get(real_client, "facets=1&sym=AAPL&sym=TSLA&np_min=5000&win_max=80")
-    passes = {"sym": lambda r: r["ticker"] in ("AAPL", "TSLA"), "np": lambda r: r["np"] >= 5000,
+    # filtros que dejan estrategias en el catálogo de 2026-10 (con AAPL, TSLA y 5.000 $, los del de 2024, no
+    # quedaba ninguna, y cada histograma esperado era todo ceros)
+    body = get(real_client, "facets=1&sym=ADBE&sym=AMD&np_min=1000&win_max=80")
+    passes = {"sym": lambda r: r["ticker"] in ("ADBE", "AMD"), "np": lambda r: r["np"] >= 1000,
               "win": lambda r: r["w"] <= 80}
-    assert body["total"] == sum(all(p(r) for p in passes.values()) for r in rows)
+    assert body["total"] == sum(all(p(r) for p in passes.values()) for r in rows) > 0
     fields = {k: v[0] for k, v in RANGES.items()}
-    for key in ("np", "win", "trades", "pf"):
+    for key in RANGES:
         others = [r for r in rows if all(p(r) for k, p in passes.items() if k != key)]
         expected = [0] * RANGES[key][4]
         for r in others:
             if r[fields[key]] is not None:
                 expected[bin_of(r[fields[key]], body["ranges"][key])] += 1
-        assert body["hist"][key] == expected, key
+        assert sum(expected) > 0 and body["hist"][key] == expected, key
     assert body["ranges"]["np"]["bins"] == len(body["hist"]["np"]) == 36
     assert body["ranges"]["tree"]["bins"] == len(body["hist"]["tree"]) == 10
 

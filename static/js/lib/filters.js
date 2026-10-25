@@ -2,9 +2,9 @@
 // Handles keep a fraction of the track (0–1) as the design does; the server gets values. The server's
 // `ranges` replace these tracks when it sends them, so the two never drift.
 // Esas barras salen del catálogo (su mínimo y su máximo, redondeados hacia fuera): las de aquí, las del
-// diseño, sólo pintan hasta que llegan. Las cifras de cada etiqueta (f) van con los valores del catálogo:
-// la actividad por vela va de 0,002 a 0,238 (dec3); el factor de beneficio y el beneficio medio (%), casi
-// siempre por debajo de 5 (dos decimales hasta 10).
+// diseño, sólo valen hasta que llegan (retrack). Las cifras de cada etiqueta (f) van con los valores del
+// catálogo: la actividad por vela va de 0,002 a 0,238 (dec3); el factor de beneficio y el beneficio medio
+// (%), casi siempre por debajo de 5 (dos decimales hasta 10).
 export const RANGES = {
   np: { key: 'fNetProfitUsd', min: 200, max: 6500000, log: true, f: 'money0' },
   price: { key: 'fPrice', min: 0, max: 140, f: 'money0' },
@@ -48,6 +48,23 @@ export function fracOf(dd, v) {
 export const isOpenLo = a => a <= 0.001;
 export const isOpenHi = b => b >= 0.999;
 export const isOn = r => !!r && (!isOpenLo(r[0]) || !isOpenHi(r[1]));
+
+// Las asas guardan una fracción de su barra: cuando llega otra barra (la del catálogo, que en la primera
+// respuesta sustituye a la del diseño, o la de un catálogo nuevo), cada asa puesta pasa a la fracción de su
+// mismo valor, y una abierta sigue abierta. Si no, «hasta 50 $» escrito antes de esa respuesta pasaba a
+// pedir «hasta 29 $». Sin cambios, el mismo objeto.
+export function retrack(rg, before, after) {
+  let moved = false;
+  const out = {};
+  Object.keys(rg).forEach(k => {
+    const r = rg[k], a = RANGES[k] && track(k, before), b = RANGES[k] && track(k, after);
+    if (!r || !a || (a.min === b.min && a.max === b.max && !!a.log === !!b.log)) { out[k] = r; return; }
+    const to = (fr, open) => (open ? fr : fracOf(b, snap(a, val(a, fr))));
+    out[k] = [to(r[0], isOpenLo(r[0])), to(r[1], isOpenHi(r[1]))];
+    moved = true;
+  });
+  return moved ? out : rg;
+}
 
 // Typed values accept the locale's decimal sign and $ or % around them.
 export function parseNum(str, decimal) {

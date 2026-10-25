@@ -169,11 +169,13 @@ Se queda como está; el diseño no lo enseña o lo simula:
   Deep», como el diseño y la columna del CSV: **para el diseño**, ¿«Tree depth»?
 - **La fila desplegada de la Tabla se queda en la parte visible:** sus dos gráficos y la explicación del
   indicador, con sus tres acciones, van en una rejilla `sticky` del ancho de la caja que se desliza
-  (`container-type:inline-size`, `100cqw`), en una columna en el móvil. En el diseño la rejilla medía lo que
-  la tabla (1.744 px a 1366): se veía un gráfico y un trozo del otro, y la explicación quedaba fuera.
-- **En el tope del descuento**, la franja de Pro no suma el código («70 % de descuento por volumen», sin
-  «+ 20 % con el código»): el presupuesto da lo que quita cada parte después del tope (`pricing.quote`). La
-  maqueta suma el código sin mirar el tope, un 90 % que nadie cobraba.
+  (`container-type:inline-size`, `100cqw`), en una columna en el móvil. En el diseño la rejilla mide lo que
+  la tabla (con el catálogo de 2026-10, 1.744 px a 1366): se veía un gráfico y un trozo del otro, y la
+  explicación quedaba fuera.
+- **Con el tope del descuento**, la franja de Pro suma sólo lo que el código quita de verdad: en el tramo
+  del 70 %, nada («70 % de descuento por volumen», sin «+ 20 % con el código»). El presupuesto da lo que
+  quita cada parte después del tope (`pricing.quote`). La maqueta suma el código sin mirar el tope: un 90 %
+  que nadie cobraba.
 - **Gracias, con los enlaces escondidos** (otro navegador, sin la cuenta dueña): sin el bloque «Añádela a
   TradingView» ni «Ver el tutorial», que no tenían estrategia que enseñar (`thanks.js`); los enlaces y el
   tutorial están en Mis estrategias. El diseño no tiene ese estado.

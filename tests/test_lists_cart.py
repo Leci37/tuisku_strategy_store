@@ -7,10 +7,10 @@ y «5 por 0 €»); «≈» no se queda solo al final de una línea; el chip de 
 idioma tiene otra moneda con su cambio; un buscador no manda más de lo que acepta el servidor; la pestaña
 marcada vuelve a pedir su lista después de un fallo; Intro aplica el código; en árabe, «US$» va entero y el
 chip del descuento no se da la vuelta. Pro: el recorrido no lleva una cifra vieja, «1 seleccionado» y «1
-estrategia mostrada» van en singular y la fila desplegada de la Tabla se queda en la parte visible. Al
-llegar: sin diccionario sale el aviso del servidor, una favorita que ya no está en el catálogo se va sin
-error al entrar, y la página de gracias sólo vacía el carrito con el cobro que paga, y sin enlaces no
-enseña el tutorial de una estrategia que no tiene."""
+estrategia mostrada» van en singular, su buscador tampoco pasa de 100, Intro aplica el código de su franja
+y la fila desplegada de la Tabla se queda en la parte visible. Al llegar: sin diccionario sale el aviso del
+servidor, una favorita que ya no está en el catálogo se va sin error al entrar, y la página de gracias sólo
+vacía el carrito con el cobro que paga, y sin enlaces no enseña el tutorial de una estrategia que no tiene."""
 import csv
 import json
 import re
@@ -52,7 +52,8 @@ def test_the_search_boxes_send_what_the_server_takes(client):
     buscadores no dejan escribir más (``maxlength``)."""
     assert client.get("/api/strategies?q=" + "x" * 100).status_code == 200
     assert client.get("/api/strategies?q=" + "x" * 101).status_code == 400
-    assert re.search(r"export const Q_MAX = 100;", (JS / "lib" / "filters.js").read_text(encoding="utf-8"))
+    filters = (JS / "lib" / "filters.js").read_text(encoding="utf-8")
+    assert re.search(r"export const Q_MAX = 100;", filters) and "s.q.trim().slice(0, Q_MAX)" in filters   # la de Pro
     app = (JS / "app.js").read_text(encoding="utf-8")
     assert "s.q.trim().slice(0, Q_MAX)" in app and "s.packQ.trim().slice(0, Q_MAX)" in app
     views = JS / "views"
@@ -68,6 +69,10 @@ def test_the_search_boxes_send_what_the_server_takes(client):
 WATCH_Q = """(() => { const fetch0 = window.fetch; window.fetch = (url, ...rest) => {
   const m = String(url).match(/\\/api\\/strategies\\?tab=[^&]*&q=([^&]*)/); if (m) window.__q = decodeURIComponent(m[1]);
   return fetch0(url, ...rest); }; })()"""
+# un texto que llega a un buscador sin teclearlo (maxlength no lo corta): [selector, texto]
+SET_VALUE = """([sel, text]) => { const i = document.querySelector(sel);
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(i, text);
+  i.dispatchEvent(new Event('input', { bubbles: true })); }"""
 
 
 def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
@@ -102,9 +107,7 @@ def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
             search.fill("x" * 130)
             assert len(search.input_value()) == 100
             page.wait_for_function("() => (window.__q || '').length === 100")
-            page.evaluate("""() => { const i = document.querySelector('input[data-search=lite]');
-              Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(i, 'y'.repeat(150));
-              i.dispatchEvent(new Event('input', { bubbles: true })); }""")
+            page.evaluate(SET_VALUE, ["input[data-search=lite]", "y" * 150])
             page.wait_for_function("() => window.__q === 'y'.repeat(100)")
             search.fill("")
             page.wait_for_function("() => window.__q === '' && /Mostrando 24 de/.test(document.querySelector('#app').innerText)")
@@ -208,6 +211,21 @@ def test_pro_tour_texts_and_the_open_table_row(real_app):
             page.locator("input[data-search=pro]").fill("")
             page.wait_for_function("() => document.querySelectorAll('tbody tr').length > 1")
             assert head.inner_text().split("\n")[1] == "estrategias mostradas"
+
+            # B16: la consulta de Pro también se corta en 100 (lo que llega sin teclear): sin un 400
+            with page.expect_response(lambda r: "/api/strategies?" in r.url and "q=" + "y" * 100 in r.url) as cut:
+                page.evaluate(SET_VALUE, ["input[data-search=pro]", "y" * 150])
+            assert cut.value.status == 200 and "y" * 101 not in cut.value.url, cut.value.url
+            page.locator("input[data-search=pro]").fill("")
+            page.wait_for_function("() => document.querySelectorAll('tbody tr').length > 1")
+
+            # B24: en la franja de Pro, Intro en la casilla del código también lo aplica
+            page.locator("tbody button[title='%s']" % UI["addToCart"]["es"]).first.click()
+            code = page.get_by_placeholder(UI["codePh"]["es"])
+            code.fill("demo20")
+            with page.expect_request(lambda r: r.url.endswith("/api/quote") and "demo20" in (r.post_data or "")):
+                code.press("Enter")
+            page.get_by_text(UI["codeBad"]["es"], exact=True).wait_for()
 
             # B22: la fila desplegada (los dos gráficos y la explicación) cabe en la caja, y se queda al deslizarla
             page.locator("tbody tr").first.locator("td").nth(4).click()

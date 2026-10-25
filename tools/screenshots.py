@@ -73,8 +73,10 @@ def expect(ok, what):
 
 
 def ui(key, lang="en"):
-    """Un texto de la tienda (i18n/ui.json), para buscarlo en la página como lo pinta."""
-    return UI[key][lang]
+    """Un texto de la tienda (i18n/ui.json), para buscarlo en la página como lo pinta; de uno con plurales
+    ({one, other…}), el de muchos."""
+    text = UI[key][lang]
+    return text.get("other", "") if isinstance(text, dict) else text
 
 
 def core_texts(page, *keys, lang="en"):

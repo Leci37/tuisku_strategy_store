@@ -153,6 +153,36 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Las imágenes del recorrido y del tutorial** no se arrastran (`draggable`): con el ratón, un
   deslizamiento que empezaba en la curva o en un logo arrastraba la imagen y no pasaba de paso. Y la zona
   que se desliza captura el puntero (`app.swDown`): uno que acaba fuera de la imagen también cuenta.
+- **El chip de la moneda** sólo cambia algo cuando el idioma tiene otra moneda y su cambio llegó
+  (`/api/fx`); en inglés, o sin cambios, se queda en USD, con `aria-disabled` y sin la mano del cursor
+  (`header.js`, `curFixed`). En el diseño cambia siempre: en inglés, el clic no cambiaba nada que se viera,
+  pero la elección pasaba al idioma siguiente (en árabe salía «USD» en vez de «SAR»).
+- **«Packs» y «Arma tu pack»** salen cuando llegan los lotes (`/api/bundles`): antes, la tarjeta del pack
+  enseñaba los valores de relleno («Ahorra un 0 %», «5 por 0 €») mientras tardaban o si fallaban
+  (`lite.js`, `packReady`).
+- **Los buscadores** de Lite, de Pro y del pack admiten 100 caracteres (`maxlength`), lo que acepta el
+  servidor: con más, contestaba 400 y salía «Algo de esta petición no es válido».
+- **Intro en la casilla del código** (Lite y Pro) lo aplica, como «Aplicar» (`codeKey`; no mientras se
+  compone en zh/hi). En el diseño, sólo el botón.
+- **«N estrategias mostradas»** de Pro va en singular con una («1 estrategia mostrada»; `shownLabel`), y
+  «N seleccionados» también («1 seleccionado»). En inglés, el rango `fTreeDepth` sigue diciendo «Tree
+  Deep», como el diseño y la columna del CSV: **para el diseño**, ¿«Tree depth»?
+- **La fila desplegada de la Tabla se queda en la parte visible:** sus dos gráficos y la explicación del
+  indicador, con sus tres acciones, van en una rejilla `sticky` del ancho de la caja que se desliza
+  (`container-type:inline-size`, `100cqw`), en una columna en el móvil. En el diseño la rejilla medía lo que
+  la tabla (1.744 px a 1366): se veía un gráfico y un trozo del otro, y la explicación quedaba fuera.
+- **En el tope del descuento**, la franja de Pro no suma el código («70 % de descuento por volumen», sin
+  «+ 20 % con el código»): el presupuesto da lo que quita cada parte después del tope (`pricing.quote`). La
+  maqueta suma el código sin mirar el tope, un 90 % que nadie cobraba.
+- **Gracias, con los enlaces escondidos** (otro navegador, sin la cuenta dueña): sin el bloque «Añádela a
+  TradingView» ni «Ver el tutorial», que no tenían estrategia que enseñar (`thanks.js`); los enlaces y el
+  tutorial están en Mis estrategias. El diseño no tiene ese estado.
+- **Árabe:** los importes en USD llevan detrás una marca de izquierda a derecha (salía «$US 172.25») y el
+  chip del descuento de Lite va aislado (salía «35%−»): `fmt.js`, `vals_cart.js`. La maqueta pinta lo mismo:
+  **para el diseño**.
+- **El recorrido de bienvenida** de Pro no lleva cifra («Acota el catálogo con los filtros del panel: … y
+  16 más.»; pregunta abierta 5), y los seis logos de su primer paso son de tickers que vende el catálogo
+  (MSFT, NVDA, AMZN, ADBE, BTC y SOL): el diseño traía Apple y Ethereum, que el de 2026-10 no tiene.
 
 ## Correcciones a la exportación
 
@@ -175,7 +205,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 | 2 | ¿Los tramos se suman al precio de un lote? | Sí: tramo y código (con el tope `MAX_DISCOUNT`) también sobre lotes y pack; un código de precio fijo, no |
 | 3 | Un lote nuevo sustituye a otro que comparte estrategia | Sí, en la página; el servidor rechaza (nunca elige) un carrito con una estrategia dos veces |
 | 4 | ¿Qué hace «Conectar TradingView»? | Abre tradingview.com en otra pestaña y lo recuerda; no hay API a la que conectarse |
-| 5 | `tour1Pro` dice «y 15 más» y son 16 | Igual que el diseño; por decidir el texto (y «2.834» va escrito en él) |
+| 5 | `tour1Pro` dice «y 15 más» y son 16 | Decidido (2026-10-25): «Acota el catálogo con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 16 más.», sin cifra (no se queda vieja), en los 8 idiomas |
 | 6 | La nota se explica al pasar el ratón | Igual (`title`); en el móvil no se ve |
 | 7 | ¿Comparar y Favorita en Filas y Fichas de Pro? | Igual que el diseño: sólo en la Tabla |
 | 8 | La ficha no tiene resumen del carrito | Igual; en el móvil la barra de abajo cuenta lo que hay |
@@ -217,6 +247,10 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 7. **Para las pruebas:** `zlecitool_core.testing` podría dar un servidor en marcha de la app y una página
    de Playwright sobre el Chromium del núcleo (saltando sin Chromium), para que una herramienta pruebe su
    página en un navegador con `pytest` sin montarlo ella. Hoy la tienda lo hace en `tools/screenshots.py`.
+8. **Importes con el formato del idioma en el servidor**, para los correos (p. ej.
+   `zlecitool_core.i18n.format_money(valor, moneda, idioma)`): el recibo de la tienda dice «47.45 USD» en
+   español, donde la página dice «47,45 US$». Con él, `orders.money()` lo usaría con el idioma de
+   `email_receipt()`; la tienda no escribe su propio formateador.
 
 ## Pruebas
 

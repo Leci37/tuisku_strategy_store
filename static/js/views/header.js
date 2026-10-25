@@ -21,7 +21,7 @@ export function BarEnd(v) {
           ${v.tv ? html`<span translate=${false}>TradingView</span><span style="width:7px;height:7px;border-radius:50%;background:#12b76a"></span><span style="color:#5a6b80;font-weight:500">${v.tx?.tvConnected}</span>` : null}
           ${v.tvOff ? html`<span style="color:#0950e3">${v.tx?.tvConnect}</span>` : null}
           </button>
-        <button onClick=${v.toggleCur} title=${v.tx?.currencyLabel} style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;background:#fff;border:1px solid #e2e9f0;cursor:pointer;color:#16263a">${v.curLabel}</button>
+        <button onClick=${v.toggleCur} title=${v.tx?.currencyLabel} aria-disabled=${v.curFixed} style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;background:#fff;border:1px solid #e2e9f0;cursor:${s(v.curCursor)};color:#16263a">${v.curLabel}</button>
 `;
 }
 

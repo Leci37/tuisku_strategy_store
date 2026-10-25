@@ -21,6 +21,9 @@
 
 {% block content %}
 <div id="app" data-signed-in="{{ '1' if current_user.is_authenticated else '' }}"></div>
+{# Sin el diccionario (/zt/i18n.json), la página no puede pintar ni un aviso: este lo escribe el servidor y
+   static/js/app.js lo enseña si el diccionario no llega. #}
+<p class="ef-noscript" data-ef-nodict hidden data-i18n="errShopNetwork">{{ zt_t('errShopNetwork') }}</p>
 <noscript><p class="ef-noscript" data-i18n="noScript">{{ zt_t('noScript') }}</p></noscript>
 {% endblock %}
 

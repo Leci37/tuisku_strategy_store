@@ -31,6 +31,20 @@ def test_stacked_discounts_are_capped(settings):
     q = quote(big, "big60", settings)
     assert q.discount_rate == settings.max_discount
     assert q.total == Decimal("891.00") and q.total > 0
+    # en el tope, el código no quita nada: la franja de Pro no puede prometer «70 % + 60 % con el código»
+    assert q.tier_rate + q.code_rate == q.discount_rate and q.code_rate == 0 and q.code_status == "applied"
+    assert q.as_dict()["code_rate"] == "0.00"
+
+
+def test_the_code_part_is_what_it_takes_off_after_the_cap(settings):
+    from edgefolio.catalogue import Strategy
+    two = [Strategy("T", "1Day", f"K{i}", f"id{i}", Decimal("600"), {}) for i in range(2)]  # 1.200 $: escalón del 40 %
+    q = quote(two, "big60", settings)            # 40 % + 60 %, con el tope del 70 %: el código quita un 30 %
+    assert (q.tier_rate, q.code_rate, q.discount_rate) == (Decimal("0.40"), Decimal("0.30"), Decimal("0.70"))
+    settings.max_discount = Decimal("0.30")      # un tope por debajo del escalón: el escalón también se corta
+    q = quote(two, "", settings)
+    assert (q.tier_rate, q.code_rate, q.discount_rate) == (Decimal("0.30"), Decimal("0"), Decimal("0.30"))
+    assert q.total == Decimal("840.00")
 
 
 def test_flat_price_code(client, ids):

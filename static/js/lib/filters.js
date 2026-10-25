@@ -65,9 +65,13 @@ export function snap(dd, v) {
 // 12 significant digits drop the float noise of the rounding, so 0.07 is sent as 0.07.
 const plain = v => String(Number(v.toPrecision(12)));
 
+// Lo más largo que el servidor acepta en q (search.py): con más, contestaba 400 y salía «Algo de esta
+// petición no es válido». Las cajas no dejan escribir más (maxlength="100"), y cada consulta lo corta igual.
+export const Q_MAX = 100;
+
 export function proQuery(s, served) {
   const p = new URLSearchParams();
-  const q = s.q.trim();
+  const q = s.q.trim().slice(0, Q_MAX);
   if (q) p.set('q', q);
   if (s.freeOnly) p.set('free', '1');
   p.set('sort', s.sort);

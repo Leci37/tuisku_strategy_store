@@ -8,7 +8,7 @@ import Storefront from './views/storefront.js';
 import { api, post } from './lib/api.js';
 import { read, write, readJSON, writeJSON } from './lib/saved.js';
 import { parseLocation, pathOf } from './lib/route.js';
-import { proQuery } from './lib/filters.js';
+import { proQuery, Q_MAX } from './lib/filters.js';
 import { translator } from './lib/fmt.js';
 import { renderVals } from './lib/vals.js';
 import { PRO_SIZE } from './lib/vals_shop.js';
@@ -87,7 +87,14 @@ export class App extends Component {
     document.addEventListener('zt:language', this.onLang);
 
     const dictionary = window.zt && zt.i18nReady ? zt.i18nReady : Promise.resolve(null);
-    dictionary.then(dict => { if (dict) this.setState({ dict }); else this.fail({ network: true }); });
+    // sin diccionario no se pinta nada (render): el aviso es el que escribió el servidor en la plantilla
+    // (zt.i18nReady no falla nunca: sin diccionario, da null)
+    dictionary.then(dict => {
+      if (dict) { this.setState({ dict }); return; }
+      const note = document.querySelector('[data-ef-nodict]');
+      if (note) note.hidden = false;
+      this.fail({ network: true });
+    });
     api('/api/config').then(cfg => this.setState({ cfg })).catch(e => this.fail(e));
     api('/api/bundles').then(bundleDefs => this.setState(st => ({ bundleDefs, ...withoutOverlap(st, bundleDefs) }))).catch(e => this.fail(e));
     api('/api/fx').then(fx => this.setState({ fx })).catch(() => { /* prices then stay in USD */ });
@@ -187,7 +194,7 @@ export class App extends Component {
         this.later('pro', () => this.loadPro(1, false), first ? 0 : 150);
       }
     } else if (s.page === 'shop') {
-      const key = new URLSearchParams({ tab: s.liteTab, q: s.q.trim() }).toString();
+      const key = new URLSearchParams({ tab: s.liteTab, q: s.q.trim().slice(0, Q_MAX) }).toString();
       if (key !== this.liteKey) {
         const first = this.liteKey == null;
         this.liteKey = key;
@@ -213,9 +220,9 @@ export class App extends Component {
     // available» is for it), but quietly and once: there a failure is not worth a toast
     const mineWanted = s.page === 'mine' || (s.page === 'detail' && !this.mineQuietTried);
     if (s.me && s.me.email && mineWanted && !s.mine && !this.mineLoading && !this.uploading) this.loadMine(s.page !== 'mine');
-    if (s.packOpen && s.packQ.trim() !== this.packKey) {
+    if (s.packOpen && s.packQ.trim().slice(0, Q_MAX) !== this.packKey) {
       const first = this.packKey == null;
-      this.packKey = s.packQ.trim();
+      this.packKey = s.packQ.trim().slice(0, Q_MAX);
       this.later('pack', () => this.loadPack(), first ? 0 : 150);
     }
   }
@@ -397,6 +404,9 @@ export class App extends Component {
   }
 
   // Back from PayPal at /thanks?token=<order>: capturing again is harmless (the server makes it idempotent).
+  // El carrito se vacía sólo con el cobro que pagó el pedido (paid_now): abrir otra vez una página de gracias
+  // vieja (el historial, un marcador) o la de otro en este navegador vaciaba el carrito que tuviera. El código
+  // aplicado se queda.
   capture(token) {
     if (!token) { this.go({ page: 'shop' }, { replace: true }); return; }
     post('/api/orders/' + encodeURIComponent(token) + '/capture').then(rc => {
@@ -405,7 +415,7 @@ export class App extends Component {
       // another browser than the one that paid gets no links (they are in My strategies): the
       // tutorial waits until there is a script to install
       this.mineQuietTried = false;
-      this.setState({ receipt: rc, cart: [], bundles: [], packIds: [], instFor: first ? first.id : '', mine: null,
+      this.setState({ receipt: rc, ...(rc.paid_now ? { cart: [], bundles: [], packIds: [] } : {}), instFor: first ? first.id : '', mine: null,
         instStep: !first || read('edgefolio-install-v1') ? -1 : 0 });
     }).catch(e => { this.fail(e); this.go({ page: 'shop' }, { replace: true }); });
   }
@@ -465,11 +475,14 @@ export class App extends Component {
   // Favourites kept in this browser while signed out move to the account once signed in.
   // Only the ones the server took leave this browser; the others stay for the next sign-in, with one
   // error shown. /api/mine is read once, after the uploads (sync() waits for them).
+  // Una que ya no está en el catálogo (404) también se va, sin aviso: no hay nada que guardar (como hace
+  // fetchOne con el carrito y Comparar). Antes, si su ficha llegaba después de la subida, salía «No
+  // encontramos esa estrategia» y se quedaba en el navegador.
   afterSignIn() {
     const local = readJSON(FAVS_KEY, {}), favs = list(local.favs), alerts = local.alerts || {};
     this.uploading = true;
     Promise.all(favs.map(id => api('/api/favourites/' + encodeURIComponent(id), { method: 'PUT', body: { alerts: alerts[id] || {} } })
-      .then(() => null, e => ({ id, e }))))
+      .then(() => null, e => (e.status === 404 ? null : { id, e }))))
       .then(res => {
         const failed = res.filter(Boolean), left = failed.map(x => x.id);
         if (left.length) {

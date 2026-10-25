@@ -17,8 +17,11 @@ export function shopVals(c) {
     isPro: s.page === 'shop' && s.mode === 'pro', isLite: s.page === 'shop' && s.mode !== 'pro',
     q: s.q, onQ: e => app.setState({ q: e.target.value }),
     tape: s.tape.map(r => ({ icon: r.icon, ticker: r.ticker + ' · ' + r.key, pct: f.pctS(r.npp) })),
+    // la pestaña marcada pide otra vez su primera página (la de la búsqueda de ahora): después de un fallo,
+    // o para refrescar; sin esto, su lista no cambiaba y no se mandaba nada
     liteTabs: [['hot', t('tabHot')], ['win', tx.sortWin], ['stocks', t('tabStocks')], ['crypto', t('tabCrypto')], ['new', t('tabNew') + ' · ' + f.int(counts.new || 0)], ['free', t('landingFree')]].map(([k, label]) => ({
-      label, sel: String(tab === k), color: tab === k ? '#16263a' : '#5a6b80', line: tab === k ? '#0950e3' : 'transparent', go: () => app.setState({ liteTab: k }) })),
+      label, sel: String(tab === k), color: tab === k ? '#16263a' : '#5a6b80', line: tab === k ? '#0950e3' : 'transparent',
+      go: () => (tab === k ? app.loadLite(1) : app.setState({ liteTab: k })) })),
     liteRows: lite.map(c.mk), liteEmpty: !!s.lite && lite.length === 0,
     liteShowing: s.lite ? t('showingN', { n: f.int(lite.length), total: f.int(s.liteTotal) }) : '',
     liteMore: lite.length < s.liteTotal, loadMoreLite: () => app.loadLite(s.litePage + 1),
@@ -80,7 +83,7 @@ function proVals(c, seg) {
   const selObj = k => {
     const opts = (s.options && s.options[k]) || [], cur = s.sel[k], open = s.openSel === k, qq = (s.selQ || '').toLowerCase();
     const n = cur ? cur.length : opts.length;
-    const value = !cur ? (opts.length ? t('selectedN', { n: f.int(opts.length) }) : '') : n === 0 ? '—' : n <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(n) });
+    const value = !cur ? (opts.length ? t('selectedN', { n: f.int(opts.length) }, opts.length) : '') : n === 0 ? '—' : n <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(n) }, n);
     const setSel = v => app.setState(st => {
       const all = ((st.options && st.options[k]) || []).map(o => o.v);
       const nc = st.sel[k] ? st.sel[k].slice() : all.slice();
@@ -105,7 +108,7 @@ function proVals(c, seg) {
   const chips = [];
   Object.keys(SELECTS).forEach(k => {
     const cur = s.sel[k];
-    if (cur) chips.push({ label: t(SELECTS[k]) + ': ' + (cur.length ? (cur.length <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(cur.length) })) : '—'),
+    if (cur) chips.push({ label: t(SELECTS[k]) + ': ' + (cur.length ? (cur.length <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(cur.length) }, cur.length)) : '—'),
       clear: () => app.setState(st => { const ns = { ...st.sel }; delete ns[k]; return { sel: ns }; }) });
   });
   Object.keys(RANGES).forEach(k => { if (isOn(s.rg[k])) { const sl = slider(k); chips.push({ label: sl.label + ': ' + sl.loLabel + ' – ' + sl.hiLabel, clear: sl.clear }); } });
@@ -121,7 +124,8 @@ function proVals(c, seg) {
 
   return {
     proRows: rows.map(c.mk), proEmpty: !!s.proLoaded && rows.length === 0,
-    shownCount: f.int(s.proTotal),
+    // «1 estrategia mostrada», «2 estrategias mostradas»: la forma del número de arriba
+    shownCount: f.int(s.proTotal), shownLabel: t('shown', null, s.proTotal),
     rangeLabel2: t('rangeOf', { from: f.int(from), to: f.int(to), total: f.int(s.proTotal) }),
     rangeTop: TOP_RANGES.map(slider),
     selF: Object.keys(SELECTS).map(selObj),

@@ -48,7 +48,9 @@ export function pageVals(c) {
     tourDots: [0, 1, 2].map(i => ({ w: i === TS ? '22px' : '8px', bg: i === TS ? '#0950e3' : '#cfd8e3' })),
     // step 3's PayPal → .pine → TradingView reads the other way in Arabic
     arrowFwd: c.rtl ? 'fa-solid fa-arrow-left' : 'fa-solid fa-arrow-right',
-    tourIcons: ['AAPL', 'NVDA', 'AMZN', 'ADBE', 'BTC+USDT', 'ETH+USDT'].map(k => ({ src: '/static/assets/icons/' + k + '_big.svg' })),
+    // cuatro acciones y dos criptos, como en el diseño, de las que vende el catálogo (el del diseño traía
+    // Apple y Ethereum, que el de 2026-10 no tiene); tests/test_lists_cart.py lo comprueba
+    tourIcons: ['MSFT', 'NVDA', 'AMZN', 'ADBE', 'BTC+USDT', 'SOL+USDT'].map(k => ({ src: '/static/assets/icons/' + k + '_big.svg' })),
     tourPD: e => app.swDown(e), tourPU: e => app.swUp(e, 'tourStep')
   };
 }

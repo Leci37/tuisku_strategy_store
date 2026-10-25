@@ -7,7 +7,7 @@ import { shopVals } from './vals_shop.js';
 import { cartVals } from './vals_cart.js';
 import { pageVals } from './vals_pages.js';
 
-const TX_KEYS = ['toolName', 'tvConnect', 'tvConnected', 'tvDisconnect', 'language', 'cart', 'emptyCart', 'codePh', 'apply', 'checkout', 'shown', 'reset', 'onlyFree', 'strategies', 'sortNp', 'sortWin', 'sortPrice', 'sortTrades', 'npPct', 'avgProfit', 'monthsTrained', 'view', 'viewRows', 'viewCards', 'viewTableTab', 'tabNew', 'addToCart', 'inCartBtn', 'download', 'riskTitle', 'riskText', 'riskShort', 'legalPrivacy', 'legalCookies', 'legalTerms', 'legalNotice', 'contactMenu', 'proView', 'liteTitle', 'liteSub', 'searchPh', 'loadMore', 'haveCode', 'noMatch', 'tradesWord', 'rowsPerPage', 'addFilter', 'colBacktest', 'strategyChart', 'candleChart', 'openTv', 'fSymbol', 'fTimeframe', 'fIndicators', 'any', 'tourOpen', 'tourBack', 'tourClose', 'email', 'bundles', 'freeTitle', 'freeText', 'newsOpt', 'sendLink', 'freeSent', 'myStrategies', 'mineSub', 'newLink', 'backShop', 'thanksTitle', 'thanksSub', 'downloadAll', 'totalPaid', 'paidWith', 'installTitle', 'goMine', 'selAll', 'selNone', 'searchSmall', 'clearAll', 'openPage', 'newTab', 'allResults', 'aboutInd', 'seeInd', 'scriptPreview', 'lockedNote', 'sinceRelease', 'liveVsBacktest', 'demoFigures', 'compare', 'compareTitle', 'compareMax', 'grade', 'packTitle', 'done', 'favourites', 'favEmpty', 'versions', 'v2note', 'v1note', 'updateAvail', 'getUpdate', 'trustPaypal', 'trustLinks', 'trustInvoice', 'currencyLabel', 'howItDecides', 'overviewTab', 'howTeaserTitle', 'howTeaserText', 'toSheet', 'scriptRest', 'buyScriptTitle', 'buyScriptText', 'formatsNote', 'fmtPineDesc', 'fmtMd', 'fmtMdDesc', 'fmtPyDesc', 'fmtJsDesc',
+const TX_KEYS = ['toolName', 'tvConnect', 'tvConnected', 'tvDisconnect', 'language', 'cart', 'emptyCart', 'codePh', 'apply', 'checkout', 'reset', 'onlyFree', 'strategies', 'sortNp', 'sortWin', 'sortPrice', 'sortTrades', 'npPct', 'avgProfit', 'monthsTrained', 'view', 'viewRows', 'viewCards', 'viewTableTab', 'tabNew', 'addToCart', 'inCartBtn', 'download', 'riskTitle', 'riskText', 'riskShort', 'legalPrivacy', 'legalCookies', 'legalTerms', 'legalNotice', 'contactMenu', 'proView', 'liteTitle', 'liteSub', 'searchPh', 'loadMore', 'haveCode', 'noMatch', 'tradesWord', 'rowsPerPage', 'addFilter', 'colBacktest', 'strategyChart', 'candleChart', 'openTv', 'fSymbol', 'fTimeframe', 'fIndicators', 'any', 'tourOpen', 'tourBack', 'tourClose', 'email', 'bundles', 'freeTitle', 'freeText', 'newsOpt', 'sendLink', 'freeSent', 'myStrategies', 'mineSub', 'newLink', 'backShop', 'thanksTitle', 'thanksSub', 'downloadAll', 'totalPaid', 'paidWith', 'installTitle', 'goMine', 'selAll', 'selNone', 'searchSmall', 'clearAll', 'openPage', 'newTab', 'allResults', 'aboutInd', 'seeInd', 'scriptPreview', 'lockedNote', 'sinceRelease', 'liveVsBacktest', 'demoFigures', 'compare', 'compareTitle', 'compareMax', 'grade', 'packTitle', 'done', 'favourites', 'favEmpty', 'versions', 'v2note', 'v1note', 'updateAvail', 'getUpdate', 'trustPaypal', 'trustLinks', 'trustInvoice', 'currencyLabel', 'howItDecides', 'overviewTab', 'howTeaserTitle', 'howTeaserText', 'toSheet', 'scriptRest', 'buyScriptTitle', 'buyScriptText', 'formatsNote', 'fmtPineDesc', 'fmtMd', 'fmtMdDesc', 'fmtPyDesc', 'fmtJsDesc',
   'liveUnknown', 'signOut', 'errServer', 'linksHiddenTitle', 'linksHiddenText', 'signInToDownload',
   'proofTitle', 'proofText', 'proofSent', 'proofConfirmTitle', 'proofConfirm', 'errProofExpired', 'dialogClose'];
 const GRADE_BG = { A: '#15803d', B: '#0e7c98', C: '#5a6b80', D: '#c0392b' };
@@ -21,6 +21,10 @@ export function renderVals(app) {
   const t = translator(s.dict, {}, lang);
   const rates = (s.fx && s.fx.rates) || {};
   const f = formatters(lang, { local: s.cur === 'local', rate: rates[LOCAL_CURRENCY[lang]] || 0 });
+  // el chip de la moneda sólo cambia algo si el idioma tiene otra moneda y su cambio llegó (API #5); si no
+  // (inglés, o sin cambios), se queda en USD: antes, el clic cambiaba la elección sin que se viera nada y
+  // la arrastraba a otro idioma
+  const localCur = LOCAL_CURRENCY[lang] || 'USD', canLocal = localCur !== 'USD' && rates[localCur] > 0;
   const tx = {};
   TX_KEYS.forEach(k => { tx[k] = t(k); });
   const contact = (s.cfg && s.cfg.contact_email) || '';
@@ -38,7 +42,8 @@ export function renderVals(app) {
     lang, dir: rtl ? 'rtl' : 'ltr', g90: rtl ? '270deg' : '90deg', tickShift: rtl ? 'translateX(100%)' : 'translateX(-100%)',
     tx, barStart: app.props.barStart, barEnd: app.props.barEnd,
     tv: s.tv, tvOff: !s.tv, toggleTv: () => app.toggleTv(), tvTitle: s.tv ? tx.tvDisconnect : tx.tvConnect,
-    isLocal: f.isLocal, curLabel: f.curLabel, toggleCur: () => app.setState(st => ({ cur: st.cur === 'local' ? 'usd' : 'local' })),
+    isLocal: f.isLocal, curLabel: f.curLabel, curFixed: !canLocal, curCursor: canLocal ? 'pointer' : 'default',
+    toggleCur: () => { if (canLocal) app.setState(st => ({ cur: st.cur === 'local' ? 'usd' : 'local' })); },
     isPhone: s.vw < 640,
     goShop: () => app.go({ page: 'shop' }),
     goMine: () => app.goMine(),

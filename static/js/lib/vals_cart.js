@@ -66,6 +66,9 @@ export function cartVals(c) {
   const full = s.packIds.length === pack.size;
 
   return {
+    // los lotes y «Arma tu pack», sólo con lo que dice API #4: sin él, la tarjeta del pack salía con las
+    // cifras de relleno («Ahorra un 0 %», «5 por 0 €»)
+    packReady: !!s.bundleDefs,
     cartCount: f.int(count), cartHas: s.cart.length + s.bundles.length > 0,
     subtotal: f.pmoney(sub), total: f.pmoney(total),
     tierLabel: (tier ? t('tierOn', { p: f.pct0(tier) }) : t('tierNone')) + (codeRate ? ' ' + t('plusCode', { p: f.pct0(codeRate) }) : ''),
@@ -73,11 +76,14 @@ export function cartVals(c) {
     ladderPct: lp.toFixed(1) + '%',
     tiers: tiers.map(([o, r], i) => ({ label: f.money0(o) + ' · ' + f.pct0(r), rate: f.pct0(r), amt: f.money0(o), pos: ((i + 1) * 100 / steps) + '%', tickBg: i < passed ? '#0950e3' : '#ffffff' })),
     // any discount crosses out the subtotal: a percentage (tier or code) or a flat-price code, whose
-    // discount_rate is 0 while its total is lower
-    hasDiscount: total < sub, liteOff: '−' + f.pct0(rate > 0 ? rate : sub > 0 ? (1 - total / sub) * 100 : 0),
+    // discount_rate is 0 while its total is lower. El chip de Lite, en árabe, aislado de izquierda a
+    // derecha (LRI…PDI): si no, «35%−»
+    hasDiscount: total < sub, liteOff: (c.rtl ? '\u2066' : '') + '−' + f.pct0(rate > 0 ? rate : sub > 0 ? (1 - total / sub) * 100 : 0) + (c.rtl ? '\u2069' : ''),
     payNote: t('payNote', { amount: f.money(total) }),
     code: s.code, onCode: e => app.setState({ code: e.target.value }),
     applyCode: () => app.applyCode(),
+    // Intro aplica el código, como «Aplicar» (no mientras se compone en zh/hi, donde Intro elige los caracteres)
+    codeKey: e => { if (e.key === 'Enter' && !e.isComposing) app.applyCode(); },
     codeMsg: s.codeState === 'ok' ? t('codeOk') : s.codeState === 'bad' ? t('codeBad') : '',
     codeMsgColor: s.codeState === 'bad' ? '#c0392b' : '#15603c',
     codeOpen: s.codeOpen, codeClosed: !s.codeOpen, openCode: () => app.setState({ codeOpen: true }),

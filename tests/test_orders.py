@@ -45,6 +45,16 @@ def test_capture_twice_returns_the_same_links(client, ids):
     assert first["downloads"][0]["url"] == again["downloads"][0]["url"]
 
 
+def test_only_the_capture_that_pays_says_paid_now(app, client, ids):
+    # el navegador que vuelve de PayPal vacía su carrito con paid_now; una página de gracias abierta otra vez
+    # (el historial) o en otro navegador, no: antes, cualquiera vaciaba el carrito que hubiera
+    order = client.post("/api/orders", json={"items": [ids[0]]}).json["id"]
+    assert client.post(f"/api/orders/{order}/capture").json["paid_now"] is True
+    assert client.post(f"/api/orders/{order}/capture").json["paid_now"] is False
+    other = visitor(app).post(f"/api/orders/{order}/capture").json
+    assert other["paid_now"] is False and other["links_hidden"] is True
+
+
 def test_no_download_without_paying(client, ids):
     # un pedido creado y nunca cobrado no tiene enlaces; adivinar uno no sirve
     client.post("/api/orders", json={"items": [ids[0]]})
@@ -173,10 +183,11 @@ def test_the_receipt_links_go_only_to_the_buyers_browser(app, client, ids):
     hidden = receipt_for(stranger, order_id)
     assert hidden == {"order_id": order_id, "status": "PAID", "total": "146.20", "currency": "USD",
                       "payer": "b•••@example.com", "valid_days": 7, "max_downloads": 10, "download_all": None,
-                      "downloads": [], "links_hidden": True}
+                      "downloads": [], "links_hidden": True, "paid_now": True}
     assert stored(app, order_id)["status"] == "PAID", "cobrar lo puede pedir cualquiera"
     mine = receipt_for(client, order_id)
     assert mine["links_hidden"] is False and len(mine["downloads"]) == 2 and mine["download_all"]
+    assert mine["paid_now"] is False, "ya estaba pagado"
     assert mine["payer"] == "b•••@example.com", "nunca el correo entero de quien pagó"
     assert client.get(mine["downloads"][0]["url"]).status_code == 200
     assert stored(app, order_id)["buyer_hash"] == digest(buyer)

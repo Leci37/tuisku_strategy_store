@@ -211,10 +211,18 @@ def create_order():
 @bp.post("/api/orders/<paypal_id>/capture")
 @public
 def capture(paypal_id):
-    order = orders.capture(shop(), paypal_id, on_paid=_email_receipt)
+    """El cobro, y el recibo. ``paid_now``: este cobro es el que pagó el pedido (el navegador que vuelve de
+    PayPal vacía entonces su carrito); abrir otra vez la página de gracias, o en otro navegador, no lo toca."""
+    paid_now = []
+
+    def on_paid(order):
+        paid_now.append(order)
+        _email_receipt(order)
+
+    order = orders.capture(shop(), paypal_id, on_paid=on_paid)
     uid = user_id()
     see = orders.may_see_links(order, request.cookies.get(BUYER_COOKIE), uid, proofs.proven(uid))
-    return jsonify(orders.receipt(shop(), order, see))
+    return jsonify({**orders.receipt(shop(), order, see), "paid_now": bool(paid_now)})
 
 
 def _email_receipt(order):

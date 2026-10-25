@@ -171,14 +171,41 @@
     "hi": "चेकआउट"
   },
   "shown": {
-    "es": "estrategias mostradas",
-    "en": "strategies shown",
-    "pt": "estratégias mostradas",
-    "fr": "stratégies affichées",
-    "de": "Strategien angezeigt",
-    "zh": "个策略",
-    "ar": "استراتيجية معروضة",
-    "hi": "रणनीतियाँ दिख रही हैं"
+    "es": {
+      "one": "estrategia mostrada",
+      "other": "estrategias mostradas"
+    },
+    "en": {
+      "one": "strategy shown",
+      "other": "strategies shown"
+    },
+    "pt": {
+      "one": "estratégia mostrada",
+      "other": "estratégias mostradas"
+    },
+    "fr": {
+      "one": "stratégie affichée",
+      "other": "stratégies affichées"
+    },
+    "de": {
+      "one": "Strategie angezeigt",
+      "other": "Strategien angezeigt"
+    },
+    "zh": {
+      "other": "个策略"
+    },
+    "ar": {
+      "zero": "استراتيجية معروضة",
+      "one": "استراتيجية معروضة",
+      "two": "استراتيجيتان معروضتان",
+      "few": "استراتيجيات معروضة",
+      "many": "استراتيجية معروضة",
+      "other": "استراتيجية معروضة"
+    },
+    "hi": {
+      "one": "रणनीति दिख रही है",
+      "other": "रणनीतियाँ दिख रही हैं"
+    }
   },
   "reset": {
     "es": "Restablecer filtros",
@@ -201,14 +228,34 @@
     "hi": "सिर्फ़ मुफ़्त दिखाएँ"
   },
   "selectedN": {
-    "es": "{n} seleccionados",
-    "en": "{n} selected",
-    "pt": "{n} selecionados",
-    "fr": "{n} sélectionnés",
-    "de": "{n} ausgewählt",
-    "zh": "已选 {n} 项",
-    "ar": "تم اختيار {n}",
-    "hi": "{n} चुने गए"
+    "es": {
+      "one": "{n} seleccionado",
+      "other": "{n} seleccionados"
+    },
+    "en": {
+      "other": "{n} selected"
+    },
+    "pt": {
+      "one": "{n} selecionado",
+      "other": "{n} selecionados"
+    },
+    "fr": {
+      "one": "{n} sélectionné",
+      "other": "{n} sélectionnés"
+    },
+    "de": {
+      "other": "{n} ausgewählt"
+    },
+    "zh": {
+      "other": "已选 {n} 项"
+    },
+    "ar": {
+      "other": "تم اختيار {n}"
+    },
+    "hi": {
+      "one": "{n} चुना गया",
+      "other": "{n} चुने गए"
+    }
   },
   "any": {
     "es": "cualquiera",
@@ -841,14 +888,14 @@
     "hi": "कोई कंपनी या क्रिप्टो खोजें, या टैब इस्तेमाल करें: लोकप्रिय, जीत दर, शेयर, क्रिप्टो और मुफ़्त।"
   },
   "tour1Pro": {
-    "es": "Acota las 2.834 estrategias con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 15 más.",
-    "en": "Narrow the 2,834 strategies with the filter panel: net profit, price, symbol, time frame, indicators and 15 more.",
-    "pt": "Restringe as 2834 estratégias com o painel de filtros: lucro líquido, preço, símbolo, período, indicadores e mais 15.",
-    "fr": "Affinez les 2 834 stratégies avec le panneau de filtres : bénéfice net, prix, symbole, unité de temps, indicateurs et 15 autres.",
-    "de": "Grenze die 2.834 Strategien mit dem Filterbereich ein: Nettogewinn, Preis, Symbol, Zeiteinheit, Indikatoren und 15 weitere.",
-    "zh": "用筛选面板缩小 2,834 个策略的范围：净利润、价格、代码、时间周期、指标，以及另外 15 项。",
-    "ar": "ضيّق نطاق الاستراتيجيات الـ 2,834 بلوحة عوامل التصفية: صافي الربح والسعر والرمز والإطار الزمني والمؤشرات و15 غيرها.",
-    "hi": "फ़िल्टर पैनल से 2,834 रणनीतियाँ छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 15 और।"
+    "es": "Acota el catálogo con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 16 más.",
+    "en": "Narrow the catalogue with the filter panel: net profit, price, symbol, time frame, indicators and 16 more.",
+    "pt": "Restringe o catálogo com o painel de filtros: lucro líquido, preço, símbolo, período, indicadores e mais 16.",
+    "fr": "Affinez le catalogue avec le panneau de filtres : bénéfice net, prix, symbole, unité de temps, indicateurs et 16 autres.",
+    "de": "Grenze den Katalog mit dem Filterbereich ein: Nettogewinn, Preis, Symbol, Zeiteinheit, Indikatoren und 16 weitere.",
+    "zh": "用筛选面板缩小目录范围：净利润、价格、代码、时间周期、指标，以及另外 16 项。",
+    "ar": "ضيّق نطاق الكتالوج بلوحة عوامل التصفية: صافي الربح والسعر والرمز والإطار الزمني والمؤشرات و16 غيرها.",
+    "hi": "फ़िल्टर पैनल से कैटलॉग छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 16 और।"
   },
   "tour2Title": {
     "es": "Lee la curva",

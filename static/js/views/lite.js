@@ -15,7 +15,7 @@ export default function Lite(v) {
       <div style="position:relative;max-width:1320px;margin:0 auto;padding:44px 28px 28px;display:flex;flex-direction:column;gap:14px">
         <h1 style="margin:0;font-size:40px;font-weight:700;letter-spacing:-.6px;line-height:1.1;max-width:640px;text-wrap:balance">${v.tx?.liteTitle}</h1>
         <p style="margin:0;font-size:16px;color:#5a6b80;max-width:540px;text-wrap:pretty">${v.tx?.liteSub}</p>
-        <label style="margin-top:8px;max-width:640px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e2e9f0;border-radius:14px;padding:12px 16px;box-shadow:0 12px 32px rgba(22,38,58,.08)"><i class="fa-solid fa-magnifying-glass" style="color:#8d9cae"></i><input data-search="lite" value=${v.q ?? ''} onInput=${v.onQ} placeholder=${v.tx?.searchPh} style="flex:1;min-width:0;border:none;outline:none;font-family:inherit;font-size:15px;color:#16263a;background:transparent" /></label>
+        <label style="margin-top:8px;max-width:640px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e2e9f0;border-radius:14px;padding:12px 16px;box-shadow:0 12px 32px rgba(22,38,58,.08)"><i class="fa-solid fa-magnifying-glass" style="color:#8d9cae"></i><input data-search="lite" maxlength="100" value=${v.q ?? ''} onInput=${v.onQ} placeholder=${v.tx?.searchPh} style="flex:1;min-width:0;border:none;outline:none;font-family:inherit;font-size:15px;color:#16263a;background:transparent" /></label>
         </div>
       </section>
     <section style="width:100%;max-width:1320px;margin:0 auto;padding:12px 28px 0;display:flex;flex-direction:column;gap:16px">
@@ -23,7 +23,7 @@ export default function Lite(v) {
         ${(v.liteTabs || []).map((lt, $index) => html`<button role="tab" aria-selected=${lt?.sel} onClick=${lt?.go} style="font-family:inherit;border:none;background:none;padding:12px 0 10px;margin-bottom:-1px;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap;color:${s(lt?.color)};border-bottom:2px solid ${s(lt?.line)}">${lt?.label}</button>`)}
         </div>
       <div role="note" style="display:flex;gap:12px;align-items:flex-start;border-radius:14px;padding:14px 16px;background:#fff7ec;border:1px solid #f6d9ae"><i class="fa-solid fa-triangle-exclamation" style="color:#f79009;font-size:18px;margin-top:1px"></i><div style="display:flex;flex-direction:column;gap:2px;font-size:13.5px;color:#16263a"><strong style="font-size:14.5px">${v.tx?.riskTitle}</strong><span style="text-wrap:pretty">${v.tx?.riskText}</span></div></div>
-      <div style="display:flex;flex-direction:column;gap:10px">
+      ${v.packReady ? html`<div style="display:flex;flex-direction:column;gap:10px">
         <span style="font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80">${v.tx?.bundles}</span>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px">
           ${(v.bundles || []).map((bd, $index) => html`
@@ -42,7 +42,7 @@ export default function Lite(v) {
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;font-size:13px;color:#5a6b80">${v.packHint}</span><button onClick=${v.addPack} style="font-family:inherit;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;background:${s(v.packBtnBg)};color:#fff;white-space:nowrap">${v.packBtnLabel}</button></div>
             </div>
           </div>
-        </div>
+        </div>` : null}
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px">
         ${(v.liteRows || []).map((r, $index) => html`
           <div class="sf-hover2" style="position:relative;background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px">
@@ -81,7 +81,7 @@ export default function Lite(v) {
           <span style="display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap"><span style="width:34px;height:34px;border-radius:10px;background:#e9f0fd;color:#0950e3;display:grid;place-items:center"><i class="fa-solid fa-cart-shopping"></i></span>${T(v.tx?.cart)} · ${T(v.cartCount)}</span>
           ${v.hasDiscount ? html`<span style="font-size:12px;font-weight:700;color:#15603c;background:#e8f7ef;border-radius:999px;padding:3px 9px">${v.liteOff}</span>` : null}
           ${v.codeClosed ? html`<button onClick=${v.openCode} style="font-family:inherit;border:none;background:none;padding:0;color:#0950e3;font-weight:600;font-size:12.5px;cursor:pointer">${v.tx?.haveCode}</button>` : null}
-          ${v.codeOpen ? html`<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><input value=${v.code ?? ''} onInput=${v.onCode} placeholder=${v.tx?.codePh} style="width:100px;font-family:inherit;font-size:13px;color:#16263a;border:1px solid #e2e9f0;border-radius:10px;padding:6px 9px" /><button onClick=${v.applyCode} style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer">${v.tx?.apply}</button><span style="font-size:11px;font-weight:600;color:${s(v.codeMsgColor)}">${v.codeMsg}</span></span>` : null}
+          ${v.codeOpen ? html`<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><input value=${v.code ?? ''} onInput=${v.onCode} onKeyDown=${v.codeKey} placeholder=${v.tx?.codePh} style="width:100px;font-family:inherit;font-size:13px;color:#16263a;border:1px solid #e2e9f0;border-radius:10px;padding:6px 9px" /><button onClick=${v.applyCode} style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer">${v.tx?.apply}</button><span style="font-size:11px;font-weight:600;color:${s(v.codeMsgColor)}">${v.codeMsg}</span></span>` : null}
           <span style="margin-inline-start:auto;text-align:end;line-height:1.15">${v.hasDiscount ? html`<span style="display:block;font-size:11.5px;color:#5a6b80;text-decoration:line-through">${v.subtotal}</span>` : null}<span style="font-size:20px;font-weight:700;letter-spacing:-.3px">${v.total}</span>${v.isLocal ? html`<span style="display:block;font-size:10.5px;color:#5a6b80">${v.payNote}</span>` : null}</span>
           <button onClick=${v.checkout} disabled=${v.paying} aria-busy=${v.paying} style="font-family:inherit;background:${s(v.payBgLite)};border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 20px;font-size:14px;cursor:${s(v.payCursor)};box-shadow:${s(v.payShadow)};display:inline-flex;gap:8px;align-items:center"><i class=${v.payIcon}></i>${T(v.tx?.checkout)}</button>
           <div style="flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px 16px;padding-top:8px;border-top:1px solid #eef2f6;font-size:11.5px;color:#5a6b80">

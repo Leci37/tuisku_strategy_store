@@ -122,11 +122,37 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Esc** no cierra el menú de idioma desde la tienda: es del núcleo, y lo cierra él.
 - **La escalera** dice «Añade 53,01 US$» donde el diseño dice 53,00: un tramo cuenta por encima de su
   importe (la regla del propio diseño), así que falta un céntimo más. El ejemplo del diseño se queda corto.
-- **El árbol** colorea sus resultados con los niveles con que opera el script (comprar ≥ 0,55, cerrar
-  ≤ −0,9), no con los comentarios `// buy|sell` de la vista previa: algunos salen distintos que en la
-  maqueta (AMZN 1BOL: −0,78 y −0,90 «Esperar», +0,60 «Comprar»). Para hablarlo con el diseño.
+- **El árbol** colorea sus resultados con los niveles con que opera el script, no con los comentarios
+  `// buy|sell` de la vista previa: el del propietario, con los de su script completo (`buyThreshold` y
+  `sellThreshold`, que el generador elige para cada modelo: de 0,4 a 1,0 para comprar, de −1,0 a −0,5 para
+  cerrar; `tree.js` los lee como `edgefolio/formats.py`); el del visitante, con 0,55 y −0,9 (los de todos
+  los scripts de 2024), porque la vista previa se corta antes de esas líneas. Algunos salen distintos que en
+  la maqueta (AMZN 1BOL: −0,78 y −0,90 «Esperar», +0,60 «Comprar»). Para hablarlo con el diseño; publicar
+  los niveles de cada script, para que el visitante los vea, es decisión del dueño.
 - **En una gratis, el árbol** dice «Script completo» y «Conseguirla gratis», no «Parte de pago» y «Comprar
-  para desbloquear»; el clic abre el diálogo de la gratis, como en el diseño.
+  para desbloquear»; el clic abre el diálogo de la gratis, como en el diseño. Su vista de propietario dice
+  con qué correo se pidió y que se pide gratis (`fOwnSignIn`, `fOwnNotYours`), no «compraste» ni «Cómprala».
+- **Si el script completo del propietario no llega** (falta en la tienda, o falla la red), el recuadro de
+  propietario lo dice en ámbar con «Descargar .pine» (`ownFail`, `tree_main.js`), y el candado de una rama
+  ofrece lo mismo; nunca «no está entre las compras…» ni «Comprar para desbloquear». El diseño no tiene ese
+  estado.
+- **«Vista de propietario: este es el árbol completo»**, sin «primer»: el propietario elige cualquier árbol
+  del bosque.
+- **«Comprar para desbloquear»** del árbol sigue al carrito de la página (`inCart`, de la ficha): quitada con
+  el botón de la cabecera, vuelve a decirlo y a añadirla. El diseño guardaba su propio «Añadida al carrito».
+- **La explicación que abre un toque** (en el móvil, una pregunta; con el ratón, una rama cerrada) se queda
+  abierta aunque la página se mueva sola justo después: el marco que sigue el camino y el navegador que deja
+  la caja en su sitio cuando cambian los deslizadores de encima. En el diseño se cerraba en el acto.
+- **Los valores divididos por el cierre** que usa el generador de 2026 (`macd__close`, `BBlower__close`…)
+  llevan el nombre del valor sin `__close`, con una nota en su explicación, y un nombre sólo vale en su
+  patrón (el quinto campo de cada valor en `static/trees/features.json`): la `d` de WaveTrend no es la %D
+  del RSI estocástico. Los que `features.json` no nombra (139 de los 182 que preguntan las vistas previas)
+  salen con su código, como antes: escribir sus nombres y descripciones es contenido del dueño.
+- **Los idiomas del árbol:** la explicación de los 22 patrones de 2026-10 (15 no tenían), en los 8 idiomas
+  (`patterns` de `features.json` en en y es; `pat` de `static/trees/ui.json` en los otros seis). La
+  descripción de cada valor sigue sólo en en y es: en los otros idiomas sale la inglesa, con `lang="en"`
+  (`tree_tip.js`), como la de un patrón sin traducir (`tree_main.js`).
+- **Árbol | Bloques** llevan `aria-selected`, como Ficha técnica | Cómo decide.
 - **«CLAVE · indicador»** de 1.402 estrategias (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:
   `indicators.csv` no les da una dirección. Si se quiere otra, la pone el generador.

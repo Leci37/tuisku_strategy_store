@@ -41,7 +41,12 @@ const TEXT = {
     ctaRest: ' Buying the strategy shows the complete tree and every tree of its forest, and lets you download the .pine.',
     ownSignIn: 'Owner view: sign in to My strategies with the email you bought this strategy with to see its complete tree and download the script. Not yours yet? Buy it to unlock everything.',
     ownNotYours: 'Owner view: this strategy is not among the purchases of the email you are signed in with. Buy it to see its complete tree and download the script.',
-    ownFull: 'Owner view: this is the complete first tree. Download the script to use it in TradingView.'
+    // una gratis se pide por correo, no se compra
+    fOwnSignIn: 'Owner view: sign in to My strategies with the email you asked for this strategy with to see its complete tree and download the script. Not yours yet? It is free: ask for it by email.',
+    fOwnNotYours: 'Owner view: this strategy is not among the ones asked for with the email you are signed in with. It is free: ask for it by email to see its complete tree and download the script.',
+    ownFull: 'Owner view: this is the complete tree. Download the script to use it in TradingView.',
+    ownFail: 'Owner view: we could not load your complete script. Download it from My strategies or try again later.',
+    relNote: 'As the model sees it: divided by the close of the candle.'
   },
   es: {
     locale: 'es-ES', pageName: 'Árbol de la estrategia', store: 'Abrir la tienda', h1: 'Cómo decide una estrategia',
@@ -74,7 +79,11 @@ const TEXT = {
     ctaRest: ' Al comprar la estrategia ves el árbol completo y todos los árboles de su bosque, y puedes descargar el .pine.',
     ownSignIn: 'Vista de propietario: entra en Mis estrategias con el email con el que compraste esta estrategia para ver su árbol completo y descargar el script. ¿Aún no es tuya? Cómprala para desbloquearlo todo.',
     ownNotYours: 'Vista de propietario: esta estrategia no está entre las compras del email con el que has entrado. Cómprala para ver su árbol completo y descargar el script.',
-    ownFull: 'Vista de propietario: este es el primer árbol completo. Descarga el script para usarlo en TradingView.'
+    fOwnSignIn: 'Vista de propietario: entra en Mis estrategias con el email con el que pediste esta estrategia para ver su árbol completo y descargar el script. ¿Aún no la tienes? Es gratis: pídela por email.',
+    fOwnNotYours: 'Vista de propietario: esta estrategia no está entre las que se pidieron con el email con el que has entrado. Es gratis: pídela por email para ver su árbol completo y descargar el script.',
+    ownFull: 'Vista de propietario: este es el árbol completo. Descarga el script para usarlo en TradingView.',
+    ownFail: 'Vista de propietario: no pudimos cargar tu script completo. Descárgalo desde Mis estrategias o inténtalo más tarde.',
+    relNote: 'Tal como lo ve el modelo: dividido por el cierre de la vela.'
   }
 };
 
@@ -89,15 +98,46 @@ const sharedData = () => shared || (shared = Promise.all([
 const text = (url, init) => fetch(url, init).then(r => (r.ok ? r.text() : r.text().then(() => { throw new Error(url + ' (' + r.status + ')'); })));
 const rowId = P => (P.strategy && P.strategy.id) || '';
 
-// What the script does with a score. Every script of the catalogue (all 4,578 checked) buys at
-// op_operation >= 0.55 and closes at <= -0.9, the levels api/formats.py reads from the full script;
-// the factory's "// buy|sell" comments mark ±0.7 instead, so a leaf at +0.64 would read "Wait" while
-// the script buys on it. The preview never shows those lines, hence the constants.
+// Lo que hace el script con una puntuación: compra con op_operation >= su nivel de compra y cierra con <= su
+// nivel de cierre. Desde el catálogo de 2026-10 cada script tiene los suyos (las entradas buyThreshold y
+// sellThreshold, que el generador elige para cada modelo con datos de validación: de 0,4 a 1,0 para comprar,
+// de −1,0 a −0,5 para cerrar) y la vista previa pública se corta antes: el árbol del visitante usa 0,55 y
+// −0,9, los que tenían todos los scripts del catálogo de 2024, a falta de los de verdad, así que un resultado
+// puede decir otra cosa que lo que hace el script. El script completo del propietario trae los suyos
+// (levelsOf). Los comentarios «// buy|sell» de la fábrica marcan ±0,7 y no son los niveles.
 const BUY_AT = 0.55, CLOSE_AT = -0.9;
-const signalOf = v => (v >= BUY_AT ? 'buy' : v <= CLOSE_AT ? 'sell' : 'none');
+const signalOf = (v, lv) => (v >= lv.buy ? 'buy' : v <= lv.close ? 'sell' : 'none');
+
+// Los niveles de un script completo, leídos como los lee edgefolio/formats.py: las entradas de la plantilla
+// de 2026, usadas en `if … op_operation >= buyThreshold` y en un `op_operation <= sellThreshold` que cierra,
+// o las cifras de la plantilla de antes (`if( op_operation >= 0.55 )`, y un `if( op_operation <= -0.9 )` que
+// cierra). Lo que no aparece se queda en el de 2024.
+const NUM_RE = '(-?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?)';
+const RE_INPUT = new RegExp('^(buy|sell)Threshold\\s*=\\s*input(?:\\.float)?\\(\\s*' + NUM_RE);
+const RE_BUY_AT = new RegExp('^if\\s*\\(\\s*op_operation\\s*>=\\s*' + NUM_RE + '\\s*\\)');
+const RE_CLOSE_AT = new RegExp('^if\\s*\\(\\s*op_operation\\s*<=\\s*' + NUM_RE + '\\s*\\)');
+const RE_BUY_INPUT = /^if\b.*\bop_operation\s*>=\s*buyThreshold\b/, RE_CLOSE_INPUT = /^if\b.*\bop_operation\s*<=\s*sellThreshold\b/;
+export function levelsOf(src) {
+  const rows = String(src || '').replace(/\r/g, '').split('\n').map(l => ({ ind: l.match(/^[ \t]*/)[0].replace(/\t/g, '    ').length, text: l.trim() })).filter(r => r.text);
+  const closes = i => { for (let k = i + 1; k < rows.length && rows[k].ind > rows[i].ind; k++) if (rows[k].text.includes('strategy.close')) return true; return false; };
+  const inputs = {};
+  rows.forEach(r => { const m = r.text.match(RE_INPUT); if (m) inputs[m[1]] = +m[2]; });
+  let buy = null, close = null;
+  rows.forEach((r, i) => {
+    let m;
+    if (buy == null && (m = r.text.match(RE_BUY_AT))) buy = +m[1];
+    if (buy == null && 'buy' in inputs && RE_BUY_INPUT.test(r.text)) buy = inputs.buy;
+    if (close == null && 'sell' in inputs && RE_CLOSE_INPUT.test(r.text) && closes(i)) close = inputs.sell;
+    if (close == null && (m = r.text.match(RE_CLOSE_AT)) && closes(i)) close = +m[1];
+  });
+  return { buy: buy == null ? BUY_AT : buy, close: close == null ? CLOSE_AT : close };
+}
+const STAND_IN = { buy: BUY_AT, close: CLOSE_AT };
 
 export class StrategyTree extends Component {
-  state = { trees: null, full: null, fullFail: false, sel: 0, vals: {}, view: 'tree', err: '', vw: 1400, tip: null, owner: false, added: false, allRules: false };
+  // Si la estrategia está en el carrito lo dice la página (inCart): con una marca propia, el árbol seguía
+  // diciendo «Añadida al carrito» después de quitarla con el botón de la cabecera.
+  state = { trees: null, full: null, fullFail: false, sel: 0, vals: {}, view: 'tree', err: '', vw: 1400, tip: null, owner: false, allRules: false };
   treeRef = createRef();
   T = TEXT;
 
@@ -119,7 +159,15 @@ export class StrategyTree extends Component {
     this._rs = () => { this.setState({ vw: window.innerWidth }); if (this._measure) this._measure(); };
     window.addEventListener('resize', this._rs); this._rs(); this._ws = setInterval(() => { this.watchSec(); if (this._secEl) clearInterval(this._ws); }, 300);
     if (document.fonts) { this._fl = () => this.forceUpdate(); document.fonts.addEventListener('loadingdone', this._fl); document.fonts.ready.then(() => this._fl && this._fl()); }
-    this._sc = () => { if (this.state.tip) this.setState({ tip: null }); };
+    // Desplazarse cierra la explicación, pero no lo que se desplaza la página sola justo después del toque o
+    // el clic que la deja abierta: en el móvil un toque la abre y mueve el camino, el navegador mantiene la
+    // caja tocada en su sitio mientras cambian los deslizadores de encima (scroll anchoring) y el marco se va
+    // luego al resultado nuevo (follow). Antes, la explicación de una pregunta no llegaba a verse.
+    this._sc = e => {
+      const now = Date.now(), own = e && e.target && e.target.closest && e.target.closest('[data-tree-scroll],[data-blk-scroll]');
+      if (now - (this._pinAt || 0) < 400 || (own && now - (this._followAt || 0) < 400)) return;
+      if (this.state.tip) this.setState({ tip: null });
+    };
     window.addEventListener('scroll', this._sc, true);
     this.load();
   }
@@ -130,10 +178,10 @@ export class StrategyTree extends Component {
 
   load() {
     const row = this.props.strategy, owned = !!this.props.owned, tok = this._tok = {};
-    this.setState({ trees: null, full: null, fullFail: false, sel: 0, err: '', vals: {}, tip: null, added: false, owner: owned });
+    this.setState({ trees: null, full: null, fullFail: false, sel: 0, err: '', vals: {}, tip: null, owner: owned });
     if (!row || !row.preview) { this.setState({ err: String((row && row.id) || '') }); return; }
     sharedData()
-      .then(([fx, ui]) => text(row.preview).then(src => { if (tok !== this._tok) return; this._fx = fx; this._ui = ui; this.setState({ trees: this.forest(src, row).slice(0, 1), sel: 0 }, () => this.example('buy')); }))
+      .then(([fx, ui]) => text(row.preview).then(src => { if (tok !== this._tok) return; this._fx = fx; this._ui = ui; this.setState({ trees: this.forest(src, row, STAND_IN).slice(0, 1), sel: 0 }, () => this.example('buy')); }))
       .catch(e => { if (tok === this._tok) this.setState({ err: String((e && e.message) || e) }); });
     if (!owned) return;
     // Owners only: the server answers 401 without the session cookie, and then the switch explains how to sign in.
@@ -141,7 +189,7 @@ export class StrategyTree extends Component {
       .then(() => text('/api/mine/' + encodeURIComponent(row.id) + '/script', { credentials: 'same-origin' }))
       .then(src => {
         if (tok !== this._tok) return;
-        const full = this.forest(src, row);
+        const full = this.forest(src, row, levelsOf(src));
         if (!full.length) throw new Error('no tree');
         this.setState(st => (st.owner ? { full, sel: 0, vals: {}, tip: null } : { full }), () => { if (this.state.owner) this.example('buy'); });
       })
@@ -156,7 +204,8 @@ export class StrategyTree extends Component {
   }
 
   // Every decision_tree_N function of the script, with what the page shows about the strategy.
-  forest(src, row) {
+  // lv: los niveles con que se leen sus resultados (levelsOf).
+  forest(src, row, lv) {
     src = src.replace(/\r/g, '');
     const lines = src.split('\n').map(l => { const m = l.match(/^(\t*)(.*)$/); return { ind: m[1].length, text: m[2].trim() }; }).filter(l => l.text);
     const bases = ((src.match(/^\/\/ Technical base pattern:(.*)$/m) || [])[1] || '').split(',').map(b => b.trim()).filter(Boolean);
@@ -166,13 +215,13 @@ export class StrategyTree extends Component {
       created: (src.match(/Date Creation: (\d{4})\/(\d{2})\/(\d{2})/) || []).slice(1).join('-')
     };
     const out = [];
-    for (let at = 0, tr; (tr = this.parse(lines, at)); at = tr.next) out.push({ ...meta, ...tr });
+    for (let at = 0, tr; (tr = this.parse(lines, at, lv)); at = tr.next) out.push({ ...meta, ...tr });
     return out;
   }
 
   // One tree from lines[from]: nested `if( f <= t )` / `if( f > t )` ending in `ret := score // buy|sell`.
   // Whatever the preview cut (or anything unexpected) becomes a locked "Paid part" stub.
-  parse(lines, from) {
+  parse(lines, from, lv) {
     let i = lines.findIndex((l, k) => k >= from && /^decision_tree_\d+_/.test(l.text));
     if (i < 0) return null;
     const sig = lines[i].text.match(/\(([^)]*)\)\s*=>/);
@@ -190,7 +239,7 @@ export class StrategyTree extends Component {
       const L = lines[i];
       if (!L || L.ind !== ind) return stub(d);
       let m = L.text.match(reLeaf);
-      if (m) { i++; leaves++; return { id: id++, leaf: true, v: +m[1], sig: signalOf(+m[1]), mark: (m[2] || '').toLowerCase(), depth: d }; }
+      if (m) { i++; leaves++; return { id: id++, leaf: true, v: +m[1], sig: signalOf(+m[1], lv || STAND_IN), mark: (m[2] || '').toLowerCase(), depth: d }; }
       m = L.text.match(reLe);
       if (!m) return stub(d);
       i++;
@@ -264,6 +313,7 @@ export class StrategyTree extends Component {
     if (!pin && this.state.tip && this.state.tip.pin) return;
     const r = e.currentTarget.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
     const x = Math.max(12, Math.min(r.left, vw - 312)), below = r.bottom + 240 < vh;
+    if (pin) this._pinAt = Date.now();
     this.setState({ tip: { ...data, pin: !!pin, x, y: below ? r.bottom + 8 : r.top - 8, up: !below } });
   }
   hideTip() { if (this.state.tip && !this.state.tip.pin) this.setState({ tip: null }); }
@@ -288,6 +338,7 @@ export class StrategyTree extends Component {
     let nl = L, nt = T;
     if (p.x < L + pad) nl = Math.max(0, p.x - pad); else if (p.x + p.w > L + vw - pad) nl = p.x + p.w - vw + pad;
     if (p.y < T + pad) nt = Math.max(0, p.y - pad); else if (p.y + p.h > T + vh - pad) nt = p.y + p.h - vh + pad;
+    if (nl !== L || nt !== T) this._followAt = Date.now();
     if (nl !== L) el.scrollLeft = nl - off;
     if (nt !== T) el.scrollTop = nt;
   }
@@ -307,8 +358,8 @@ export class StrategyTree extends Component {
     const [tBg, tColor, tShadow] = seg(s.view === 'tree'), [rBg, rColor, rShadow] = seg(s.view === 'rules');
     const [vBg, vColor, vShadow] = seg(!s.owner), [oBg, oColor, oShadow] = seg(s.owner);
     const free = !!(P.strategy && P.strategy.price === 0);
-    if (free) Object.assign(L, { paid: L.fPaid, paid1: L.fPaid1, paidN: L.fPaidN, cta1: L.fCta1, ctaN: L.fCtaN, ctaRest: L.fCtaRest, lockText: L.fLock });
-    const unlockLabel = free ? L.fBtn : s.added ? L.added : L.unlockBtn;
+    if (free) Object.assign(L, { paid: L.fPaid, paid1: L.fPaid1, paidN: L.fPaidN, cta1: L.fCta1, ctaN: L.fCtaN, ctaRest: L.fCtaRest, lockText: L.fLock, ownSignIn: L.fOwnSignIn, ownNotYours: L.fOwnNotYours });
+    const unlockLabel = free ? L.fBtn : P.inCart ? L.added : L.unlockBtn;
     const base = {
       L, steps: [L.s1, dir === 'vertical' ? L.s2v : L.s2h, L.s3].map((text, i) => ({ n: String(i + 1), text })),
       loading: !s.trees && !s.err, ready: !!s.trees, hasErr: !!s.err, err: s.err,
@@ -334,7 +385,17 @@ export class StrategyTree extends Component {
     const fmtV = v => (v > 0 ? '+' : '') + minus(new Intl.NumberFormat(L.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v));
     const isBoolF = f => /Int$/.test(f);
     const nice = f => f.replace(/Int$/, '');
-    const fdesc = f => { const x = FX.features[f], ul = (L.feat || {})[f]; return x ? (es ? [x[2], x[3]] : [ul || x[0], x[1]]) : [ul || nice(f), L.defDesc]; };
+    // [nombre, descripción, el idioma de la descripción]. Un nombre es el de su patrón (el quinto campo): `d`
+    // es la %D del RSI estocástico y una distancia de precio en WaveTrend. Las entradas del generador de 2026
+    // en unidades de precio van divididas por el cierre (`BBlower__close`): el nombre conocido, con una nota.
+    // Las descripciones están en en y es; otro idioma enseña la inglesa.
+    const bases = ((trees[s.sel] || {}).bases) || [];
+    const own = x => (x && (!x[4] || !bases.length || bases.includes(x[4])) ? x : null);
+    const fdesc = f => {
+      const k = own(FX.features[f]) ? f : /__close$/.test(f) && own(FX.features[f.replace(/__close$/, '')]) ? f.replace(/__close$/, '') : '';
+      const x = k ? FX.features[k] : null, ul = (L.feat || {})[k || f], note = k && k !== f ? ' ' + L.relNote : '';
+      return x ? (es ? [x[2], x[3] + note, 'es'] : [ul || x[0], x[1] + note, 'en']) : [ul || nice(f), L.defDesc, lg];
+    };
     const SIG = {
       buy: [L.buy, '#15803d', '#e8f7ef', '#b7e4c7', 'rgba(21,128,61,.22)'],
       sell: [L.sell, '#c0392b', '#fdecea', '#f3c1bb', 'rgba(192,57,43,.22)'],
@@ -478,31 +539,34 @@ export class StrategyTree extends Component {
     const thrOf = f => ((fi.find(F => F.f === f) || { ts: [] }).ts).map(fmt).join(' · ');
     const curOf = f => { const F = fi.find(x => x.f === f), v = vals[f]; return v == null ? '–' : (F && F.isBool ? (v > 0.5 ? L.yes : L.no) : fmt(v)); };
     const upW = dir === 'vertical' ? L.lB : L.upB, dnW = dir === 'vertical' ? L.rB : L.dnB;
+    // El recuadro del propietario: el script completo cuando llega (mientras, que se carga; si no llega,
+    // dónde bajarlo, nunca que compre lo que es suyo); sin una compra que este navegador demuestre, cómo
+    // entrar o comprarla (o pedirla, si es gratis).
+    const ownerHas = !!P.owned && !s.fullFail, ownerFail = !!P.owned && s.fullFail;
+    const ownerText = ownerFail ? L.ownFail : !ownerHas ? (P.signedIn ? L.ownNotYours : L.ownSignIn) : s.full ? L.ownFull : L.loading;
+    const download = () => window.location.assign(P.ownerDownload || '/mine');
     let tip = null;
     if (TP) {
       const nd = TP.id != null ? all.find(n => n.id === TP.id) : null;
-      if (TP.kind === 'feat') { const d = fdesc(TP.f); tip = { title: d[0], code: TP.f, text: d[1], rows: [[L.curVal, curOf(TP.f)], [L.checksAt, thrOf(TP.f)]] }; }
+      if (TP.kind === 'feat') { const d = fdesc(TP.f); tip = { title: d[0], code: TP.f, text: d[1], lang: d[2], rows: [[L.curVal, curOf(TP.f)], [L.checksAt, thrOf(TP.f)]] }; }
       else if (TP.kind === 'tick') { const d = fdesc(TP.f); tip = { title: rpl(L.tickTitle, { f: nice(TP.f), t: fmt(TP.t) }), code: 'if( ' + TP.f + ' <= ' + TP.t + ' )', text: rpl(L.tickText, { name: d[0], t: fmt(TP.t) }), rows: [[L.curVal, curOf(TP.f)], [L.onPath, w.used.some(c => c.f === TP.f && c.t === TP.t) ? L.yes : L.no]] }; }
       else if (TP.kind === 'node' && nd) {
         const d = fdesc(nd.f), isB = isBoolF(nd.f) && nd.t > 0 && nd.t < 1, go = (vals[nd.f] <= nd.t) !== isB ? upW : dnW;
-        tip = { title: d[0], code: 'if( ' + nd.f + ' <= ' + nd.raw + ' )', text: d[1], rows: isB ? [[L.yes, upW], [L.no, dnW], [L.now, curOf(nd.f) + ' → ' + go]] : [[L.yes + ' (≤ ' + fmt(nd.t) + ')', upW], [L.no + ' (> ' + fmt(nd.t) + ')', dnW], [L.now, curOf(nd.f) + ' → ' + go]] };
+        tip = { title: d[0], code: 'if( ' + nd.f + ' <= ' + nd.raw + ' )', text: d[1], lang: d[2], rows: isB ? [[L.yes, upW], [L.no, dnW], [L.now, curOf(nd.f) + ' → ' + go]] : [[L.yes + ' (≤ ' + fmt(nd.t) + ')', upW], [L.no + ' (> ' + fmt(nd.t) + ')', dnW], [L.now, curOf(nd.f) + ' → ' + go]] };
       }
       else if (TP.kind === 'leaf' && nd) { const S = SIG[nd.sig], ph = phraseOf(nd); tip = { title: S[0] + ' · ' + ph.str + ' (' + fmtV(nd.v) + ')', code: '', text: ph.text, bars: ph.bars, rows: [], foot: L.leafFoot }; }
-      else if (TP.kind === 'lock') tip = { title: L.paid, code: '', text: L.lockText, rows: [], cta: unlockLabel };
+      else if (TP.kind === 'lock') tip = s.owner && P.owned ? { title: L.paid, code: '', text: ownerText, rows: [], cta: L.download, act: download } : { title: L.paid, code: '', text: L.lockText, rows: [], cta: unlockLabel };
     }
     const unlock = () => {
-      // a free strategy opens its email dialog every time; a paid one goes to the cart once
-      this.setState({ tip: null, added: !free });
-      if (P.onBuy && (free || !s.added)) P.onBuy({ stopPropagation() {}, preventDefault() {} });
+      // una gratis abre su diálogo cada vez; una de pago va al carrito mientras no está en él
+      this.setState({ tip: null });
+      if (P.onBuy && (free || !P.inCart)) P.onBuy({ stopPropagation() {}, preventDefault() {} });
       else if (!P.embedded) window.location.href = '/s/' + encodeURIComponent(rowId(P));
     };
-    const tipOut = tip ? { tipOn: true, tipTitle: tip.title, tipCode: tip.code, tipHasCode: !!tip.code, tipText: tip.text, tipRows: tip.rows.map(r => ({ k: r[0], v: r[1] })), tipBars: tip.bars || [], tipHasBars: !!(tip.bars && tip.bars.length), tipFoot: tip.foot || '', tipHasFoot: !!tip.foot, tipPinned: !!TP.pin, tipHasCta: !!tip.cta, tipCtaLabel: tip.cta || '', tipCta: unlock, tipX: TP.x + 'px', tipY: TP.y + 'px', tipTf: TP.up ? 'translateY(-100%)' : 'none' } : { tipOn: false, tipRows: [], tipBars: [] };
+    const tipOut = tip ? { tipOn: true, tipTitle: tip.title, tipCode: tip.code, tipHasCode: !!tip.code, tipText: tip.text, tipLang: tip.lang || lg, tipRows: tip.rows.map(r => ({ k: r[0], v: r[1] })), tipBars: tip.bars || [], tipHasBars: !!(tip.bars && tip.bars.length), tipFoot: tip.foot || '', tipHasFoot: !!tip.foot, tipPinned: !!TP.pin, tipHasCta: !!tip.cta, tipCtaLabel: tip.cta || '', tipCta: tip.act || unlock, tipX: TP.x + 'px', tipY: TP.y + 'px', tipTf: TP.up ? 'translateY(-100%)' : 'none' } : { tipOn: false, tipRows: [], tipBars: [] };
 
     const params = tr.params.split(',').map(x => x.trim()).filter(x => x && !/^random_state/.test(x)).join(' · ');
     const created = tr.created ? new Intl.DateTimeFormat(L.locale, { dateStyle: 'medium' }).format(new Date(tr.created + 'T12:00:00')) : '';
-    // The owner box: the complete script once it is in (still loading: say so); without a purchase
-    // this browser can prove, how to sign in or buy.
-    const ownerHas = !!P.owned && !s.fullFail;
 
     return {
       ...base, picks, forestPicks, hasForest: forestPicks.length > 0, treeBadge: L.tree1,
@@ -513,14 +577,15 @@ export class StrategyTree extends Component {
       title: `${tr.ticker} · ${tr.pattern}`,
       summary: (tr.locked ? rpl(L.visible, { n: tr.leaves }) + ' · ' + rpl(tr.locked === 1 ? L.paid1 : L.paidN, { n: tr.locked }) : rpl(L.complete, { n: tr.leaves })) + (created ? ' · ' + rpl(L.created, { d: created }) : ''),
       params: `${tr.ticker}_${tr.interval}_${tr.key}_${tr.hash} · ${params}`,
-      about: tr.bases.map(b => (FX.patterns[b] || [])[es ? 1 : 0]).filter(Boolean).join(' '),
+      // qué es cada patrón: en y es, de features.json; los otros idiomas, de `pat` en ui.json; uno sin
+      // traducir todavía, en inglés y dicho (lang), para un lector de pantalla
+      abouts: tr.bases.map(b => { const x = FX.patterns[b] || [], t = lg === 'en' ? x[0] : es ? x[1] : (L.pat || {})[b]; return t ? { text: t, lang: lg } : x[0] ? { text: x[0], lang: 'en' } : null; }).filter(Boolean),
       sigLabel: LS ? LS[0] : L.paid, sigValue: LS ? fmtV(LF.v) : '', sigColor: LS ? LS[1] : '#8d9cae',
       hasMarker: !!LS, markerLeft: LS ? ((LF.v + 1) / 2 * 100).toFixed(2) + '%' : '0%',
       hasUnused: unusedList.length > 0, unused: unusedList.join(', '),
-      isOwner: s.owner, ownerHas, showCta: !s.owner && tr.locked > 0,
+      isOwner: s.owner, ownerHas, ownerFail, showCta: !s.owner && tr.locked > 0,
       ctaText: rpl(tr.locked === 1 ? L.cta1 : L.ctaN, { n: tr.locked }) + L.ctaRest,
-      ownerText: !ownerHas ? (P.signedIn ? L.ownNotYours : L.ownSignIn) : s.full ? L.ownFull : L.loading, askSignIn: !P.signedIn,
-      download: () => window.location.assign(P.ownerDownload || '/mine')
+      ownerText, askSignIn: !P.signedIn, download
     };
   }
 }

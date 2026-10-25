@@ -152,7 +152,7 @@ function compareVals(c, liteDock) {
     // bottom-start corner
     cmpHas: s.compare.length > 0, cmpFloat: s.compare.length > 0 && !liteDock, cmpCount: f.int(s.compare.length),
     openCmp: () => app.setState({ cmpOpen: true }), closeCmp: () => app.setState({ cmpOpen: false }), cmpOpen: s.cmpOpen,
-    cmpCols: rows.map(r => ({ icon: r.icon, ticker: r.ticker, key: r.key, remove: () => app.setState(st => ({ compare: st.compare.filter(x => x !== r.id), cmpOpen: st.compare.length > 1 })) })),
+    cmpCols: rows.map(r => ({ icon: r.icon, ticker: r.ticker, key: r.key, removeLabel: t('removeName', { name: r.ticker + ' · ' + r.key }), remove: () => app.setState(st => ({ compare: st.compare.filter(x => x !== r.id), cmpOpen: st.compare.length > 1 })) })),
     cmpRows: defs.map(([label, get, fmt, low]) => {
       const vals = rows.map(get), b = best(vals, low);
       return { label, cells: rows.map((r, i) => ({ value: fmt(r), weight: b[i] ? '700' : '400', color: b[i] ? '#15803d' : '#16263a', bg: b[i] ? '#e8f7ef' : 'transparent' })) };

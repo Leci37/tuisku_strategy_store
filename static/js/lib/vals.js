@@ -9,7 +9,7 @@ import { pageVals } from './vals_pages.js';
 
 const TX_KEYS = ['toolName', 'tvConnect', 'tvConnected', 'tvDisconnect', 'language', 'cart', 'emptyCart', 'codePh', 'apply', 'checkout', 'shown', 'reset', 'onlyFree', 'strategies', 'sortNp', 'sortWin', 'sortPrice', 'sortTrades', 'npPct', 'avgProfit', 'monthsTrained', 'view', 'viewRows', 'viewCards', 'viewTableTab', 'tabNew', 'addToCart', 'inCartBtn', 'download', 'riskTitle', 'riskText', 'riskShort', 'legalPrivacy', 'legalCookies', 'legalTerms', 'legalNotice', 'contactMenu', 'proView', 'liteTitle', 'liteSub', 'searchPh', 'loadMore', 'haveCode', 'noMatch', 'tradesWord', 'rowsPerPage', 'addFilter', 'colBacktest', 'strategyChart', 'candleChart', 'openTv', 'fSymbol', 'fTimeframe', 'fIndicators', 'any', 'tourOpen', 'tourBack', 'tourClose', 'email', 'bundles', 'freeTitle', 'freeText', 'newsOpt', 'sendLink', 'freeSent', 'myStrategies', 'mineSub', 'newLink', 'backShop', 'thanksTitle', 'thanksSub', 'downloadAll', 'totalPaid', 'paidWith', 'installTitle', 'goMine', 'selAll', 'selNone', 'searchSmall', 'clearAll', 'openPage', 'newTab', 'allResults', 'aboutInd', 'seeInd', 'scriptPreview', 'lockedNote', 'sinceRelease', 'liveVsBacktest', 'demoFigures', 'compare', 'compareTitle', 'compareMax', 'grade', 'packTitle', 'done', 'favourites', 'favEmpty', 'versions', 'v2note', 'v1note', 'updateAvail', 'getUpdate', 'trustPaypal', 'trustLinks', 'trustInvoice', 'currencyLabel', 'howItDecides', 'overviewTab', 'howTeaserTitle', 'howTeaserText', 'toSheet', 'scriptRest', 'buyScriptTitle', 'buyScriptText', 'formatsNote', 'fmtPineDesc', 'fmtMd', 'fmtMdDesc', 'fmtPyDesc', 'fmtJsDesc',
   'liveUnknown', 'signOut', 'errServer', 'linksHiddenTitle', 'linksHiddenText', 'signInToDownload',
-  'proofTitle', 'proofText', 'proofSent', 'proofConfirmTitle', 'proofConfirm', 'errProofExpired'];
+  'proofTitle', 'proofText', 'proofSent', 'proofConfirmTitle', 'proofConfirm', 'errProofExpired', 'dialogClose'];
 const GRADE_BG = { A: '#15803d', B: '#0e7c98', C: '#5a6b80', D: '#c0392b' };
 const stop = e => { if (e && e.stopPropagation) e.stopPropagation(); };
 
@@ -44,9 +44,18 @@ export function renderVals(app) {
     goMine: () => app.goMine(),
     modeTabs: [['lite', 'Lite', 'fa-solid fa-bolt'], ['pro', 'Pro', 'fa-solid fa-chart-line']].map(([k, label, icon]) => {
       const on = (s.mode === 'pro' ? 'pro' : 'lite') === k;
-      return { label, icon, on: String(on), bg: on ? '#0950e3' : 'transparent', color: on ? '#ffffff' : '#5a6b80', shadow: on ? '0 4px 12px rgba(9,80,227,.25)' : 'none',
+      // un solo alto de Tab en el grupo, el elegido; las flechas cambian (onModeKey)
+      return { label, icon, on: String(on), tab: on ? 0 : -1, bg: on ? '#0950e3' : 'transparent', color: on ? '#ffffff' : '#5a6b80', shadow: on ? '0 4px 12px rgba(9,80,227,.25)' : 'none',
         go: () => app.setMode(k) };
     }),
+    // Lite | Pro es un grupo de radio: cualquier flecha pasa al otro (con dos, también en árabe) y el foco
+    // va con la elección
+    onModeKey: e => {
+      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+      e.preventDefault();
+      app.setMode(s.mode === 'pro' ? 'lite' : 'pro');
+      setTimeout(() => { const b = document.querySelector('[data-ef-bar=start] [role=radio][aria-checked=true]'); if (b) b.focus(); });
+    },
     ...shop, ...cart, ...pages,
     anyMenu: s.addOpen || !!s.openPill || !!s.openSel,
     closeMenus: () => app.setState({ addOpen: false, openPill: '', openSel: '' })
@@ -61,6 +70,7 @@ function rowVals(c, r) {
   const live = r.live;
   const tipFor = m => () => app.setState(st => ({ tip: st.tip === id + ':' + m ? '' : id + ':' + m }));
   const openAt = tab => e => { stop(e); app.go({ page: 'detail', detail: id, detTab: tab }); };
+  const toggleRow = () => app.setState(st => ({ expanded: st.expanded === id ? '' : id }));
   return {
     id, ticker: r.ticker, name: r.name, key: r.key, ind: r.ind, ex: r.ind_text || '',
     icon: r.icon, interval: r.interval, index: r.index,
@@ -88,7 +98,9 @@ function rowVals(c, r) {
     cartBorder: inCart ? '#c5d6f8' : 'transparent', buyBorder: inCart ? '#c5d6f8' : '#0950e3',
     onCart: e => { stop(e); c.toggleCart(id); },
     isOpen: open, openBg: open ? '#f7faff' : 'transparent',
-    onToggle: () => app.setState(st => ({ expanded: st.expanded === id ? '' : id })),
+    onToggle: toggleRow,
+    // el botón del ticker en la Tabla (el teclado llega a él): sin parar el clic, la fila lo abriría otra vez
+    onToggleKey: e => { stop(e); toggleRow(); },
     onOpen: openAt('overview'), onTree: openAt('tree'),
     tabHref: strategyPath(id), treeHref: strategyPath(id, true),
     indUrl: r.ind_url || 'https://www.tradingview.com/scripts/',

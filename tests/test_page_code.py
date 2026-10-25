@@ -103,3 +103,22 @@ def test_the_bottom_bar_takes_its_room_with_the_core_hook():
     assert re.search(r"<nav data-zt-bottom style=\"position:fixed;[^\"]*bottom:0;", bar)
     css = (ROOT / "static" / "css" / "edgefolio.css").read_text(encoding="utf-8")
     assert not re.search(r"body\.app-shell\s*\{[^}]*padding-bottom", css)
+
+
+def test_the_dialogs_name_their_crosses_and_mark_where_the_focus_goes():
+    """Ninguna × se llama «×» (un lector de pantalla leía «por»): dice qué cierra (``dialogClose``, del núcleo)
+    o qué quita (``removeName``). Cada diálogo marca lo suyo principal con ``data-ef-focus``, adonde
+    static/js/lib/modal.js lleva el foco al abrirse (tests/test_keyboard.py lo mira en un navegador), y las
+    imágenes de lo que se desliza en el recorrido y en el tutorial no se arrastran: con el ratón, arrastrar
+    la imagen se comía el deslizamiento (``draggable=${false}``; con "false", Preact lo daba por cierto)."""
+    views = ROOT / "static" / "js" / "views"
+    code = {p.name: p.read_text(encoding="utf-8") for p in views.glob("*.js")}
+    assert not [name for name, text in code.items() if 'aria-label="×"' in text]
+    dialogs = code["dialogs.js"]
+    blocks = re.split(r'(?=<div role="dialog")', dialogs)[1:]
+    assert len(blocks) == 5 and all("data-ef-focus" in b for b in blocks)
+    swipes = re.findall(r"onPointerDown=\$\{v\.(?:tour|inst)PD\}.*?(?=<div style=\"padding:20px 22px 18px)", dialogs, re.S)
+    assert len(swipes) == 2
+    for swipe in swipes:
+        images = re.findall(r"<img [^>]*>", swipe)
+        assert images and all("draggable=${false}" in img for img in images), images

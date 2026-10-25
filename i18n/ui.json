@@ -2573,5 +2573,15 @@
     "zh": "表格",
     "ar": "جدول",
     "hi": "टेबल"
+  },
+  "removeName": {
+    "es": "Quitar {name}",
+    "en": "Remove {name}",
+    "pt": "Remover {name}",
+    "fr": "Retirer {name}",
+    "de": "{name} entfernen",
+    "zh": "移除 {name}",
+    "ar": "إزالة {name}",
+    "hi": "{name} हटाएँ"
   }
 }

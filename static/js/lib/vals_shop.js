@@ -91,7 +91,7 @@ function proVals(c, seg) {
       return { sel: ns };
     });
     return { label: t(SELECTS[k]), value, open, caret: open ? '▴' : '▾', rowBg: open ? '#f5f8ff' : '#ffffff', valColor: cur ? '#0950e3' : '#5a6b80',
-      toggle: () => app.setState(st => ({ openSel: st.openSel === k ? '' : k, selQ: '' })),
+      toggle: e => app.toggleSel(k, e && e.currentTarget),
       q: s.selQ || '', onQ: e => app.setState({ selQ: e.target.value }),
       all: () => app.setState(st => { const ns = { ...st.sel }; delete ns[k]; return { sel: ns }; }),
       none: () => app.setState(st => ({ sel: { ...st.sel, [k]: [] } })),
@@ -129,7 +129,8 @@ function proVals(c, seg) {
       const sl = slider(k), open = s.moreOpen === k;
       return { ...sl, open, caret: open ? '▴' : '▾', weight: sl.active ? '700' : '400', rowBg: open ? '#f5f8ff' : '#ffffff', toggle: () => app.setState(st => ({ moreOpen: st.moreOpen === k ? '' : k })) };
     }),
-    activeChips: chips, hasActive: chips.length > 0,
+    // la × de cada filtro dice cuál quita
+    activeChips: chips.map(ch => ({ ...ch, clearLabel: t('removeName', { name: ch.label }) })), hasActive: chips.length > 0,
     resetAll: () => app.setState({ sel: {}, rg: {}, draft: {}, freeOnly: false, q: '', openSel: '', moreOpen: '' }),
     toggleFree: () => app.setState(st => ({ freeOnly: !st.freeOnly })), freeOn: String(s.freeOnly),
     freeTrack: s.freeOnly ? '#0950e3' : '#cfd8e3',

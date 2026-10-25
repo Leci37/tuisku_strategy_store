@@ -131,6 +131,23 @@ Se queda como está; el diseño no lo enseña o lo simula:
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:
   `indicators.csv` no les da una dirección. Si se quiere otra, la pone el generador.
 - **Los avisos** (errores, novedades) son de la tienda: el diseño no los tiene.
+- **Los diálogos se quedan con el teclado** (el recorrido, el tutorial de instalación, el pack, Comparar y la
+  gratis): son capas del diseño, no un `<dialog>`, y `static/js/lib/modal.js` hace lo que haría
+  `showModal()`. Al abrirse, el foco entra en lo marcado con `data-ef-focus` («Continuar», el buscador del
+  pack, la × de Comparar, el campo de la gratis; en una pantalla táctil, el propio diálogo); lo de detrás
+  queda `inert` y no se desplaza; Tab da la vuelta dentro; al cerrarse, el foco vuelve a quien lo abrió. Si
+  lo enfocado desaparece dentro (un paso, «Enviarme el enlace» al mandarlo), va a lo marcado: mandada la
+  gratis, «Volver a la tienda». Esc en un desplegable de Pro devuelve el foco a su botón.
+- **Las × dicen qué hacen:** «Cerrar» (`dialogClose`, del núcleo) en la gratis, Comparar, los avisos y las
+  explicaciones de las fichas de Lite; «Quitar …» (`removeName`) en cada columna de Comparar y en cada filtro
+  activo de Pro. En el diseño se llaman «×».
+- **Las filas de la Tabla de Pro** llevan un botón en el ticker (`aria-expanded`): Tab llega a él, e Intro o
+  Espacio abren la fila; con el ratón, la fila entera, como en el diseño.
+- **Lite | Pro** es un grupo de radio de verdad: un solo alto de Tab (el elegido) y las flechas cambian.
+- **Los cuatro buscadores** (Lite, Pro, un desplegable de Pro y el pack) enseñan el foco en su caja, con el
+  style-focus del diseño (`.sf-focus5`): el diseño le quita el contorno al campo y no pone otro.
+- **Las imágenes del recorrido y del tutorial** no se arrastran (`draggable`): con el ratón, un
+  deslizamiento que empezaba en la curva o en un logo arrastraba la imagen y no pasaba de paso.
 
 ## Correcciones a la exportación
 

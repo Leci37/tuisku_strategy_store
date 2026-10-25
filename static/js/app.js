@@ -13,6 +13,7 @@ import { translator } from './lib/fmt.js';
 import { renderVals } from './lib/vals.js';
 import { PRO_SIZE } from './lib/vals_shop.js';
 import { withoutOverlap } from './lib/vals_cart.js';
+import { topDialog, shield, unshield, focusIn, keepTab } from './lib/modal.js';
 
 const LITE_SIZE = 24;
 const PACK_FIND = 40;
@@ -46,6 +47,7 @@ export class App extends Component {
     this.asked = new Set();
     this.timers = {};
     this.seq = {};
+    this.modal = null; // el diálogo abierto de arriba: { el, opener, marked } (syncModal)
     this.state = {
       dict: null, cfg: null, bundleDefs: null, fx: null,
       lang: pageLang(), dir: pageDir(), mode: read('tuisku-sf-mode') === 'pro' ? 'pro' : 'lite',
@@ -121,11 +123,41 @@ export class App extends Component {
     document.removeEventListener('zt:language', this.onLang);
     window.removeEventListener('pageshow', this.onShow);
     Object.values(this.timers).forEach(clearTimeout);
+    if (this.modal) unshield(this.modal.marked);
   }
 
   componentDidUpdate(prevProps, prevState) {
     this.sync(prevState);
     this.measureDock();
+    this.syncModal();
+  }
+
+  // Un diálogo abierto se queda con el teclado (lib/modal.js), sea cual sea el camino que lo abre o lo
+  // cierra (un botón, Esc, «Hecho», el último paso): al abrirse, el foco entra y lo de detrás queda inert;
+  // si lo enfocado desaparece dentro (un paso nuevo, «Enviarme el enlace» al mandarlo), el foco vuelve a
+  // lo principal; al cerrarse, vuelve a quien lo abrió. Tab da la vuelta dentro (onKey).
+  syncModal() {
+    const el = this.base && this.base.querySelectorAll ? topDialog(this.base) : null, cur = this.modal;
+    if (cur && cur.el !== el) {
+      unshield(cur.marked);
+      if (!el) {
+        this.modal = null;
+        const back = cur.opener;
+        if (back && back !== document.body && back.isConnected && back.focus) back.focus({ preventScroll: true });
+        return;
+      }
+    }
+    if (!el) return;
+    if (!cur || cur.el !== el) {
+      // un diálogo que se abre encima de otro devuelve el foco adonde lo devolvía el primero
+      this.modal = { el, opener: cur ? cur.opener : document.activeElement, marked: [] };
+      shield(el, this.modal.marked);
+      focusIn(el);
+      return;
+    }
+    shield(el, cur.marked);
+    const a = document.activeElement;
+    if (!a || a === document.body) focusIn(el);
   }
 
   // The height of Lite's floating cart (the Compare pill and the cart box): toasts sit above it. It
@@ -492,22 +524,14 @@ export class App extends Component {
   }
 
   // Every way into the free-download dialog starts with news unticked (GDPR: consent is asked each time).
-  // The dialog takes the keyboard: the cursor in its field (not on a touch screen, where it would open the
-  // keyboard over the dialog), and back on the button that opened it when it closes.
+  // The focus goes in and back with syncModal(): the cursor in its field (not on a touch screen), and back
+  // on the button that opened it when it closes.
   openFree(id) {
-    this.freeOpener = document.activeElement;
-    this.setState({ freeFor: id, freeSent: false, freeNews: false, freeErr: '' }, () => {
-      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-      const input = !coarse && document.querySelector('[role=dialog] input[type=email]');
-      if (input) input.focus();
-    });
+    this.setState({ freeFor: id, freeSent: false, freeNews: false, freeErr: '' });
   }
 
   closeFree() {
     this.setState({ freeFor: '', freeSent: false, freeNews: false, freeErr: '' });
-    const back = this.freeOpener;
-    this.freeOpener = null;
-    if (back && back.isConnected && back.focus) back.focus({ preventScroll: true });
   }
 
   // What is wrong with the address shows under the field (the core's texts): empty, or not an address.
@@ -542,6 +566,12 @@ export class App extends Component {
     write('tuisku-sf-mode', mode);
     this.setState({ mode });
     if (this.state.page !== 'shop') this.go({ page: 'shop' });
+  }
+
+  // Un desplegable de los filtros de Pro, uno a la vez. Se recuerda su botón: Esc le devuelve el foco.
+  toggleSel(k, button) {
+    if (button) this.selButton = button;
+    this.setState(st => ({ openSel: st.openSel === k ? '' : k, selQ: '' }));
   }
 
   setPview(pview) {
@@ -639,6 +669,7 @@ export class App extends Component {
 
   onKey(e) {
     const s = this.state, which = s.instStep >= 0 ? 'instStep' : s.tourStep >= 0 ? 'tourStep' : '';
+    if (e.key === 'Tab' && this.modal) { keepTab(this.modal.el, e); return; }
     // Esc closes what is open on top, one at a time: compare, the pack picker, the free download, a Pro
     // filter's dropdown (the language menu is the core's, and closes itself)
     if (!which) {
@@ -646,7 +677,14 @@ export class App extends Component {
       if (s.cmpOpen) this.setState({ cmpOpen: false });
       else if (s.packOpen) this.setState({ packOpen: false });
       else if (s.freeFor) this.closeFree();
-      else if (s.openSel) this.setState({ openSel: '', selQ: '' });
+      else if (s.openSel) {
+        // con el foco dentro del desplegable (su buscador), el foco se caería a <body>: vuelve a su botón
+        const button = this.selButton;
+        this.setState({ openSel: '', selQ: '' }, () => {
+          const a = document.activeElement;
+          if (button && button.isConnected && (!a || a === document.body)) button.focus();
+        });
+      }
       return;
     }
     if (e.key === 'Escape') { if (which === 'instStep') this.closeInst(); else this.closeTour(); return; }

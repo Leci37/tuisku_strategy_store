@@ -100,7 +100,7 @@ The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page.
  "tiers": [{"over": "2500", "rate": "0.70"}, {"over": "1000", "rate": "0.40"}, {"over": "500", "rate": "0.25"},
            {"over": "290", "rate": "0.20"}, {"over": "160", "rate": "0.15"}],
  "pack": {"size": 5, "price": "249"}, "download_days": 7, "max_downloads": 10,
- "new_days": 30, "contact_email": "sales@tuisku.eu", "strategies": 1234}
+ "new_days": 30, "contact_email": "sales@tuisku.ai", "strategies": 1234}
 ```
 
 - `mode` is `fake`, `sandbox` or `live`.
@@ -654,7 +654,7 @@ Each command runs as `flask --app app edgefolio <command>`.
 | `DOWNLOAD_DAYS`, `MAX_DOWNLOADS` | `7`, `10` | Per link |
 | `PACK_SIZE`, `PACK_PRICE` | `5`, `249` | The custom pack |
 | `NEW_DAYS` | `30` | How long a strategy counts as new |
-| `CONTACT_EMAIL` | `sales@tuisku.eu` | The address shown for problems |
+| `CONTACT_EMAIL` | `sales@tuisku.ai` | The address shown for problems |
 
 The tiers are set in the code (`DEFAULT_TIERS` in `edgefolio/settings.py`):
 

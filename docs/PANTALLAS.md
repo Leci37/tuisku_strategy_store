@@ -170,7 +170,7 @@ De arriba abajo:
 - el subtotal tachado, el total, «Pagas X US$ con PayPal» y **Pagar**;
 - la fila de confianza.
 
-**Fila de confianza:** «PayPal: nunca vemos tu tarjeta», «Enlaces: 7 días, 10 descargas», «Factura por correo» y sales@tuisku.eu.
+**Fila de confianza:** «PayPal: nunca vemos tu tarjeta», «Enlaces: 7 días, 10 descargas», «Factura por correo» y sales@tuisku.ai.
 
 Después de **Pagar** viene PayPal, fuera de la tienda.
 
@@ -195,7 +195,7 @@ Después de **Pagar** viene PayPal, fuera de la tienda.
 3. «Cada enlace vale 7 días y hasta 10 descargas…» y **Descargar todo**.
 4. Una fila por estrategia: icono, nombre, **.pine**, **.zip**, **Ficha técnica ↗** y **Cómo decide ↗**. Si no eres quien compró, en su lugar salen `linksHiddenTitle`, `linksHiddenText` y `signInToDownload`.
 5. «Añádela a TradingView», **Ver el tutorial** y 5 casillas, una por paso.
-6. **Ir a Mis estrategias**, **Volver a la tienda** y «¿Problemas? sales@tuisku.eu».
+6. **Ir a Mis estrategias**, **Volver a la tienda** y «¿Problemas? sales@tuisku.ai».
 
 **Tutorial de instalación** (diálogo, 5 pasos):
 1. Descarga y copia el script.

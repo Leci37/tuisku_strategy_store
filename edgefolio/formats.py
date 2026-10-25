@@ -573,7 +573,7 @@ def readme(stem: str, title: str, contact: str) -> str:
         f"Questions: {contact}", ""])
 
 
-def build_zip(src: str, stem: str, contact: str = "sales@tuisku.eu") -> bytes:
+def build_zip(src: str, stem: str, contact: str = "sales@tuisku.ai") -> bytes:
     """El .zip que descarga quien compra: el script y los formatos hechos de él."""
     script = parse(src)
     title = script.name or stem

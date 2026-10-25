@@ -71,7 +71,7 @@ def test_expired_link(client, ids, settings):
     settings.download_days = -1
     url = buy(client, [ids[0]]).json["downloads"][0]["url"]
     r = client.get(url)
-    assert r.status_code == 410 and r.json == {"error": "errLinkExpired", "vars": {"e": "sales@tuisku.eu"}}
+    assert r.status_code == 410 and r.json == {"error": "errLinkExpired", "vars": {"e": "sales@tuisku.ai"}}
 
 
 def test_download_limit(client, ids, settings):

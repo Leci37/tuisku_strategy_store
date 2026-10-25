@@ -106,7 +106,7 @@ It contains, top to bottom:
 ## 5. Flows
 
 - **Free download:** a dialog asks for an email. Getting news is a separate box, unticked by default (GDPR). The server emails the link. An empty or invalid email shows the core texts `errEmailRequired` / `errEmailInvalid` under the field, and Enter sends. Asking again for the same strategy restarts its link.
-- **Trust row under Checkout** (Lite floating cart and Pro cart strip): `trustPaypal` (PayPal: we never see your card), `trustLinks` (Links: 7 days, 10 downloads), `trustInvoice` (Invoice by email) and a `mailto:sales@tuisku.eu` link. 11.5px, `#5a6b80`, icons `#0950e3`; it wraps on phones and the email stays LTR in Arabic. The texts are already in `i18n/storefront.ui.json` for all 8 languages.
+- **Trust row under Checkout** (Lite floating cart and Pro cart strip): `trustPaypal` (PayPal: we never see your card), `trustLinks` (Links: 7 days, 10 downloads), `trustInvoice` (Invoice by email) and a `mailto:sales@tuisku.ai` link. 11.5px, `#5a6b80`, icons `#0950e3`; it wraps on phones and the email stays LTR in Arabic. The texts are already in `i18n/storefront.ui.json` for all 8 languages.
 - **One payment per strategy.** Adding a bundle or the custom pack removes its strategies from the cart as single items, and also any other bundle that shares a strategy with it. `/api/quote` applies the same rule (to confirm).
 - **"Buy to unlock"** in How it decides only adds the strategy to the cart (never removes it); on a free strategy it opens the free download.
 - **Checkout → thank-you page:** order number, total and PayPal; "Download all" and one `.pine` per item; a note on how long links last; the 5-step install tutorial (§11).

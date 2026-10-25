@@ -49,6 +49,31 @@ export function focusIn(dialog) {
   (coarse ? dialog : dialog.querySelector('[data-ef-focus]') || dialog).focus();
 }
 
+// Al cerrarse, el foco vuelve a quien lo abrió. Si nadie lo abrió (el recorrido de la primera vez, el
+// tutorial de /thanks) o ya no está (Comparar se cierra al quitar su última columna, y su píldora se va con
+// ella), a <main>, como el diálogo del núcleo (dialog.js): en <body>, el siguiente Tab seguía desde donde
+// estaba el diálogo, al final de la página, y saltaba al pie. <main> se enfoca sólo mientras lo tiene (un
+// clic en la página no se queda en él) y sin contorno, como el propio diálogo: no es un control, y el
+// contorno era una raya azul a lo ancho de la página.
+export function giveBack(opener) {
+  if (opener && opener !== document.body && opener.isConnected && opener.focus) {
+    opener.focus({ preventScroll: true });
+    if (document.activeElement === opener) return;
+  }
+  const main = document.querySelector('main');
+  if (!main) return;
+  if (!main.hasAttribute('tabindex')) {
+    main.setAttribute('tabindex', '-1');
+    main.style.outline = 'none';
+    main.addEventListener('blur', () => {
+      main.removeAttribute('tabindex');
+      main.style.removeProperty('outline');
+      if (!main.getAttribute('style')) main.removeAttribute('style');
+    }, { once: true });
+  }
+  main.focus({ preventScroll: true });
+}
+
 // Tab y Mayús+Tab dan la vuelta dentro del diálogo: del último al primero y al revés.
 export function keepTab(dialog, e) {
   const list = focusables(dialog);

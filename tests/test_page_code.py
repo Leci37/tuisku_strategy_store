@@ -110,7 +110,8 @@ def test_the_dialogs_name_their_crosses_and_mark_where_the_focus_goes():
     o qué quita (``removeName``). Cada diálogo marca lo suyo principal con ``data-ef-focus``, adonde
     static/js/lib/modal.js lleva el foco al abrirse (tests/test_keyboard.py lo mira en un navegador), y las
     imágenes de lo que se desliza en el recorrido y en el tutorial no se arrastran: con el ratón, arrastrar
-    la imagen se comía el deslizamiento (``draggable=${false}``; con "false", Preact lo daba por cierto)."""
+    la imagen se comía el deslizamiento (``draggable=${false}``; con "false", Preact lo daba por cierto). El
+    botón del ticker en la Tabla de Pro sólo lleva texto en línea: un <div> dentro de un <button> no vale."""
     views = ROOT / "static" / "js" / "views"
     code = {p.name: p.read_text(encoding="utf-8") for p in views.glob("*.js")}
     assert not [name for name, text in code.items() if 'aria-label="×"' in text]
@@ -122,3 +123,6 @@ def test_the_dialogs_name_their_crosses_and_mark_where_the_focus_goes():
     for swipe in swipes:
         images = re.findall(r"<img [^>]*>", swipe)
         assert images and all("draggable=${false}" in img for img in images), images
+    # el ticker de una fila de la Tabla es un botón (el teclado la abre): dentro, sólo texto en línea, sin <div>
+    ticker = re.search(r'<button type="button" aria-expanded=\$\{String\(!!r\?\.isOpen\)\}.*?</button>', code["pro.js"], re.S)
+    assert ticker and "<div" not in ticker.group(0)

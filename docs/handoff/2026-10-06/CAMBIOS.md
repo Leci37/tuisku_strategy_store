@@ -136,18 +136,23 @@ Se queda como está; el diseño no lo enseña o lo simula:
   `showModal()`. Al abrirse, el foco entra en lo marcado con `data-ef-focus` («Continuar», el buscador del
   pack, la × de Comparar, el campo de la gratis; en una pantalla táctil, el propio diálogo); lo de detrás
   queda `inert` y no se desplaza; Tab da la vuelta dentro; al cerrarse, el foco vuelve a quien lo abrió. Si
+  se abrió solo (el recorrido de la primera vez, el tutorial de /thanks) o quien lo abrió ya no está (la
+  píldora de Comparar, al quitar su última columna), a `<main>`, como el diálogo del núcleo (aquí sin
+  contorno, que era una raya azul a lo ancho de la página): en `<body>`, el siguiente Tab saltaba al pie. Si
   lo enfocado desaparece dentro (un paso, «Enviarme el enlace» al mandarlo), va a lo marcado: mandada la
   gratis, «Volver a la tienda». Esc en un desplegable de Pro devuelve el foco a su botón.
 - **Las × dicen qué hacen:** «Cerrar» (`dialogClose`, del núcleo) en la gratis, Comparar, los avisos y las
-  explicaciones de las fichas de Lite; «Quitar …» (`removeName`) en cada columna de Comparar y en cada filtro
-  activo de Pro. En el diseño se llaman «×».
+  explicaciones de las tarjetas de Lite; «Quitar …» (`removeName`) en cada columna de Comparar y en cada
+  filtro activo de Pro. En el diseño se llaman «×» (los avisos no están en el diseño).
 - **Las filas de la Tabla de Pro** llevan un botón en el ticker (`aria-expanded`): Tab llega a él, e Intro o
-  Espacio abren la fila; con el ratón, la fila entera, como en el diseño.
+  Espacio abren la fila; con el ratón, la fila entera, como en el diseño. El ticker y el nombre van dentro en
+  `<span>`, no en `<div>`: un `<button>` sólo admite texto en línea.
 - **Lite | Pro** es un grupo de radio de verdad: un solo alto de Tab (el elegido) y las flechas cambian.
 - **Los cuatro buscadores** (Lite, Pro, un desplegable de Pro y el pack) enseñan el foco en su caja, con el
   style-focus del diseño (`.sf-focus5`): el diseño le quita el contorno al campo y no pone otro.
 - **Las imágenes del recorrido y del tutorial** no se arrastran (`draggable`): con el ratón, un
-  deslizamiento que empezaba en la curva o en un logo arrastraba la imagen y no pasaba de paso.
+  deslizamiento que empezaba en la curva o en un logo arrastraba la imagen y no pasaba de paso. Y la zona
+  que se desliza captura el puntero (`app.swDown`): uno que acaba fuera de la imagen también cuenta.
 
 ## Correcciones a la exportación
 

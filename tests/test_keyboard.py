@@ -2,11 +2,13 @@
 """El teclado y los diálogos de la tienda en un Chromium de verdad (el kit del núcleo, ``testing.mobile``), sobre
 el catálogo de verdad (``real_app``). Los diálogos (el recorrido, el tutorial de instalación, el pack, Comparar y
 la gratis) son capas del diseño, no un <dialog>: static/js/lib/modal.js hace lo que haría showModal(). Al
-abrirse, el foco entra; lo de detrás queda inert y Tab da la vuelta dentro; al cerrarse, el foco vuelve a quien
-lo abrió; y, si lo enfocado desaparece dentro («Enviarme el enlace» al mandarlo), va a lo principal. Además: las
-× dicen qué cierran o qué quitan, una imagen del recorrido se arrastra como el resto, Lite | Pro va con las
-flechas, una fila de la Tabla se abre con el teclado, Esc en un desplegable de Pro devuelve el foco a su botón y
-los buscadores enseñan el foco en su caja."""
+abrirse, el foco entra (en una pantalla táctil, en el propio diálogo); lo de detrás queda inert y Tab da la
+vuelta dentro; al cerrarse, el foco vuelve a quien lo abrió (si se abrió solo o ya no está, a <main>, nunca al
+pie); y, si lo enfocado
+desaparece dentro («Enviarme el enlace» al mandarlo), va a lo principal. Además: las × dicen qué cierran o qué
+quitan, una imagen del recorrido o del tutorial se arrastra como el resto (también hasta fuera de ella), Lite |
+Pro va con las flechas, una fila de la Tabla se abre con el teclado, Esc en un desplegable de Pro devuelve el foco
+a su botón y los buscadores enseñan el foco en su caja."""
 import json
 import re
 
@@ -16,6 +18,7 @@ DIALOG = "[role=dialog][aria-modal=true]"
 ACTIVE_IN_DIALOG = "() => !!document.activeElement && !!document.activeElement.closest('[role=dialog]')"
 ACTIVE_IS_MAIN = "() => !!document.activeElement && document.activeElement.matches('[role=dialog] [data-ef-focus]')"
 ACTIVE_IS_OPENER = "() => document.activeElement === window.__opener"
+ACTIVE_IS_PAGE = "() => document.activeElement === document.querySelector('main')"   # la página, <main>
 LABEL = "() => (document.activeElement.getAttribute('aria-label') || document.activeElement.textContent || '').trim()"
 SEARCH_BOX = """sel => { const l = document.querySelector(sel).closest('label'); return getComputedStyle(l).borderColor; }"""
 BLUE = "rgb(9, 80, 227)"
@@ -44,6 +47,10 @@ def drag(page, box, dx):
     page.mouse.up()
 
 
+def at_step(page, text):
+    page.wait_for_function("t => document.querySelector('[role=dialog]').innerText.includes(t)", arg=text)
+
+
 def test_the_dialogs_of_lite_take_the_keyboard_and_give_it_back(real_app):
     with mobile.serve(real_app) as live, mobile.browser() as chromium:
         tab = mobile.open_page(chromium, live, "laptop")
@@ -66,12 +73,26 @@ def test_the_dialogs_of_lite_take_the_keyboard_and_give_it_back(real_app):
 
             # B12: un arrastre con el ratón que empieza en la curva del paso 2 pasa de paso (no arrastra la imagen)
             page.locator(f"{DIALOG} [data-ef-focus]").click()
-            page.wait_for_function("() => document.querySelector('[role=dialog]').innerText.includes('Paso 2 de 3')")
+            at_step(page, "Paso 2 de 3")
             drag(page, page.locator(f"{DIALOG} img").first.bounding_box(), -120)
-            page.wait_for_function("() => document.querySelector('[role=dialog]').innerText.includes('Paso 3 de 3')")
+            at_step(page, "Paso 3 de 3")
             drag(page, page.locator(f"{DIALOG} img[alt=PayPal]").bounding_box(), 120)
-            page.wait_for_function("() => document.querySelector('[role=dialog]').innerText.includes('Paso 2 de 3')")
+            at_step(page, "Paso 2 de 3")
+            # desde el logo de TradingView, en el borde, el ratón acaba fuera de la imagen: cuenta igual (capturado)
+            drag(page, page.locator(f"{DIALOG} img").first.bounding_box(), -120)
+            at_step(page, "Paso 3 de 3")
+            area = page.locator(f"{DIALOG} > div").first.bounding_box()
+            logo = page.locator(f"{DIALOG} img[alt=TradingView]").bounding_box()
+            drag(page, logo, area["x"] + area["width"] + 40 - (logo["x"] + logo["width"] / 2))
+            at_step(page, "Paso 2 de 3")
             closed_with_escape(page)
+            # se abrió solo: el foco, a <main> (sin contorno: no es un control); en <body>, el siguiente Tab
+            # seguía donde estaba el diálogo, al pie. Al dejarlo, <main> queda como estaba
+            assert page.evaluate(ACTIVE_IS_PAGE)
+            assert page.evaluate("() => getComputedStyle(document.activeElement).outlineStyle") == "none"
+            page.keyboard.press("Tab")
+            assert page.evaluate("() => !!document.activeElement.closest('main')"), "Tab saltaba al pie"
+            assert page.evaluate("() => ['tabindex', 'style'].map(a => document.querySelector('main').getAttribute(a))") == [None, None]
 
             # «Ver tutorial» con el teclado: entra, y Esc lo devuelve al chip
             opened_with_enter(page, page.locator("[data-ef-bar=end] button").first)
@@ -121,6 +142,16 @@ def test_the_dialogs_of_lite_take_the_keyboard_and_give_it_back(real_app):
             assert len(removes) == 2 and all(re.match(r"^Quitar \S+ · \S+$", x) for x in removes), removes
             closed_with_escape(page)
             assert page.evaluate(ACTIVE_IS_OPENER)
+            # sin su última columna Comparar se cierra, y su píldora se va con ella: el foco, a <main> (en <body>,
+            # el siguiente Tab saltaba al pie), sin mover la página
+            opened_with_enter(page, page.locator("#app button", has_text="Comparar ·"))
+            y = page.evaluate("() => window.scrollY")
+            for _ in range(2):
+                page.locator(f"{DIALOG} th button").first.focus()
+                page.keyboard.press("Enter")
+            page.wait_for_selector(DIALOG, state="detached")
+            assert page.evaluate(ACTIVE_IS_PAGE), "el foco se caía a <body>"
+            assert page.evaluate("() => window.scrollY") == y
 
             # C2: la gratis, mandada, deja el foco en «Volver a la tienda»; Esc, en «Descargar»
             page.route("**/api/free", lambda route: route.fulfill(status=200, content_type="application/json",
@@ -135,9 +166,46 @@ def test_the_dialogs_of_lite_take_the_keyboard_and_give_it_back(real_app):
             assert page.evaluate(ACTIVE_IN_DIALOG), "el siguiente Tab, dentro del diálogo"
             closed_with_escape(page)
             assert page.evaluate(ACTIVE_IS_OPENER)
+
+            # el tutorial de instalación (/thanks, con un cobro de mentira): se abre solo, con el foco en
+            # «Continuar»; el logo de TradingView de su paso 2 se arrastra como el resto (B12); Esc lo cierra y
+            # deja la página; «Ver el tutorial», con el teclado, lo abre y recupera el foco
+            row = page.evaluate("() => fetch('/api/strategies?paid=1&size=1').then(r => r.json()).then(d => d.rows[0])")
+            receipt = {"order_id": "FAKE-KEYS", "status": "PAID", "total": "67.00", "currency": "USD",
+                       "payer": "b•••@example.com", "valid_days": 7, "max_downloads": 10, "links_hidden": False,
+                       "download_all": "/api/download/all?t=x",
+                       "downloads": [{**row, "url": "/api/download/x", "zip": "/api/download/x?format=zip"}]}
+            page.route("**/api/orders/*/capture", lambda route: route.fulfill(status=200, content_type="application/json",
+                                                                              body=json.dumps(receipt)))
+            tab.goto("/thanks?token=FAKE-KEYS")
+            page.wait_for_selector(DIALOG)
+            page.wait_for_function(ACTIVE_IS_MAIN)
+            page.keyboard.press("ArrowRight")
+            at_step(page, "Paso 2 de 5")
+            drag(page, page.locator(f"{DIALOG} > div:first-of-type img").bounding_box(), -120)
+            at_step(page, "Paso 3 de 5")
+            closed_with_escape(page)
+            assert page.evaluate(ACTIVE_IS_PAGE)
+            opened_with_enter(page, page.locator("#app button", has_text="Ver el tutorial"))
+            page.wait_for_function(ACTIVE_IS_MAIN)
+            closed_with_escape(page)
+            assert page.evaluate(ACTIVE_IS_OPENER)
             assert tab.problems() == []
         finally:
             tab.close()
+
+        # en una pantalla táctil, el foco entra en el propio diálogo (ni el teclado encima ni el contorno del
+        # foco), y la barra de abajo queda detrás, inert
+        phone = mobile.open_page(chromium, live, "phone")
+        try:
+            phone.goto("/")
+            phone.page.wait_for_selector(DIALOG)
+            phone.page.wait_for_function("() => document.activeElement.matches('[role=dialog]')")
+            assert phone.page.evaluate("() => getComputedStyle(document.activeElement).outlineStyle") == "none"
+            assert phone.page.evaluate("() => document.querySelector('nav[data-zt-bottom]').inert")
+            assert phone.problems() == []
+        finally:
+            phone.close()
 
 
 PRO_TABLE = """(() => { localStorage.setItem('edgefolio-tour-v1', '1'); localStorage.setItem('tuisku-sf-mode', 'pro');

@@ -13,7 +13,7 @@ import { translator } from './lib/fmt.js';
 import { renderVals } from './lib/vals.js';
 import { PRO_SIZE } from './lib/vals_shop.js';
 import { withoutOverlap } from './lib/vals_cart.js';
-import { topDialog, shield, unshield, focusIn, keepTab } from './lib/modal.js';
+import { topDialog, shield, unshield, focusIn, giveBack, keepTab } from './lib/modal.js';
 
 const LITE_SIZE = 24;
 const PACK_FIND = 40;
@@ -135,15 +135,15 @@ export class App extends Component {
   // Un diálogo abierto se queda con el teclado (lib/modal.js), sea cual sea el camino que lo abre o lo
   // cierra (un botón, Esc, «Hecho», el último paso): al abrirse, el foco entra y lo de detrás queda inert;
   // si lo enfocado desaparece dentro (un paso nuevo, «Enviarme el enlace» al mandarlo), el foco vuelve a
-  // lo principal; al cerrarse, vuelve a quien lo abrió. Tab da la vuelta dentro (onKey).
+  // lo principal; al cerrarse, vuelve a quien lo abrió (si se abrió solo o ya no está, a <main>). Tab da la
+  // vuelta dentro (onKey).
   syncModal() {
     const el = this.base && this.base.querySelectorAll ? topDialog(this.base) : null, cur = this.modal;
     if (cur && cur.el !== el) {
       unshield(cur.marked);
       if (!el) {
         this.modal = null;
-        const back = cur.opener;
-        if (back && back !== document.body && back.isConnected && back.focus) back.focus({ preventScroll: true });
+        giveBack(cur.opener);
         return;
       }
     }
@@ -651,7 +651,13 @@ export class App extends Component {
   }
 
   // Tour and tutorial: a tap moves on, a swipe moves either way (flipped in Arabic), keys too.
-  swDown(e) { this.sw = { x: e.clientX, y: e.clientY }; }
+  // El puntero, capturado: con el ratón, un deslizamiento que acaba fuera de la imagen (desde el logo de
+  // TradingView, que está en su borde) también cuenta; el dedo ya lo está solo.
+  swDown(e) {
+    this.sw = { x: e.clientX, y: e.clientY };
+    const area = e.currentTarget;
+    if (area && area.setPointerCapture) try { area.setPointerCapture(e.pointerId); } catch (err) { /* sin captura, como antes */ }
+  }
 
   swUp(e, which) {
     const p = this.sw;

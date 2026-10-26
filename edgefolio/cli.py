@@ -3,6 +3,7 @@
 
     import PAQUETE [--scripts DIR | --skip-scripts] [--prune]
                                 publica un paquete del generador: catálogo, ficheros y scripts (release.py)
+    levels                      los niveles de cada script de STRATEGIES_DIR a catalogue/levels.json (levels.py)
     restore-scripts [--force]   copia los scripts de pago a la carpeta privada desde la historia del repo
     fx-update                   los cambios de moneda del día (del BCE), a mano: el reloj del núcleo los trae solo
     send-alerts                 los avisos de las favoritas, a mano: el reloj del núcleo los manda cada día
@@ -92,7 +93,7 @@ def register(bp):
                                                 "catalogue/since_release.csv de antes si el paquete no trae uno.")
     def import_package(package, scripts, skip_scripts, prune):
         """Publica un paquete del generador (su d_result/package/), comprobado entero antes de escribir nada."""
-        from . import release
+        from . import levels, release
         if scripts and skip_scripts:
             raise click.UsageError("--scripts o --skip-scripts, no los dos")
         try:
@@ -120,6 +121,7 @@ def register(bp):
         click.echo(f"{done['files']} ficheros copiados a static/assets ({done['cut']} vistas previas cortadas, "
                    f"{done['pruned']} sin usar borrados); {done['scripts']} scripts copiados; "
                    f"{done['thumbs']} miniaturas borradas")
+        click.echo(levels.summary(done["levels"], done["rows"]))
         if done["kept"]:
             click.echo(f"{len(done['kept'])} logos del paquete son distintos de los de la tienda y se han dejado los de "
                        "la tienda (para tomar el del generador, bórralo de static/assets/icons y vuelve a importar): "
@@ -137,6 +139,28 @@ def register(bp):
                            "(--scripts)")
         # la tienda lee el catálogo al arrancar (shop.load_catalogue): la que está en marcha sigue con el de antes
         click.echo("reinicia la tienda para que sirva este catálogo")
+
+    @bp.cli.command("levels")
+    def publish_levels():
+        """Los niveles de cada script del catálogo publicado (de STRATEGIES_DIR) a catalogue/levels.json, para que el
+        árbol del visitante diga comprar, vender o esperar: lo que hace la importación con --scripts."""
+        from . import levels
+        s = shop()
+        folder = Path(s.settings.strategies_dir)
+
+        def script(strategy):
+            path = folder / strategy.private_file
+            return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else None
+
+        found, counted = levels.collect((strategy.id, script(strategy)) for strategy in s.catalogue)
+        if not found:
+            # p. ej. con las copias de prueba de otra máquina: un fichero vacío borraría los niveles de verdad
+            raise click.ClickException(levels.summary(counted, len(s.catalogue)) + f". Ningún script de {folder} es el "
+                                       f"de su estrategia: {levels.FILE} no se toca")
+        levels.write(s.settings.levels, found)
+        click.echo(levels.summary(counted, len(s.catalogue)))
+        # la tienda lee el catálogo, y con él los niveles, al arrancar (shop.load_catalogue)
+        click.echo("reinicia la tienda para que sirva estos niveles")
 
     @bp.cli.command("restore-scripts")
     @click.option("--force", is_flag=True, help="Copiarlos aunque la carpeta ya tenga scripts.")

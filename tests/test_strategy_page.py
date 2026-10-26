@@ -3,8 +3,9 @@
 núcleo, ``testing.mobile``) sobre el catálogo de verdad (``real_app``), y su título, que pone el servidor.
 
 - La temporalidad que hay que poner en TradingView va con el nombre de su menú (1D, 1h), como en el tutorial.
-- La explicación del indicador sólo está en inglés (``catalogue/indicators.csv``): lo dice su ``lang``, en la
-  ficha y en la fila desplegada de la Tabla de Pro.
+- La explicación del indicador sale en el idioma de la página (``catalogue/indicators.csv``, E12a), en la ficha y en
+  la fila desplegada de la Tabla de Pro, y cambia con él sin recargar; sólo una sin traducir sale en inglés, y lo
+  dice (``lang="en"``, ``dir="auto"``).
 - En una gratis, la vista previa y los formatos no hablan de comprar: te llega por correo.
 - Una estrategia que la cuenta ya tiene dice «Ya es tuya»: su .pine, o Mis estrategias si su enlace ya no vale
   o hay una versión nueva.
@@ -17,6 +18,7 @@ núcleo, ``testing.mobile``) sobre el catálogo de verdad (``real_app``), y su t
   pide otra vez, y su botón lleva a la de propietario (con el foco en ella).
 - La «i» de cada valor del árbol y la × de su explicación hablan el idioma de la página («¿Qué es …?», «Cerrar»).
 """
+import csv
 import json
 import re
 from pathlib import Path
@@ -52,6 +54,14 @@ FOCUSED = "() => [document.activeElement.textContent.trim(), document.activeElem
 ARIA = """() => ({ infos: [...document.querySelectorAll('aside button[aria-label]')].map(b => b.getAttribute('aria-label')).sort(),
   close: (document.querySelector('[role=tooltip] button') || { getAttribute: () => null }).getAttribute('aria-label') })"""
 CRAFTED_VALUES = ("d__close", "ema2__close", "macd__close")
+# La explicación de cada indicador, por idioma (Explanation es la inglesa).
+with open(ROOT / "catalogue" / "indicators.csv", encoding="utf-8", newline="") as f:
+    EXPLAINED = {r["Key"]: {"en": r["Explanation"], **{k[12:]: v for k, v in r.items() if k.startswith("Explanation_")}}
+                 for r in csv.DictReader(f)}
+# «Sobre el indicador» de la ficha: su texto, su lang, su dir y la dirección en que se pinta.
+ABOUT = """() => { const p = [...document.querySelectorAll('#app img[src$="TW_ICO.svg"]')].map(i => i.closest('div').querySelector('p')).find(Boolean);
+  return p ? [p.textContent, p.getAttribute('lang'), p.getAttribute('dir'), getComputedStyle(p).direction] : null; }"""
+OPEN_ROW = "() => { const s = document.querySelector(\"td[colspan='12'] span[style*='text-wrap']\"); return s && [s.textContent, s.getAttribute('lang')]; }"
 
 
 def title_of(html: str) -> str:
@@ -109,9 +119,15 @@ def test_the_sheet_of_a_free_and_a_paid_strategy_and_its_title(real_app):
             # B25: lo que dice el menú de TradingView, no «1Day»
             note = page.locator("#app i.fa-clock + span").inner_text()
             assert note == UI["tfNote"]["es"].replace("{tf}", "1D"), note
-            # B27: la explicación del indicador, en inglés y dicho
-            about = page.locator("#app p[lang=en]")
-            assert about.inner_text() == free["ind_text"] and about.get_attribute("dir") == "auto"
+            # E12a: la explicación del indicador, en el idioma de la página (y con su lang y su dir), también al cambiarlo
+            said = EXPLAINED[free["key"]]
+            page.wait_for_function(f"t => (({ABOUT})() || [])[0] === t", arg=said["es"])
+            assert page.evaluate(ABOUT) == [said["es"], "es", "ltr", "ltr"]
+            page.evaluate("() => zt.setLanguage('ar')")
+            page.wait_for_function(f"t => (({ABOUT})() || [])[0] === t", arg=said["ar"])
+            assert page.evaluate(ABOUT) == [said["ar"], "ar", "rtl", "rtl"]
+            page.evaluate("() => zt.setLanguage('es')")
+            page.wait_for_function(f"t => (({ABOUT})() || [])[0] === t", arg=said["es"])
             # B28: en una gratis, nada de «compras»: te llega por correo
             assert page.evaluate(LOCKS) == [UI["scriptRestFree"]["es"], UI["formatsNoteFree"]["es"]]
             assert page.get_by_text(UI["buyScriptTitleFree"]["es"], exact=True).count() == 1
@@ -140,14 +156,32 @@ def test_the_sheet_of_a_free_and_a_paid_strategy_and_its_title(real_app):
             assert page.evaluate(PINE_DESC) == UI["fmtPineDesc"]["es"]
             assert UI["addToCart"]["es"] in page.evaluate(HEAD_BUTTONS)
 
-            # B27: también en la fila desplegada de la Tabla de Pro (la misma explicación que su celda)
+            # una sin traducir (un indicador nuevo del generador): la inglesa, dicha y de izquierda a derecha
+            def english(route):
+                response = route.fetch()
+                route.fulfill(response=response, json={**response.json(), "ind_text": EXPLAINED[hourly["key"]]["en"],
+                                                       "ind_lang": "en"})
+            page.route(re.compile(".*/api/strategies/" + re.escape(hourly["id"]) + r"(\?.*)?$"), english)
+            tab.goto(f"/s/{hourly['id']}?lang=ar")
+            page.wait_for_function(f"t => (({ABOUT})() || [])[0] === t", arg=EXPLAINED[hourly["key"]]["en"])
+            assert page.evaluate(ABOUT) == [EXPLAINED[hourly["key"]]["en"], "en", "auto", "ltr"]
+            page.unroute(re.compile(".*/api/strategies/" + re.escape(hourly["id"]) + r"(\?.*)?$"))
+            tab.goto("/?lang=es")
+
+            # también en la fila desplegada de la Tabla de Pro (la misma que el title de su celda), y al cambiar de
+            # idioma con la fila abierta, la de ese idioma en el sitio
             page.get_by_role("radio", name="Pro").click()
             page.wait_for_selector("tbody tr")
             page.locator("tbody tr").first.locator("td").nth(4).click()
-            ex = page.locator("td[colspan='12'] span[lang=en]")
-            ex.wait_for()
-            cell = page.locator("tbody tr").first.locator("div[title]").first.get_attribute("title")
-            assert ex.inner_text() == cell and cell and ex.get_attribute("dir") == "auto"
+            page.wait_for_function(f"() => !!({OPEN_ROW})()")
+            cell = page.locator("tbody tr").first.locator("div[title]").first
+            key = cell.locator("span").first.inner_text()
+            assert page.evaluate(OPEN_ROW) == [EXPLAINED[key]["es"], "es"] == [cell.get_attribute("title"), "es"]
+            page.evaluate("() => zt.setLanguage('fr')")
+            page.wait_for_function(f"t => (({OPEN_ROW})() || [])[0] === t", arg=EXPLAINED[key]["fr"])
+            assert page.locator("tbody tr").first.locator("div[title]").first.get_attribute("title") == EXPLAINED[key]["fr"]
+            page.evaluate("() => zt.setLanguage('es')")
+            page.wait_for_function(f"t => (({OPEN_ROW})() || [])[0] === t", arg=EXPLAINED[key]["es"])
             assert tab.problems() == []
         finally:
             tab.close()

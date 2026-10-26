@@ -6,19 +6,33 @@ de verdad con el kit del núcleo (``testing.mobile``, 0.28) sobre el catálogo d
   seis en ``pat`` de ui.json (sólo 7 de los 22 de 2026-10 tenían explicación). Cada nombre de features.json dice
   de qué patrón es.
 - Árbol | Bloques dicen cuál está puesta (aria-selected). La línea del patrón y el texto de cada explicación dicen
-  su idioma (lang): la descripción de un indicador, fuera de es y en, es la inglesa, y en árabe va de izquierda a
-  derecha (dir; si no, su punto final salta al principio). La línea del patrón va en la dirección de la página: en
-  árabe, de derecha a izquierda aunque empiece por un nombre latino («WaveTrend…»).
+  su idioma (lang): la descripción de un indicador que no estuviera traducida saldría en inglés, y en árabe de
+  izquierda a derecha (dir; si no, su punto final salta al principio). La línea del patrón va en la dirección de
+  la página: en árabe, de derecha a izquierda aunque empiece por un nombre latino («WaveTrend…»).
 - Un valor que el generador divide por el cierre (``macd__close``, sus entradas de 2026) lleva el nombre del suyo,
   con una nota, si es de un patrón de la estrategia: ``d`` es la %D del RSI estocástico y una distancia de precio
-  en WaveTrend, y ``ema2`` es la media intermedia de la Triple EMA y una de 2 velas en TMA Overlay. Lo mismo en
-  los ocho idiomas: el nombre traducido (``feat``) tampoco vale fuera de su patrón.
+  en WaveTrend, y ``ema2`` es la media intermedia de la Triple EMA y una de 2 velas en TMA Overlay (cada una, con
+  su nombre: ``d@Wave_Trend_Calculation``). Lo mismo en los ocho idiomas: el nombre traducido (``feat``) tampoco
+  vale fuera de su patrón. Cada valor por el que pregunta una vista previa publicada, o que toma su bosque, tiene
+  nombre (E12b: antes, 140 de 182 salían con su código), en los ocho idiomas.
+- Las descripciones de los valores, también en pt, fr, de, zh, ar e hi (``featDesc``, E12a): las 225, ninguna en
+  inglés en otro idioma. Una que faltara saldría en inglés, dicho (lang) y de izquierda a derecha.
+- Cada caja de un resultado se llama (aria-label) como lo que enseña, «Esperar −0,45» o «Puntuación +0,89», en el
+  idioma de la página: no su línea de Pine, cuyo «// buy|sell» es de la fábrica (±0,7) y no de los niveles.
+- En árabe, lo que cuenta lleva la forma que pide el número («6 قواعد», «16 قاعدة»: E12c), y los extremos de la
+  escala con niveles («بيع −1», «شراء +1») pintan el signo delante de la cifra.
 - «Comprar para desbloquear» sigue al carrito (la propiedad ``inCart`` de la página; sin ella, como fuera) y
   añade la estrategia una sola vez; si ya es de la cuenta (``owned``), «Ver como propietario», que ni la compra ni
   la pide. La «i» de cada valor dice «¿Qué es …?» en el idioma de la página.
 - El propietario: su script completo colorea los resultados con sus niveles (``buyThreshold``,
-  ``sellThreshold``), el visitante con 0,55 y −0,9; «el árbol completo», sea cual sea el del bosque; si su script
-  no llega, dónde bajarlo y nunca «Comprar». En una gratis, «pídela» y no «cómprala».
+  ``sellThreshold``); «el árbol completo», sea cual sea el del bosque; si su script no llega, dónde bajarlo y nunca
+  «Comprar». En una gratis, «pídela» y no «cómprala».
+- El visitante (E9): con los niveles que publica la tienda (API #3: ``buy_at``, ``close_at``); sin ellos, ningún
+  resultado dice Comprar, Vender ni Esperar: cada uno, su puntuación, sin las zonas de colores, y la pestaña dice
+  por qué (``noLevels``). Nunca 0,55 y −0,9. Tampoco «Resultado del árbol»: su escala dice −1 y +1, y ella y los
+  dos ejemplos van en gris; la ayuda de los valores y el pie de la explicación de un resultado, de la puntuación.
+- En árabe, la escala de «Resultado del árbol» va de izquierda a derecha, como su barra, y el + de una
+  puntuación sale delante de sus cifras, como el −.
 - En el móvil, tocar una pregunta enseña su explicación aunque la página se mueva sola justo después.
 """
 import json
@@ -42,6 +56,12 @@ OTHERS = ("pt", "fr", "de", "zh", "ar", "hi")
 FIRST = {"pt": "primeira", "fr": "premier", "de": "erste", "zh": "第一", "ar": "الأولى", "hi": "पहला"}
 # Árbol | Bloques y los verbos de los resultados, en español: los de la vista (renderVals), no los de TEXT.
 BLOCKS, BUY, SELL, WAIT = "Bloques", "Comprar", "Vender", "Esperar"
+VERBS = (BUY, SELL, WAIT)
+# La d de WaveTrend, una distancia de precio: la %D del RSI estocástico se llama d también.
+WAVE_D = "d@Wave_Trend_Calculation"
+# Los textos del árbol sin los niveles del script (E9), y la nota de un valor dividido por el cierre.
+SCORED_TEXTS = ("relNote", "score", "results", "s3Score", "noLevels", "leadScore1", "leadScoreN", "hiEx", "loEx",
+                "exHelpScore", "optTextScore", "leafFootScore")
 
 
 def text_of(lang: str, key: str) -> str:
@@ -54,6 +74,23 @@ def text_of(lang: str, key: str) -> str:
 
 def es(key: str) -> str:
     return text_of("es", key)
+
+
+def bases_of(src: str) -> list:
+    return [b.strip() for b in re.search(r"^// Technical base pattern:(.*)$", src, re.M).group(1).split(",") if b.strip()]
+
+
+def key_of(f: str, bases: list) -> str:
+    """La clave de features.json con que la pestaña nombra el valor ``f`` en una estrategia de esos patrones, como
+    keyOf de tree.js: la de su patrón (``d@Wave_Trend_Calculation``) y luego la suya, sólo si es de uno de ellos; uno
+    dividido por el cierre, también sin ``__close``. '' si no tiene."""
+    def own(e):
+        return e is not None and (not e[4] or not bases or e[4] in bases)
+    for g in ([f, f[:-len("__close")]] if f.endswith("__close") else [f]):
+        for k in [f"{g}@{b}" for b in bases] + [g]:
+            if own(FX["features"].get(k)):
+                return k
+    return ""
 
 
 # Una vista previa de dos patrones, honda (el resultado de compra, cuatro pasos a la derecha) y con una rama
@@ -95,6 +132,29 @@ decision_tree_0_TEST_1Day_00000000(d, macd)=>
 \t\tif( macd > 0.1 )
 \t\t\tret := 0.2
 """
+
+
+def deep_preview(depth: int = 4) -> str:
+    """Una vista previa de WaveTrend con un árbol entero de 2**depth resultados, sin ramas cortadas."""
+    lines = ["// Technical base pattern: Wave_Trend_Calculation", "decision_tree_0_TEST_1Day_00000000(d__close)=>",
+             f"\tfloat ret = na  // # DecisionTreeRegressor(max_depth={depth})"]
+    scores = iter(round(-1 + 2 * i / (2 ** depth - 1), 4) for i in range(2 ** depth))
+
+    def node(level, lo, hi):
+        tabs = "\t" * (level + 1)
+        if level == depth:
+            lines.append(f"{tabs}ret := {next(scores)}")
+            return
+        mid = (lo + hi) / 2
+        lines.append(f"{tabs}if( d__close <= {mid} )")
+        node(level + 1, lo, mid)
+        lines.append(f"{tabs}if( d__close > {mid} )")
+        node(level + 1, mid, hi)
+    node(0, 0.0, 1.0)
+    return "\n".join(lines) + "\n"
+
+
+DEEP_PREVIEW = deep_preview()
 # Un script completo de la plantilla de 2026 (niveles 0,8 y −0,5) con dos árboles; su vista previa, el primero.
 OWNED_TREES = """// Technical base pattern: Bollinger_RSI_Double_Strategy
 // ID_model: TEST_1Day_1BOL_11111111 Date Creation: 2026/10/13 Expiry date: 2027/06/13
@@ -162,18 +222,22 @@ TIP = """() => { const t = document.querySelector('[role=tooltip]'); if (!t) ret
 CART = "() => { try { return (JSON.parse(localStorage.getItem('edgefolio-cart-v1')) || {}).cart || []; } catch (e) { return []; } }"
 # Lo que tree.js hace con lo que le pasa la página, sin pintar: la etiqueta y dos clics de «Comprar para
 # desbloquear» según inCart (lo que la página dice del carrito), la línea del patrón en francés (y sin su
-# traducción: la inglesa, dicha), los nombres de otros patrones en tres idiomas y los niveles de un script completo.
-UNIT = """async ([scripts, preview, foreign]) => {
+# traducción: la inglesa, dicha), los nombres de otros patrones en tres idiomas, los niveles de un script completo y
+# los del visitante: los que manda API #3 (buy_at, close_at) o, sin ellos, ninguno (scored). Y en árabe y en español, lo
+# que cuenta (un árbol entero de 16 resultados y la vista previa de 6), el nombre de cada caja de resultado, y la
+# descripción de un valor sin traducir (la inglesa, dicha).
+UNIT = """async ([scripts, preview, foreign, deep]) => {
   const { StrategyTree, levelsOf } = await import('/static/js/tree.js');
   const [fx, ui] = await Promise.all(['features', 'ui'].map(f => fetch('/static/trees/' + f + '.json').then(r => r.json())));
   const paid = { id: 'TEST_1Day_1WAV_00000000', ticker: 'TEST', price: 69 }, free = { ...paid, price: 0 };
-  const shown = (props, texts = ui, src = preview) => {
+  const shown = (props, texts = ui, src = preview, extra = {}) => {
     const tree = new StrategyTree({});
     tree.props = { embedded: true, lang: 'es', strategy: paid, ...props };
     Object.assign(tree, { _fx: fx, _ui: texts, setState: () => {}, follow: () => {} });
-    tree.state = { ...tree.state, trees: tree.forest(src, tree.props.strategy, levelsOf('')) };
+    tree.state = { ...tree.state, trees: tree.forest(src, tree.props.strategy), ...extra };
     return tree.renderVals();
   };
+  const levels = { ...paid, buy_at: 0.15, close_at: -0.1 };
   const unlockWith = props => {
     let buys = 0;
     const v = shown({ ...props, onBuy: () => { buys++; } });
@@ -186,7 +250,18 @@ UNIT = """async ([scripts, preview, foreign]) => {
     owned: unlockWith({ owned: true }), ownedFree: unlockWith({ strategy: free, owned: true }),
     fr: shown({ lang: 'fr' }).abouts, untranslated: shown({ lang: 'fr' }, { ...ui, fr: { ...ui.fr, pat: {} } }).abouts,
     foreign: ['es', 'fr', 'ar'].map(lang => shown({ lang }, ui, foreign).nodes.filter(n => n.isDec).map(n => n.name)),
-    levels: scripts.map(levelsOf)
+    levels: scripts.map(levelsOf),
+    published: [{}, { buy_at: 0.15, close_at: -0.1 }, { buy_at: 0.15, close_at: null }].map(lv => {
+      const v = shown({ strategy: { ...paid, ...lv } });
+      return [v.scored, v.nodes.filter(n => n.isLeaf).map(n => n.verb).join()];
+    }),
+    counts: ['ar', 'es'].map(lang => [deep, preview].map(src => { const v = shown({ lang }, ui, src); return [v.summary, v.groups.map(g => g.count)]; })),
+    labels: ['ar', 'es', 'hi'].map(lang => [{}, { strategy: levels }].every(props => {
+      const leaves = shown({ lang, ...props }).nodes.filter(n => n.isLeaf);
+      return leaves.length > 0 && leaves.every(n => n.title === n.verb + ' ' + n.value && !/buy|sell|ret/.test(n.title));
+    })),
+    tip: (({ tipLang, tipDir, tipText }) => [tipLang, tipDir, tipText])(
+      shown({ lang: 'ar' }, { ...ui, ar: { ...ui.ar, featDesc: {} } }, preview, { tip: { kind: 'feat', f: 'd__close', x: 0, y: 0 } }))
   };
 }"""
 
@@ -230,6 +305,66 @@ def serve_preview(tab, strategy, text: str):
     """La vista previa de ``strategy``, la de la prueba."""
     tab.page.route(re.compile(".*" + re.escape(strategy.summary["preview"]) + "$"),
                    lambda route: route.fulfill(body=text, content_type="text/plain"))
+
+
+def publish_levels(tab, strategy, buy, close):
+    """API #3 de ``strategy`` con estos niveles, como la manda la tienda cuando catalogue/levels.json los tiene."""
+    def fulfill(route):
+        response = route.fetch()
+        route.fulfill(response=response, json={**response.json(), "buy_at": buy, "close_at": close})
+    tab.page.route(re.compile(".*/api/strategies/" + re.escape(strategy.id) + r"(\?.*)?$"), fulfill)
+
+
+# Lo de la columna de los valores: sus botones y cuántas zonas de colores pintan los deslizadores.
+ASIDE = """() => { const a = document.querySelector('aside'); if (!a) return null;
+  return { text: a.textContent, buttons: [...a.querySelectorAll('button')].map(b => b.textContent.trim()).filter(t => t.length > 1),
+           zones: [...a.querySelectorAll('span')].filter(s => s.style.opacity !== '' && s.style.top === '3px').length }; }"""
+
+
+# «Resultado del árbol»: su escala (cada extremo, con dónde empieza y acaba; la barra y su fondo), sus dos ejemplos (texto,
+# color y fondo) y si el signo de la puntuación se pinta delante de sus cifras (null si no lleva signo).
+OUTPUT = """() => { const box = document.querySelector('aside > div'); if (!box) return null;
+  const gauge = box.querySelector('[data-tree-gauge]'), bar = gauge.children[0], value = box.querySelector('strong + span');
+  const rect = el => { const r = el.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; };
+  const node = [...value.childNodes].find(n => n.nodeType === 3 && /\\d/.test(n.data));
+  const at = i => { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + 1); return r.getBoundingClientRect().left; };
+  const sign = node.data.search(/[+−-]/), digit = node.data.search(/\\d/);
+  return { labels: [...gauge.children[1].children].map(s => [s.textContent, ...rect(s)]), bar: rect(bar),
+           gradient: getComputedStyle(bar).backgroundImage, value: value.textContent,
+           buttons: [...box.querySelectorAll('button')].map(b => [b.textContent.trim(), getComputedStyle(b).color, getComputedStyle(b).backgroundColor]),
+           signFirst: sign < 0 ? null : at(sign) < at(digit) }; }"""
+TIP_TEXT = "() => { const t = document.querySelector('[role=tooltip]'); return t ? t.textContent : null; }"
+# Si cada extremo de la escala con signo («بيع −1») lo pinta delante de su cifra.
+SIGNS_FIRST = """() => { const g = document.querySelector('[data-tree-gauge]'); if (!g) return null;
+  return [...g.children[1].children].filter(s => /[+−]/.test(s.textContent)).map(s => {
+    const node = s.firstChild, at = i => { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + 1); return r.getBoundingClientRect().left; };
+    return at(node.data.search(/[+−]/)) < at(node.data.search(/\\d/)); }); }"""
+NEUTRAL, GREEN, RED = "rgb(22, 38, 58)", "rgb(21, 128, 61)", "rgb(192, 57, 43)"
+
+
+# La caja cuyo código empieza por arg[0] dice arg[1] (para until).
+LEAF_SAYS = "(seen, arg) => Object.entries(seen.boxes).some(([k, t]) => k.endsWith(' ' + arg[0]) && t.startsWith(arg[1]))"
+# El nombre de una caja de resultado: lo que enseña, «verbo puntuación».
+RESULT = re.compile(r"^(.+) ([+−]?\d+,\d{2})$")
+
+
+def score_es(v: float) -> str:
+    """Una puntuación como la escribe la pestaña en español (fmtV): con su signo, dos decimales y coma; el menos, −."""
+    return ("+" if v > 0 else "−" if v < 0 else "") + f"{abs(v):.2f}".replace(".", ",")
+
+
+def result_box(seen: dict, v: float) -> tuple:
+    """(nombre para un lector de pantalla, lo que dice) de la caja del resultado ``v``."""
+    return next((label, text) for label, text in seen["boxes"].items() if label.endswith(" " + score_es(v)))
+
+
+def results_say_what_they_show(seen: dict) -> list:
+    """Las cajas de resultado: cada una se llama como lo que enseña (su verbo y su puntuación, con un espacio), y
+    ninguna caja se llama con una línea de Pine (``ret := … // buy``)."""
+    out = [(label, text) for label, text in seen["boxes"].items() if RESULT.match(label)]
+    assert out and all(text == "".join(RESULT.match(label).groups()) for label, text in out), out
+    assert not [label for label in seen["boxes"] if label.startswith("ret :=") or "// " in label], seen["boxes"]
+    return out
 
 
 def wait_tree(tab) -> dict:
@@ -290,13 +425,41 @@ def test_every_published_pattern_is_explained_and_every_name_says_its_pattern():
         assert FIRST[lg] not in UI[lg]["ownFull"], (lg, UI[lg]["ownFull"])
     # la «i» de cada valor dice cuál es, en los 8 idiomas
     assert all("{f}" in text_of(lg, "whatIs") for lg in ("en", "es") + OTHERS)
-    # el quinto campo: sin él, el d__close de WaveTrend saldría como la %D del RSI estocástico
-    wrong = {f: e[4:] for f, e in FX["features"].items() if len(e) != 5 or e[4] not in FX["patterns"]}
+    # el quinto campo: sin él, el d__close de WaveTrend saldría como la %D del RSI estocástico; y la clave de un nombre
+    # que usan dos patrones lleva el suyo
+    wrong = {f: e[4:] for f, e in FX["features"].items() if len(e) != 5 or e[4] not in FX["patterns"]
+             or ("@" in f and f.split("@")[1] != e[4])}
     assert not wrong, wrong
+    # cada valor, con su nombre y su descripción en los otros seis idiomas (E12a: los 225)
+    for lg in OTHERS:
+        assert set(UI[lg]["feat"]) == set(FX["features"]) and all(UI[lg]["feat"].values()), lg
+        desc = UI[lg]["featDesc"]
+        assert set(desc) <= set(FX["features"]) and all(desc.values()), lg
+        missing = [k for k in FX["features"] if k not in desc]
+        assert not missing and set(desc) == set(FX["features"]), (lg, missing)
+        assert all(UI[lg].get(key) for key in SCORED_TEXTS), lg
+    assert all(text_of(lg, key) for lg in ("en", "es") for key in SCORED_TEXTS)
+    assert all("{n}" in text_of(lg, "leadScoreN") for lg in ("en", "es") + OTHERS)
     # y lo que leen las vistas del árbol lo da tree.js (tests/test_page_code.py mira sólo views/*.js)
     values, texts = design_update.used_values(ROOT / "static" / "js" / "views" / "tree")
     given, _ = design_update.given_values(ROOT)
     assert not values - given and not texts, sorted(values - given)
+
+
+def test_every_value_a_published_preview_asks_about_has_its_name():
+    """E12b: cada valor por el que pregunta una vista previa publicada, y cada uno que toma su bosque (la firma de sus
+    árboles: el del propietario pregunta por ellos), tiene nombre y descripción de su patrón. Un catálogo nuevo con
+    un valor sin nombre falla aquí: se escribe en static/trees/features.json (en, es y su patrón, de lo que calcula
+    el generador) y su nombre, en ui.json (feat, los otros seis idiomas)."""
+    asked, taken = set(), set()
+    for path in sorted((ROOT / "static" / "assets" / "previews").glob("*.pine")):
+        src = path.read_text(encoding="utf-8")
+        bases = bases_of(src)
+        asked |= {(f, path.name) for f in re.findall(r"if\(\s*(\w+)\s*<=", src) if not key_of(f, bases)}
+        signature = re.search(r"^decision_tree_\d+_\w*\(([^)]*)\)\s*=>", src, re.M).group(1)
+        taken |= {(f.strip(), path.name) for f in signature.split(",") if f.strip() and not key_of(f.strip(), bases)}
+    assert not asked, f"{len(asked)} valores sin nombre: {sorted(asked)[:10]}"
+    assert not taken, f"{len(taken)} valores sin nombre: {sorted(taken)[:10]}"
 
 
 def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
@@ -337,11 +500,18 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             seen = wait_tree(tab)
             assert seen["about"] == [["ar", UI["ar"]["pat"]["MACD_ULT_MTF"], "rtl"]], seen["about"]
             assert box(seen, "if( signal__close <=").startswith(UI["ar"]["feat"]["signal"]), seen["boxes"]
+            assert UI["ar"]["noLevels"] in seen["text"], "sin los niveles del script, lo dice"
+            # la escala de «Resultado del árbol» va de izquierda a derecha, como su barra (antes, en árabe, el extremo de
+            # venta quedaba bajo el verde); el + de la puntuación, delante de sus cifras, como el − (antes, «0.89+»)
+            out = tab.page.evaluate(OUTPUT)
+            (low, low_left, _), _, (high, _, high_right) = out["labels"]
+            assert (low, high) == ("−1", "+1") and (low_left, high_right) == tuple(out["bar"]), out
+            assert out["value"].lstrip("\u200e").startswith("+") and out["signFirst"] is True, out
             info = UI["ar"]["whatIs"].replace("{f}", "signal__close")
             tip = pinned(tab, tab.page.locator(f'button[aria-label="{info}"]'))
-            assert tip and tip["lang"] == "en" and tip["title"] == UI["ar"]["feat"]["signal"], tip
-            assert tip["dir"] == "ltr" and tip["direction"] == "ltr", tip
-            assert tip["text"] == FX["features"]["signal"][1] + " " + text_of("en", "relNote"), tip
+            assert tip and tip["lang"] == "ar" and tip["title"] == UI["ar"]["feat"]["signal"], tip
+            assert not tip["dir"] and tip["direction"] == "rtl", tip
+            assert tip["text"] == UI["ar"]["featDesc"]["signal"] + " " + UI["ar"]["relNote"], tip
             close_tip(tab)
             # la línea de WaveTrend en árabe empieza por un nombre latino: va de derecha a izquierda, como la página
             # (con dir="auto" salía de izquierda a derecha); y los nombres, también en árabe, sólo los de su patrón
@@ -349,13 +519,33 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             tab.goto(f"/s/{crafted}/tree?lang=ar")
             seen = wait_tree(tab)
             assert seen["about"] == [["ar", UI["ar"]["pat"][b], "rtl"] for b in both], seen["about"]
-            assert box(seen, "if( d__close <=").startswith("d__close"), seen["boxes"]
+            assert box(seen, "if( d__close <=").startswith(UI["ar"]["feat"][WAVE_D]), seen["boxes"]
             assert box(seen, "if( ema2__close <=").startswith(UI["ar"]["feat"]["ema2"]), seen["boxes"]
+            info = UI["ar"]["whatIs"].replace("{f}", "d__close")
+            tip = pinned(tab, tab.page.locator(f'button[aria-label="{info}"]'))
+            assert tip and tip["lang"] == "ar" and tip["title"] == UI["ar"]["feat"][WAVE_D], tip
+            assert not tip["dir"] and tip["direction"] == "rtl", tip
+            assert tip["text"] == UI["ar"]["featDesc"][WAVE_D] + " " + UI["ar"]["relNote"], tip
+            close_tip(tab)
 
             # un nombre, sólo el de un patrón de la estrategia; «Comprar para desbloquear», una vez
             tab.goto(f"/s/{crafted}/tree?lang=es")
             seen = wait_tree(tab)
-            assert box(seen, "if( d__close <=").startswith("d__close"), "la %D del RSI estocástico no es la d de WaveTrend"
+            assert box(seen, "if( d__close <=").startswith(FX["features"][WAVE_D][2]), \
+                "la d de WaveTrend, no la %D del RSI estocástico"
+            # sin los niveles del script: la puntuación de cada resultado, sin colores de compra ni de venta, y por qué
+            assert all(result_box(seen, v)[1].startswith(es("score")) for v in (1.0, -0.2)), seen["boxes"]
+            assert len(results_say_what_they_show(seen)) == 6
+            assert es("noLevels") in seen["text"] and not [t for t in seen["boxes"].values() if t.startswith(VERBS)]
+            aside = tab.page.evaluate(ASIDE)
+            assert aside["buttons"][:2] == [es("hiEx"), es("loEx")] and aside["zones"] == 0, aside
+            assert es("exHelpScore") in aside["text"] and es("s3Score") in tab.page.evaluate("document.body.textContent")
+            # «Resultado del árbol» tampoco: su escala, −1 y +1 (sin «Venta» ni «Compra») y en gris, como los dos ejemplos;
+            # la ayuda de los valores, a qué resultado llega (no qué haría); la explicación de un resultado, su puntuación
+            out = tab.page.evaluate(OUTPUT)
+            assert [t for t, _, _ in out["labels"]] == ["−1", "0", "+1"] and out["gradient"] == "none", out
+            assert {c for _, c, _ in out["buttons"]} == {NEUTRAL}, out
+            assert es("optTextScore") in aside["text"] and UI["es"]["optText"] not in aside["text"]
             assert box(seen, "if( macd__close <=").startswith("macd__close"), seen["boxes"]
             assert box(seen, "if( ema2__close <=").startswith(FX["features"]["ema2"][2]), seen["boxes"]
             assert [lang for lang, _, _ in seen["about"]] == ["es", "es"], seen["about"]
@@ -363,40 +553,93 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             tip = pinned(tab, tab.page.locator(f'button[aria-label="{info}"]'))
             assert tip and tip["lang"] == "es" and tip["text"] == FX["features"]["ema2"][3] + " " + es("relNote"), tip
             close_tip(tab)
+            # (después de esa explicación: con la página desplazada hasta el resultado, la × de aquélla quedaba encima de
+            # otro valor, que abría la suya al cerrarla)
+            leaf = tab.page.locator(f'[data-tree-scroll] button[aria-label="{es("score")} {score_es(1)}"]')
+            leaf.scroll_into_view_if_needed()
+            tab.page.wait_for_timeout(250)     # desplazarse cierra la explicación: antes, a la vista
+            leaf.hover()
+            tab.page.wait_for_function("() => !!document.querySelector('[role=tooltip]')")
+            tip = tab.page.evaluate(TIP_TEXT)
+            assert tip.startswith(es("score") + " +1,00") and es("leafFootScore") in tip, tip
+            tab.page.mouse.move(1, 1)
+            tab.page.wait_for_function("() => !document.querySelector('[role=tooltip]')")
             tab.page.get_by_role("button", name=es("unlockBtn"), exact=True).click()
             tab.page.wait_for_function(f"() => ({CART})().includes('{crafted}')")
             tab.page.locator("[data-tree-sec] button", has_text=re.compile(
                 "^(" + re.escape(es("unlockBtn")) + "|" + re.escape(es("added")) + ")$")).click()
             tab.page.wait_for_timeout(300)
             assert tab.page.evaluate(CART).count(crafted) == 1, "un segundo clic no la quita"
-            unit = tab.page.evaluate(UNIT, [[OWNED_SCRIPT, OLD_SCRIPT, CRAFTED_PREVIEW], CRAFTED_PREVIEW, FOREIGN_PREVIEW])
+            unit = tab.page.evaluate(UNIT, [[OWNED_SCRIPT, OLD_SCRIPT, CRAFTED_PREVIEW], CRAFTED_PREVIEW, FOREIGN_PREVIEW,
+                                            DEEP_PREVIEW])
             assert unit["none"] == [es("unlockBtn"), 2] and unit["out"] == [es("unlockBtn"), 2], unit
             assert unit["in"] == [es("added"), 0], unit
             assert unit["free"] == [es("fBtn"), 2], "una gratis abre su diálogo cada vez"
             assert unit["owned"] == unit["ownedFree"] == [es("ownedBtn"), 0], "la de la cuenta, ni al carrito ni al diálogo"
             assert unit["fr"] == [{"text": UI["fr"]["pat"][b], "lang": "fr", "dir": None} for b in both], unit["fr"]
             assert unit["untranslated"] == [{"text": FX["patterns"][b][0], "lang": "en", "dir": "ltr"} for b in both]
-            assert unit["foreign"] == [["d", "macd"]] * 3, \
+            assert unit["foreign"] == [[FX["features"][WAVE_D][2], "macd"], [UI["fr"]["feat"][WAVE_D], "macd"],
+                                       [UI["ar"]["feat"][WAVE_D], "macd"]], \
                 ("un nombre traducido tampoco vale fuera de su patrón", unit["foreign"])
             assert unit["levels"] == [{"buy": 0.8, "close": -0.5}, {"buy": 0.6, "close": -0.7},
                                       {"buy": 0.55, "close": -0.9}], unit["levels"]
+            assert unit["published"] == [[True, ",".join([es("score")] * 6)],
+                                         [False, ",".join((BUY, BUY, WAIT, SELL, SELL, BUY))],
+                                         [False, ",".join((BUY, BUY, WAIT, WAIT, WAIT, BUY))]], unit["published"]
+            # E12c: en árabe, 16 (11–99) cuenta en singular y 6 (3–10) en plural; en español, siempre en plural
+            ar = UI["ar"]
+            assert (ar["rulesN"]["many"], ar["rulesN"]["few"]) == ("{n} قاعدة", "{n} قواعد")
+            (ar_deep, ar_cut), (es_deep, es_cut) = unit["counts"]
+            assert ar_deep == [ar["complete"]["many"].replace("{n}", "16"), [ar["rulesN"]["many"].replace("{n}", "16")]], ar_deep
+            assert ar_cut[0].startswith(ar["visible"]["few"].replace("{n}", "6") + " · ") and ar_cut[1] == ["6 قواعد"], ar_cut
+            assert es_deep == [es("complete").replace("{n}", "16"), ["16 reglas"]] and es_cut[1] == ["6 reglas"], unit["counts"]
+            assert unit["labels"] == [True, True, True], "cada caja de resultado se llama como lo que enseña"
+            assert unit["tip"] == ["en", "ltr", FX["features"][WAVE_D][1] + " " + text_of("en", "relNote")], unit["tip"]
 
-            # el propietario, con los niveles de su script (0,8 y −0,5); el visitante, con 0,55 y −0,9
+            # el propietario, con los niveles de su script (0,8 y −0,5); el visitante, sin los que publica la tienda,
+            # con la puntuación de cada resultado
             tab.goto(f"/s/{owned}/tree")
             seen = says(tab, es("ownFull"))
             assert "primer" not in es("ownFull")
-            assert box(seen, "ret := 0.700000").startswith(WAIT) and box(seen, "ret := -0.600000").startswith(SELL)
+            assert result_box(seen, 0.7)[1].startswith(WAIT) and result_box(seen, -0.6)[1].startswith(SELL)
+            # un lector de pantalla oye «Esperar +0,70», como se ve, y no el «// buy» de la fábrica en esa línea
+            assert result_box(seen, 0.7)[0] == f"{WAIT} {score_es(0.7)}" and results_say_what_they_show(seen)
             assert box(seen, "if( BBlower__close <=").startswith(FX["features"]["BBlower"][2])
             tab.page.locator("[data-tree-sec] button", has_text=re.compile("^2$")).click()
             seen = says(tab, es("treeOf").replace("{n}", "2"))
-            assert box(seen, "ret := 0.900000").startswith(BUY) and box(seen, "ret := -1.000000").startswith(SELL)
+            assert result_box(seen, 0.9)[1].startswith(BUY) and result_box(seen, -1)[1].startswith(SELL)
             assert tab.page.evaluate(OWNER_BOX, es("ownFull")) == [es("download")], "el árbol 2, completo también"
             tab.page.get_by_role("button", name=es("visitor"), exact=True).click()
-            seen = until(tab, "seen => Object.keys(seen.boxes).some(k => k.startsWith('ret := 0.700000'))")
-            assert box(seen, "ret := 0.700000").startswith(BUY) and box(seen, "ret := -0.600000").startswith(WAIT)
+            seen = until(tab, LEAF_SAYS, [score_es(0.7), es("score")])
+            assert result_box(seen, -0.6)[1].startswith(es("score")), "nunca 0,55 y −0,9 para el visitante"
+            assert es("noLevels") in seen["text"]
+            # con los que publica la tienda (0,6 y −0,5): ni los del propietario ni los de 2024
+            publish_levels(tab, pick["owned"], 0.6, -0.5)
+            tab.goto(f"/s/{owned}/tree")
+            says(tab, es("ownFull"))
+            tab.page.get_by_role("button", name=es("visitor"), exact=True).click()
+            seen = until(tab, LEAF_SAYS, [score_es(0.7), BUY])
+            verbs = [next((w for w in VERBS if result_box(seen, v)[1].startswith(w)), None) for v in (0.7, 0.1, -0.6)]
+            assert verbs == [BUY, WAIT, SELL], seen["boxes"]
+            aside = tab.page.evaluate(ASIDE)
+            assert es("noLevels") not in seen["text"] and aside["zones"] > 0
+            # con ellos, «Resultado del árbol» es el del diseño: venta y compra en su escala, verde y rojo en los ejemplos
+            out = tab.page.evaluate(OUTPUT)
+            assert [t for t, _, _ in out["labels"]] == [es("sellEnd"), "0", es("buyEnd")] and "gradient" in out["gradient"]
+            assert [c for _, c, _ in out["buttons"]][:2] == [GREEN, RED], out
+            assert UI["es"]["optText"] in aside["text"] and es("optTextScore") not in aside["text"]
+            # en árabe, sus extremos pintan el signo delante de la cifra («بيع −1»; sin la marca, «بيع 1−»)
+            tab.goto(f"/s/{owned}/tree?lang=ar")
+            says(tab, UI["ar"]["ownFull"])
+            tab.page.get_by_role("button", name=UI["ar"]["visitor"], exact=True).click()
+            tab.page.wait_for_function(f"t => {{ const o = ({OUTPUT})(); return !!o && o.labels[0][0] === t; }}",
+                                       arg=UI["ar"]["sellEnd"])
+            assert [t for t, _, _ in tab.page.evaluate(OUTPUT)["labels"]] == [UI["ar"]["sellEnd"], "0", UI["ar"]["buyEnd"]]
+            assert tab.page.evaluate(SIGNS_FIRST) == [True, True]
 
-            # una gratis que la cuenta no tiene: pedirla, no comprarla
-            tab.goto(f"/s/{free}/tree")
+            # una gratis que la cuenta no tiene: pedirla, no comprarla. Otra vez en español con ?lang=es en esta misma
+            # visita: con una visita más sólo para eso, la siguiente cortaba su /api/mine a medias (m === null)
+            tab.goto(f"/s/{free}/tree?lang=es")
             wait_tree(tab)
             tab.page.get_by_role("button", name=es("owner"), exact=True).click()
             says(tab, es("fOwnNotYours"))

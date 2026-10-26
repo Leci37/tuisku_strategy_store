@@ -101,7 +101,7 @@ export class App extends Component {
     api('/api/config').then(cfg => this.setState({ cfg })).catch(e => this.fail(e));
     api('/api/bundles').then(bundleDefs => this.setState(st => ({ bundleDefs, ...withoutOverlap(st, bundleDefs) }))).catch(e => this.fail(e));
     api('/api/fx').then(fx => this.setState({ fx })).catch(() => { /* prices then stay in USD */ });
-    api('/api/strategies?paid=1&sort=hot&size=12').then(d => { this.keep(d.rows); this.setState({ tape: d.rows }); }).catch(e => this.fail(e));
+    api(this.inLang('/api/strategies?paid=1&sort=hot&size=12')).then(d => { this.keep(d.rows); this.setState({ tape: d.rows }); }).catch(e => this.fail(e));
     if (this.props.signedIn) api('/api/me').then(me => { this.setState({ me }); if (me.email) this.afterSignIn(); }).catch(() => this.setState({ me: { email: null } }));
 
     const qs = new URLSearchParams(location.search);
@@ -212,6 +212,7 @@ export class App extends Component {
       }
     }
 
+    if (prev && prev.lang !== s.lang) this.relang();
     const bundleIds = s.bundleDefs ? s.bundleDefs.bundles.flatMap(b => b.ids) : [];
     this.fetchRows([...s.cart, ...s.packIds, ...s.compare, ...s.favs, ...bundleIds, s.freeFor, s.instFor]);
     if (s.page === 'detail' && s.detail) this.fetchFull(s.detail);
@@ -298,7 +299,7 @@ export class App extends Component {
 
   fetchOne(id) {
     this.asked.add(id);
-    api('/api/strategies/' + encodeURIComponent(id)).then(r => {
+    api(this.inLang('/api/strategies/' + encodeURIComponent(id))).then(r => {
       this.keep([r], true);
       // an old address or a cart saved by the first shop names the strategy by its alias (the base64 of
       // its key), which the server resolves: from now on, by its id
@@ -320,6 +321,37 @@ export class App extends Component {
         this.go({ page: 'shop' }, { replace: true });
       }
     });
+  }
+
+  // Lo que se pide del catálogo, en el idioma de la página: la explicación del indicador de cada fila llega en él
+  // (API #2 y #3). Manda sobre la cookie y la cuenta: una página abierta con ?lang=fr y una cuenta en español no la
+  // recibe en español. ?ind_lang= y no ?lang=, que el núcleo guarda en la cookie del idioma: una pestaña en otro idioma
+  // cambiaba con cada lista el de la próxima visita.
+  inLang(path) {
+    return path + (path.includes('?') ? '&' : '?') + 'ind_lang=' + encodeURIComponent(this.state.lang);
+  }
+
+  // Otro idioma: lo que enseña la explicación se pide otra vez, sin moverse de donde está: la ficha a la vista
+  // (fetchFull, en este mismo sync) y las páginas de Pro que se ven; Pro, si no se ve, al volver a él. Mientras
+  // tanto, la de antes dice su idioma (exLang).
+  relang() {
+    this.full.clear();
+    [...this.asked].forEach(k => { if (k.startsWith('full:')) this.asked.delete(k); });
+    const s = this.state;
+    if (s.page === 'shop' && s.mode === 'pro' && this.proKey != null && s.proPage > 0) this.reloadPro();
+    else this.proKey = null;
+  }
+
+  reloadPro() {
+    const s = this.state, fresh = this.ticket('pro'), pages = [];
+    for (let p = s.proFirst; p <= s.proPage; p++) pages.push(p);
+    Promise.all(pages.map(p => api(this.inLang('/api/strategies?' + this.proKey + '&size=' + PRO_SIZE + '&page=' + p))))
+      .then(ds => {
+        if (!fresh()) return;
+        const rows = ds.flatMap(d => d.rows);
+        this.keep(rows);
+        this.setState({ pro: rows });
+      }).catch(e => this.fail(e));
   }
 
   fetchPreview(url) {
@@ -364,7 +396,7 @@ export class App extends Component {
 
   loadLite(page) {
     const fresh = this.ticket('lite');
-    api('/api/strategies?' + this.liteKey + '&size=' + LITE_SIZE + '&page=' + page).then(d => {
+    api(this.inLang('/api/strategies?' + this.liteKey + '&size=' + LITE_SIZE + '&page=' + page)).then(d => {
       if (!fresh()) return;
       this.keep(d.rows);
       this.setState(st => ({ lite: page === 1 ? d.rows : [...(st.lite || []), ...d.rows], liteTotal: d.total, litePage: page, counts: d.counts || st.counts }));
@@ -374,7 +406,7 @@ export class App extends Component {
   // Table pages replace the list; "Load more" (rows, cards) appends the next page.
   loadPro(page, append) {
     const fresh = this.ticket('pro'), key = this.proKey, facets = this.facetsKey !== key;
-    api('/api/strategies?' + key + '&size=' + PRO_SIZE + '&page=' + page + (facets ? '&facets=1' : '')).then(d => {
+    api(this.inLang('/api/strategies?' + key + '&size=' + PRO_SIZE + '&page=' + page + (facets ? '&facets=1' : ''))).then(d => {
       if (!fresh()) return;
       this.keep(d.rows);
       const patch = { pro: append ? [...this.state.pro, ...d.rows] : d.rows, proTotal: d.total, proPage: page, proLoaded: true, counts: d.counts || this.state.counts };
@@ -390,7 +422,7 @@ export class App extends Component {
 
   loadPack() {
     const fresh = this.ticket('pack'), q = this.packKey;
-    api('/api/strategies?paid=1&sort=hot&size=' + PACK_FIND + (q ? '&q=' + encodeURIComponent(q) : '')).then(d => {
+    api(this.inLang('/api/strategies?paid=1&sort=hot&size=' + PACK_FIND + (q ? '&q=' + encodeURIComponent(q) : ''))).then(d => {
       if (!fresh()) return;
       this.keep(d.rows);
       this.setState({ packFound: d.rows });
@@ -579,6 +611,7 @@ export class App extends Component {
     api('/api/mine').then(m => {
       // pedida antes del cambio (la de entrar, mientras se cobraba): sin lo que se acaba de comprar; se pide otra vez
       if (epoch !== this.mineEpoch) { again = true; return; }
+      if (!m) return; // por si un día contesta «null» (un cuerpo cortado ya es un fallo de red: api())
       this.keep(m.items.map(x => x.row));
       this.keep(m.favourites.map(x => x.row));
       const alerts = {};

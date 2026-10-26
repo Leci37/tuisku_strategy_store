@@ -325,11 +325,18 @@ Sin sesión, un script recibe `401 {"error": "errLoginRequired"}` en lo que la p
 ```
 flask --app app edgefolio import PAQUETE [--scripts DIR | --skip-scripts] [--prune]
                                                       # un paquete del generador (ver «Publicar un catálogo nuevo»)
+flask --app app edgefolio levels                      # los niveles de cada script de STRATEGIES_DIR, para el árbol
 flask --app app edgefolio restore-scripts [--force]   # los scripts de pago, de la historia del repo
 flask --app app edgefolio fx-update                   # los cambios del día del BCE, a mano (el reloj los trae solo)
 flask --app app edgefolio send-alerts                 # los avisos de las favoritas, a mano (el reloj los manda solo)
 flask --app app edgefolio subscribers                 # quién confirmó las novedades, en CSV
 ```
+
+`levels` escribe `catalogue/levels.json`: con qué puntuación compra y con cuál cierra cada script del catálogo
+publicado (`buyThreshold` y `sellThreshold`), leídos de `STRATEGIES_DIR`, para que el árbol del visitante diga
+comprar, vender o esperar (API #3 los manda; sin ellos enseña la puntuación de cada resultado). Sólo vale el script
+que lleva el nombre de su estrategia: si ninguno lo lleva (las copias de prueba de otra máquina), no toca el
+fichero. Se ejecuta donde están los scripts de verdad, se sube el `levels.json` que deja y se reinicia la tienda.
 
 Los scripts de pago **no están en el repo**, sólo en su historia (`c3fa796:d_result/pine_TW_b`).
 `restore-scripts` los copia a `STRATEGIES_DIR` con `git archive`, **sin tocar la copia de trabajo ni el
@@ -495,9 +502,10 @@ paquete, en una carpeta del contrato); cada fichero que nombra una fila está en
 `static/assets/`; la lista privada trae un script por fila, y sólo esos; y ningún gráfico ni logo es un
 script completo. Luego comprueba los scripts, como dicen las opciones de arriba.
 
-Después copia los scripts y publica `catalogue/catalogue.csv` y `static/assets/` como se comprobaron: una
-fila por estrategia, rutas relativas, sin `pine_path`, un nombre legible para los que tienen el código de
-la bolsa, cada vista previa cortada a su parte pública; los gráficos y las vistas previas que cambiaron se
+Después copia los scripts, escribe en `catalogue/levels.json` los niveles de cada uno (de los comprobados con
+su sha256; ver `levels` en «Comandos») y publica `catalogue/catalogue.csv` y `static/assets/` como se
+comprobaron: una fila por estrategia, rutas relativas, sin `pine_path`, un nombre legible para los que tienen
+el código de la bolsa, cada vista previa cortada a su parte pública; los gráficos y las vistas previas que cambiaron se
 reemplazan, y los logos que faltan se añaden (ver la tabla de arriba). Apunta en
 `catalogue/release.json` de qué ejecución del generador es: su contrato, su fecha y su commit, las filas que
 enseña la tienda, entre cuántas estrategias probadas se eligieron (`tried`, si el manifiesto lo dice; si no lo
@@ -517,8 +525,8 @@ Otras dos formas, sin Flask (sólo pandas):
 
 - `python catalogue/publish.py --package DIR [--prune] [--intraday-stocks]`: las mismas comprobaciones del
   paquete y la misma publicación (sin `--intraday-stocks`, también sin las intradía de acciones), pero los
-  scripts se copian a mano, no vacía las miniaturas (una más vieja que su gráfico se rehace sola) ni avisa
-  de los lotes.
+  scripts se copian a mano, no escribe sus niveles (`flask --app app edgefolio levels`, con los scripts ya
+  copiados), no vacía las miniaturas (una más vieja que su gráfico se rehace sola) ni avisa de los lotes.
 - `python catalogue/publish.py EXPORT.csv [--assets DIR] [--prune] [--intraday-stocks]`, la de antes de los
   paquetes: también comprueba las columnas contra el contrato (y deja fuera las intradía de acciones), pero no
   hay sha256 ni lista privada, deja como están los ficheros que la tienda ya tiene y borra
@@ -561,8 +569,7 @@ regenerar el catálogo con eso corregido antes de relanzarla. La rama `_ztool_de
 generador ya lo corrige; su README avisa de que, probadas con datos que no vieron, las estrategias pierden
 de media después de costes, y deja al dueño cómo listarlas. Sin hacer, porque necesitan datos o
 trabajos que la tienda no tiene: el trabajo diario que mide cada estrategia desde su publicación
-(`catalogue/since_release.csv`), las versiones de pago más allá de la v1 y las descripciones de los
-valores de los indicadores que el árbol aún no conoce (`static/trees/features.json`).
+(`catalogue/since_release.csv`) y las versiones de pago más allá de la v1.
 
 ## Qué cambió desde la versión FastAPI
 
@@ -622,7 +629,8 @@ static/                    la página tal cual (sin compilar): js/ (Preact + htm
 i18n/ui.json               los textos de la tienda, en 8 idiomas
 catalogue/                 catalogue.csv, indicators.csv, bundles.json, fx.json; contract.json (el contrato
                            con el generador); release.json (de qué ejecución del generador es el catálogo:
-                           lo escribe la importación de un paquete); publish.py (el puente con el
+                           lo escribe la importación de un paquete); levels.json (los niveles de cada script,
+                           para el árbol: la importación y `levels`); publish.py (el puente con el
                            generador) y previews.py
 tests/                     las pruebas (arriba)
 tools/screenshots.py       el recorrido en un navegador (las capturas de arriba)

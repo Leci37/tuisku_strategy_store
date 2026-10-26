@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """Las estrategias a la venta, leídas de catalogue/catalogue.csv: el único sitio de donde salen los precios.
 
-A su lado: indicators.csv (qué es cada indicador, para la página de la estrategia), bundles.json (los
-lotes y sus precios), release.json (de qué ejecución del generador es: entre cuántas estrategias probadas se
-eligieron) y, si existe, since_release.csv: cuánto lleva cada una desde su publicación (id, pct, as_of). Y de la
-vista previa publicada de cada una (static/assets/previews/), la «Expiry date» de la cabecera de su script.
+A su lado: indicators.csv (qué es cada indicador, en los idiomas de la tienda, para la página de la estrategia),
+bundles.json (los lotes y sus precios), release.json (de qué ejecución del generador es: entre cuántas estrategias
+probadas se eligieron) y, si existen, since_release.csv: cuánto lleva cada una desde su publicación (id, pct,
+as_of), y levels.json, los niveles de cada script (levels.py). Y de la vista previa publicada de cada una
+(static/assets/previews/), la «Expiry date» de la cabecera de su script.
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ from decimal import Decimal
 from functools import cached_property
 from pathlib import Path
 
+from .levels import load as load_levels
 from .settings import GRADE_CUTOFFS, Settings
 
 log = logging.getLogger(__name__)
@@ -244,7 +246,8 @@ class Catalogue:
         if not isinstance(source, Settings):
             path = Path(source)
             source = Settings(catalogue=path, indicators=path.parent / "indicators.csv",
-                              bundles=path.parent / "bundles.json", since_release=path.parent / "since_release.csv")
+                              bundles=path.parent / "bundles.json", since_release=path.parent / "since_release.csv",
+                              levels=path.parent / "levels.json")
         live = {r.get("id"): r for r in read_table(source.since_release)}
         self.items = {}   # por clave: lo que guardan los pedidos y los enlaces
         self.by_id = {}
@@ -271,12 +274,16 @@ class Catalogue:
         for r in read_table(source.indicators):
             lower = {k.strip().lower(): v for k, v in r.items() if k}
             if clean(lower.get("key")):
+                # la explicación, en inglés («Explanation») y en cada idioma con su columna («Explanation_es»…)
+                texts = {"en": clean(lower.get("explanation")),
+                         **{k.split("_", 1)[1]: clean(v) for k, v in lower.items() if k.startswith("explanation_")}}
                 self.indicators[clean(lower["key"])] = {
-                    "ind_text": clean(lower.get("explanation")),
+                    "ind_texts": {lang: text for lang, text in texts.items() if text},
                     "ind_url": clean(lower.get("traderview url indicator")) or TV_SCRIPTS,
                     "ind_author": clean(lower.get("author")),
                 }
         self.bundles = self._bundles(source.bundles)
+        self.levels = load_levels(source.levels)
 
     def _bundles(self, path: Path) -> dict:
         """Los lotes de bundles.json que siguen siendo lo que prometen. Uno que perdió una estrategia, o que ya
@@ -333,14 +340,28 @@ class Catalogue:
         except (binascii.Error, UnicodeDecodeError, ValueError):
             return None
 
-    def row(self, s: Strategy) -> dict:
-        """La fila de una lista: la de la estrategia y su indicador (la página de TradingView a la que lleva
-        «CLAVE · indicador» en las fichas de Pro, y su explicación al pasar por encima)."""
-        ind = self.indicators.get(s.key_techs, {})
-        return {**s.as_row(), "ind_text": ind.get("ind_text", ""), "ind_url": ind.get("ind_url", TV_SCRIPTS)}
+    def explanation(self, s: Strategy, lang: str) -> tuple:
+        """(texto, idioma) de la explicación del indicador de ``s`` en ``lang``; sin ella, la inglesa, y su idioma lo
+        dice (la página la marca con lang="en" sólo entonces)."""
+        texts = self.indicators.get(s.key_techs, {}).get("ind_texts", {})
+        if texts.get(lang):
+            return texts[lang], lang
+        return (texts["en"], "en") if texts.get("en") else ("", lang)
 
-    def detail(self, s: Strategy) -> dict:
+    def row(self, s: Strategy, lang: str = "en") -> dict:
+        """La fila de una lista: la de la estrategia y su indicador (la página de TradingView a la que lleva
+        «CLAVE · indicador» en las fichas de Pro, y su explicación al pasar por encima, en ``lang``: el idioma de
+        la petición; ``ind_lang``, el de la explicación)."""
+        text, text_lang = self.explanation(s, lang)
+        return {**s.as_row(), "ind_text": text, "ind_lang": text_lang,
+                "ind_url": self.indicators.get(s.key_techs, {}).get("ind_url", TV_SCRIPTS)}
+
+    def detail(self, s: Strategy, lang: str = "en") -> dict:
+        """La de una estrategia (API #3): la fila, el autor del indicador, sus versiones y los niveles de su script,
+        con los que el árbol del visitante dice comprar, vender o esperar (null si la tienda no los tiene)."""
         ind = self.indicators.get(s.key_techs, {})
         versions = [{"v": v, "date": s.release if v == s.version else None, "note": ""}
                     for v in range(s.version, 0, -1)]
-        return {**self.row(s), "ind_author": ind.get("ind_author", ""), "versions": versions}
+        levels = self.levels.get(s.id, {})
+        return {**self.row(s, lang), "ind_author": ind.get("ind_author", ""), "versions": versions,
+                "buy_at": levels.get("buy_at"), "close_at": levels.get("close_at")}

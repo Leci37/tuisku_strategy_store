@@ -65,7 +65,7 @@ export default function Detail(v) {
         <div style="background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:6px">
           <span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">${v.tx?.aboutInd}</span>
           <strong dir="auto" style="font-size:15px">${T(v.det?.key)} · ${T(v.det?.ind)}</strong>
-          <p dir="auto" lang="en" style="margin:0;color:#5a6b80;font-size:13.5px;text-wrap:pretty">${v.det?.ex}</p>
+          <p dir=${v.det?.exDir} lang=${v.det?.exLang} style="margin:0;color:#5a6b80;font-size:13.5px;text-wrap:pretty">${v.det?.ex}</p>
           <a href=${v.det?.indUrl} target="_blank" rel="noopener" style="font-size:13px;font-weight:600;display:inline-flex;gap:6px;align-items:center"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:14px;height:14px" />${T(v.tx?.seeInd)}</a>
           </div>
         <div style="border-radius:18px;overflow:hidden;border:1px solid #16263a;box-shadow:0 14px 36px rgba(15,27,45,.18)">

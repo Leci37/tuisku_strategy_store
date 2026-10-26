@@ -155,16 +155,24 @@ def config():
                     "since_release": catalogue.since_release, "grade_cutoffs": list(s.grade_cutoffs)})
 
 
+def text_language() -> str:
+    """El idioma de la explicación del indicador de cada fila (API #2 y #3): el que pide la página (?ind_lang=, el
+    suyo) o, sin él, el de la petición. No ?lang=: el núcleo lo toma por la dirección de una página en un idioma y lo
+    guarda en la cookie zt_lang, y cada lista que pedía una pestaña en otro idioma cambiaba el de la próxima visita."""
+    asked = request.args.get("ind_lang", "")
+    return asked if asked in shop().texts.data.get("_languages", ()) else request_language()
+
+
 @bp.get("/api/strategies")
 @public
 def strategies():
-    return jsonify(search.strategies(shop().catalogue, shop().settings, request.args))
+    return jsonify(search.strategies(shop().catalogue, shop().settings, request.args, text_language()))
 
 
 @bp.get("/api/strategies/<strategy_id>")
 @public
 def strategy(strategy_id):
-    return jsonify(search.strategy(shop().catalogue, strategy_id))
+    return jsonify(search.strategy(shop().catalogue, strategy_id, text_language()))
 
 
 @bp.get("/api/bundles")

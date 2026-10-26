@@ -91,6 +91,7 @@ class Settings:
     bundles: Path = CATALOGUE / "bundles.json"
     fx: Path = CATALOGUE / "fx.json"           # cambios de ejemplo, hasta que haya los del día
     since_release: Path = CATALOGUE / "since_release.csv"
+    levels: Path = CATALOGUE / "levels.json"   # los niveles de cada script, para el árbol (levels.py)
     static: Path = STATIC
     discount_codes: dict = field(default_factory=dict)
     flat_price_codes: dict = field(default_factory=dict)

@@ -166,7 +166,8 @@ def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
             assert "US$\u200e" in note, repr(note)
             chip_off = next(t for t in page.evaluate(spans) if "\u2212" in t and "%" in t)
             assert chip_off.startswith("\u2066\u2212") and chip_off.endswith("\u2069"), repr(chip_off)
-            assert tab.problems() == ["500 GET /api/strategies?tab=crypto&q=&size=24&page=1"], tab.problems()
+            # (la página pide el catálogo en su idioma, ?ind_lang=: la explicación de cada indicador va en él)
+            assert tab.problems() == ["500 GET /api/strategies?tab=crypto&q=&size=24&page=1&ind_lang=es"], tab.problems()
         finally:
             tab.close()
 
@@ -276,7 +277,7 @@ def test_on_arrival_dictionary_favourites_and_thanks(real_app):
             page.add_init_script(TOUR_SEEN + "localStorage.setItem('edgefolio-favs-v1', %s);"
                                  % json.dumps(json.dumps({"favs": [DEAD, alive], "alerts": {}})))
             stub = {"id": DEAD, "ticker": "AAPL", "name": "Apple", "price": 79, "interval": "1Day", "key": "1S00"}
-            page.route(f"**/api/strategies/{DEAD}",
+            page.route(re.compile(".*/api/strategies/" + re.escape(DEAD) + r"(\?.*)?$"),
                        lambda route: route.fulfill(status=200, content_type="application/json", body=json.dumps(stub)))
             with page.expect_response("**/api/mine") as mine:
                 tab.goto("/")

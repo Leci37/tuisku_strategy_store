@@ -13,8 +13,9 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from edgefolio import release
-from tests.conftest import ROWS
+from edgefolio import levels, release
+from tests.conftest import ROWS, strategy_id
+from tests.test_levels import script_of
 from tests.test_publish import (CONTRACT, CRYPTO_HOURLY, PLACEHOLDER, edit_manifest, factory, package_of, private_file,
                                 sha, with_since_release)
 
@@ -164,7 +165,7 @@ def test_a_failure_half_way_leaves_the_shop_as_it_was(app, settings, made, monke
 
     def full(self, dest, data):
         calls.append(dest)
-        if len(calls) == 7:   # tras los 4 scripts y dos gráficos
+        if len(calls) == 8:   # tras los 4 scripts, los niveles y dos gráficos
             raise OSError(errno.ENOSPC, "No space left on device")
         return real(self, dest, data)
 
@@ -183,7 +184,7 @@ def test_a_failure_while_renaming_says_what_is_already_in_place(app, settings, m
     real, renamed = os.replace, []
 
     def replace_some(src, dest):
-        if len(renamed) == 5:   # los 4 scripts y un gráfico
+        if len(renamed) == 5:   # los 4 scripts y los niveles
             raise OSError(errno.EIO, "Input/output error")
         real(src, dest)
         renamed.append(dest)
@@ -197,6 +198,30 @@ def test_a_failure_while_renaming_says_what_is_already_in_place(app, settings, m
     assert not (settings.catalogue.parent / "release.json").exists()
     assert not [p for f in (settings.static, settings.strategies_dir) for p in f.rglob("*.tmp")]
     assert not list(settings.thumbs_dir.glob("*.webp"))
+
+
+def test_the_import_writes_the_levels_of_the_scripts_it_checked(app, settings, tmp_path):
+    """catalogue/levels.json, con los de cada script del paquete que lleva el nombre de su estrategia (los de la
+    fábrica de estas pruebas no lo llevan); con --skip-scripts, sólo los que ya están con su sha256: los de antes
+    tendrían los niveles de otra versión."""
+    d_result, rows = factory(tmp_path)
+    aapl, msft = strategy_id(ROWS[0]), strategy_id(ROWS[1])
+    (d_result / "pine_TW_b" / private_file(ROWS[0])).write_text(script_of(aapl, "0.8", "-0.55"), encoding="utf-8")
+    (d_result / "pine_TW_b" / private_file(ROWS[1])).write_text(script_of(msft, "0.45"), encoding="utf-8")
+    settings.levels.write_text('{\n  "OLD_1Day_X_0": {"buy_at": 0.6, "close_at": -0.9}\n}\n')
+    package = package_of(d_result, rows)
+    result = run(app, package, "--scripts", d_result / "pine_TW_b")
+    assert result.exit_code == 0, result.output
+    assert "catalogue/levels.json: 2 de 4 estrategias con los niveles de su script" in result.output
+    assert "2 cuyo script es el de otra estrategia" in result.output
+    assert levels.load(settings.levels) == {aapl: {"buy_at": 0.8, "close_at": -0.55},
+                                            msft: {"buy_at": 0.45, "close_at": -0.9}}, "los de antes, fuera"
+
+    (settings.strategies_dir / private_file(ROWS[1])).write_text("de otra versión")
+    result = run(app, package, "--skip-scripts")
+    assert result.exit_code == 0, result.output
+    assert levels.load(settings.levels) == {aapl: {"buy_at": 0.8, "close_at": -0.55}}
+    assert "1 sin su script" in result.output
 
 
 def test_the_import_says_which_logos_it_kept(app, settings, made):

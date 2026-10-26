@@ -113,6 +113,7 @@ def settings(tmp_path):
             (private / s.private_file).write_text(f"//@version=5\nstrategy(\"{s.key}\")\n")
     return Settings(catalogue=cat / "catalogue.csv", indicators=cat / "indicators.csv", bundles=cat / "bundles.json",
                     fx=cat / "fx.json", fx_today=tmp_path / "fx-today.json", since_release=cat / "since_release.csv",
+                    levels=cat / "levels.json",
                     strategies_dir=private, thumbs_dir=tmp_path / "thumbs",
                     discount_codes={"spring20": Decimal("0.20"), "big60": Decimal("0.60")},
                     flat_price_codes={"launch": Decimal("0.99")})

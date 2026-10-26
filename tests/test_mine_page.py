@@ -12,6 +12,9 @@
   estaban, la favorita a su sitio, y el aviso dice por qué.
 - «Añádela a TradingView» sólo sale con algo de la cuenta que instalar, como en Gracias con los enlaces
   escondidos (antes abría el tutorial sin estrategia: «strategy.pine» y TradingView sin símbolo).
+- Una respuesta que llega bien pero con el cuerpo cortado (una navegación o la red la cortaron a medias) es «sin
+  conexión», como no tener respuesta; antes era null, y leerlo (``m.items``) un TypeError en la consola. Y una que
+  dijera «null» no rompe Mis estrategias.
 """
 import json
 from urllib.parse import quote
@@ -190,5 +193,30 @@ def test_the_install_tutorial_waits_for_a_strategy_of_the_account(real_app):
             link = dialog.get_by_role("link", name=UI["instOpenTv"]["es"].format(sym=row["ticker"]))
             assert "?symbol=" + quote(row["tv_symbol"], safe="") + "&" in link.get_attribute("href")
             assert tab.problems() == []
+        finally:
+            tab.close()
+
+
+def test_an_answer_cut_halfway_is_a_network_failure_not_a_script_error(real_app):
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        tab = mobile.open_page(chromium, live, "laptop")
+        page = tab.page
+        try:
+            page.add_init_script(TOUR_SEEN)
+            mobile.sign_in(tab)
+            answer = {"body": '{"items": [{"id": '}
+            page.route("**/api/mine", lambda route: route.fulfill(status=200, content_type="application/json",
+                                                                  body=answer["body"]))
+            tab.goto("/mine")
+            toast = page.locator("[role=alert][data-ef-toast]")
+            toast.wait_for()
+            assert UI["errShopNetwork"]["es"] in toast.inner_text(), toast.inner_text()
+            assert tab.problems() == [], tab.problems()
+            # «null»: nada que enseñar, y nada en la consola
+            answer["body"] = "null"
+            with page.expect_response("**/api/mine"):
+                tab.goto("/mine")
+            page.wait_for_timeout(300)
+            assert toast.count() == 0 and tab.problems() == [], tab.problems()
         finally:
             tab.close()

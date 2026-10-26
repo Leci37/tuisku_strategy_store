@@ -179,9 +179,10 @@ def email_receipt(shop, order: Order, lang: str, mine: str, mail) -> None:
     pack = lines.get("pack")
     if pack:
         out.append(f"{texts.get('packTitle', lang)} ({len(pack['ids'])}): {money(pack['price'], cur)}")
+    # los días y las descargas de un enlace son ajustes: cada cuenta, con la forma que pide su número
     body = texts.get("mailReceiptBody", lang, id=order.paypal_id, lines="\n".join("- " + line for line in out),
-                     total=money(order.total, cur), mine=mine, n=settings.download_days, m=settings.max_downloads,
-                     contact=settings.contact_email)
+                     total=money(order.total, cur), mine=mine, days=texts.get("linkDays", lang, n=settings.download_days),
+                     downloads=texts.get("linkDownloads", lang, n=settings.max_downloads), contact=settings.contact_email)
     mail(order.email, texts.get("mailReceiptSubject", lang, id=order.paypal_id), body, kind="edgefolio-receipt")
 
 

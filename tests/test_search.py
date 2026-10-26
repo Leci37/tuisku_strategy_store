@@ -18,7 +18,7 @@ from tests.conftest import ROWS, TODAY, cart_id, strategy_id
 ROW_FIELDS = {"id", "ticker", "interval", "key", "hash", "name", "ind", "index", "market", "price", "np", "npp", "tr",
               "w", "pf", "mdd", "mddp", "avg", "avgp", "bars", "m", "actv", "cand", "prc", "tdep", "release",
               "version", "profit", "candle", "icon", "preview", "thumb_profit", "thumb_candle", "grade", "live",
-              "live_as_of", "is_new", "tv_symbol", "file", "ind_url", "ind_text"}
+              "live_as_of", "is_new", "tv_symbol", "file", "ind_url", "ind_text", "ind_lang"}
 
 
 @pytest.fixture(scope="module")
@@ -83,11 +83,11 @@ def test_grade_cutoffs_from_the_environment(tmp_path):
 def test_rows_carry_their_indicator_page(real_client):
     """«CLAVE · indicador» en las fichas de Pro lleva a la página del indicador en TradingView, y al pasar
     por encima dice qué es: lo mismo que la página de la estrategia."""
-    row = next(r for r in get(real_client, "q=1BOL&size=25")["rows"] if r["key"] == "1BOL")
+    row = next(r for r in get(real_client, "q=1BOL&size=25&ind_lang=en")["rows"] if r["key"] == "1BOL")
     assert row["ind_url"] == "https://www.tradingview.com/script/uCV8I4xA-Bollinger-RSI-Double-Strategy-by-ChartArt-v1-1/"
-    assert row["ind_text"].startswith("The Bollinger RSI Double Strategy combines")
-    detail = real_client.get(f"/api/strategies/{row['id']}").json
-    assert (detail["ind_url"], detail["ind_text"]) == (row["ind_url"], row["ind_text"])
+    assert row["ind_text"].startswith("The Bollinger RSI Double Strategy combines") and row["ind_lang"] == "en"
+    detail = real_client.get(f"/api/strategies/{row['id']}?ind_lang=en").json
+    assert (detail["ind_url"], detail["ind_text"], detail["ind_lang"]) == (row["ind_url"], row["ind_text"], "en")
     # un indicador sin página propia (una combinación: «--» en indicators.csv) lleva a la lista de scripts
     combined = next(r for r in get(real_client, "q=2BB0&size=25")["rows"] if r["key"] == "2BB0")
     assert combined["ind_url"] == TV_SCRIPTS
@@ -304,7 +304,7 @@ def test_one_strategy(client, real_client):
     assert by_id == client.get(f"/api/strategies/{cart_id(s)}").json
     assert by_id["versions"] == [{"v": 1, "date": "2024-09-27", "note": ""}]
     assert client.get("/api/strategies/NOPE_1Day_X_0").json == {"error": "errUnknownStrategy"}
-    detail = real_client.get("/api/strategies/ADBE_1Day_1C00_151aa3e7").json
+    detail = real_client.get("/api/strategies/ADBE_1Day_1C00_151aa3e7?ind_lang=en").json
     assert detail["ind_text"].startswith("The Chaikin") and detail["ind_url"].startswith("https://www.tradingview.com/")
 
 

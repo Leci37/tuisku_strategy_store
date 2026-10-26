@@ -1,6 +1,6 @@
 // The pages beyond the shop lists: the strategy page, compare, My strategies, thanks, the install
 // tutorial, the welcome tour, the free-download dialog, the phone bar, the footer and errors.
-import { tvInterval, tvChartUrl } from './fmt.js';
+import { tvInterval, tvChartUrl, linkCounts } from './fmt.js';
 
 // Las páginas legales son las del núcleo, en esta misma web.
 const LEGAL = { legalPrivacyUrl: '/legal/privacidad', legalCookiesUrl: '/legal/cookies', legalTermsUrl: '/legal/terminos', legalNoticeUrl: '/legal/aviso-legal' };
@@ -29,7 +29,8 @@ export function pageVals(c) {
     ...LEGAL, legalOn: true, contactOn: !!c.contact, contactUrl: c.contact ? 'mailto:' + c.contact : '', contactEmail: c.contact,
     errOpen: !!s.error, errTitle: tx.errServer, closeErr: () => app.setState({ error: '' }),
     // the server's vars, or the contact address (a link that expired says where to write)
-    errText: t(s.error, s.errorVars || { e: c.contact }) + ((s.error === 'errPayment' || s.error === 'errLater' || s.error === 'errPayPal') && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
+    // (la cuenta que manda el servidor, n, elige la forma del texto: errPackSize en árabe, «5 استراتيجيات» pero «11 استراتيجية»)
+    errText: t(s.error, s.errorVars || { e: c.contact }, s.errorVars && typeof s.errorVars.n === 'number' ? s.errorVars.n : null) + ((s.error === 'errPayment' || s.error === 'errLater' || s.error === 'errPayPal') && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
     errTop: at.top, errBottom: at.bottom,
     toastRoom: dialogOpen && toastOn ? (s.toastH || 58) + 8 + 'px' : '0px',
     cmpBottom: base + 'px',
@@ -253,7 +254,7 @@ function thanksVals(c) {
     orderRows: (rc.downloads || []).map(d => ({ ...c.mk(d), pineUrl: d.url, zipUrl: d.zip })),
     orderTotal: f.money(Number(rc.total)), orderLabel: t('orderN', { id: rc.order_id }),
     downloadAllUrl: rc.download_all,
-    linksNote: t('linksNote', { n: f.int(rc.valid_days), m: f.int(rc.max_downloads) })
+    linksNote: t('linksNote', linkCounts(t, f, rc.valid_days, rc.max_downloads))
   };
 }
 

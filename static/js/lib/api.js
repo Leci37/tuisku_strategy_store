@@ -26,7 +26,17 @@ export async function api(path, { method = 'GET', body } = {}) {
     throw err;
   }
   let data = null;
-  try { data = await res.json(); } catch (e) { data = null; }
+  try { data = await res.json(); } catch (e) {
+    // un GET contestado bien cuyo cuerpo no se pudo leer (una navegación lo cortó, la red se cayó a medias) es, para
+    // quien lo pidió, un fallo de red como no tener respuesta: antes llegaba null, y leerlo (m.items, r.id) era un
+    // TypeError en la consola. Un PUT o un DELETE pueden contestar sin cuerpo
+    if (res.ok && method === 'GET') {
+      const err = new ApiError(0, 'errShopNetwork', {});
+      err.network = true;
+      throw err;
+    }
+    data = null;
+  }
   if (!res.ok) {
     const detail = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
     throw new ApiError(res.status, typeof detail.error === 'string' ? detail.error : '', detail);

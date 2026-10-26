@@ -1,7 +1,7 @@
 // renderVals(): the values object the views read, with the names of the prototype's renderVals()
 // (Storefront v7.dc.html), computed from the server's data. Split by area: shop (Lite, Pro, filters),
 // cart (bundles, pack, quote), pages (strategy page, compare, My strategies, thanks, dialogs).
-import { translator, formatters, tvSymbolUrl, LOCAL_CURRENCY } from './fmt.js';
+import { translator, formatters, tvSymbolUrl, LOCAL_CURRENCY, linkCounts } from './fmt.js';
 import { strategyPath } from './route.js';
 import { shopVals } from './vals_shop.js';
 import { cartVals } from './vals_cart.js';
@@ -29,8 +29,9 @@ export function renderVals(app) {
   TX_KEYS.forEach(k => { tx[k] = t(k); });
   const contact = (s.cfg && s.cfg.contact_email) || '';
   tx.contactProblems = t('contactProblems', { e: contact });
-  // the trust row says what the server's settings say, not the design's example figures
-  tx.trustLinks = t('trustLinks', { n: f.int((s.cfg && s.cfg.download_days) || 7), m: f.int((s.cfg && s.cfg.max_downloads) || 10) });
+  // la fila de confianza dice lo que dicen los ajustes del servidor, no las cifras de ejemplo del diseño; cada cuenta,
+  // con la forma que pide su número (en árabe, 2 lleva el dual, de 3 a 10 el plural y de 11 a 99 el singular)
+  tx.trustLinks = t('trustLinks', linkCounts(t, f, (s.cfg && s.cfg.download_days) || 7, (s.cfg && s.cfg.max_downloads) || 10));
 
   // la escala de las barras de la página de la estrategia: el mejor backtest del catálogo (del servidor).
   // Con la del diseño (100 %, para backtests de 71–86 %), los de 0,03–0,44 % del catálogo de 2026-10 no se veían
@@ -39,9 +40,10 @@ export function renderVals(app) {
   // «Desde su publicación» sólo cuando alguna estrategia tiene cifra (since_release, API #1): sin ninguna, cada
   // ficha decía «—» y su barra salía vacía. Vuelve sola cuando las hay
   const liveOn = cfg.since_release > 0;
-  // la explicación de la nota dice desde cuántas operaciones es cada letra (GRADE_CUTOFFS, del servidor)
+  // la explicación de la nota dice desde cuántas operaciones es cada letra (GRADE_CUTOFFS, del servidor); el número de
+  // la A elige la forma del plural (en árabe, «10 صفقات» pero «100 صفقة»)
   const cuts = Array.isArray(cfg.grade_cutoffs) && cfg.grade_cutoffs.length === 3 ? cfg.grade_cutoffs : null;
-  const gradeCuts = cuts ? ' ' + t('gradeCuts', { a: f.int(cuts[0]), b: f.int(cuts[1]), c: f.int(cuts[2]) }) : '';
+  const gradeCuts = cuts ? ' ' + t('gradeCuts', { a: f.int(cuts[0]), b: f.int(cuts[1]), c: f.int(cuts[2]) }, cuts[0]) : '';
   // lo que ya es de la cuenta (API #15, Mis estrategias; sin sesión, nada), por id
   const mine = new Map(((s.mine && s.mine.items) || []).map(x => [x.id, x]));
   const c = { app, s, t, tx, f, lang, rtl, contact, nppTop, liveOn, gradeCuts, ownedOf: id => mine.get(id) || null };
@@ -55,7 +57,8 @@ export function renderVals(app) {
     tx, barStart: app.props.barStart, barEnd: app.props.barEnd, liveOn,
     // el aviso de sobreajuste (Lite y Pro), cuando se sabe: entre cuántas estrategias probadas se eligieron
     // estas, y que sus cifras son de datos que los modelos no vieron
-    riskTried: cfg.tried ? ' ' + t('riskTried', { n: f.int(cfg.strategies), m: f.int(cfg.tried) }) : '',
+    // (las probadas eligen la forma del plural: en árabe, «1503 استراتيجيات» pero «1531 استراتيجية»)
+    riskTried: cfg.tried ? ' ' + t('riskTried', { n: f.int(cfg.strategies), m: f.int(cfg.tried) }, cfg.tried) : '',
     tv: s.tv, tvOff: !s.tv, toggleTv: () => app.toggleTv(), tvTitle: s.tv ? tx.tvDisconnect : tx.tvConnect,
     isLocal: f.isLocal, curLabel: f.curLabel, curFixed: !canLocal, curCursor: canLocal ? 'pointer' : 'default',
     toggleCur: () => { if (canLocal) app.setState(st => ({ cur: st.cur === 'local' ? 'usd' : 'local' })); },
@@ -82,6 +85,11 @@ export function renderVals(app) {
   };
 }
 
+// el lang y el dir de la explicación del indicador: los de la página, salvo si llega en otro idioma (sin traducir: en
+// inglés). Nunca null: Preact lo pondría como lang="" («idioma desconocido»), no como «el de la página»
+const exMarks = (r, c) => (r.ind_lang && r.ind_lang !== c.lang ? { exLang: r.ind_lang, exDir: 'auto' }
+  : { exLang: c.lang, exDir: c.rtl ? 'rtl' : 'ltr' });
+
 // One strategy as every list, card and page shows it (the prototype's mk()).
 function rowVals(c, r) {
   const { app, s, t, tx, f } = c;
@@ -95,10 +103,13 @@ function rowVals(c, r) {
   const openAt = tab => e => { stop(e); app.go({ page: 'detail', detail: id, detTab: tab }); };
   const toggleRow = () => app.setState(st => ({ expanded: st.expanded === id ? '' : id }));
   return {
-    id, ticker: r.ticker, name: r.name, key: r.key, ind: r.ind, ex: r.ind_text || '',
+    // la explicación del indicador llega en el idioma de la página (API #2 y #3); la que no está traducida, en
+    // inglés, lo dice (ind_lang): sólo entonces lleva lang="en" y dir="auto"
+    id, ticker: r.ticker, name: r.name, key: r.key, ind: r.ind, ex: r.ind_text || '', ...exMarks(r, c),
     icon: r.icon, interval: r.interval, index: r.index,
     priceLabel: r.price === 0 ? t('landingFree') : f.pmoney(r.price),
-    grade: r.grade, gradeBg: GRADE_BG[r.grade] || '#5a6b80', gradeTip: t('gradeTip', { n: f.int(r.tr) }) + c.gradeCuts,
+    // cuántas operaciones, con la forma del plural que pide el número (en árabe, «9 صفقات» pero «36 صفقة»)
+    grade: r.grade, gradeBg: GRADE_BG[r.grade] || '#5a6b80', gradeTip: t('gradeTip', { n: f.int(r.tr) }, r.tr) + c.gradeCuts,
     // since release is measured by a daily job; until it has run there is nothing to show
     live: live == null ? '—' : f.pctS(live), liveColor: live == null ? '#8d9cae' : live >= 0 ? '#15803d' : '#c0392b',
     barBt: Math.max(0, Math.min(100, (r.npp || 0) / c.nppTop * 100)) + '%',
@@ -111,7 +122,7 @@ function rowVals(c, r) {
     cmpBg: cmp ? '#16263a' : '#ffffff', cmpColor: cmp ? '#ffffff' : '#5a6b80',
     onCompare: e => { stop(e); app.toggleCompare(id); },
     isFree: r.price === 0, isPaid: r.price > 0,
-    np: f.money(r.np), npp: f.pct(r.npp), nppSigned: f.pctS(r.npp), trades: f.int(r.tr), win: f.pct(r.w), avg: f.money(r.avg), months: f.int(r.m),
+    np: f.money(r.np), npp: f.pct(r.npp), nppSigned: f.pctS(r.npp), trades: f.int(r.tr), tradesWord: t('tradesWord', null, r.tr), win: f.pct(r.w), avg: f.money(r.avg), months: f.int(r.m),
     // lists load the 640px WebP; the strategy page swaps in the full PNG
     profit: r.thumb_profit || r.profit, candle: r.thumb_candle || r.candle,
     tvUrl: tvSymbolUrl(r.tv_symbol),

@@ -81,8 +81,10 @@ def claim(shop, strategy, email: str, news: bool, lang: str, links, mail, user_i
     what = {"name": strategy.row.get("Name") or strategy.ticker, "ticker": strategy.ticker,
             "interval": strategy.interval}
     pine = links("edgefolio.download", token=token)
-    text = texts.get("mailFreeBody", lang, **what, pine=pine, zip=pine + "?format=zip", days=days,
-                     n=settings.max_downloads, mine=mine)
+    # los días y las descargas de un enlace son ajustes: cada cuenta, con la forma que pide su número
+    counts = {"days": texts.get("linkDays", lang, n=days),
+              "downloads": texts.get("linkDownloads", lang, n=settings.max_downloads)}
+    text = texts.get("mailFreeBody", lang, **what, **counts, pine=pine, zip=pine + "?format=zip", mine=mine)
     if confirm:
         text += "\n" + texts.get("mailNewsConfirm", lang, link=links("edgefolio.confirm_news", token=confirm))
     mail(email, texts.get("mailFreeSubject", lang, **what), text, kind="edgefolio-free")

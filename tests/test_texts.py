@@ -454,3 +454,46 @@ def test_the_pack_says_its_size_and_counts_what_is_left_in_its_form(real_app):
                 assert tab.problems() == [], tab.problems()
             finally:
                 tab.close()
+
+
+def test_a_combined_indicator_is_named_like_its_tree_names_it():
+    """El nombre de una combinada es el de sus partes como lo dice la pestaña «Cómo decide» (las funciones de su
+    script sin «L_» ni guiones bajos, unidas por « + »): «Bull Bear Power + Triple EMA», no el del generador,
+    «Bull_Bear_Power & Triple_EMA Combined»."""
+    for row in INDICATORS:
+        assert "_" not in row["Full Indicator Name"], row["Key"]
+        if row["Key"].startswith("2"):
+            parts = [f.strip().split(".")[-1] for f in row["Associated Function"].split(",")]
+            assert row["Full Indicator Name"] == " + ".join(p.replace("L_", "", 1).replace("_", " ") for p in parts), row["Key"]
+
+
+def test_a_bundle_list_that_wraps_never_ends_a_line_with_its_dot(real_app):
+    """La lista de tickers de un lote va en una línea de izquierda a derecha dentro de la tarjeta; si se parte, el
+    punto se queda con el ticker que le sigue. En árabe, el que acababa la primera línea quedaba junto al que la
+    separa del recuento: «SNOW · ADBE · META · AMD · · 5 استراتيجيات»."""
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        tab = mobile.open_page(chromium, live, "laptop")
+        page = tab.page
+        try:
+            page.add_init_script(SEEN)
+            tab.goto("/?lang=ar")
+            span = page.locator("span[dir=ltr]", has_text=re.compile(r"·")).first
+            span.wait_for()
+            # el último carácter que no es un espacio de cada línea (por la altura de cada letra)
+            ends = span.evaluate("""el => {
+                const node = el.firstChild, text = node.textContent, range = document.createRange(), lines = [];
+                for (let i = 0; i < text.length; i++) {
+                    range.setStart(node, i); range.setEnd(node, i + 1);
+                    const r = range.getClientRects()[0];
+                    if (!r || !text[i].trim()) continue;
+                    const top = Math.round(r.top);
+                    if (!lines.length || Math.abs(lines[lines.length - 1].top - top) > 4) lines.push({ top, last: text[i] });
+                    else lines[lines.length - 1].last = text[i];
+                }
+                return lines.map(l => l.last);
+            }""")
+            assert len(ends) >= 2, f"la lista no se parte a este ancho: la prueba no prueba nada ({ends})"
+            assert "·" not in ends, ends
+            assert tab.problems() == [], tab.problems()
+        finally:
+            tab.close()

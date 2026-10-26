@@ -497,3 +497,30 @@ def test_a_bundle_list_that_wraps_never_ends_a_line_with_its_dot(real_app):
             assert tab.problems() == [], tab.problems()
         finally:
             tab.close()
+
+
+def test_the_free_dialog_says_how_long_its_link_lasts(real_app):
+    """El «Hecho» de la gratis dice cuánto vale su enlace (DOWNLOAD_DAYS, de API #1), en la forma de su número; antes
+    decía 7 días, escrito en el texto de los 8 idiomas."""
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        for lang, days, said in (("ar", 11, "تم. تفقّد بريدك: الرابط صالح لمدة 11 يومًا."),
+                                 ("es", 1, "Hecho. Mira tu correo: el enlace vale 1 día.")):
+            tab = mobile.open_page(chromium, live, "laptop")
+            page = tab.page
+            try:
+                page.add_init_script(SEEN)
+
+                def config(route, days=days):
+                    response = route.fetch()
+                    route.fulfill(response=response, json={**response.json(), "download_days": days})
+                page.route(re.compile(r".*/api/config$"), lambda route: config(route))
+                page.route("**/api/free", lambda route: route.fulfill(status=200, content_type="application/json",
+                                                                     body=json.dumps({"sent": True})))
+                tab.goto(f"/?lang={lang}")
+                page.locator("#app button", has_text=re.compile("^\\s*" + re.escape(UI["download"][lang]) + "\\s*$")).first.click()
+                page.locator("[role=dialog] input[type=email]").fill("ana@example.com")
+                page.get_by_role("button", name=UI["sendLink"][lang], exact=True).click()
+                page.get_by_text(said, exact=True).wait_for()
+                assert tab.problems() == [], tab.problems()
+            finally:
+                tab.close()

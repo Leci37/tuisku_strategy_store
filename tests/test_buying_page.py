@@ -204,7 +204,7 @@ def test_paying_does_not_refuse_what_was_just_bought(real_app):
             dialog.get_by_text(free["name"] + " · " + free["ticker"]).wait_for()
             dialog.locator("input[type=email]").fill(client.email)
             dialog.get_by_role("button", name=say("sendLink")).click()
-            dialog.get_by_text(say("freeSent")).wait_for()
+            dialog.get_by_text(say("freeSent").replace("{days}", "7 días")).wait_for()   # DOWNLOAD_DAYS, 7
             page.keyboard.press("Escape")
             page.wait_for_function(f"() => document.querySelectorAll('{OWNED}').length === 2")
             assert sorted(x["text"] for x in page.evaluate(AROUND, OWNED)) == [say("ownedYours") + " · " + say("download")] * 2

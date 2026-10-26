@@ -22,8 +22,9 @@ export default function Detail(v) {
             </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:200px">
             <span style="font-size:28px;font-weight:700;letter-spacing:-.4px;text-align:end">${v.det?.priceLabel}</span>
-            ${v.det?.isPaid ? html`<button onClick=${v.det?.onCart} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid ${s(v.det?.cartBorder)};background:${s(v.det?.cartBg)};color:${s(v.det?.cartColor)}"><i class=${v.det?.cartIcon}></i>${T(v.det?.cartLabel)}</button>` : null}
-            ${v.det?.isFree ? html`<button onClick=${v.det?.onFree} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>${T(v.tx?.download)}</button>` : null}
+            ${v.det?.isPaid && !v.detOwned ? html`<button onClick=${v.det?.onCart} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid ${s(v.det?.cartBorder)};background:${s(v.det?.cartBg)};color:${s(v.det?.cartColor)}"><i class=${v.det?.cartIcon}></i>${T(v.det?.cartLabel)}</button>` : null}
+            ${v.det?.isFree && !v.detOwned ? html`<button onClick=${v.det?.onFree} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>${T(v.tx?.download)}</button>` : null}
+            ${v.detOwned ? html`<a href=${v.ownedHref} onClick=${v.ownedGo} data-ef-owned style="font-family:inherit;line-height:normal;text-decoration:none;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #b7e4c7;background:#e8f7ef;color:#15803d"><i class="fa-solid fa-circle-check"></i>${T(v.ownedLabel)}</a>` : null}
             <a href=${v.det?.tabHref} target="_blank" rel="noopener" style="font-size:12px;font-weight:600;text-align:end;display:inline-flex;gap:6px;align-items:center;justify-content:flex-end"><i class="fa-solid fa-up-right-from-square" style="font-size:10px"></i>${T(v.tx?.newTab)}</a>
             <button onClick=${v.det?.onFav} style="font-family:inherit;border:none;background:none;padding:0;cursor:pointer;font-size:12.5px;font-weight:600;color:${s(v.det?.favColor)};display:inline-flex;gap:6px;align-items:center;justify-content:flex-end"><i class=${v.det?.favIcon}></i>${T(v.tx?.favourites)}</button>
             </div>
@@ -64,7 +65,7 @@ export default function Detail(v) {
         <div style="background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:6px">
           <span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">${v.tx?.aboutInd}</span>
           <strong dir="auto" style="font-size:15px">${T(v.det?.key)} · ${T(v.det?.ind)}</strong>
-          <p dir="auto" style="margin:0;color:#5a6b80;font-size:13.5px;text-wrap:pretty">${v.det?.ex}</p>
+          <p dir="auto" lang="en" style="margin:0;color:#5a6b80;font-size:13.5px;text-wrap:pretty">${v.det?.ex}</p>
           <a href=${v.det?.indUrl} target="_blank" rel="noopener" style="font-size:13px;font-weight:600;display:inline-flex;gap:6px;align-items:center"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:14px;height:14px" />${T(v.tx?.seeInd)}</a>
           </div>
         <div style="border-radius:18px;overflow:hidden;border:1px solid #16263a;box-shadow:0 14px 36px rgba(15,27,45,.18)">
@@ -78,20 +79,20 @@ export default function Detail(v) {
               ${(v.pineLines || []).map((ln, $index) => html`<div style="display:flex;filter:${s(ln?.blur)};opacity:${s(ln?.op)};user-select:${s(ln?.sel)}"><span style="width:48px;flex-shrink:0;text-align:right;padding-right:16px;color:#4c5d74;user-select:none">${ln?.no}</span><span style="white-space:pre;tab-size:4;color:#dbe4ef;padding-right:16px">${(ln?.toks || []).map((tk, $index) => html`<span style="color:${s(tk?.c)};font-style:${s(tk?.fs)}">${tk?.t}</span>`)}</span></div>`)}${' '}
               </div>
             <div style="position:absolute;inset-inline:0;bottom:0;height:110px;background:linear-gradient(180deg,rgba(15,27,45,0),#0f1b2d 78%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px">
-              <span style="display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#ffffff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600"><i class="fa-solid fa-lock"></i>${T(v.tx?.scriptRest)}</span>
+              <span style="display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#ffffff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600"><i class="fa-solid fa-lock"></i>${T(v.detRest)}</span>
               </div>
             </div>
           <div style="background:#ffffff;padding:16px;display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:36px;height:36px;border-radius:10px;background:#e9f0fd;color:#0950e3;display:grid;place-items:center;flex-shrink:0"><i class="fa-solid fa-box-open"></i></span><div style="display:flex;flex-direction:column;gap:2px"><strong style="font-size:15.5px">${v.tx?.buyScriptTitle}</strong><span style="font-size:13px;color:#5a6b80;text-wrap:pretty">${v.tx?.buyScriptText}</span></div></div>
+            <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:36px;height:36px;border-radius:10px;background:#e9f0fd;color:#0950e3;display:grid;place-items:center;flex-shrink:0"><i class="fa-solid fa-box-open"></i></span><div style="display:flex;flex-direction:column;gap:2px"><strong style="font-size:15.5px">${v.detGetTitle}</strong><span style="font-size:13px;color:#5a6b80;text-wrap:pretty">${v.tx?.buyScriptText}</span></div></div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
               ${(v.formats || []).map((fm, $index) => html`<div style="border:1px solid ${s(fm?.bd)};background:${s(fm?.bg)};border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:center;gap:8px"><span style="width:32px;height:32px;border-radius:9px;background:${s(fm?.icBg)};color:#ffffff;display:grid;place-items:center;font-size:15px;flex-shrink:0"><i class=${fm?.ic}></i></span><strong style="font-size:14px;flex:1">${fm?.name}</strong>${fm?.beta ? html`<span style="font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#9a5b00;background:#fff3dd;border:1px solid #f6d9ae;border-radius:999px;padding:1px 7px">BETA</span>` : null}</div><span style="font-size:12.5px;color:#5a6b80;text-wrap:pretty">${fm?.desc}</span><span dir="ltr" style="font-size:11.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8d9cae">${fm?.ext}</span></div>`)}
               </div>
-            <span style="font-size:12.5px;color:#5a6b80;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-lock" style="color:#8d9cae"></i>${T(v.tx?.formatsNote)}</span>
+            <span style="font-size:12.5px;color:#5a6b80;display:inline-flex;gap:7px;align-items:center"><i class="fa-solid fa-lock" style="color:#8d9cae"></i>${T(v.detFormatsNote)}</span>
             </div>
           </div>
         ` : null}
       ${v.detTreeTab ? html`
-        ${v.Tree ? html`<div class="sc-host"><${v.Tree} embedded=${true} strategy=${v.treeRow} lang=${v.treeLang} onBuy=${v.treeBuy} owned=${v.treeOwned} signedIn=${v.treeSignedIn} ownerDownload=${v.treeDownload} /></div>` : null}
+        ${v.Tree ? html`<div class="sc-host"><${v.Tree} embedded=${true} strategy=${v.treeRow} lang=${v.treeLang} onBuy=${v.treeBuy} inCart=${v.treeInCart} owned=${v.treeOwned} signedIn=${v.treeSignedIn} ownerDownload=${v.treeDownload} /></div>` : null}
         <button class="sf-hover12" onClick=${v.backToSheet} style="align-self:flex-start;font-family:inherit;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;border:1.5px solid #0950e3;background:#e9f0fd;color:#0950e3"><i class="fa-regular fa-file-lines"></i>${T(v.tx?.toSheet)}</button>
         ` : null}
       </section>

@@ -86,8 +86,15 @@ def email_of(raw) -> str:
 
 # ── las páginas: una plantilla, la página lee la ruta ───────────────────────
 
-def _page():
-    return render_template("edgefolio/shop.html")
+def _page(strategy=None, tree: bool = False):
+    """La plantilla. En la página de una estrategia, el título de la pestaña dice cuál es (un ticker tiene
+    hasta 17), como su cabecera y sus etiquetas: el mismo que pone static/js/app.js (tabTitle) al moverse
+    por la tienda o cambiar de idioma. Así sale bien también antes de que corra la página y en la vista
+    previa de un enlace (og:title, de la carcasa)."""
+    name = ""
+    if strategy is not None:
+        name = " · ".join((strategy.summary["name"], strategy.ticker, strategy.key_techs, strategy.interval))
+    return render_template("edgefolio/shop.html", strategy_name=name, tree_tab=tree)
 
 
 @bp.get("/")
@@ -110,7 +117,7 @@ def _strategy_page(strategy_id: str, tail: str = ""):
         return redirect("/", code=302)
     if s.id != strategy_id:
         return redirect(f"/s/{s.id}{tail}", code=301)
-    return _page()
+    return _page(s, tree=bool(tail))
 
 
 @bp.get("/s/<strategy_id>")

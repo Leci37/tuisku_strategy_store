@@ -397,6 +397,16 @@
     "ar": "في السلة",
     "hi": "कार्ट में है"
   },
+  "ownedYours": {
+    "es": "Ya es tuya",
+    "en": "Already yours",
+    "pt": "Já é tua",
+    "fr": "Déjà à vous",
+    "de": "Gehört dir schon",
+    "zh": "已归你所有",
+    "ar": "إنها لك بالفعل",
+    "hi": "यह पहले से आपकी है"
+  },
   "download": {
     "es": "Descargar",
     "en": "Download",
@@ -1851,6 +1861,16 @@
     "ar": "يُسلَّم باقي السكربت بعد الشراء",
     "hi": "बाकी स्क्रिप्ट खरीद के बाद दी जाती है"
   },
+  "scriptRestFree": {
+    "es": "El resto del script te llega gratis por correo",
+    "en": "The rest of the script comes free by email",
+    "pt": "O resto do script chega-te grátis por e-mail",
+    "fr": "La suite du script vous parvient gratuitement par e-mail",
+    "de": "Den Rest des Skripts bekommst du kostenlos per E-Mail",
+    "zh": "脚本其余部分会免费通过邮件发给你",
+    "ar": "يصلك باقي السكربت مجانًا عبر البريد الإلكتروني",
+    "hi": "बाकी स्क्रिप्ट आपको ईमेल से मुफ़्त मिलती है"
+  },
   "buyScriptTitle": {
     "es": "Lo que compras: el script completo",
     "en": "What you buy: the complete script",
@@ -1860,6 +1880,16 @@
     "zh": "你购买的是：完整脚本",
     "ar": "ما تشتريه: السكربت الكامل",
     "hi": "आप क्या खरीदते हैं: पूरी स्क्रिप्ट"
+  },
+  "buyScriptTitleFree": {
+    "es": "Lo que recibes: el script completo",
+    "en": "What you get: the complete script",
+    "pt": "O que recebes: o script completo",
+    "fr": "Ce que vous recevez : le script complet",
+    "de": "Was du bekommst: das komplette Skript",
+    "zh": "你将获得：完整脚本",
+    "ar": "ما تحصل عليه: السكربت الكامل",
+    "hi": "आपको क्या मिलता है: पूरी स्क्रिप्ट"
   },
   "buyScriptText": {
     "es": "El código Pine completo de la estrategia, con todos los árboles de su bosque, listo para pegar en el editor Pine de TradingView. Arriba ves sus primeras líneas.",
@@ -1881,6 +1911,16 @@
     "ar": "الصيغ المضمّنة. نزّلها من استراتيجياتي بعد الشراء.",
     "hi": "शामिल फ़ॉर्मैट। खरीद के बाद मेरी रणनीतियाँ से डाउनलोड करें।"
   },
+  "formatsNoteFree": {
+    "es": "Formatos incluidos. Te llegan por correo y están en Mis estrategias.",
+    "en": "Included formats. They come by email and are in My strategies.",
+    "pt": "Formatos incluídos. Chegam-te por e-mail e estão em As minhas estratégias.",
+    "fr": "Formats inclus. Ils vous parviennent par e-mail et sont dans Mes stratégies.",
+    "de": "Enthaltene Formate. Du bekommst sie per E-Mail, und sie stehen unter Meine Strategien.",
+    "zh": "包含的格式。会通过邮件发给你，也在“我的策略”中。",
+    "ar": "الصيغ المضمّنة. تصلك عبر البريد الإلكتروني وتجدها في استراتيجياتي.",
+    "hi": "शामिल फ़ॉर्मैट। ये आपको ईमेल से मिलते हैं और मेरी रणनीतियाँ में भी हैं।"
+  },
   "fmtPineDesc": {
     "es": "Para TradingView. Es el producto que compras.",
     "en": "For TradingView. This is the product you buy.",
@@ -1890,6 +1930,16 @@
     "zh": "用于 TradingView。这就是你购买的产品。",
     "ar": "لـ TradingView. هذا هو المنتج الذي تشتريه.",
     "hi": "TradingView के लिए। यही वह उत्पाद है जो आप खरीदते हैं।"
+  },
+  "fmtPineDescFree": {
+    "es": "Para TradingView. Es lo que te llega por correo.",
+    "en": "For TradingView. This is what you get by email.",
+    "pt": "Para o TradingView. É o que te chega por e-mail.",
+    "fr": "Pour TradingView. C’est ce que vous recevez par e-mail.",
+    "de": "Für TradingView. Das bekommst du per E-Mail.",
+    "zh": "用于 TradingView。这就是你通过邮件收到的内容。",
+    "ar": "لـ TradingView. هذا ما يصلك عبر البريد الإلكتروني.",
+    "hi": "TradingView के लिए। यही आपको ईमेल से मिलता है।"
   },
   "fmtMd": {
     "es": "Markdown para IA",

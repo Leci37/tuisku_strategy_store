@@ -97,6 +97,11 @@ function detailVals(c) {
   // «Update available» is for whoever bought an older version (My strategies says which: update), not for
   // every visitor; a free download is renewed with the new version anyway
   const detOwnOld = !!(owned && owned.update && owned.kind === 'paid');
+  // ya es de la cuenta (API #15): en vez de comprarla o pedirla otra vez, su .pine si el enlace vale y es la
+  // versión de hoy; si no, Mis estrategias, que da otro enlace o la versión nueva. El diseño no tiene este estado
+  const ownedPine = owned && owned.url && !owned.update ? owned.url : '';
+  // una gratis no se compra: te llega por correo (el diseño dice «compras» también en ella)
+  const free = r.price === 0;
   // lines 5–16 sharp, 17–21 fading out, as the design's preview
   const pine = (s.pine[r.preview] || '').replace(/\r/g, '').split('\n').slice(4, 21);
   const pineLines = s.pine[r.preview] ? pine.map((l, i) => ({ no: String(i + 5), toks: tokens(l || ' '),
@@ -105,20 +110,30 @@ function detailVals(c) {
   const dash = '—';
   return {
     isDetail: true, det, detOverview: !tree, detTreeTab: tree, detOwnOld,
-    showOverview: () => app.go({ detTab: 'overview' }, { scroll: false }), showHowTab: () => app.go({ detTab: 'tree' }, { scroll: false }),
+    detOwned: !!owned, ownedLabel: t('ownedYours') + ' · ' + (ownedPine ? tx.download : tx.myStrategies), ownedHref: ownedPine || '/mine',
+    // Mis estrategias sin recargar la página, salvo que se pida en otra pestaña o ventana (Ctrl, Cmd, Mayús)
+    ownedGo: e => { if (ownedPine || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; e.preventDefault(); app.goMine(); },
+    showOverview: () => app.go({ detTab: 'overview' }, { scroll: false }), showHowTab: () => app.showHow(),
     ovBg: !tree ? '#0950e3' : '#e9f0fd', ovColor: !tree ? '#ffffff' : '#0950e3', ovLine: '#0950e3',
     hwBg: tree ? '#0e7c98' : '#e3f4f8', hwColor: tree ? '#ffffff' : '#0e7c98', hwLine: '#0e7c98',
     backToSheet: () => app.go({ detTab: 'overview' }),
     detMaxW: tree ? '1320px' : '1120px', treeLang: c.lang,
     Tree: s.Tree, treeRow: r, treeOwned: !!owned, treeSignedIn: !!(s.me && s.me.email), treeDownload: (owned && owned.url) || null, treeBuy: () => { if (r.price === 0) app.openFree(r.id); else if (!c.inCart(r.id)) c.toggleCart(r.id); },
+    // si está en el carrito (sola, en un lote o en el pack) lo dice el carrito, no el árbol: quitada con el
+    // botón de la cabecera, el árbol vuelve a ofrecer «Comprar para desbloquear»
+    treeInCart: c.inCart(r.id),
     pineLines, pineFile: (r.file || 'strategy') + '.pine',
+    detRest: free ? t('scriptRestFree') : tx.scriptRest, detGetTitle: free ? t('buyScriptTitleFree') : tx.buyScriptTitle,
+    detFormatsNote: free ? t('formatsNoteFree') : tx.formatsNote,
     formats: [
-      { name: 'Pine Script', desc: tx.fmtPineDesc, ext: '.pine', ic: 'fa-solid fa-chart-line', icBg: '#0950e3', bg: '#f5f8ff', bd: '#c5d6f8', beta: false },
+      { name: 'Pine Script', desc: free ? t('fmtPineDescFree') : tx.fmtPineDesc, ext: '.pine', ic: 'fa-solid fa-chart-line', icBg: '#0950e3', bg: '#f5f8ff', bd: '#c5d6f8', beta: false },
       { name: tx.fmtMd, desc: tx.fmtMdDesc, ext: '.md', ic: 'fa-brands fa-markdown', icBg: '#16263a', bg: '#ffffff', bd: '#e2e9f0', beta: false },
       { name: 'Python', desc: tx.fmtPyDesc, ext: '.py', ic: 'fa-brands fa-python', icBg: '#0e7c98', bg: '#ffffff', bd: '#e2e9f0', beta: true },
       { name: 'JavaScript', desc: tx.fmtJsDesc, ext: '.js', ic: 'fa-brands fa-js', icBg: '#b86e00', bg: '#ffffff', bd: '#e2e9f0', beta: true }
     ],
-    detTf: t('tfNote', { tf: r.interval }),
+    // con el nombre que le da TradingView en su menú (1D, 1h), como el tutorial de instalación; el del
+    // catálogo (1Day, 1Hour) no sale en él
+    detTf: t('tfNote', { tf: tvInterval(r.interval) }),
     liveNote: r.live == null ? tx.liveUnknown : r.live_as_of ? t('liveAsOf', { date: f.fmtDate(r.live_as_of) }) : '',
     versions: versions.map((x, i) => ({
       // the date isolated (FSI…PDI): in Arabic "27/09/2024" would otherwise mix with "v1 · "

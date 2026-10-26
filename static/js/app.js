@@ -183,8 +183,12 @@ export class App extends Component {
       writeJSON(CART_KEY, { cart: s.cart, bundles: s.bundles, packIds: s.packIds, code: s.code, applied: s.applied });
     }
     if (!(s.me && s.me.email) && changed('favs', 'alerts')) writeJSON(FAVS_KEY, { favs: s.favs, alerts: s.alerts });
-    // el título, en el idioma de la carcasa (el servidor ya lo pone; al cambiar de idioma, aquí)
-    if (changed('lang', 'dict') && s.dict) document.title = 'Edgefolio · ' + translator(s.dict, {}, s.lang)('toolName');
+    // el título de la pestaña, en el idioma de la carcasa (el servidor ya lo pone al llegar; al moverse por
+    // la tienda o cambiar de idioma, aquí)
+    if (s.dict && changed('lang', 'dict', 'page', 'detail', 'detTab', 'rowsV')) {
+      const title = this.tabTitle();
+      if (title && title !== document.title) document.title = title;
+    }
 
     if (s.page === 'shop' && s.mode === 'pro') {
       const key = proQuery(s, s.ranges);
@@ -207,7 +211,9 @@ export class App extends Component {
     if (s.page === 'detail' && s.detail) this.fetchFull(s.detail);
     const d = s.page === 'detail' ? this.rows.get(s.detail) : null;
     if (d && d.preview && s.pine[d.preview] === undefined && !this.asked.has(d.preview)) this.fetchPreview(d.preview);
-    if (s.page === 'detail' && s.detTab === 'tree' && !s.Tree && !this.treeAsked) this.loadTree();
+    // el código del árbol, al abrir su pestaña; si no llegó, otra vez al volver a ella (desde la ficha, otra
+    // página o el historial) o al pulsarla (showHow), nunca solo: sin red se pediría sin parar
+    if (s.page === 'detail' && s.detTab === 'tree' && !s.Tree && (!this.treeAsked || (this.treeFailed && changed('page', 'detail', 'detTab')))) this.loadTree();
 
     const body = this.cartBody(), quoteKey = JSON.stringify(body);
     if (quoteKey !== this.quoteKey) {
@@ -312,10 +318,32 @@ export class App extends Component {
       .then(text => this.setState(st => ({ pine: { ...st.pine, [url]: text } })));
   }
 
+  // Un módulo que no llega es un fallo de red. El navegador recuerda el fallo de su dirección (otro import()
+  // falla en el acto, sin pedir nada): cada intento nuevo va a otra (?retry=N). Recuerda también el de una de
+  // sus piezas (views/tree/…), que tree.js importa sin ?retry: si falló una de ellas, sólo recargar lo arregla.
   loadTree() {
+    const n = this.treeTries || 0;
     this.treeAsked = true;
-    // un módulo que no llega es un fallo de red
-    import('./tree.js').then(m => this.setState({ Tree: m.StrategyTree })).catch(e => this.fail({ network: true, cause: e }));
+    this.treeFailed = false;
+    import(n ? './tree.js?retry=' + n : './tree.js').then(m => this.setState({ Tree: m.StrategyTree }))
+      .catch(e => { this.treeTries = n + 1; this.treeFailed = true; this.fail({ network: true, cause: e }); });
+  }
+
+  // «Cómo decide» (su pestaña y el botón de la ficha): si el código del árbol no llegó, pulsarla lo vuelve a
+  // pedir, también con la pestaña ya puesta.
+  showHow() {
+    if (this.treeFailed) this.treeAsked = false;
+    this.go({ detTab: 'tree' }, { scroll: false });
+  }
+
+  // El título de la pestaña: el de la tienda o, en la página de una estrategia, cuál es (un ticker tiene hasta
+  // 17), como su cabecera y sus etiquetas, y la pestaña de la página; el mismo que pone el servidor
+  // (templates/edgefolio/shop.html). Mientras no llega su fila, nada: se queda el que hay.
+  tabTitle() {
+    const s = this.state, t = translator(s.dict, {}, s.lang);
+    if (s.page !== 'detail') return 'Edgefolio · ' + t('toolName');
+    const r = this.row(s.detail);
+    return r ? [r.name || r.ticker, r.ticker, r.key, r.interval, s.detTab === 'tree' ? t('howItDecides') : '', 'Edgefolio'].filter(Boolean).join(' · ') : '';
   }
 
   // ---- lists -----------------------------------------------------------------------------------

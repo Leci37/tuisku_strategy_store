@@ -127,6 +127,8 @@ Se queda como está; el diseño no lo enseña o lo simula:
   maqueta (AMZN 1BOL: −0,78 y −0,90 «Esperar», +0,60 «Comprar»). Para hablarlo con el diseño.
 - **En una gratis, el árbol** dice «Script completo» y «Conseguirla gratis», no «Parte de pago» y «Comprar
   para desbloquear»; el clic abre el diálogo de la gratis, como en el diseño.
+- **«Comprar para desbloquear»** del árbol sigue al carrito de la página (`inCart`, de la ficha): quitada con
+  el botón de la cabecera, vuelve a decirlo y a añadirla. El diseño guardaba su propio «Añadida al carrito».
 - **«CLAVE · indicador»** de 1.402 estrategias (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:
   `indicators.csv` no les da una dirección. Si se quiere otra, la pone el generador.
@@ -185,6 +187,25 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **El recorrido de bienvenida** de Pro no lleva cifra («Acota el catálogo con los filtros del panel: … y
   16 más.»; pregunta abierta 5), y los seis logos de su primer paso son de tickers que vende el catálogo
   (MSFT, NVDA, AMZN, ADBE, BTC y SOL): el diseño traía Apple y Ethereum, que el de 2026-10 no tiene.
+- **La temporalidad que hay que poner en TradingView** va con el nombre de su menú, «1D» o «1h»
+  (`tvInterval`, como el tutorial de instalación): el diseño escribe fijo «1Day», el nombre del catálogo, que
+  el menú de TradingView no tiene.
+- **La explicación del indicador** («Sobre el indicador» y la fila desplegada de la Tabla de Pro) lleva
+  `lang="en"`: `catalogue/indicators.csv` sólo la tiene en inglés, y sale en inglés en los 8 idiomas.
+  Traducirla es contenido del dueño.
+- **En una gratis, la vista previa y los formatos** no hablan de comprar: «El resto del script te llega
+  gratis por correo», «Lo que recibes: el script completo», «Para TradingView. Es lo que te llega por
+  correo.» y «Formatos incluidos. Te llegan por correo y están en Mis estrategias.» (`scriptRestFree`,
+  `buyScriptTitleFree`, `fmtPineDescFree`, `formatsNoteFree`). El diseño pone los de compra también en ella.
+- **Una estrategia que ya es de la cuenta** (con la sesión abierta, lo dice Mis estrategias, API #15) lleva
+  «Ya es tuya · Descargar», el enlace de su .pine, en vez de «Añadir al carrito» o «Descargar»; si el enlace
+  caducó, se gastó o hay una versión nueva, «Ya es tuya · Mis estrategias», que lleva allí sin recargar
+  (`ownedYours`, `data-ef-owned` en `detail.js`). El diseño no tiene ese estado. El servidor la sigue
+  presupuestando: si se puede comprar dos veces lo decide el dueño.
+- **El título de la pestaña** dice qué estrategia es («Snowflake · SNOW · 1BOL · 1Day · Edgefolio», con
+  «Cómo decide» delante de «Edgefolio» en su pestaña): lo pone el servidor, también para la vista previa de
+  un enlace (`og:title`), y la página al moverse por la tienda o cambiar de idioma (`app.tabTitle`). En la
+  maqueta no cambia.
 
 ## Correcciones a la exportación
 

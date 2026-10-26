@@ -8,11 +8,12 @@ import Storefront from './views/storefront.js';
 import { api, post } from './lib/api.js';
 import { read, write, readJSON, writeJSON } from './lib/saved.js';
 import { parseLocation, pathOf } from './lib/route.js';
-import { proQuery } from './lib/filters.js';
+import { proQuery, Q_MAX, retrack } from './lib/filters.js';
 import { translator } from './lib/fmt.js';
 import { renderVals } from './lib/vals.js';
 import { PRO_SIZE } from './lib/vals_shop.js';
 import { withoutOverlap } from './lib/vals_cart.js';
+import { topDialog, shield, unshield, focusIn, giveBack, keepTab } from './lib/modal.js';
 
 const LITE_SIZE = 24;
 const PACK_FIND = 40;
@@ -46,6 +47,8 @@ export class App extends Component {
     this.asked = new Set();
     this.timers = {};
     this.seq = {};
+    this.modal = null; // el diálogo abierto de arriba: { el, opener, marked } (syncModal)
+    this.favSaved = new Map(); // lo que la cuenta tiene guardado de una favorita con un cambio sin contestar (setFav)
     this.state = {
       dict: null, cfg: null, bundleDefs: null, fx: null,
       lang: pageLang(), dir: pageDir(), mode: read('tuisku-sf-mode') === 'pro' ? 'pro' : 'lite',
@@ -60,8 +63,9 @@ export class App extends Component {
       code: cart.code || '', applied: cart.applied || '', codeState: '', codeOpen: !!cart.applied, quote: null,
       favs: list(favs.favs), alerts: favs.alerts && typeof favs.alerts === 'object' ? favs.alerts : {},
       compare: [], cmpOpen: false, packOpen: false, packQ: '', packFound: [],
-      freeFor: '', freeEmail: '', freeNews: false, freeSent: false, freeErr: '', dockH: 0,
-      me: props.signedIn ? null : { email: null }, mine: null, proofEmail: '', proofSent: false, proofExpired: false,
+      freeFor: '', freeEmail: '', freeNews: false, freeSent: false, freeErr: '', dockH: 0, toastH: 0,
+      // proofEmail: lo escrito en el campo; null hasta que se escribe algo (sale el de la cuenta), '' si se vació
+      me: props.signedIn ? null : { email: null }, mine: null, proofEmail: null, proofErr: '', proofSent: false, proofExpired: false,
       proofToken: '', proofAs: '',
       receipt: null, instStep: -1, instFor: '',
       tourStep: route.page === 'shop' && !read('edgefolio-tour-v1') ? 0 : -1,
@@ -85,7 +89,14 @@ export class App extends Component {
     document.addEventListener('zt:language', this.onLang);
 
     const dictionary = window.zt && zt.i18nReady ? zt.i18nReady : Promise.resolve(null);
-    dictionary.then(dict => { if (dict) this.setState({ dict }); else this.fail({ network: true }); });
+    // sin diccionario no se pinta nada (render): el aviso es el que escribió el servidor en la plantilla
+    // (zt.i18nReady no falla nunca: sin diccionario, da null)
+    dictionary.then(dict => {
+      if (dict) { this.setState({ dict }); return; }
+      const note = document.querySelector('[data-ef-nodict]');
+      if (note) note.hidden = false;
+      this.fail({ network: true });
+    });
     api('/api/config').then(cfg => this.setState({ cfg })).catch(e => this.fail(e));
     api('/api/bundles').then(bundleDefs => this.setState(st => ({ bundleDefs, ...withoutOverlap(st, bundleDefs) }))).catch(e => this.fail(e));
     api('/api/fx').then(fx => this.setState({ fx })).catch(() => { /* prices then stay in USD */ });
@@ -121,19 +132,52 @@ export class App extends Component {
     document.removeEventListener('zt:language', this.onLang);
     window.removeEventListener('pageshow', this.onShow);
     Object.values(this.timers).forEach(clearTimeout);
+    if (this.modal) unshield(this.modal.marked);
   }
 
   componentDidUpdate(prevProps, prevState) {
     this.sync(prevState);
     this.measureDock();
+    this.syncModal();
+  }
+
+  // Un diálogo abierto se queda con el teclado (lib/modal.js), sea cual sea el camino que lo abre o lo
+  // cierra (un botón, Esc, «Hecho», el último paso): al abrirse, el foco entra y lo de detrás queda inert;
+  // si lo enfocado desaparece dentro (un paso nuevo, «Enviarme el enlace» al mandarlo), el foco vuelve a
+  // lo principal; al cerrarse, vuelve a quien lo abrió (si se abrió solo o ya no está, a <main>). Tab da la
+  // vuelta dentro (onKey).
+  syncModal() {
+    const el = this.base && this.base.querySelectorAll ? topDialog(this.base) : null, cur = this.modal;
+    if (cur && cur.el !== el) {
+      unshield(cur.marked);
+      if (!el) {
+        this.modal = null;
+        giveBack(cur.opener);
+        return;
+      }
+    }
+    if (!el) return;
+    if (!cur || cur.el !== el) {
+      // un diálogo que se abre encima de otro devuelve el foco adonde lo devolvía el primero
+      this.modal = { el, opener: cur ? cur.opener : document.activeElement, marked: [] };
+      shield(el, this.modal.marked);
+      focusIn(el);
+      return;
+    }
+    shield(el, cur.marked);
+    const a = document.activeElement;
+    if (!a || a === document.body) focusIn(el);
   }
 
   // The height of Lite's floating cart (the Compare pill and the cart box): toasts sit above it. It
   // changes with what the page paints (the pill, the code box, the width), so it is read after each paint.
+  // También el del aviso que se ve (data-ef-toast): con un diálogo abierto, el diálogo le deja ese sitio arriba.
   measureDock() {
     const s = this.state, el = s.page === 'shop' && s.mode !== 'pro' ? document.querySelector('[data-sf-cart]') : null;
     const h = el ? el.offsetHeight : 0;
     if (h && h !== s.dockH) this.setState({ dockH: h });
+    const toast = document.querySelector('[data-ef-toast]'), th = toast ? toast.offsetHeight : 0;
+    if (th && th !== s.toastH) this.setState({ toastH: th });
   }
 
   // Brings the server's data in line with what the state shows: lists, missing rows, the quote.
@@ -144,8 +188,12 @@ export class App extends Component {
       writeJSON(CART_KEY, { cart: s.cart, bundles: s.bundles, packIds: s.packIds, code: s.code, applied: s.applied });
     }
     if (!(s.me && s.me.email) && changed('favs', 'alerts')) writeJSON(FAVS_KEY, { favs: s.favs, alerts: s.alerts });
-    // el título, en el idioma de la carcasa (el servidor ya lo pone; al cambiar de idioma, aquí)
-    if (changed('lang', 'dict') && s.dict) document.title = 'Edgefolio · ' + translator(s.dict, {}, s.lang)('toolName');
+    // el título de la pestaña, en el idioma de la carcasa (el servidor ya lo pone al llegar; al moverse por
+    // la tienda o cambiar de idioma, aquí)
+    if (s.dict && changed('lang', 'dict', 'page', 'detail', 'detTab', 'rowsV')) {
+      const title = this.tabTitle();
+      if (title && title !== document.title) document.title = title;
+    }
 
     if (s.page === 'shop' && s.mode === 'pro') {
       const key = proQuery(s, s.ranges);
@@ -155,7 +203,7 @@ export class App extends Component {
         this.later('pro', () => this.loadPro(1, false), first ? 0 : 150);
       }
     } else if (s.page === 'shop') {
-      const key = new URLSearchParams({ tab: s.liteTab, q: s.q.trim() }).toString();
+      const key = new URLSearchParams({ tab: s.liteTab, q: s.q.trim().slice(0, Q_MAX) }).toString();
       if (key !== this.liteKey) {
         const first = this.liteKey == null;
         this.liteKey = key;
@@ -168,7 +216,9 @@ export class App extends Component {
     if (s.page === 'detail' && s.detail) this.fetchFull(s.detail);
     const d = s.page === 'detail' ? this.rows.get(s.detail) : null;
     if (d && d.preview && s.pine[d.preview] === undefined && !this.asked.has(d.preview)) this.fetchPreview(d.preview);
-    if (s.page === 'detail' && s.detTab === 'tree' && !s.Tree && !this.treeAsked) this.loadTree();
+    // el código del árbol, al abrir su pestaña; si no llegó, otra vez al volver a ella (desde la ficha, otra
+    // página o el historial) o al pulsarla (showHow), nunca solo: sin red se pediría sin parar
+    if (s.page === 'detail' && s.detTab === 'tree' && !s.Tree && (!this.treeAsked || (this.treeFailed && changed('page', 'detail', 'detTab')))) this.loadTree();
 
     const body = this.cartBody(), quoteKey = JSON.stringify(body);
     if (quoteKey !== this.quoteKey) {
@@ -181,9 +231,9 @@ export class App extends Component {
     // available» is for it), but quietly and once: there a failure is not worth a toast
     const mineWanted = s.page === 'mine' || (s.page === 'detail' && !this.mineQuietTried);
     if (s.me && s.me.email && mineWanted && !s.mine && !this.mineLoading && !this.uploading) this.loadMine(s.page !== 'mine');
-    if (s.packOpen && s.packQ.trim() !== this.packKey) {
+    if (s.packOpen && s.packQ.trim().slice(0, Q_MAX) !== this.packKey) {
       const first = this.packKey == null;
-      this.packKey = s.packQ.trim();
+      this.packKey = s.packQ.trim().slice(0, Q_MAX);
       this.later('pack', () => this.loadPack(), first ? 0 : 150);
     }
   }
@@ -273,10 +323,35 @@ export class App extends Component {
       .then(text => this.setState(st => ({ pine: { ...st.pine, [url]: text } })));
   }
 
+  // Un módulo que no llega es un fallo de red. El navegador recuerda el fallo de su dirección (otro import()
+  // falla en el acto, sin pedir nada): cada intento nuevo va a otra (?retry=N). Recuerda también el de una de
+  // sus piezas (views/tree/…), que tree.js importa sin ?retry: si falló una de ellas, sólo recargar lo arregla.
+  // Si llega en otro intento, el aviso de red que dejó el fallo ya no es verdad: se va (antes se quedaba encima
+  // del árbol hasta cerrarlo).
   loadTree() {
+    const n = this.treeTries || 0;
     this.treeAsked = true;
-    // un módulo que no llega es un fallo de red
-    import('./tree.js').then(m => this.setState({ Tree: m.StrategyTree })).catch(e => this.fail({ network: true, cause: e }));
+    this.treeFailed = false;
+    import(n ? './tree.js?retry=' + n : './tree.js')
+      .then(m => this.setState(st => ({ Tree: m.StrategyTree, ...(n && st.error === 'errShopNetwork' ? { error: '' } : {}) })))
+      .catch(e => { this.treeTries = n + 1; this.treeFailed = true; this.fail({ network: true, cause: e }); });
+  }
+
+  // «Cómo decide» (su pestaña y el botón de la ficha): si el código del árbol no llegó, pulsarla lo vuelve a
+  // pedir, también con la pestaña ya puesta.
+  showHow() {
+    if (this.treeFailed) this.treeAsked = false;
+    this.go({ detTab: 'tree' }, { scroll: false });
+  }
+
+  // El título de la pestaña: el de la tienda o, en la página de una estrategia, cuál es (un ticker tiene hasta
+  // 17), como su cabecera y sus etiquetas, y la pestaña de la página; el mismo que pone el servidor
+  // (templates/edgefolio/shop.html). Mientras no llega su fila, nada: se queda el que hay.
+  tabTitle() {
+    const s = this.state, t = translator(s.dict, {}, s.lang);
+    if (s.page !== 'detail') return 'Edgefolio · ' + t('toolName');
+    const r = this.row(s.detail);
+    return r ? [r.name || r.ticker, r.ticker, r.key, r.interval, s.detTab === 'tree' ? t('howItDecides') : '', 'Edgefolio'].filter(Boolean).join(' · ') : '';
   }
 
   // ---- lists -----------------------------------------------------------------------------------
@@ -300,7 +375,8 @@ export class App extends Component {
       if (!append) patch.proFirst = page;
       if (d.hist) {
         this.facetsKey = key;
-        Object.assign(patch, { hist: d.hist, options: d.options || {}, ranges: d.ranges || null });
+        Object.assign(patch, { hist: d.hist, options: d.options || {}, ranges: d.ranges || null,
+          rg: retrack(this.state.rg, this.state.ranges, d.ranges || null) });
       }
       this.setState(patch);
     }).catch(e => this.fail(e));
@@ -365,6 +441,9 @@ export class App extends Component {
   }
 
   // Back from PayPal at /thanks?token=<order>: capturing again is harmless (the server makes it idempotent).
+  // El carrito se vacía sólo con el cobro que pagó el pedido (paid_now): abrir otra vez una página de gracias
+  // vieja (el historial, un marcador) o la de otro en este navegador vaciaba el carrito que tuviera. El código
+  // aplicado se queda.
   capture(token) {
     if (!token) { this.go({ page: 'shop' }, { replace: true }); return; }
     post('/api/orders/' + encodeURIComponent(token) + '/capture').then(rc => {
@@ -373,7 +452,7 @@ export class App extends Component {
       // another browser than the one that paid gets no links (they are in My strategies): the
       // tutorial waits until there is a script to install
       this.mineQuietTried = false;
-      this.setState({ receipt: rc, cart: [], bundles: [], packIds: [], instFor: first ? first.id : '', mine: null,
+      this.setState({ receipt: rc, ...(rc.paid_now ? { cart: [], bundles: [], packIds: [] } : {}), instFor: first ? first.id : '', mine: null,
         instStep: !first || read('edgefolio-install-v1') ? -1 : 0 });
     }).catch(e => { this.fail(e); this.go({ page: 'shop' }, { replace: true }); });
   }
@@ -399,13 +478,25 @@ export class App extends Component {
     post('/logout').catch(() => null).then(() => window.location.assign('/'));
   }
 
-  // Demostrar que un correo es de la cuenta: se manda un enlace a esa dirección.
+  // Demostrar que un correo es de la cuenta: se manda un enlace a esa dirección. Lo que falla en la dirección
+  // sale bajo el campo (los textos del núcleo), como en la gratis: vacía (el campo se puede vaciar) o mal
+  // escrita; el rechazo del servidor a la dirección, también; los demás, en un aviso. Una que la cuenta ya
+  // demostró (API #15, emails) no se pide: el servidor contestaría lo de siempre sin mandar nada, y lo dice un
+  // aviso (quita el de un fallo de antes, que parecería la respuesta).
   askProof() {
-    const s = this.state, email = (s.proofEmail || (s.me && s.me.email) || '').trim();
-    if (!/.+@.+\..+/.test(email) || this.proofBusy) return;
+    const s = this.state, email = (s.proofEmail ?? ((s.me && s.me.email) || '')).trim();
+    if (this.proofBusy) return;
+    const err = !email ? 'errEmailRequired' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'errEmailInvalid' : '';
+    if (err) { this.setState({ proofErr: err }); return; }
+    if (((s.mine && s.mine.emails) || []).includes(email.toLowerCase())) { this.setState({ proofErr: '', error: '', notice: 'proofProven' }); return; }
     this.proofBusy = true;
-    post('/api/mine/proofs', { email }).then(() => this.setState({ proofSent: true, proofExpired: false }))
-      .catch(e => this.fail(e)).then(() => { this.proofBusy = false; });
+    post('/api/mine/proofs', { email }).then(() => this.setState({ proofSent: true, proofExpired: false, proofErr: '' }))
+      .catch(e => {
+        const d = e.detail || {};
+        if (e.status === 400 && d.field === 'email' && e.key && this.state.dict && this.state.dict[e.key]) this.setState({ proofErr: e.key });
+        else this.fail(e);
+      })
+      .then(() => { this.proofBusy = false; });
   }
 
   // El enlace del correo abre /mine?proof=<token>. Abrirlo sólo enseña de qué correo es (los lectores de
@@ -433,11 +524,14 @@ export class App extends Component {
   // Favourites kept in this browser while signed out move to the account once signed in.
   // Only the ones the server took leave this browser; the others stay for the next sign-in, with one
   // error shown. /api/mine is read once, after the uploads (sync() waits for them).
+  // Una que ya no está en el catálogo (404) también se va, sin aviso: no hay nada que guardar (como hace
+  // fetchOne con el carrito y Comparar). Antes, si su ficha llegaba después de la subida, salía «No
+  // encontramos esa estrategia» y se quedaba en el navegador.
   afterSignIn() {
     const local = readJSON(FAVS_KEY, {}), favs = list(local.favs), alerts = local.alerts || {};
     this.uploading = true;
     Promise.all(favs.map(id => api('/api/favourites/' + encodeURIComponent(id), { method: 'PUT', body: { alerts: alerts[id] || {} } })
-      .then(() => null, e => ({ id, e }))))
+      .then(() => null, e => (e.status === 404 ? null : { id, e }))))
       .then(res => {
         const failed = res.filter(Boolean), left = failed.map(x => x.id);
         if (left.length) {
@@ -473,41 +567,53 @@ export class App extends Component {
     }))).catch(e => this.fail(e));
   }
 
-  saveFav(id, alerts) {
-    if (!this.signedIn()) return;
-    const url = '/api/favourites/' + encodeURIComponent(id);
-    (alerts ? api(url, { method: 'PUT', body: { alerts } }) : api(url, { method: 'DELETE' })).catch(e => this.fail(e));
+  // Una favorita y sus alertas cambian en la página al pulsarlas, y después en la cuenta (API #21 y #22). Si el
+  // servidor no lo guarda (la sesión se cerró en otra pestaña: 401), vuelven a como las tiene la cuenta, la
+  // favorita a su sitio de la lista, y el aviso dice por qué: antes la campana se quedaba encendida y la
+  // favorita fuera, sin guardar. De varios cambios seguidos de la misma decide la respuesta del último; lo que
+  // tiene la cuenta (favSaved) es lo de antes del primero, o lo último que aceptó el servidor.
+  setFav(id, on, alerts) {
+    const s = this.state, saved = this.favSaved, signedIn = this.signedIn();
+    if (signedIn && !saved.has(id)) saved.set(id, { on: s.favs.includes(id), alerts: s.alerts[id], at: s.favs.indexOf(id) });
+    this.setState(st => ({ favs: st.favs.includes(id) === on ? st.favs : on ? [...st.favs, id] : st.favs.filter(x => x !== id),
+      alerts: st.alerts[id] === alerts ? st.alerts : { ...st.alerts, [id]: alerts } }));
+    if (!signedIn) return;
+    const last = this.ticket('fav:' + id), url = '/api/favourites/' + encodeURIComponent(id);
+    (on ? api(url, { method: 'PUT', body: { alerts: alerts || {} } }) : api(url, { method: 'DELETE' })).then(() => {
+      if (last()) saved.delete(id);
+      else if (saved.has(id)) saved.set(id, { ...saved.get(id), on, alerts });
+    }, e => {
+      const was = last() && saved.get(id);
+      if (was) {
+        saved.delete(id);
+        this.setState(st => {
+          const rest = st.favs.filter(x => x !== id), at = was.at < 0 ? rest.length : Math.min(was.at, rest.length);
+          return { favs: !was.on ? rest : st.favs.includes(id) ? st.favs : [...rest.slice(0, at), id, ...rest.slice(at)],
+            alerts: { ...st.alerts, [id]: was.alerts } };
+        });
+      }
+      this.fail(e);
+    });
   }
 
   toggleFav(id) {
-    const on = this.state.favs.includes(id);
-    this.setState(st => ({ favs: on ? st.favs.filter(x => x !== id) : [...st.favs, id] }));
-    this.saveFav(id, on ? null : this.state.alerts[id] || {});
+    this.setFav(id, !this.state.favs.includes(id), this.state.alerts[id]);
   }
 
   toggleAlert(id, k) {
-    const cur = this.state.alerts[id] || {}, next = { ...cur, [k]: !cur[k] };
-    this.setState(st => ({ alerts: { ...st.alerts, [id]: next } }));
-    this.saveFav(id, next);
+    const cur = this.state.alerts[id] || {};
+    this.setFav(id, true, { ...cur, [k]: !cur[k] });
   }
 
   // Every way into the free-download dialog starts with news unticked (GDPR: consent is asked each time).
-  // The dialog takes the keyboard: the cursor in its field (not on a touch screen, where it would open the
-  // keyboard over the dialog), and back on the button that opened it when it closes.
+  // The focus goes in and back with syncModal(): the cursor in its field (not on a touch screen), and back
+  // on the button that opened it when it closes.
   openFree(id) {
-    this.freeOpener = document.activeElement;
-    this.setState({ freeFor: id, freeSent: false, freeNews: false, freeErr: '' }, () => {
-      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-      const input = !coarse && document.querySelector('[role=dialog] input[type=email]');
-      if (input) input.focus();
-    });
+    this.setState({ freeFor: id, freeSent: false, freeNews: false, freeErr: '' });
   }
 
   closeFree() {
     this.setState({ freeFor: '', freeSent: false, freeNews: false, freeErr: '' });
-    const back = this.freeOpener;
-    this.freeOpener = null;
-    if (back && back.isConnected && back.focus) back.focus({ preventScroll: true });
   }
 
   // What is wrong with the address shows under the field (the core's texts): empty, or not an address.
@@ -542,6 +648,12 @@ export class App extends Component {
     write('tuisku-sf-mode', mode);
     this.setState({ mode });
     if (this.state.page !== 'shop') this.go({ page: 'shop' });
+  }
+
+  // Un desplegable de los filtros de Pro, uno a la vez. Se recuerda su botón: Esc le devuelve el foco.
+  toggleSel(k, button) {
+    if (button) this.selButton = button;
+    this.setState(st => ({ openSel: st.openSel === k ? '' : k, selQ: '' }));
   }
 
   setPview(pview) {
@@ -621,7 +733,13 @@ export class App extends Component {
   }
 
   // Tour and tutorial: a tap moves on, a swipe moves either way (flipped in Arabic), keys too.
-  swDown(e) { this.sw = { x: e.clientX, y: e.clientY }; }
+  // El puntero, capturado: con el ratón, un deslizamiento que acaba fuera de la imagen (desde el logo de
+  // TradingView, que está en su borde) también cuenta; el dedo ya lo está solo.
+  swDown(e) {
+    this.sw = { x: e.clientX, y: e.clientY };
+    const area = e.currentTarget;
+    if (area && area.setPointerCapture) try { area.setPointerCapture(e.pointerId); } catch (err) { /* sin captura, como antes */ }
+  }
 
   swUp(e, which) {
     const p = this.sw;
@@ -639,6 +757,7 @@ export class App extends Component {
 
   onKey(e) {
     const s = this.state, which = s.instStep >= 0 ? 'instStep' : s.tourStep >= 0 ? 'tourStep' : '';
+    if (e.key === 'Tab' && this.modal) { keepTab(this.modal.el, e); return; }
     // Esc closes what is open on top, one at a time: compare, the pack picker, the free download, a Pro
     // filter's dropdown (the language menu is the core's, and closes itself)
     if (!which) {
@@ -646,7 +765,14 @@ export class App extends Component {
       if (s.cmpOpen) this.setState({ cmpOpen: false });
       else if (s.packOpen) this.setState({ packOpen: false });
       else if (s.freeFor) this.closeFree();
-      else if (s.openSel) this.setState({ openSel: '', selQ: '' });
+      else if (s.openSel) {
+        // con el foco dentro del desplegable (su buscador), el foco se caería a <body>: vuelve a su botón
+        const button = this.selButton;
+        this.setState({ openSel: '', selQ: '' }, () => {
+          const a = document.activeElement;
+          if (button && button.isConnected && (!a || a === document.body)) button.focus();
+        });
+      }
       return;
     }
     if (e.key === 'Escape') { if (which === 'instStep') this.closeInst(); else this.closeTour(); return; }

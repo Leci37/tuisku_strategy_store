@@ -15,7 +15,7 @@ DOWNLOAD_DAYS         lo que vale un enlace de descarga, en días (7)
 MAX_DOWNLOADS         las descargas de cada enlace (10)
 PACK_SIZE, PACK_PRICE «Crea tu pack»: cuántas estrategias y por cuánto (5 por 249)
 NEW_DAYS              los días que una estrategia sale en «Nuevas» desde que se publicó (30)
-CONTACT_EMAIL         la dirección que la página da para los problemas (sales@tuisku.eu)
+CONTACT_EMAIL         la dirección que la página da para los problemas (sales@tuisku.ai)
 
 Con PayPal de verdad (sandbox o live) hace falta ZLECITOOL_PUBLIC_URL: el enlace de vuelta de PayPal se
 hace con ella y nunca con la cabecera Host, que la escribe quien pide.
@@ -75,7 +75,7 @@ class Settings:
     pack_size: int = 5
     pack_price: Decimal = Decimal("249")
     new_days: int = 30
-    contact_email: str = "sales@tuisku.eu"
+    contact_email: str = "sales@tuisku.ai"
 
     @classmethod
     def for_data_dir(cls, data_dir: Path, **values) -> "Settings":
@@ -104,7 +104,7 @@ class Settings:
             pack_size=int(e("PACK_SIZE") or "5"),
             pack_price=Decimal(e("PACK_PRICE") or "249"),
             new_days=int(e("NEW_DAYS") or "30"),
-            contact_email=(e("CONTACT_EMAIL") or "sales@tuisku.eu").strip(),
+            contact_email=(e("CONTACT_EMAIL") or "sales@tuisku.ai").strip(),
         )
         if e("STRATEGIES_DIR"):
             s.strategies_dir = Path(e("STRATEGIES_DIR"))
@@ -115,5 +115,5 @@ class Settings:
         if s.paypal_mode != "fake" and not public_url:
             # Sin ella, el enlace de vuelta de PayPal se haría con la cabecera Host, que elige quien pide.
             raise ValueError("con PAYPAL_MODE=sandbox o live hace falta ZLECITOOL_PUBLIC_URL, la dirección de la "
-                             "tienda: ZLECITOOL_PUBLIC_URL=https://edgefolio.tuisku.eu")
+                             "tienda: ZLECITOOL_PUBLIC_URL=https://edgefolio.tuisku.ai")
         return s

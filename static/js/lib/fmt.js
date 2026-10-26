@@ -31,12 +31,16 @@ export function formatters(lang, { local, rate }) {
   const loc0 = isLocal ? nf({ style: 'currency', currency: localCur, maximumFractionDigits: 0 }) : null;
   const pct = (n, d = 2) => bad(n) ? DASH : nf({ style: 'percent', minimumFractionDigits: d, maximumFractionDigits: d }).format(n / 100);
   const day = iso => new Date(String(iso).slice(0, 10) + 'T12:00:00');
+  // En árabe, Intl da «‏172.25 US$» y, dentro de un texto de derecha a izquierda, el «$» se separaba:
+  // «$US 172.25». Una marca de izquierda a derecha (LRM) detrás deja «US$» entero.
+  const usdText = LOC.startsWith('ar') ? x => x + '\u200e' : x => x;
   return {
     LOC, isLocal, curLabel: isLocal ? localCur : 'USD',
-    money: n => bad(n) ? DASH : usd.format(n),
-    money0: n => bad(n) ? DASH : usd0.format(n),
-    // a price as the reader sees it: "≈ 73 €" in the local currency, else USD
-    pmoney: n => bad(n) ? DASH : isLocal ? '≈ ' + loc0.format(n * rate) : usd.format(n),
+    money: n => bad(n) ? DASH : usdText(usd.format(n)),
+    money0: n => bad(n) ? DASH : usdText(usd0.format(n)),
+    // a price as the reader sees it: "≈ 73 €" in the local currency, else USD. Tras «≈», un espacio que no
+    // parte la línea: «≈» no se queda solo al final de una
+    pmoney: n => bad(n) ? DASH : isLocal ? '≈\u00a0' + loc0.format(n * rate) : usdText(usd.format(n)),
     pct,
     pct0: n => pct(n, 0),
     pctS: n => bad(n) ? DASH : nf({ style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(n / 100),

@@ -1,6 +1,6 @@
 // The shop: Lite (ticker strip, tabs, cards, Load more) and Pro (filters with histograms, chips,
 // rows / cards / table, pager). Lists, counts, histograms and options come from /api/strategies.
-import { RANGES, TOP_RANGES, MORE_RANGES, SELECTS, track, val, snap, fracOf, isOn, parseNum } from './filters.js';
+import { RANGES, TOP_RANGES, MORE_RANGES, SELECTS, track, val, snap, fracOf, isOn, isOpenLo, isOpenHi, parseNum } from './filters.js';
 
 export const PRO_SIZE = 25;
 
@@ -17,8 +17,11 @@ export function shopVals(c) {
     isPro: s.page === 'shop' && s.mode === 'pro', isLite: s.page === 'shop' && s.mode !== 'pro',
     q: s.q, onQ: e => app.setState({ q: e.target.value }),
     tape: s.tape.map(r => ({ icon: r.icon, ticker: r.ticker + ' · ' + r.key, pct: f.pctS(r.npp) })),
+    // la pestaña marcada pide otra vez su primera página (la de la búsqueda de ahora): después de un fallo,
+    // o para refrescar; sin esto, su lista no cambiaba y no se mandaba nada
     liteTabs: [['hot', t('tabHot')], ['win', tx.sortWin], ['stocks', t('tabStocks')], ['crypto', t('tabCrypto')], ['new', t('tabNew') + ' · ' + f.int(counts.new || 0)], ['free', t('landingFree')]].map(([k, label]) => ({
-      label, sel: String(tab === k), color: tab === k ? '#16263a' : '#5a6b80', line: tab === k ? '#0950e3' : 'transparent', go: () => app.setState({ liteTab: k }) })),
+      label, sel: String(tab === k), color: tab === k ? '#16263a' : '#5a6b80', line: tab === k ? '#0950e3' : 'transparent',
+      go: () => (tab === k ? app.loadLite(1) : app.setState({ liteTab: k })) })),
     liteRows: lite.map(c.mk), liteEmpty: !!s.lite && lite.length === 0,
     liteShowing: s.lite ? t('showingN', { n: f.int(lite.length), total: f.int(s.liteTotal) }) : '',
     liteMore: lite.length < s.liteTotal, loadMoreLite: () => app.loadLite(s.litePage + 1),
@@ -30,7 +33,7 @@ function proVals(c, seg) {
   const { app, s, t, tx, f } = c;
   const fmt = {
     money0: f.money0, round: v => f.int(Math.round(v)), pct0: v => f.pct(v, 0), pct2: v => f.pct(v, 2),
-    pctAuto: v => f.pct(v, v < 10 ? 2 : 0), dec1: v => f.num(v, 1)
+    pctAuto: v => f.pct(v, v < 10 ? 2 : 0), dec3: v => f.num(v, 3), decAuto: v => f.num(v, v < 10 ? 2 : 0)
   };
   const rgOf = k => s.rg[k] || [0, 1];
   const slider = k => {
@@ -69,7 +72,9 @@ function proVals(c, seg) {
         if (e.preventDefault) e.preventDefault();
       },
       clear: () => app.setState(st => { const n = { ...st.rg }; delete n[k]; return { rg: n }; }),
-      loIn: dr[k + 0] != null ? dr[k + 0] : fm(val(dd, a)), hiIn: dr[k + 1] != null ? dr[k + 1] : fm(val(dd, b)),
+      // un extremo abierto, vacío hasta que llega la barra del catálogo: la del diseño diría 6.500.000 $
+      loIn: dr[k + 0] != null ? dr[k + 0] : s.ranges || !isOpenLo(a) ? fm(val(dd, a)) : '',
+      hiIn: dr[k + 1] != null ? dr[k + 1] : s.ranges || !isOpenHi(b) ? fm(val(dd, b)) : '',
       loOn: e => setD(0, e.target.value), hiOn: e => setD(1, e.target.value), loDone: () => commit(0), hiDone: () => commit(1),
       onInKey: e => { if (e.key === 'Enter' && e.target && e.target.blur) e.target.blur(); }
     };
@@ -80,7 +85,7 @@ function proVals(c, seg) {
   const selObj = k => {
     const opts = (s.options && s.options[k]) || [], cur = s.sel[k], open = s.openSel === k, qq = (s.selQ || '').toLowerCase();
     const n = cur ? cur.length : opts.length;
-    const value = !cur ? (opts.length ? t('selectedN', { n: f.int(opts.length) }) : '') : n === 0 ? '—' : n <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(n) });
+    const value = !cur ? (opts.length ? t('selectedN', { n: f.int(opts.length) }, opts.length) : '') : n === 0 ? '—' : n <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(n) }, n);
     const setSel = v => app.setState(st => {
       const all = ((st.options && st.options[k]) || []).map(o => o.v);
       const nc = st.sel[k] ? st.sel[k].slice() : all.slice();
@@ -91,7 +96,7 @@ function proVals(c, seg) {
       return { sel: ns };
     });
     return { label: t(SELECTS[k]), value, open, caret: open ? '▴' : '▾', rowBg: open ? '#f5f8ff' : '#ffffff', valColor: cur ? '#0950e3' : '#5a6b80',
-      toggle: () => app.setState(st => ({ openSel: st.openSel === k ? '' : k, selQ: '' })),
+      toggle: e => app.toggleSel(k, e && e.currentTarget),
       q: s.selQ || '', onQ: e => app.setState({ selQ: e.target.value }),
       all: () => app.setState(st => { const ns = { ...st.sel }; delete ns[k]; return { sel: ns }; }),
       none: () => app.setState(st => ({ sel: { ...st.sel, [k]: [] } })),
@@ -105,7 +110,7 @@ function proVals(c, seg) {
   const chips = [];
   Object.keys(SELECTS).forEach(k => {
     const cur = s.sel[k];
-    if (cur) chips.push({ label: t(SELECTS[k]) + ': ' + (cur.length ? (cur.length <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(cur.length) })) : '—'),
+    if (cur) chips.push({ label: t(SELECTS[k]) + ': ' + (cur.length ? (cur.length <= 2 ? shortList(k, cur) : t('selectedN', { n: f.int(cur.length) }, cur.length)) : '—'),
       clear: () => app.setState(st => { const ns = { ...st.sel }; delete ns[k]; return { sel: ns }; }) });
   });
   Object.keys(RANGES).forEach(k => { if (isOn(s.rg[k])) { const sl = slider(k); chips.push({ label: sl.label + ': ' + sl.loLabel + ' – ' + sl.hiLabel, clear: sl.clear }); } });
@@ -121,7 +126,8 @@ function proVals(c, seg) {
 
   return {
     proRows: rows.map(c.mk), proEmpty: !!s.proLoaded && rows.length === 0,
-    shownCount: f.int(s.proTotal),
+    // «1 estrategia mostrada», «2 estrategias mostradas»: la forma del número de arriba
+    shownCount: f.int(s.proTotal), shownLabel: t('shown', null, s.proTotal),
     rangeLabel2: t('rangeOf', { from: f.int(from), to: f.int(to), total: f.int(s.proTotal) }),
     rangeTop: TOP_RANGES.map(slider),
     selF: Object.keys(SELECTS).map(selObj),
@@ -129,7 +135,8 @@ function proVals(c, seg) {
       const sl = slider(k), open = s.moreOpen === k;
       return { ...sl, open, caret: open ? '▴' : '▾', weight: sl.active ? '700' : '400', rowBg: open ? '#f5f8ff' : '#ffffff', toggle: () => app.setState(st => ({ moreOpen: st.moreOpen === k ? '' : k })) };
     }),
-    activeChips: chips, hasActive: chips.length > 0,
+    // la × de cada filtro dice cuál quita
+    activeChips: chips.map(ch => ({ ...ch, clearLabel: t('removeName', { name: ch.label }) })), hasActive: chips.length > 0,
     resetAll: () => app.setState({ sel: {}, rg: {}, draft: {}, freeOnly: false, q: '', openSel: '', moreOpen: '' }),
     toggleFree: () => app.setState(st => ({ freeOnly: !st.freeOnly })), freeOn: String(s.freeOnly),
     freeTrack: s.freeOnly ? '#0950e3' : '#cfd8e3',

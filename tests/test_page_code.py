@@ -103,3 +103,41 @@ def test_the_bottom_bar_takes_its_room_with_the_core_hook():
     assert re.search(r"<nav data-zt-bottom style=\"position:fixed;[^\"]*bottom:0;", bar)
     css = (ROOT / "static" / "css" / "edgefolio.css").read_text(encoding="utf-8")
     assert not re.search(r"body\.app-shell\s*\{[^}]*padding-bottom", css)
+
+
+def test_the_dialogs_name_their_crosses_and_mark_where_the_focus_goes():
+    """Ninguna × se llama «×» (un lector de pantalla leía «por»): dice qué cierra (``dialogClose``, del núcleo)
+    o qué quita (``removeName``). Cada diálogo marca lo suyo principal con ``data-ef-focus``, adonde
+    static/js/lib/modal.js lleva el foco al abrirse (tests/test_keyboard.py lo mira en un navegador), y las
+    imágenes de lo que se desliza en el recorrido y en el tutorial no se arrastran: con el ratón, arrastrar
+    la imagen se comía el deslizamiento (``draggable=${false}``; con "false", Preact lo daba por cierto). El
+    botón del ticker en la Tabla de Pro sólo lleva texto en línea: un <div> dentro de un <button> no vale."""
+    views = ROOT / "static" / "js" / "views"
+    code = {p.name: p.read_text(encoding="utf-8") for p in views.glob("*.js")}
+    assert not [name for name, text in code.items() if 'aria-label="×"' in text]
+    dialogs = code["dialogs.js"]
+    blocks = re.split(r'(?=<div role="dialog")', dialogs)[1:]
+    assert len(blocks) == 5 and all("data-ef-focus" in b for b in blocks)
+    swipes = re.findall(r"onPointerDown=\$\{v\.(?:tour|inst)PD\}.*?(?=<div style=\"padding:20px 22px 18px)", dialogs, re.S)
+    assert len(swipes) == 2
+    for swipe in swipes:
+        images = re.findall(r"<img [^>]*>", swipe)
+        assert images and all("draggable=${false}" in img for img in images), images
+    # el ticker de una fila de la Tabla es un botón (el teclado la abre): dentro, sólo texto en línea, sin <div>
+    ticker = re.search(r'<button type="button" aria-expanded=\$\{String\(!!r\?\.isOpen\)\}.*?</button>', code["pro.js"], re.S)
+    assert ticker and "<div" not in ticker.group(0)
+
+
+def test_a_toast_keeps_clear_of_an_open_dialog():
+    """C13: con un diálogo abierto, el aviso va arriba (``errTop``, ``noticeTop``) y cada velo le deja su sitio
+    (``toastRoom``: el alto del aviso, que app.measureDock mide por ``data-ef-toast``), también los diálogos que
+    miden 90vh o la ventana entera (Comparar, el pack, el tutorial). Es de la tienda, no del diseño: que no se
+    pierda al mezclar una exportación (tests/test_phone_bar.py lo mira en un navegador)."""
+    dialogs = (ROOT / "static" / "js" / "views" / "dialogs.js").read_text(encoding="utf-8")
+    veils = re.findall(r'<div style="(position:fixed;inset:0;z-index:\d+;[^"]*)">\s*<div role="dialog"', dialogs)
+    assert len(veils) == 5 and all(v.endswith("padding:16px;padding-top:calc(16px + ${s(v.toastRoom)})") for v in veils), veils
+    heights = re.findall(r"max-height:([^;\"]*vh[^;\"]*)", dialogs)       # lo que mide la ventana, no una imagen
+    assert len(heights) == 3 and all(h.endswith(" - ${s(v.toastRoom)})") for h in heights), heights
+    toasts = re.findall(r'<div role="(alert|status)" data-ef-toast style="([^"]*)"', dialogs)
+    assert [(role, "top:${s(v.%sTop)};bottom:${s(v.%sBottom)}" % ((p,) * 2) in style)
+            for (role, style), p in zip(toasts, ("err", "notice"))] == [("alert", True), ("status", True)], toasts

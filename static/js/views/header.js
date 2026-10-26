@@ -6,8 +6,8 @@ import { s, T } from '../lib/tpl.js';
 
 export function BarStart(v) {
   return html`
-        <div role="radiogroup" aria-label=${v.tx?.view} style="display:flex;background:#e9eef4;border-radius:12px;padding:3px;gap:2px">
-          ${(v.modeTabs || []).map((md, $index) => html`<button role="radio" aria-checked=${md?.on} onClick=${md?.go} style="font-family:inherit;border:none;border-radius:10px;padding:8px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;background:${s(md?.bg)};color:${s(md?.color)};box-shadow:${s(md?.shadow)}"><i class=${md?.icon}></i>${T(md?.label)}</button>`)}
+        <div role="radiogroup" aria-label=${v.tx?.view} onKeyDown=${v.onModeKey} style="display:flex;background:#e9eef4;border-radius:12px;padding:3px;gap:2px">
+          ${(v.modeTabs || []).map((md, $index) => html`<button role="radio" aria-checked=${md?.on} tabIndex=${md?.tab} onClick=${md?.go} style="font-family:inherit;border:none;border-radius:10px;padding:8px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;background:${s(md?.bg)};color:${s(md?.color)};box-shadow:${s(md?.shadow)}"><i class=${md?.icon}></i>${T(md?.label)}</button>`)}
           </div>
         <button class="sf-hover0" onClick=${v.goMine} style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600;background:#fff;border:1px solid #e2e9f0;display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:#16263a;white-space:nowrap"><i class="fa-regular fa-folder-open" style="color:#0950e3"></i>${T(v.tx?.myStrategies)}</button>
 `;
@@ -21,7 +21,7 @@ export function BarEnd(v) {
           ${v.tv ? html`<span translate=${false}>TradingView</span><span style="width:7px;height:7px;border-radius:50%;background:#12b76a"></span><span style="color:#5a6b80;font-weight:500">${v.tx?.tvConnected}</span>` : null}
           ${v.tvOff ? html`<span style="color:#0950e3">${v.tx?.tvConnect}</span>` : null}
           </button>
-        <button onClick=${v.toggleCur} title=${v.tx?.currencyLabel} style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;background:#fff;border:1px solid #e2e9f0;cursor:pointer;color:#16263a">${v.curLabel}</button>
+        <button onClick=${v.toggleCur} title=${v.tx?.currencyLabel} aria-disabled=${v.curFixed} style="font-family:inherit;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;background:#fff;border:1px solid #e2e9f0;cursor:${s(v.curCursor)};color:#16263a">${v.curLabel}</button>
 `;
 }
 

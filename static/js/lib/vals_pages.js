@@ -17,19 +17,27 @@ export function pageVals(c) {
   // floating Compare pill (38 px), when it shows
   const pillFloats = s.compare.length > 0 && !liteDock;
   const errBottom = base + (liteDock ? (s.dockH || 84) + 8 : pillFloats ? 38 + 8 : 0);
+  // con un diálogo abierto, su velo tapa el carrito flotante y la barra de abajo: el aviso va arriba, y el diálogo
+  // le deja su sitio (toastRoom: lo que mide el aviso, app.measureDock, y 8 px), para que no se tapen nunca. En
+  // un móvil, encima del carrito, el aviso tapaba «Enviarme el enlace» de la gratis; y el selector del pack
+  // (90vh) no deja sitio ni arriba ni abajo
+  const dialogOpen = !!(s.freeFor && app.row(s.freeFor)) || s.cmpOpen || s.packOpen || TS >= 0 || s.instStep >= 0;
+  const toastOn = !!s.error || !!NOTICES[s.notice];
+  const at = { top: dialogOpen ? '16px' : 'auto', bottom: dialogOpen ? 'auto' : errBottom + 'px' };
   return {
     ...detailVals(c), ...compareVals(c, liteDock), ...mineVals(c), ...thanksVals(c), ...installVals(c), ...freeVals(c),
     ...LEGAL, legalOn: true, contactOn: !!c.contact, contactUrl: c.contact ? 'mailto:' + c.contact : '', contactEmail: c.contact,
     errOpen: !!s.error, errTitle: tx.errServer, closeErr: () => app.setState({ error: '' }),
     // the server's vars, or the contact address (a link that expired says where to write)
     errText: t(s.error, s.errorVars || { e: c.contact }) + ((s.error === 'errPayment' || s.error === 'errLater' || s.error === 'errPayPal') && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
-    errBottom: errBottom + 'px',
+    errTop: at.top, errBottom: at.bottom,
+    toastRoom: dialogOpen && toastOn ? (s.toastH || 58) + 8 + 'px' : '0px',
     cmpBottom: base + 'px',
     // on a phone the bottom bar takes the last 60px: the floating cart sits above it, as the compare pill does
     dockBottom: base + 'px',
-    // a short notice (the news opt-in confirmed or its link expired): the toast's look, not an error;
-    // it waits while an error toast shows, in the same place
-    ...noticeVals(c, errBottom),
+    // a short notice (the news opt-in confirmed or its link expired, an address the account already proved):
+    // the toast's look, not an error; it waits while an error toast shows, in the same place
+    ...noticeVals(c, at),
     navItems: [
       ['shop', t('navShop'), 'fa-solid fa-house', () => app.go({ page: 'shop' })],
       ['search', t('searchSmall'), 'fa-solid fa-magnifying-glass', () => app.focusSearch()],
@@ -48,23 +56,28 @@ export function pageVals(c) {
     tourDots: [0, 1, 2].map(i => ({ w: i === TS ? '22px' : '8px', bg: i === TS ? '#0950e3' : '#cfd8e3' })),
     // step 3's PayPal → .pine → TradingView reads the other way in Arabic
     arrowFwd: c.rtl ? 'fa-solid fa-arrow-left' : 'fa-solid fa-arrow-right',
-    tourIcons: ['AAPL', 'NVDA', 'AMZN', 'ADBE', 'BTC+USDT', 'ETH+USDT'].map(k => ({ src: '/static/assets/icons/' + k + '_big.svg' })),
+    // cuatro acciones y dos criptos, como en el diseño, de las que vende el catálogo (el del diseño traía
+    // Apple y Ethereum, que el de 2026-10 no tiene); tests/test_lists_cart.py lo comprueba
+    tourIcons: ['MSFT', 'NVDA', 'AMZN', 'ADBE', 'BTC+USDT', 'SOL+USDT'].map(k => ({ src: '/static/assets/icons/' + k + '_big.svg' })),
     tourPD: e => app.swDown(e), tourPU: e => app.swUp(e, 'tourStep')
   };
 }
 
+// cada aviso, con sus textos <aviso>Title y <aviso>Text; proofProven: se pidió la prueba de un correo que la
+// cuenta ya demostró (app.askProof)
 const NOTICES = {
   newsConfirmed: ['fa-solid fa-circle-check', '#12b76a'],
-  newsExpired: ['fa-solid fa-circle-info', '#9fb8ef']
+  newsExpired: ['fa-solid fa-circle-info', '#9fb8ef'],
+  proofProven: ['fa-solid fa-circle-check', '#12b76a']
 };
 
-function noticeVals(c, bottom) {
+function noticeVals(c, at) {
   const { app, s, t } = c;
   const n = NOTICES[s.notice];
   if (!n || s.error) return { noticeOpen: false };
   return {
     noticeOpen: true, noticeIcon: n[0], noticeColor: n[1],
-    noticeTitle: t(s.notice + 'Title'), noticeText: t(s.notice + 'Text'), noticeBottom: bottom + 'px',
+    noticeTitle: t(s.notice + 'Title'), noticeText: t(s.notice + 'Text'), noticeTop: at.top, noticeBottom: at.bottom,
     closeNotice: () => app.setState({ notice: '' })
   };
 }
@@ -95,6 +108,11 @@ function detailVals(c) {
   // «Update available» is for whoever bought an older version (My strategies says which: update), not for
   // every visitor; a free download is renewed with the new version anyway
   const detOwnOld = !!(owned && owned.update && owned.kind === 'paid');
+  // ya es de la cuenta (API #15): en vez de comprarla o pedirla otra vez, su .pine si el enlace vale y es la
+  // versión de hoy; si no, Mis estrategias, que da otro enlace o la versión nueva. El diseño no tiene este estado
+  const ownedPine = owned && owned.url && !owned.update ? owned.url : '';
+  // una gratis no se compra: te llega por correo (el diseño dice «compras» también en ella)
+  const free = r.price === 0;
   // lines 5–16 sharp, 17–21 fading out, as the design's preview
   const pine = (s.pine[r.preview] || '').replace(/\r/g, '').split('\n').slice(4, 21);
   const pineLines = s.pine[r.preview] ? pine.map((l, i) => ({ no: String(i + 5), toks: tokens(l || ' '),
@@ -103,20 +121,32 @@ function detailVals(c) {
   const dash = '—';
   return {
     isDetail: true, det, detOverview: !tree, detTreeTab: tree, detOwnOld,
-    showOverview: () => app.go({ detTab: 'overview' }, { scroll: false }), showHowTab: () => app.go({ detTab: 'tree' }, { scroll: false }),
+    detOwned: !!owned, ownedLabel: t('ownedYours') + ' · ' + (ownedPine ? tx.download : tx.myStrategies), ownedHref: ownedPine || '/mine',
+    // Mis estrategias sin recargar la página, salvo que se pida en otra pestaña o ventana (Ctrl, Cmd, Mayús)
+    ownedGo: e => { if (ownedPine || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; e.preventDefault(); app.goMine(); },
+    showOverview: () => app.go({ detTab: 'overview' }, { scroll: false }), showHowTab: () => app.showHow(),
     ovBg: !tree ? '#0950e3' : '#e9f0fd', ovColor: !tree ? '#ffffff' : '#0950e3', ovLine: '#0950e3',
     hwBg: tree ? '#0e7c98' : '#e3f4f8', hwColor: tree ? '#ffffff' : '#0e7c98', hwLine: '#0e7c98',
     backToSheet: () => app.go({ detTab: 'overview' }),
     detMaxW: tree ? '1320px' : '1120px', treeLang: c.lang,
     Tree: s.Tree, treeRow: r, treeOwned: !!owned, treeSignedIn: !!(s.me && s.me.email), treeDownload: (owned && owned.url) || null, treeBuy: () => { if (r.price === 0) app.openFree(r.id); else if (!c.inCart(r.id)) c.toggleCart(r.id); },
+    // si está en el carrito (sola, en un lote o en el pack) lo dice el carrito, no el árbol: quitada con el
+    // botón de la cabecera, el árbol vuelve a ofrecer «Comprar para desbloquear»
+    treeInCart: c.inCart(r.id),
+    // la × de las explicaciones del árbol, «Cerrar» en el idioma de la página, como las de la tienda
+    treeClose: tx.dialogClose,
     pineLines, pineFile: (r.file || 'strategy') + '.pine',
+    detRest: free ? t('scriptRestFree') : tx.scriptRest, detGetTitle: free ? t('buyScriptTitleFree') : tx.buyScriptTitle,
+    detFormatsNote: free ? t('formatsNoteFree') : tx.formatsNote,
     formats: [
-      { name: 'Pine Script', desc: tx.fmtPineDesc, ext: '.pine', ic: 'fa-solid fa-chart-line', icBg: '#0950e3', bg: '#f5f8ff', bd: '#c5d6f8', beta: false },
+      { name: 'Pine Script', desc: free ? t('fmtPineDescFree') : tx.fmtPineDesc, ext: '.pine', ic: 'fa-solid fa-chart-line', icBg: '#0950e3', bg: '#f5f8ff', bd: '#c5d6f8', beta: false },
       { name: tx.fmtMd, desc: tx.fmtMdDesc, ext: '.md', ic: 'fa-brands fa-markdown', icBg: '#16263a', bg: '#ffffff', bd: '#e2e9f0', beta: false },
       { name: 'Python', desc: tx.fmtPyDesc, ext: '.py', ic: 'fa-brands fa-python', icBg: '#0e7c98', bg: '#ffffff', bd: '#e2e9f0', beta: true },
       { name: 'JavaScript', desc: tx.fmtJsDesc, ext: '.js', ic: 'fa-brands fa-js', icBg: '#b86e00', bg: '#ffffff', bd: '#e2e9f0', beta: true }
     ],
-    detTf: t('tfNote', { tf: r.interval }),
+    // con el nombre que le da TradingView en su menú (1D, 1h), como el tutorial de instalación; el del
+    // catálogo (1Day, 1Hour) no sale en él
+    detTf: t('tfNote', { tf: tvInterval(r.interval) }),
     liveNote: r.live == null ? tx.liveUnknown : r.live_as_of ? t('liveAsOf', { date: f.fmtDate(r.live_as_of) }) : '',
     versions: versions.map((x, i) => ({
       // the date isolated (FSI…PDI): in Arabic "27/09/2024" would otherwise mix with "v1 · "
@@ -152,7 +182,7 @@ function compareVals(c, liteDock) {
     // bottom-start corner
     cmpHas: s.compare.length > 0, cmpFloat: s.compare.length > 0 && !liteDock, cmpCount: f.int(s.compare.length),
     openCmp: () => app.setState({ cmpOpen: true }), closeCmp: () => app.setState({ cmpOpen: false }), cmpOpen: s.cmpOpen,
-    cmpCols: rows.map(r => ({ icon: r.icon, ticker: r.ticker, key: r.key, remove: () => app.setState(st => ({ compare: st.compare.filter(x => x !== r.id), cmpOpen: st.compare.length > 1 })) })),
+    cmpCols: rows.map(r => ({ icon: r.icon, ticker: r.ticker, key: r.key, removeLabel: t('removeName', { name: r.ticker + ' · ' + r.key }), remove: () => app.setState(st => ({ compare: st.compare.filter(x => x !== r.id), cmpOpen: st.compare.length > 1 })) })),
     cmpRows: defs.map(([label, get, fmt, low]) => {
       const vals = rows.map(get), b = best(vals, low);
       return { label, cells: rows.map((r, i) => ({ value: fmt(r), weight: b[i] ? '700' : '400', color: b[i] ? '#15803d' : '#16263a', bg: b[i] ? '#e8f7ef' : 'transparent' })) };
@@ -171,13 +201,23 @@ function mineVals(c) {
     isMine: s.page === 'mine', signedIn: !!email,
     proofConfirm: confirm, confirmProof: () => app.confirmProof(),
     proofAsBefore: asText[0], proofAsEmail: s.proofAs, proofAsAfter: asText.slice(1).join(''),
-    // ¿compró sin cuenta? Hasta que la cuenta confirma su correo, lo que se hizo con él sin sesión no sale
-    proofOffer: !confirm && !!email && (s.proofExpired || !!(s.mine && s.mine.proof_needed)),
+    // ¿compró sin cuenta? Hasta que la cuenta confirma su correo, lo que se hizo con él sin sesión no sale. Mandado,
+    // «Hecho» se queda, también si el bloque salió por un enlace usado o caducado (antes, se iba sin decirlo)
+    proofOffer: !confirm && !!email && (s.proofSent || s.proofExpired || !!(s.mine && s.mine.proof_needed)),
     signedAs: t('signedAs', { e: email }), avatar: email.slice(0, 1).toUpperCase(),
-    proofEmail: s.proofEmail || email, onProofEmail: e => app.setState({ proofEmail: e.target.value }),
-    askProof: () => app.askProof(), proofKey: e => { if (e.key === 'Enter') app.askProof(); },
+    // el de la cuenta hasta que se escribe otro; vaciado, se queda vacío (antes volvía el de la cuenta). Al
+    // escribir otro, el aviso «Ya está confirmado» del anterior se va: no es de este
+    proofEmail: s.proofEmail ?? email,
+    onProofEmail: e => app.setState({ proofEmail: e.target.value, proofErr: '', ...(s.notice === 'proofProven' ? { notice: '' } : {}) }),
+    // Intro manda; no mientras se compone (zh, hi), donde Intro elige los caracteres
+    askProof: () => app.askProof(), proofKey: e => { if (e.key === 'Enter' && !e.isComposing) app.askProof(); },
+    // lo que falla en la dirección, bajo el campo (errEmailRequired / errEmailInvalid del núcleo, o el rechazo
+    // del servidor): la clave, no el texto, para que siga al idioma
+    proofErrOn: !!s.proofErr, proofErr: s.proofErr ? t(s.proofErr) : '', proofBd: s.proofErr ? '#c0392b' : '#e2e9f0',
     proofSent: s.proofSent, proofNotSent: !s.proofSent, proofExpired: s.proofExpired && !s.proofSent,
     signOut: () => app.signOut(),
+    // algo de la cuenta (API #15): la lista y «Añádela a TradingView». Sin nada, el tutorial no tenía qué enseñar
+    // («strategy.pine», «el intervalo ,», TradingView sin símbolo) o enseñaba la primera de Lite, que no es suya
     mineHas: items.length > 0,
     mineRows: items.map(it => ({ ...c.mk(it.row),
       when: t(it.kind === 'free' ? 'freeOn' : 'boughtOn', { date: f.fmtDate(it.date) }), order: it.order ? t('orderN', { id: it.order }) : '',
@@ -186,7 +226,8 @@ function mineVals(c) {
       status: it.valid ? t('linkValid', { n: f.int(it.days_left) }, it.days_left) : t('linkExpired'),
       stBg: it.valid ? '#e8f7ef' : '#f1f4f8', stColor: it.valid ? '#15603c' : '#5a6b80',
       renew: () => app.renew(it.id) })),
-    favEmpty: s.favs.length === 0,
+    // las favoritas de la cuenta llegan con API #15: hasta entonces no se sabe si no hay ninguna
+    favEmpty: !!s.mine && s.favs.length === 0,
     favRows: s.favs.map(id => app.row(id)).filter(Boolean).map(r => {
       const al = s.alerts[r.id] || {};
       return { ...c.mk(r),

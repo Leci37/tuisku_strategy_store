@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Recorre la tienda en un navegador de verdad y guarda las capturas del README en docs/img/.
+"""Recorre la tienda en un navegador de verdad y guarda las capturas del README y de docs/FLUJO_USUARIO.md
+en docs/img/.
 
     PORT=5105 python app.py                 # en una terminal, con el .env de desarrollo (PAYPAL_MODE=fake,
                                             # DISCOUNT_CODES=demo20=0.20, sin SMTP: los correos, a <datos>/mail)
@@ -14,12 +15,15 @@ en el núcleo, confirmar el correo con el que se pagó (el enlace, del correo qu
 → comparar, «Crea tu pack» y una gratis por correo (Esc cierra cada uno; el correo vacío o mal escrito,
 debajo del campo; la casilla de novedades, con el teclado) → la píldora de Comparar, dentro del carrito
 de Lite y flotando en Pro, y «Solo GRATIS» con el teclado → Pro en español → árabe y español → la
-tienda en un móvil (el carrito a 76 px del borde, Carrito no mueve la página, Buscar enfoca la búsqueda).
+tienda en un móvil (el carrito a 76 px del borde, Carrito no mueve la página, Buscar enfoca la búsqueda) →
+las capturas en español de docs/FLUJO_USUARIO.md (edgefolio_es_*.png, cada una recortada a lo que enseña).
 Es también la prueba de punta a punta: para en el primer paso que falla e informa de los errores de la
 consola del navegador (también de la CSP). Las descargas necesitan los scripts de pago
 (flask --app app edgefolio restore-scripts).
 
 SHOP_URL (por defecto http://localhost:5105), CHROMIUM_PATH (un navegador) y OUT (por defecto docs/img).
+Todas salen con una base de datos nueva; en otra vuelta, la cuenta ya ha confirmado el correo y la de esa
+confirmación (edgefolio_mine_proof.png) no se repite.
 """
 import email
 import json
@@ -43,7 +47,7 @@ MAIL = Path(os.environ.get("ZLECITOOL_DATA_DIR") or ROOT / "data") / "mail"
 BUYER = "buyer@example.com"            # quien paga en el PayPal de prueba
 ACCOUNT = "ana@example.com"            # la cuenta del núcleo con la que se entra después
 PASSWORD = "probando-la-tienda-1"
-STRATEGY = "AAPL_1Day_2CT0_8a979adf"   # la de la página de la estrategia y el árbol
+STRATEGY = "SNOW_1Day_1BOL_7abec5de"   # la de la página de la estrategia y el árbol (catálogo de 2026-10)
 UI = json.loads((ROOT / "i18n" / "ui.json").read_text(encoding="utf-8"))
 RED = "rgb(192, 57, 43)"               # el borde del campo con un error (#c0392b)
 problems = []
@@ -70,8 +74,10 @@ def expect(ok, what):
 
 
 def ui(key, lang="en"):
-    """Un texto de la tienda (i18n/ui.json), para buscarlo en la página como lo pinta."""
-    return UI[key][lang]
+    """Un texto de la tienda (i18n/ui.json), para buscarlo en la página como lo pinta; de uno con plurales
+    ({one, other…}), el de muchos."""
+    text = UI[key][lang]
+    return text.get("other", "") if isinstance(text, dict) else text
 
 
 def core_texts(page, *keys, lang="en"):
@@ -148,8 +154,10 @@ def button(page, text):
     return page.locator("button", has_text=re.compile(r"^\s*" + re.escape(text) + r"\s*$"))
 
 
-def new_page(browser, width, height, lang="en", tour_seen=True):
-    ctx = browser.new_context(viewport={"width": width, "height": height}, accept_downloads=True, locale="en-US")
+def new_page(browser, width, height, lang="en", tour_seen=True, touch=False):
+    # touch: un móvil de verdad (pantalla táctil, la etiqueta viewport): sin el cursor en los campos
+    ctx = browser.new_context(viewport={"width": width, "height": height}, accept_downloads=True, locale="en-US",
+                              has_touch=touch, is_mobile=touch)
     # el idioma es el de la carcasa (su cookie); el aviso de cookies, ya contestado
     ctx.add_cookies([{"name": "zt_lang", "value": lang, "url": BASE}, {"name": "zt_consent", "value": "none", "url": BASE}])
     # el recorrido de bienvenida sale una vez por navegador; cada contexto de aquí es un navegador nuevo
@@ -203,17 +211,17 @@ def main():
         expect(ui("payNote").split("{amount}")[1].strip() not in strip, "English Pro shows the payNote")
         shot(page, "pro", height=1480)
 
-        step("Pro with filters: two symbols and a win rate of 90% or more")
+        step("Pro with filters: two symbols and a win rate of 60% or more")
         panel = page.locator("aside").first
         # dispatched clicks: the sticky cart strip covers the panel's rows once the page has scrolled
         panel.get_by_text("Symbol", exact=True).dispatch_event("click")
         button(page, "Deselect all").dispatch_event("click")
-        for name in ("Apple (AAPL)", "NVIDIA Corporation (NVDA)"):
+        for name in ("Adobe (ADBE)", "Advanced Micro Devices (AMD)"):
             panel.get_by_text(name, exact=True).dispatch_event("click")
         panel.get_by_text("Symbol", exact=True).dispatch_event("click")
         panel.get_by_text("Win Rate (%)", exact=True).dispatch_event("click")
         low = panel.locator("input").nth(-2)
-        low.fill("90")
+        low.fill("60")
         low.press("Enter")
         page.get_by_text("Clear all").first.wait_for()
         page.wait_for_timeout(1200)
@@ -291,7 +299,10 @@ def main():
             button(page, "Send me the link").click()
             page.get_by_text("Check that inbox", exact=False).wait_for()
             page.goto(emailed_link(BUYER, r"/mine\?proof=", asked), wait_until="networkidle")
-            page.get_by_role("button", name=f"Yes, {BUYER} is mine").click()
+            confirm = page.get_by_role("button", name=f"Yes, {BUYER} is mine")
+            confirm.wait_for()
+            shot(page, "mine_proof", height=900)    # sólo con una cuenta nueva: en otra vuelta ya está confirmado
+            confirm.click()
         page.get_by_role("link", name=".pine").first.wait_for()
         # cada fila: .pine y .zip mientras el enlace vale (si no, «Pedir un enlace nuevo»), y su ficha y su
         # árbol, /s/<id> y /s/<id>/tree
@@ -463,10 +474,229 @@ def main():
         phone.wait_for_timeout(600)
         phone.screenshot(path=str(OUT / "edgefolio_phone_tree.png"))
         print("  saved edgefolio_phone_tree.png")
+
+        spanish(browser)
         browser.close()
 
     report()
     return 1 if problems else 0
+
+
+def crop(page, name, *parts, pad=12, fixed=False, within=None):
+    """Una captura en español de docs/FLUJO_USUARIO.md, ``edgefolio_es_<name>.png``, recortada a lo que importa
+    para que pese poco: la caja que junta ``parts`` (localizadores) con ``pad`` px de margen, dentro de la de
+    ``within`` si se da (una tabla más ancha que su caja); sin ``parts``, la ventana tal como está. Lo de la
+    página se mide desde arriba y sale de la página entera (la barra fija y la franja pegajosa del carrito, en
+    su sitio); lo fijo (un diálogo), con ``fixed``, de la ventana."""
+    if parts and not fixed:
+        page.evaluate("window.scrollTo(0, 0)")
+    page.evaluate("document.querySelectorAll('img[loading=lazy]').forEach(i => i.loading = 'eager')")
+    page.wait_for_load_state("networkidle")
+    page.wait_for_timeout(700)
+    path = OUT / f"edgefolio_es_{name}.png"
+    if parts:
+        boxes = [x.bounding_box() for x in parts]
+        expect(all(boxes), f"{name}: lo que se recorta no está en la página")
+        x0, y0 = min(b["x"] for b in boxes) - pad, min(b["y"] for b in boxes) - pad
+        x1, y1 = max(b["x"] + b["width"] for b in boxes) + pad, max(b["y"] + b["height"] for b in boxes) + pad
+        x0, y0, x1 = max(0, x0), max(0, y0), min(page.viewport_size["width"], x1)
+        if within:
+            w = within.bounding_box()
+            x0, x1 = max(x0, w["x"] - pad), min(x1, w["x"] + w["width"] + pad)
+        if fixed:
+            y1 = min(y1, page.viewport_size["height"])
+        page.screenshot(path=str(path), full_page=not fixed, clip={"x": x0, "y": y0, "width": x1 - x0, "height": y1 - y0})
+    else:
+        page.screenshot(path=str(path))
+    print(f"  saved {path.name} ({path.stat().st_size // 1024} KB)")
+
+
+def sign_in(page, then="/mine"):
+    """Entra con la cuenta del recorrido (ya dada de alta arriba) por la puerta del núcleo, y vuelve a ``then``."""
+    page.goto(f"{BASE}/login?next={then}", wait_until="networkidle")
+    page.locator("input[name=email]").fill(ACCOUNT)
+    page.locator("input[name=password]").fill(PASSWORD)
+    page.locator("form.account-form button[type=submit]").click()
+    page.wait_for_url(lambda url: url.split("?")[0].endswith(then), timeout=20000)   # no /login?next=/mine
+    page.wait_for_load_state("networkidle")
+
+
+def spanish(browser):
+    """Las capturas en español de docs/FLUJO_USUARIO.md, que cita la tienda en español: una por lo que cuenta
+    cada pantalla, recortada a ello. Va la última y en sus propios navegadores: no cambia ninguna de arriba (el
+    pedido que paga aquí, con el PayPal de prueba, se suma a Mis estrategias después de su captura)."""
+    def es(key):
+        return ui(key, "es")
+
+    def get(page, path):
+        return page.request.get(BASE + path).json()
+
+    def smallest(page, *texts):
+        """El elemento más pequeño de la página que contiene todos estos textos."""
+        box = page.locator("div")
+        for text in texts:
+            box = box.filter(has=page.get_by_text(text, exact=True))
+        return box.last
+
+    showing = re.compile(r"^" + re.escape(es("showingN").split("{n}")[0]) + r"\d+ ")
+    page = new_page(browser, 1366, 900, lang="es")
+    page.goto(BASE + "/", wait_until="networkidle")
+    page.get_by_text(showing).wait_for()
+
+    # lo que se busca, del catálogo de hoy (por la API): una gratis, dos de pago de 59 US$ fuera de los packs
+    # y el pack «Inicio en cripto»
+    cfg = get(page, "/api/config")
+    bundles = get(page, "/api/bundles")["bundles"]
+    crypto = next(b for b in bundles if b["name_key"] == "bundleCrypto")
+    in_bundles = {i for b in bundles for i in b["ids"]}
+    free_id = get(page, "/api/strategies?free=1&sort=hot&size=1")["rows"][0]["id"]
+    cheap = [r for r in get(page, "/api/strategies?paid=1&price_min=59&price_max=59&sort=hot&size=24")["rows"]
+             if r["id"] not in in_bundles][:2]
+    tape = get(page, "/api/strategies?paid=1&sort=hot&size=12")["rows"]
+    expect(len(cheap) == 2 and tape, f"the catalogue has no two strategies of 59 US$ outside the bundles: {cheap}")
+
+    step("Spanish: the top bar and Lite")
+    band = page.locator("[data-screen-label] > div").first           # la cinta, bajo la barra del núcleo
+    band.get_by_text(f"{tape[0]['ticker']} · {tape[0]['key']}", exact=True).first.wait_for()
+    crop(page, "bar", page.locator("header").first, band, pad=0)
+    page.get_by_text(re.compile(r"^" + re.escape(es("tabNew")) + r" · \d+$")).wait_for()
+    crop(page, "lite")
+
+    step("Spanish: Build your pack, with «Inicio en cripto» in the cart")
+    smallest(page, es("bundleCrypto"), es("addBundle")).locator("button").filter(has_text=es("addBundle")).click()
+    page.wait_for_timeout(500)
+    smallest(page, es("packTitle"), es("addPack")).locator("button").first.click()   # una casilla «+» lo abre
+    picker = page.locator("[role=dialog]").first
+    picker.wait_for()
+    # las del pack, juntas arriba: lo que comparten sus tickers («USDT»), en el buscador del selector
+    common = os.path.commonprefix([i.split("_")[0][::-1] for i in crypto["ids"]])[::-1]
+    if common:
+        picker.locator("input").fill(common)
+    held = picker.locator("button").filter(has_text=es("inCartBtn"))
+    held.nth(len(crypto["ids"]) - 1).wait_for()
+    page.wait_for_timeout(600)
+    expect(held.count() == len(crypto["ids"]), f"the pack picker: {held.count()} strategies «{es('inCartBtn')}»")
+    crop(page, "pack_picker", picker, pad=16, fixed=True)
+    esc_closes(page, "the pack picker")
+
+    step("Spanish: Pro's cart strip, with the design's own cart")
+    for r in cheap:
+        page.goto(f"{BASE}/s/{r['id']}", wait_until="networkidle")
+        button(page, es("addToCart")).first.click()
+        button(page, es("inCartBtn")).first.wait_for()
+    page.goto(BASE + "/", wait_until="networkidle")
+    page.get_by_role("radio", name="Pro").click()
+    page.get_by_text(es("shown")).wait_for()
+    strip = page.locator("[data-sf-cart]").first
+    strip.get_by_placeholder(es("codePh")).fill("demo20")
+    button(strip, es("apply")).click()
+    strip.get_by_text(es("codeOk"), exact=True).wait_for()
+    # el siguiente tramo, de la configuración: cuenta por encima de su importe (53,01, no 53,00)
+    subtotal = crypto["price"] + sum(r["price"] for r in cheap)
+    over = min(float(t["over"]) for t in cfg["tiers"] if float(t["over"]) >= subtotal)
+    missing = f"{over + 0.01 - subtotal:.2f}".replace(".", ",")
+    page.wait_for_timeout(800)
+    expect(missing in strip.inner_text(), f"the strip does not ask for {missing} more: {strip.inner_text()[:300]!r}")
+    print(f"  {crypto['key']} + {cheap[0]['id']} + {cheap[1]['id']} + demo20: {missing} more")
+    crop(page, "strip", strip, pad=0)
+
+    step("Spanish: a paid order's thanks page, opened in another browser")
+    button(page, es("checkout")).first.click()
+    page.wait_for_url("**/thanks**", timeout=20000)
+    page.get_by_text(es("downloadAll")).first.wait_for(timeout=20000)
+    other = new_page(browser, 1366, 900, lang="es")
+    other.goto(page.url, wait_until="networkidle")
+    other.get_by_text(es("linksHiddenTitle")).wait_for(timeout=20000)
+    expect(other.get_by_text(es("downloadAll")).count() == 0, "another browser sees the order's links")
+    other.get_by_text(es("signInToDownload")).first.wait_for()
+    # con la barra: sin sesión («Entrar»)
+    crop(other, "thanks_other", other.locator("header").first, smallest(other, es("linksHiddenTitle"), es("backShop")),
+         pad=16)
+    other.context.close()
+    page.keyboard.press("Escape")                                     # el tutorial de instalación
+
+    step("Spanish: a free strategy's page and its email")
+    page.goto(f"{BASE}/s/{free_id}", wait_until="networkidle")
+    page.get_by_text(es("allResults")).first.wait_for()
+    page.wait_for_timeout(1000)
+    crop(page, "detail_free")
+    button(page, es("download")).first.click()
+    page.locator("[role=dialog] input[type=email]").fill("visitante@example.com")
+    button(page, es("sendLink")).click()
+    page.get_by_text(es("freeSent")).first.wait_for()
+    crop(page, "free_sent", page.locator("[role=dialog]").first, pad=16, fixed=True)
+    esc_closes(page, "the free download")
+
+    step("Spanish: a paid strategy's preview and formats, How it decides in Blocks")
+    page.goto(f"{BASE}/s/{STRATEGY}", wait_until="networkidle")
+    page.get_by_text(es("formatsNote")).first.wait_for()
+    page.wait_for_timeout(1000)
+    crop(page, "detail_preview", smallest(page, "Pine Script v5", es("formatsNote")))
+    page.goto(f"{BASE}/s/{STRATEGY}/tree", wait_until="networkidle")
+    # los textos del árbol son de su propio diccionario (static/js/tree.js), no de i18n/ui.json
+    page.get_by_text("Resultado del árbol", exact=False).first.wait_for()
+    tree = page.locator("section[data-tree-sec]")
+    tree.get_by_role("tab", name="Bloques").click()
+    page.wait_for_timeout(1200)
+    crop(page, "tree_blocks", tree)
+
+    step("Spanish: Pro with filters, the Symbol dropdown open")
+    pro = new_page(browser, 1366, 900, lang="es")
+    pro.context.add_init_script("try { localStorage.setItem('tuisku-sf-mode', 'pro'); } catch (e) {}")
+    pro.goto(BASE + "/", wait_until="networkidle")
+    pro.get_by_text(es("shown")).wait_for()
+    panel = pro.locator("aside").first
+    panel.get_by_text(es("fWinRate"), exact=True).dispatch_event("click")
+    low = panel.locator("input").nth(-2)
+    low.fill("60")
+    low.press("Enter")
+    pro.get_by_text(es("clearAll")).first.wait_for()
+    panel.get_by_text(es("fSymbol"), exact=True).dispatch_event("click")
+    button(pro, es("selNone")).dispatch_event("click")
+    for name in ("Adobe (ADBE)", "Advanced Micro Devices (AMD)"):
+        panel.get_by_text(name, exact=True).dispatch_event("click")
+    pro.wait_for_timeout(1200)
+    crop(pro, "pro_filters", panel.locator(":scope > *").first, low, pro.locator("input[data-search]").first)
+
+    step("Spanish: the Table, a row unfolded")
+    pro.keyboard.press("Escape")
+    pro.get_by_text(es("clearAll")).first.click()
+    # la lista entera ya en la página: si no, se despliega una fila de la filtrada, que después baja
+    panel.get_by_text(str(cfg["strategies"]), exact=True).first.wait_for()
+    button(pro, es("viewTableTab")).click()
+    table = pro.locator("table").first
+    table.wait_for()
+    pro.wait_for_load_state("networkidle")
+    table.locator("tbody tr").first.locator("td").first.click()   # la primera celda: la tabla no se corre de lado
+    pro.wait_for_timeout(1200)
+    expect(table.locator("tbody tr").nth(1).get_by_text(es("overviewTab")).count() > 0, "the first row did not unfold")
+    table.evaluate("t => { t.parentElement.scrollLeft = 0; }")
+    # la cabecera, la fila desplegada y dos más, dentro de su tarjeta (la tabla es más ancha que ella)
+    crop(pro, "table_row", table.locator("thead"), table.locator("tbody tr").nth(3),
+         within=table.locator("xpath=../.."))
+
+    step("Spanish: My strategies signed out, the core's login")
+    door = new_page(browser, 1366, 900, lang="es")
+    door.goto(BASE + "/mine", wait_until="networkidle")
+    expect("/login?next=/mine" in door.url, door.url)
+    form = door.locator("form.account-form")
+    # la tarjeta del núcleo: la contraseña, el enlace por correo, la llave de acceso y el alta
+    crop(door, "login", form.locator("xpath=ancestor::*[.//a[contains(@href, '/register')]][1]"), pad=16)
+
+    step("Spanish: a phone, Pro and My strategies")
+    phone = new_page(browser, 390, 844, lang="es", touch=True)
+    phone.context.add_init_script("try { localStorage.setItem('tuisku-sf-mode', 'pro'); } catch (e) {}")
+    phone.goto(BASE + "/", wait_until="networkidle")
+    phone.get_by_text(es("shown")).wait_for()
+    phone.wait_for_timeout(1000)
+    crop(phone, "phone_pro")
+    sign_in(phone)
+    # la cuenta habla inglés (se dio de alta arriba, en inglés) y manda sobre la cookie: ?lang=es sólo cambia
+    # esta página, no la cuenta
+    phone.goto(BASE + "/mine?lang=es", wait_until="networkidle")
+    phone.get_by_text(es("signedAs").replace("{e}", ACCOUNT)).first.wait_for()
+    phone.wait_for_timeout(1000)
+    crop(phone, "phone_mine")
 
 
 def report():

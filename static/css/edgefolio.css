@@ -15,6 +15,9 @@ a:hover{text-decoration:underline}
 .sf-hover3:hover{background:#0950e3 !important;color:#ffffff !important;border-color:#0950e3 !important}
 .sf-hover4:hover{background:#0e7c98 !important;color:#ffffff !important;border-color:#0e7c98 !important}
 .sf-focus5:focus{border-color:#0950e3 !important;box-shadow:0 0 0 3px rgba(9,80,227,.15) !important}
+/* los cuatro buscadores (Lite, Pro, un desplegable de Pro, el pack) quitan el contorno de su campo, como
+   en el diseño: el foco se ve en su caja, con el style-focus del diseño (.sf-focus5) */
+.sc-host label:has(> i.fa-magnifying-glass):focus-within{border-color:#0950e3 !important;box-shadow:0 0 0 3px rgba(9,80,227,.15) !important}
 .sf-hover6:hover{background:#f7faff !important}
 .sf-hover7:hover{box-shadow:0 12px 32px rgba(22,38,58,.10) !important;border-color:#cfd6e6 !important}
 .sf-hover8:hover{background:#0950e3 !important;color:#ffffff !important;border-color:#0950e3 !important;text-decoration:none !important}
@@ -40,3 +43,10 @@ a:hover{text-decoration:underline}
    fila de la barra, como en el diseño. */
 .ef-bar{display:contents}
 .ef-noscript{padding:24px}
+
+/* Con un diálogo de la tienda abierto (lib/modal.js), la página de detrás no se desplaza: como con el
+   <dialog> del núcleo (shell.css). */
+html:has(.sc-host [role=dialog][aria-modal=true]){overflow:hidden}
+/* el diálogo mismo se enfoca (en una pantalla táctil, o tras un clic en su fondo): sin contorno, que no es un
+   control */
+.sc-host [role=dialog][aria-modal=true]:focus{outline:none}

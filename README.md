@@ -1,9 +1,10 @@
 # Edgefolio (`edgefolio`) · la tienda de estrategias de TradingView
 
-La tienda de tuisku.eu, que se vende como **Edgefolio**: un catálogo de **2.834 estrategias de
-TradingView** (Pine Script v5) con su backtest. Se miran en una vista sencilla, **Lite**, o se filtran en
-**Pro**; se ve cómo decide cada una; se compran con PayPal y se descarga el script. El servidor pone el
-precio de cada carrito, cobra, y sólo entrega los scripts de pago por enlaces firmados que caducan.
+La tienda de tuisku.ai, que se vende como **Edgefolio**: un catálogo de **estrategias de TradingView**
+(Pine Script v5; 143 en el de octubre de 2026) con su backtest. Se miran en una vista sencilla,
+**Lite**, o se filtran en **Pro**; se ve cómo decide cada una; se compran con PayPal y se descarga el
+script. El servidor pone el precio de cada carrito, cobra, y sólo entrega los scripts de pago por
+enlaces firmados que caducan.
 
 Es una **herramienta zlecitool**: una app Flask sobre [zlecitool-core](https://github.com/Leci37/zlecitool-core),
 como `cv_lin` o `md_pdf`. La barra (con la palabra Edgefolio), el idioma, las cuentas, la seguridad, el
@@ -53,11 +54,11 @@ entero y lo publica; lo que trae lo fija `catalogue/contract.json`, el contrato 
 
 <table>
 <tr>
-<td width="50%"><img src="docs/img/edgefolio_pro_filters.png" alt="Pro con dos símbolos y un porcentaje de aciertos del 90 % o más"></td>
+<td width="50%"><img src="docs/img/edgefolio_pro_filters.png" alt="Pro con dos símbolos y un porcentaje de aciertos del 60 % o más"></td>
 <td width="50%"><img src="docs/img/edgefolio_table.png" alt="Los mismos filtros en la vista de tabla"></td>
 </tr>
 <tr>
-<td><sub><b>Filtrar.</b> Apple y NVIDIA, aciertos ≥ 90 %: el recuento, las etiquetas, los histogramas y la lista salen del servidor.</sub></td>
+<td><sub><b>Filtrar.</b> Adobe y AMD, aciertos ≥ 60 %: el recuento, las etiquetas, los histogramas y la lista salen del servidor.</sub></td>
 <td><sub>El mismo resultado, en una tabla que se ordena.</sub></td>
 </tr>
 <tr>
@@ -74,7 +75,7 @@ entero y lo publica; lo que trae lo fija `catalogue/contract.json`, el contrato 
 </tr>
 <tr>
 <td><sub><b>Comparar</b> hasta 3; lo mejor de cada fila, en verde.</sub></td>
-<td><sub><b>Crea tu pack:</b> 5 estrategias por un precio, buscadas entre las 2.834.</sub></td>
+<td><sub><b>Crea tu pack:</b> 5 estrategias por un precio, buscadas en todo el catálogo de pago.</sub></td>
 </tr>
 <tr>
 <td><img src="docs/img/edgefolio_free.png" alt="Una estrategia gratis: el correo ha salido"></td>
@@ -361,7 +362,7 @@ los enlaces de los correos y la vuelta de PayPal se hacen con ella, nunca con la
 | `PACK_SIZE`, `PACK_PRICE` | `5`, `249` | «Crea tu pack» |
 | `DOWNLOAD_DAYS`, `MAX_DOWNLOADS` | `7`, `10` | lo que vale un enlace de descarga |
 | `NEW_DAYS` | `30` | lo que una estrategia sale en «Nuevas» |
-| `CONTACT_EMAIL` | `sales@tuisku.eu` | la dirección que la página da para los problemas |
+| `CONTACT_EMAIL` | `sales@tuisku.ai` | la dirección que la página da para los problemas |
 | `STRATEGIES_DIR` | `<datos>/edgefolio/strategies` | los `.pine` de pago |
 | `PORT` | `5105` | el de `python app.py` (y `gunicorn.conf.py`) |
 
@@ -440,7 +441,7 @@ Dónde se conectan (lo que escribe el generador → lo que lee la tienda):
 | Las vistas previas públicas | `d_result/pine_TW_hide/` | `static/assets/previews/` | en el paquete (`pine_TW_hide/`); `import` las corta a su parte pública |
 | Los scripts de pago | `d_result/pine_TW_b/` | `STRATEGIES_DIR` (por defecto `<ZLECITOOL_DATA_DIR>/edgefolio/strategies`) | nunca en el paquete, sólo su sha256 en el manifiesto: `import --scripts <generador>/d_result/pine_TW_b` copia los de la lista, comprobados |
 | De qué ejecución es | `manifest.json` del paquete | `catalogue/release.json` | `import` copia el contrato, la fecha, el generador y las filas |
-| La vuelta a la tienda | cada script, al caducar, pide bajar la versión nueva de `SHOP_URL` (`settings.py` del generador, por defecto `tuisku.eu`) | — | el texto del script |
+| La vuelta a la tienda | cada script, al caducar, pide bajar la versión nueva de `SHOP_URL` (`settings.py` del generador, por defecto `tuisku.ai`) | — | el texto del script |
 
 Lo que no pasa: los mosaicos del paso 8 del generador (`d_result/mosaico/`) eran de la página de antes;
 esta no los usa.
@@ -508,7 +509,7 @@ Otras dos formas, sin Flask (sólo pandas):
 
 1. **El servidor**: Python 3.10 o más (3.11 recomendado), con HTTPS delante.
 2. **El núcleo** es privado: un token de GitHub con lectura de `Leci37/zlecitool-core` para que `pip` lo
-   instale en la etiqueta que fija `requirements.txt` (**v0.30.0**).
+   instale en la etiqueta que fija `requirements.txt` (**v0.31.2**).
 3. `pip install -r requirements.txt`
 4. **El entorno**: el común de la familia (`FLASK_SECRET_KEY` el mismo que las otras, `DATABASE_URL` a
    Postgres, `ZLECITOOL_PUBLIC_URL`, el SMTP, `ZLECITOOL_TRUSTED_PROXIES=1` detrás de nginx, los datos
@@ -593,8 +594,8 @@ edgefolio/                 la tienda: routes.py (las rutas), models.py (las tabl
                            release.py (importar un paquete del generador)
 templates/edgefolio/       shop.html, la página sobre zt/base.html
 static/                    la página tal cual (sin compilar): js/ (Preact + htm, las vistas del diseño),
-                           css/ (edgefolio.css y theme.css), vendor/, trees/, img/, assets/ (5.668
-                           gráficos, 2.834 vistas previas, iconos)
+                           css/ (edgefolio.css y theme.css), vendor/, trees/, img/, assets/ (dos
+                           gráficos y una vista previa por estrategia, iconos)
 i18n/ui.json               los textos de la tienda, en 8 idiomas
 catalogue/                 catalogue.csv, indicators.csv, bundles.json, fx.json; contract.json (el contrato
                            con el generador); release.json (de qué ejecución del generador es el catálogo:

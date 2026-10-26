@@ -33,7 +33,7 @@ export default function Thanks(v) {
             </div>
           `)}${' '}
         </div>` : null}
-      <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+      ${v.linksShown ? html`<div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
         <div style="display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap">
           <h2 style="margin:0;font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:18px;height:18px" />${T(v.tx?.installTitle)}</h2>
           <button onClick=${v.openInst0} style="margin-inline-start:auto;font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:9px 16px;font-size:13.5px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;box-shadow:0 8px 20px rgba(9,80,227,.22)"><i class="fa-solid fa-circle-play"></i>${T(v.instWatch)}</button>
@@ -41,7 +41,7 @@ export default function Thanks(v) {
         <ol style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:${s(v.instCols)};gap:10px">
           ${(v.instCards || []).map((st, $index) => html`<li style="display:flex"><button class="sf-hover10" onClick=${st?.go} style="font-family:inherit;flex:1;display:flex;flex-direction:${s(v.instTileDir)};gap:10px;align-items:flex-start;text-align:start;background:#f4f8fb;border:1px solid transparent;border-radius:12px;padding:12px;font-size:13.5px;color:#16263a;cursor:pointer"><span style="width:24px;height:24px;border-radius:50%;background:#0950e3;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0">${st?.n}</span><span style="text-wrap:pretty;font-weight:600;line-height:1.35">${st?.title}</span></button></li>`)}
           </ol>
-        </div>
+        </div>` : null}
       <div style="display:flex;gap:10px;flex-wrap:wrap"><button onClick=${v.goMine} style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 22px;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22)">${v.tx?.goMine}</button><button onClick=${v.goShop} style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 20px;font-size:14px;cursor:pointer">${v.tx?.backShop}</button></div>
       ${v.contactOn ? html`<p style="margin:0;font-size:12.5px;color:#5a6b80">${v.tx?.contactProblems}</p>` : null}
       </section>

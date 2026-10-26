@@ -8,7 +8,9 @@
    Una sola plantilla para /, /mine, /thanks, /s/<id> y /s/<id>/tree: la página lee la ruta. #}
 {% set zt_full_bleed = true %}
 
-{% block title %}Edgefolio · {{ zt_t('toolName') }}{% endblock %}
+{# El de una estrategia, «Nombre · TICKER · CLAVE · temporalidad[ · Cómo decide] · Edgefolio» (routes._page);
+   static/js/app.js (tabTitle) pone el mismo al moverse por la tienda o cambiar de idioma. #}
+{% block title %}{% if strategy_name %}{{ strategy_name }}{% if tree_tab %} · {{ zt_t('howItDecides') }}{% endif %} · Edgefolio{% else %}Edgefolio · {{ zt_t('toolName') }}{% endif %}{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}">
@@ -21,6 +23,9 @@
 
 {% block content %}
 <div id="app" data-signed-in="{{ '1' if current_user.is_authenticated else '' }}"></div>
+{# Sin el diccionario (/zt/i18n.json), la página no puede pintar ni un aviso: este lo escribe el servidor y
+   static/js/app.js lo enseña si el diccionario no llega. #}
+<p class="ef-noscript" data-ef-nodict hidden data-i18n="errShopNetwork">{{ zt_t('errShopNetwork') }}</p>
 <noscript><p class="ef-noscript" data-i18n="noScript">{{ zt_t('noScript') }}</p></noscript>
 {% endblock %}
 

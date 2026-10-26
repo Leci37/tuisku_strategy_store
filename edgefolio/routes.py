@@ -86,8 +86,15 @@ def email_of(raw) -> str:
 
 # ── las páginas: una plantilla, la página lee la ruta ───────────────────────
 
-def _page():
-    return render_template("edgefolio/shop.html")
+def _page(strategy=None, tree: bool = False):
+    """La plantilla. En la página de una estrategia, el título de la pestaña dice cuál es (un ticker tiene
+    hasta 17), como su cabecera y sus etiquetas: el mismo que pone static/js/app.js (tabTitle) al moverse
+    por la tienda o cambiar de idioma. Así sale bien también antes de que corra la página y en la vista
+    previa de un enlace (og:title, de la carcasa)."""
+    name = ""
+    if strategy is not None:
+        name = " · ".join((strategy.summary["name"], strategy.ticker, strategy.key_techs, strategy.interval))
+    return render_template("edgefolio/shop.html", strategy_name=name, tree_tab=tree)
 
 
 @bp.get("/")
@@ -110,7 +117,7 @@ def _strategy_page(strategy_id: str, tail: str = ""):
         return redirect("/", code=302)
     if s.id != strategy_id:
         return redirect(f"/s/{s.id}{tail}", code=301)
-    return _page()
+    return _page(s, tree=bool(tail))
 
 
 @bp.get("/s/<strategy_id>")
@@ -142,7 +149,7 @@ def config():
                     "pack": {"size": s.pack_size, "price": str(s.pack_price)},
                     "download_days": s.download_days, "max_downloads": s.max_downloads,
                     "new_days": s.new_days, "contact_email": s.contact_email,
-                    "strategies": len(shop().catalogue)})
+                    "strategies": len(shop().catalogue), "npp_max": shop().catalogue.best_npp})
 
 
 @bp.get("/api/strategies")
@@ -211,10 +218,18 @@ def create_order():
 @bp.post("/api/orders/<paypal_id>/capture")
 @public
 def capture(paypal_id):
-    order = orders.capture(shop(), paypal_id, on_paid=_email_receipt)
+    """El cobro, y el recibo. ``paid_now``: este cobro es el que pagó el pedido (el navegador que vuelve de
+    PayPal vacía entonces su carrito); abrir otra vez la página de gracias, o en otro navegador, no lo toca."""
+    paid_now = []
+
+    def on_paid(order):
+        paid_now.append(order)
+        _email_receipt(order)
+
+    order = orders.capture(shop(), paypal_id, on_paid=on_paid)
     uid = user_id()
     see = orders.may_see_links(order, request.cookies.get(BUYER_COOKIE), uid, proofs.proven(uid))
-    return jsonify(orders.receipt(shop(), order, see))
+    return jsonify({**orders.receipt(shop(), order, see), "paid_now": bool(paid_now)})
 
 
 def _email_receipt(order):

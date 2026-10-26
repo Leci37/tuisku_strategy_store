@@ -171,14 +171,41 @@
     "hi": "चेकआउट"
   },
   "shown": {
-    "es": "estrategias mostradas",
-    "en": "strategies shown",
-    "pt": "estratégias mostradas",
-    "fr": "stratégies affichées",
-    "de": "Strategien angezeigt",
-    "zh": "个策略",
-    "ar": "استراتيجية معروضة",
-    "hi": "रणनीतियाँ दिख रही हैं"
+    "es": {
+      "one": "estrategia mostrada",
+      "other": "estrategias mostradas"
+    },
+    "en": {
+      "one": "strategy shown",
+      "other": "strategies shown"
+    },
+    "pt": {
+      "one": "estratégia mostrada",
+      "other": "estratégias mostradas"
+    },
+    "fr": {
+      "one": "stratégie affichée",
+      "other": "stratégies affichées"
+    },
+    "de": {
+      "one": "Strategie angezeigt",
+      "other": "Strategien angezeigt"
+    },
+    "zh": {
+      "other": "个策略"
+    },
+    "ar": {
+      "zero": "استراتيجية معروضة",
+      "one": "استراتيجية معروضة",
+      "two": "استراتيجيتان معروضتان",
+      "few": "استراتيجيات معروضة",
+      "many": "استراتيجية معروضة",
+      "other": "استراتيجية معروضة"
+    },
+    "hi": {
+      "one": "रणनीति दिख रही है",
+      "other": "रणनीतियाँ दिख रही हैं"
+    }
   },
   "reset": {
     "es": "Restablecer filtros",
@@ -201,14 +228,34 @@
     "hi": "सिर्फ़ मुफ़्त दिखाएँ"
   },
   "selectedN": {
-    "es": "{n} seleccionados",
-    "en": "{n} selected",
-    "pt": "{n} selecionados",
-    "fr": "{n} sélectionnés",
-    "de": "{n} ausgewählt",
-    "zh": "已选 {n} 项",
-    "ar": "تم اختيار {n}",
-    "hi": "{n} चुने गए"
+    "es": {
+      "one": "{n} seleccionado",
+      "other": "{n} seleccionados"
+    },
+    "en": {
+      "other": "{n} selected"
+    },
+    "pt": {
+      "one": "{n} selecionado",
+      "other": "{n} selecionados"
+    },
+    "fr": {
+      "one": "{n} sélectionné",
+      "other": "{n} sélectionnés"
+    },
+    "de": {
+      "other": "{n} ausgewählt"
+    },
+    "zh": {
+      "other": "已选 {n} 项"
+    },
+    "ar": {
+      "other": "تم اختيار {n}"
+    },
+    "hi": {
+      "one": "{n} चुना गया",
+      "other": "{n} चुने गए"
+    }
   },
   "any": {
     "es": "cualquiera",
@@ -349,6 +396,16 @@
     "zh": "已加入",
     "ar": "في السلة",
     "hi": "कार्ट में है"
+  },
+  "ownedYours": {
+    "es": "Ya es tuya",
+    "en": "Already yours",
+    "pt": "Já é tua",
+    "fr": "Déjà à vous",
+    "de": "Gehört dir schon",
+    "zh": "已归你所有",
+    "ar": "إنها لك بالفعل",
+    "hi": "यह पहले से आपकी है"
   },
   "download": {
     "es": "Descargar",
@@ -841,14 +898,14 @@
     "hi": "कोई कंपनी या क्रिप्टो खोजें, या टैब इस्तेमाल करें: लोकप्रिय, जीत दर, शेयर, क्रिप्टो और मुफ़्त।"
   },
   "tour1Pro": {
-    "es": "Acota las 2.834 estrategias con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 15 más.",
-    "en": "Narrow the 2,834 strategies with the filter panel: net profit, price, symbol, time frame, indicators and 15 more.",
-    "pt": "Restringe as 2834 estratégias com o painel de filtros: lucro líquido, preço, símbolo, período, indicadores e mais 15.",
-    "fr": "Affinez les 2 834 stratégies avec le panneau de filtres : bénéfice net, prix, symbole, unité de temps, indicateurs et 15 autres.",
-    "de": "Grenze die 2.834 Strategien mit dem Filterbereich ein: Nettogewinn, Preis, Symbol, Zeiteinheit, Indikatoren und 15 weitere.",
-    "zh": "用筛选面板缩小 2,834 个策略的范围：净利润、价格、代码、时间周期、指标，以及另外 15 项。",
-    "ar": "ضيّق نطاق الاستراتيجيات الـ 2,834 بلوحة عوامل التصفية: صافي الربح والسعر والرمز والإطار الزمني والمؤشرات و15 غيرها.",
-    "hi": "फ़िल्टर पैनल से 2,834 रणनीतियाँ छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 15 और।"
+    "es": "Acota el catálogo con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 16 más.",
+    "en": "Narrow the catalogue with the filter panel: net profit, price, symbol, time frame, indicators and 16 more.",
+    "pt": "Restringe o catálogo com o painel de filtros: lucro líquido, preço, símbolo, período, indicadores e mais 16.",
+    "fr": "Affinez le catalogue avec le panneau de filtres : bénéfice net, prix, symbole, unité de temps, indicateurs et 16 autres.",
+    "de": "Grenze den Katalog mit dem Filterbereich ein: Nettogewinn, Preis, Symbol, Zeiteinheit, Indikatoren und 16 weitere.",
+    "zh": "用筛选面板缩小目录范围：净利润、价格、代码、时间周期、指标，以及另外 16 项。",
+    "ar": "ضيّق نطاق الكتالوج بلوحة عوامل التصفية: صافي الربح والسعر والرمز والإطار الزمني والمؤشرات و16 غيرها.",
+    "hi": "फ़िल्टर पैनल से कैटलॉग छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 16 और।"
   },
   "tour2Title": {
     "es": "Lee la curva",
@@ -1804,6 +1861,16 @@
     "ar": "يُسلَّم باقي السكربت بعد الشراء",
     "hi": "बाकी स्क्रिप्ट खरीद के बाद दी जाती है"
   },
+  "scriptRestFree": {
+    "es": "El resto del script te llega gratis por correo",
+    "en": "The rest of the script comes free by email",
+    "pt": "O resto do script chega-te grátis por e-mail",
+    "fr": "La suite du script vous parvient gratuitement par e-mail",
+    "de": "Den Rest des Skripts bekommst du kostenlos per E-Mail",
+    "zh": "脚本其余部分会免费通过邮件发给你",
+    "ar": "يصلك باقي السكربت مجانًا عبر البريد الإلكتروني",
+    "hi": "बाकी स्क्रिप्ट आपको ईमेल से मुफ़्त मिलती है"
+  },
   "buyScriptTitle": {
     "es": "Lo que compras: el script completo",
     "en": "What you buy: the complete script",
@@ -1813,6 +1880,16 @@
     "zh": "你购买的是：完整脚本",
     "ar": "ما تشتريه: السكربت الكامل",
     "hi": "आप क्या खरीदते हैं: पूरी स्क्रिप्ट"
+  },
+  "buyScriptTitleFree": {
+    "es": "Lo que recibes: el script completo",
+    "en": "What you get: the complete script",
+    "pt": "O que recebes: o script completo",
+    "fr": "Ce que vous recevez : le script complet",
+    "de": "Was du bekommst: das komplette Skript",
+    "zh": "你将获得：完整脚本",
+    "ar": "ما تحصل عليه: السكربت الكامل",
+    "hi": "आपको क्या मिलता है: पूरी स्क्रिप्ट"
   },
   "buyScriptText": {
     "es": "El código Pine completo de la estrategia, con todos los árboles de su bosque, listo para pegar en el editor Pine de TradingView. Arriba ves sus primeras líneas.",
@@ -1834,6 +1911,16 @@
     "ar": "الصيغ المضمّنة. نزّلها من استراتيجياتي بعد الشراء.",
     "hi": "शामिल फ़ॉर्मैट। खरीद के बाद मेरी रणनीतियाँ से डाउनलोड करें।"
   },
+  "formatsNoteFree": {
+    "es": "Formatos incluidos. Te llegan por correo y están en Mis estrategias.",
+    "en": "Included formats. They come by email and are in My strategies.",
+    "pt": "Formatos incluídos. Chegam-te por e-mail e estão em As minhas estratégias.",
+    "fr": "Formats inclus. Ils vous parviennent par e-mail et sont dans Mes stratégies.",
+    "de": "Enthaltene Formate. Du bekommst sie per E-Mail, und sie stehen unter Meine Strategien.",
+    "zh": "包含的格式。会通过邮件发给你，也在“我的策略”中。",
+    "ar": "الصيغ المضمّنة. تصلك عبر البريد الإلكتروني وتجدها في استراتيجياتي.",
+    "hi": "शामिल फ़ॉर्मैट। ये आपको ईमेल से मिलते हैं और मेरी रणनीतियाँ में भी हैं।"
+  },
   "fmtPineDesc": {
     "es": "Para TradingView. Es el producto que compras.",
     "en": "For TradingView. This is the product you buy.",
@@ -1843,6 +1930,16 @@
     "zh": "用于 TradingView。这就是你购买的产品。",
     "ar": "لـ TradingView. هذا هو المنتج الذي تشتريه.",
     "hi": "TradingView के लिए। यही वह उत्पाद है जो आप खरीदते हैं।"
+  },
+  "fmtPineDescFree": {
+    "es": "Para TradingView. Es lo que te llega por correo.",
+    "en": "For TradingView. This is what you get by email.",
+    "pt": "Para o TradingView. É o que te chega por e-mail.",
+    "fr": "Pour TradingView. C’est ce que vous recevez par e-mail.",
+    "de": "Für TradingView. Das bekommst du per E-Mail.",
+    "zh": "用于 TradingView。这就是你通过邮件收到的内容。",
+    "ar": "لـ TradingView. هذا ما يصلك عبر البريد الإلكتروني.",
+    "hi": "TradingView के लिए। यही आपको ईमेल से मिलता है।"
   },
   "fmtMd": {
     "es": "Markdown para IA",
@@ -2514,6 +2611,26 @@
     "ar": "نعم، {e} بريدي",
     "hi": "हाँ, {e} मेरा है"
   },
+  "proofProvenTitle": {
+    "es": "Ya está confirmado",
+    "en": "Already confirmed",
+    "pt": "Já está confirmado",
+    "fr": "Déjà confirmé",
+    "de": "Bereits bestätigt",
+    "zh": "已确认过",
+    "ar": "تم التأكيد من قبل",
+    "hi": "पहले से पुष्टि हो चुकी है"
+  },
+  "proofProvenText": {
+    "es": "Ese correo ya es de esta cuenta: lo que se compró o descargó con él ya aparece aquí.",
+    "en": "That email already belongs to this account: what was bought or downloaded with it already shows up here.",
+    "pt": "Esse e-mail já é desta conta: o que se comprou ou descarregou com ele já aparece aqui.",
+    "fr": "Cet e-mail appartient déjà à ce compte : ce qui a été acheté ou téléchargé avec lui apparaît déjà ici.",
+    "de": "Diese E-Mail gehört bereits zu diesem Konto: Was damit gekauft oder heruntergeladen wurde, erscheint schon hier.",
+    "zh": "该邮箱已属于此账户：用它购买或下载的策略已经显示在这里。",
+    "ar": "هذا البريد يخص هذا الحساب بالفعل: ما اشتُري أو نُزّل به يظهر هنا.",
+    "hi": "यह ईमेल पहले से इसी खाते का है: इससे जो ख़रीदा या डाउनलोड किया गया, वह यहाँ दिखता है।"
+  },
   "mailProofSubject": {
     "es": "Confirma tu correo en Edgefolio",
     "en": "Confirm your email on Edgefolio",
@@ -2573,5 +2690,15 @@
     "zh": "表格",
     "ar": "جدول",
     "hi": "टेबल"
+  },
+  "removeName": {
+    "es": "Quitar {name}",
+    "en": "Remove {name}",
+    "pt": "Remover {name}",
+    "fr": "Retirer {name}",
+    "de": "{name} entfernen",
+    "zh": "移除 {name}",
+    "ar": "إزالة {name}",
+    "hi": "{name} हटाएँ"
   }
 }

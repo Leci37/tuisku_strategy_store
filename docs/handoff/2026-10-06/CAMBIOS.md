@@ -177,13 +177,12 @@ Se queda como está; el diseño no lo enseña o lo simula:
   (`ema12`, `ema13`, `ad_mf`, `MFI_High`, `MFI_Low`, `d_k`, `smoothK_k`, `smoothD_d`).
 - **Los idiomas del árbol:** la explicación de los 22 patrones de 2026-10 (15 no tenían), en los 8 idiomas
   (`patterns` de `features.json` en en y es; `pat` de `static/trees/ui.json` en los otros seis). El nombre de
-  cada valor, también en los 8 (`feat`); su descripción, en los 8 la de los 44 valores de los siete patrones de
-  2024 (`featDesc` de `ui.json`, con la nota de los divididos por el cierre en el idioma de la página), y en en y
-  es la de los 181 de 2026-10: en los otros idiomas, ésas salen en inglés, con `lang="en"` y `dir="ltr"`
-  (`tree_tip.js`; en árabe, sin él, su punto final saltaba al principio), como la de un patrón sin traducir
-  (`tree_main.js`). La línea del patrón ya no lleva `dir="auto"`, que la tienda le puso cuando era
-  inglesa: va en la dirección de la página, y en árabe «WaveTrend…», «SuperTrend…» y «CM Ultimate MA…» salían de
-  izquierda a derecha.
+  cada valor, también en los 8 (`feat`), y su descripción, en los 8 la de los 225 (`featDesc` de `ui.json`, con la
+  nota de los divididos por el cierre en el idioma de la página; las de los 181 de 2026-10, desde el 2026-10-26).
+  Una que faltara saldría en inglés, con `lang="en"` y `dir="ltr"` (`tree_tip.js`; en árabe, sin él, su punto final
+  saltaba al principio), como la de un patrón sin traducir (`tree_main.js`). La línea del patrón ya no lleva
+  `dir="auto"`, que la tienda le puso cuando era inglesa: va en la dirección de la página, y en árabe «WaveTrend…»,
+  «SuperTrend…» y «CM Ultimate MA…» salían de izquierda a derecha.
 - **Árbol | Bloques** llevan `aria-selected`, como Ficha técnica | Cómo decide.
 - **«CLAVE · indicador»** de 43 estrategias de las 94 (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:
@@ -226,8 +225,9 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Intro en la casilla del código** (Lite y Pro) lo aplica, como «Aplicar» (`codeKey`; no mientras se
   compone en zh/hi). En el diseño, sólo el botón.
 - **«N estrategias mostradas»** de Pro va en singular con una («1 estrategia mostrada»; `shownLabel`), y
-  «N seleccionados» también («1 seleccionado»). En inglés, el rango `fTreeDepth` sigue diciendo «Tree
-  Deep», como el diseño y la columna del CSV: **para el diseño**, ¿«Tree depth»?
+  «N seleccionados» también («1 seleccionado»). En inglés, el rango `fTreeDepth` dice «Tree depth» (decidido el
+  2026-10-26, E12d); la columna del CSV sigue siendo «Tree Deep», que es la del contrato con el generador. **Para el
+  diseño:** su maqueta dice «Tree Deep»; que diga «Tree depth».
 - **La fila desplegada de la Tabla se queda en la parte visible:** sus dos gráficos y la explicación del
   indicador, con sus tres acciones, van en una rejilla `sticky` del ancho de la caja que se desliza
   (`container-type:inline-size`, `100cqw`), en una columna en el móvil. En el diseño la rejilla mide lo que
@@ -253,9 +253,27 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **La temporalidad que hay que poner en TradingView** va con el nombre de su menú, «1D» o «1h»
   (`tvInterval`, como el tutorial de instalación): el diseño escribe fijo «1Day», el nombre del catálogo, que
   el menú de TradingView no tiene.
-- **La explicación del indicador** («Sobre el indicador» y la fila desplegada de la Tabla de Pro) lleva
-  `lang="en"`: `catalogue/indicators.csv` sólo la tiene en inglés, y sale en inglés en los 8 idiomas.
-  Traducirla es contenido del dueño.
+- **La explicación del indicador** («Sobre el indicador» y la fila desplegada de la Tabla de Pro, y el `title` de
+  «CLAVE · indicador» en Pro) sale en el idioma de la página (2026-10-26, E12a): `catalogue/indicators.csv` la tiene
+  en los 8 (`Explanation`, la inglesa, y `Explanation_es`…`_hi`) y API #2 y #3 mandan la del idioma de la petición
+  (`ind_text`) con su idioma (`ind_lang`). La `<p>` y el `<span>` llevan el `lang` y el `dir` que dice la fila
+  (`exLang`, `exDir` en `detail.js` y `pro.js`): los de la página, y `lang="en"` con `dir="auto"` sólo si una falta
+  (nunca `null`: Preact lo dejaría en `lang=""`, «idioma desconocido»). La página pide el catálogo en su idioma
+  (`?lang=`) y, al cambiarlo, otra vez la ficha a la vista y las páginas de Pro que se ven, sin moverse.
+- **Las cajas de los resultados del árbol** se llaman (`aria-label`) como lo que enseñan, «Esperar −0,45» o
+  «Puntuación +0,89», en el idioma de la página (`tree.js`; el marcado de la vista, igual). En el diseño se llaman con
+  su línea de Pine (`ret := 0.452000 // buy`), cuyo comentario es de la fábrica (±0,7) y no de los niveles del
+  script: un lector de pantalla oía «buy» donde la caja decía Esperar.
+- **Los plurales árabes:** lo que cuenta lleva la forma que pide el número (de 3 a 10, el plural: «9 صفقات»; de 11
+  a 99, el singular: «36 صفقة»): la nota de cada estrategia (`gradeTip`), sus operaciones en las fichas de Lite
+  (`tradesWord`: la ficha lee `r?.tradesWord`, de cada fila, y no `v.tx?.tradesWord`, uno para todas; `lite.js`),
+  entre cuántas se eligieron (`riskTried`, por las probadas), los cortes de la nota (`gradeCuts`, por el de la A) y, en
+  el árbol, sus reglas, sus resultados y sus ramas cortadas (`rulesN`, `visible`, `complete`, `paidN`, `ctaN`,
+  `fPaidN`, `fCtaN`, elegidas en `tree.js` con `Intl.PluralRules`). En español, alemán, francés y portugués, «1
+  operación cerrada». La maqueta pone una sola forma: **para el diseño**.
+- **Árabe, los signos:** «بيع −1» y «شراء +1» de la escala del árbol, «من −1 إلى +1» de sus textos, «VI+», «DI−»,
+  «%K» y la fórmula de la TEMA llevan una marca de izquierda a derecha (LRM, o aislada con LRI…PDI): sin ella el
+  algoritmo bidi pintaba «1−», «+VI», «K%» y partía la fórmula.
 - **En una gratis, la vista previa y los formatos** no hablan de comprar: «El resto del script te llega
   gratis por correo», «Lo que recibes: el script completo», «Para TradingView. Es lo que te llega por
   correo.» y «Formatos incluidos. Te llegan por correo y están en Mis estrategias.» (`scriptRestFree`,
@@ -344,7 +362,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 | 8 | La ficha no tiene resumen del carrito | Igual; en el móvil la barra de abajo cuenta lo que hay |
 | 9 | Pro enseña «Pagar» con el carrito vacío | Igual; no hace nada |
 | 10 | Los tramos en USD y los totales en moneda local | Igual; se paga en USD («Pagas X US$ con PayPal») |
-| 11 | Revisión nativa de zh, ar e hi | Pendiente, también para los textos nuevos de 2026-10: `tour1Pro`, los plurales de `shown` y `selectedN`, `ownedYours`, los cuatro de una gratis en la ficha, `proofProvenTitle` / `proofProvenText`, y en el árbol los 22 `pat`, `ownFull`, `ownFail`, `fOwnSignIn`, `fOwnNotYours`, `ownedRest`, `ownedLock`, `ownedBtn` y `whatIs` |
+| 11 | Revisión nativa de zh, ar e hi | Revisados por la tienda (2026-10-26, E12c: gramática, trato, términos de la tienda, números, plurales y signos en árabe, puntuación de cada escritura) los textos de 2026-10: `tour1Pro`, los plurales de `shown` y `selectedN`, `ownedYours`, los cuatro de una gratis en la ficha, `proofProvenTitle` / `proofProvenText`, `removeName`, `riskTried`, `gradeCuts`, `gradeTip`, `tradesWord`, y en el árbol los 22 `pat`, los 225 `feat` y `featDesc` y sus textos nuevos; y la explicación de los 38 indicadores. La revisión de un nativo sigue pendiente |
 
 Y la de la pantalla 8: **¿«Obtener la actualización» se paga?** Hoy no hay versiones más allá de la v1;
 renovar un enlace da la versión de hoy. Si se paga, hace falta un script por versión y un pedido.
@@ -385,11 +403,13 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
 - **Un clic en el velo oscuro** de los diálogos de la tienda (el recorrido de bienvenida, el tutorial de
   instalación, el selector del pack, Comparar y el diálogo de la gratis), ¿debería cerrarlos? Hoy no los
   cierra: lo hacen Esc y la × (o «Hecho» en el selector del pack, que no tiene ×).
-- **Contenido y traducciones:** la explicación de cada indicador (`catalogue/indicators.csv`, solo en
-  inglés); la revisión nativa de zh, ar e hi (pregunta 11); «Tree Deep» en inglés (para el diseño); si el
-  precio sigue encima de «Ya es tuya» en la ficha; y si una actualización se paga (la pregunta de arriba). Los
-  valores del árbol (decidido el 2026-10-26): los 225 tienen nombre en los 8 idiomas; su descripción, en los 8
-  la de los 44 de antes y en es y en la de los 181 nuevos (en los otros seis, en inglés y dicho).
+- **Contenido y traducciones:** la revisión nativa de zh, ar e hi (pregunta 11); si el
+  precio sigue encima de «Ya es tuya» en la ficha; y si una actualización se paga (la pregunta de arriba).
+  Decidido el 2026-10-26: la explicación de cada indicador, en los 8 idiomas (`catalogue/indicators.csv`, E12a); los
+  225 valores del árbol, con su nombre y su descripción en los 8; y «Tree depth» en inglés (E12d; la columna del
+  catálogo sigue siendo «Tree Deep»). La de 1TMA dice, como la inglesa, «media móvil triangular» con bandas, y el
+  `TMA_Overlay` del generador calcula cuatro medias suavizadas (SMMA), la de 2 velas y dos patrones de velas: el
+  texto inglés es del dueño, y sus siete traducciones lo siguen.
 
 ## Para el núcleo
 

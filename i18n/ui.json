@@ -444,7 +444,14 @@
     "fr": "Ces {n} stratégies ont été choisies parmi {m} testées, et leurs chiffres viennent de données que les modèles n’ont jamais vues.",
     "de": "Diese {n} Strategien wurden aus {m} getesteten ausgewählt; ihre Zahlen stammen aus Daten, die die Modelle nie gesehen haben.",
     "zh": "这 {n} 个策略选自 {m} 个经过测试的策略，其各项数字均来自模型从未见过的数据。",
-    "ar": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجية جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+    "ar": {
+      "zero": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجية جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "one": "اختيرت هذه الاستراتيجيات وعددها {n} من بين استراتيجية واحدة جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "two": "اختيرت هذه الاستراتيجيات وعددها {n} من بين استراتيجيتين جرى اختبارهما، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "few": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجيات جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "many": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجية جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "other": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجية جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط."
+    },
     "hi": "ये {n} रणनीतियाँ {m} परखी गई रणनीतियों में से चुनी गई हैं, और इनके आँकड़े ऐसे डेटा से हैं जिसे मॉडलों ने कभी नहीं देखा।"
   },
   "contactProblems": {
@@ -659,7 +666,7 @@
   },
   "fTreeDepth": {
     "es": "Profundidad del árbol",
-    "en": "Tree Deep",
+    "en": "Tree depth",
     "pt": "Profundidade da árvore",
     "fr": "Profondeur de l’arbre",
     "de": "Baumtiefe",
@@ -808,13 +815,35 @@
     "hi": "क्रिप्टो"
   },
   "tradesWord": {
-    "es": "operaciones",
-    "en": "trades",
-    "pt": "operações",
-    "fr": "trades",
-    "de": "Trades",
+    "es": {
+      "one": "operación",
+      "other": "operaciones"
+    },
+    "en": {
+      "one": "trade",
+      "other": "trades"
+    },
+    "pt": {
+      "one": "operação",
+      "other": "operações"
+    },
+    "fr": {
+      "one": "trade",
+      "other": "trades"
+    },
+    "de": {
+      "one": "Trade",
+      "other": "Trades"
+    },
     "zh": "笔交易",
-    "ar": "صفقة",
+    "ar": {
+      "zero": "صفقة",
+      "one": "صفقة",
+      "two": "صفقتان",
+      "few": "صفقات",
+      "many": "صفقة",
+      "other": "صفقة"
+    },
     "hi": "ट्रेड"
   },
   "rangeOf": {
@@ -915,7 +944,7 @@
     "de": "Grenze den Katalog mit dem Filterbereich ein: Nettogewinn, Preis, Symbol, Zeiteinheit, Indikatoren und 16 weitere.",
     "zh": "用筛选面板缩小目录范围：净利润、价格、代码、时间周期、指标，以及另外 16 项。",
     "ar": "ضيّق نطاق الكتالوج بلوحة عوامل التصفية: صافي الربح والسعر والرمز والإطار الزمني والمؤشرات و16 غيرها.",
-    "hi": "फ़िल्टर पैनल से कैटलॉग छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 16 और।"
+    "hi": "फ़िल्टर पैनल से कैटलॉग छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 16 अन्य।"
   },
   "tour2Title": {
     "es": "Lee la curva",
@@ -1572,13 +1601,35 @@
     "hi": "ग्रेड"
   },
   "gradeTip": {
-    "es": "Muestra: {n} operaciones cerradas. Menos operaciones, más riesgo de sobreajuste.",
-    "en": "Sample: {n} closed trades. Fewer trades, more risk of overfitting.",
-    "pt": "Amostra: {n} operações fechadas. Menos operações, mais risco de sobreajuste.",
-    "fr": "Échantillon : {n} trades clôturés. Moins de trades, plus de risque de surapprentissage.",
-    "de": "Stichprobe: {n} abgeschlossene Trades. Weniger Trades, mehr Risiko der Überanpassung.",
+    "es": {
+      "one": "Muestra: {n} operación cerrada. Menos operaciones, más riesgo de sobreajuste.",
+      "other": "Muestra: {n} operaciones cerradas. Menos operaciones, más riesgo de sobreajuste."
+    },
+    "en": {
+      "one": "Sample: {n} closed trade. Fewer trades, more risk of overfitting.",
+      "other": "Sample: {n} closed trades. Fewer trades, more risk of overfitting."
+    },
+    "pt": {
+      "one": "Amostra: {n} operação fechada. Menos operações, mais risco de sobreajuste.",
+      "other": "Amostra: {n} operações fechadas. Menos operações, mais risco de sobreajuste."
+    },
+    "fr": {
+      "one": "Échantillon : {n} trade clôturé. Moins de trades, plus de risque de surapprentissage.",
+      "other": "Échantillon : {n} trades clôturés. Moins de trades, plus de risque de surapprentissage."
+    },
+    "de": {
+      "one": "Stichprobe: {n} abgeschlossener Trade. Weniger Trades, mehr Risiko der Überanpassung.",
+      "other": "Stichprobe: {n} abgeschlossene Trades. Weniger Trades, mehr Risiko der Überanpassung."
+    },
     "zh": "样本：{n} 笔已平仓交易。交易越少，过拟合风险越高。",
-    "ar": "العينة: {n} صفقة مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+    "ar": {
+      "zero": "العينة: لا صفقات مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "one": "العينة: صفقة مغلقة واحدة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "two": "العينة: صفقتان مغلقتان. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "few": "العينة: {n} صفقات مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "many": "العينة: {n} صفقة مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "other": "العينة: {n} صفقة مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص."
+    },
     "hi": "नमूना: {n} बंद ट्रेड। कम ट्रेड, ओवरफ़िटिंग का ज़्यादा जोखिम।"
   },
   "gradeCuts": {
@@ -1588,7 +1639,14 @@
     "fr": "A dès {a} trades, B dès {b}, C dès {c} ; D, moins de {c}.",
     "de": "A ab {a} Trades, B ab {b}, C ab {c}; D unter {c}.",
     "zh": "A：{a} 笔及以上；B：{b} 笔及以上；C：{c} 笔及以上；D：少于 {c} 笔。",
-    "ar": "A: {a} صفقة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+    "ar": {
+      "zero": "A: {a} صفقة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "one": "A: صفقة واحدة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "two": "A: صفقتان فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "few": "A: {a} صفقات فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "many": "A: {a} صفقة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "other": "A: {a} صفقة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}."
+    },
     "hi": "A: {a} या ज़्यादा ट्रेड, B: {b} या ज़्यादा, C: {c} या ज़्यादा, D: {c} से कम।"
   },
   "packTitle": {
@@ -2638,7 +2696,7 @@
     "fr": "Déjà confirmé",
     "de": "Bereits bestätigt",
     "zh": "已确认过",
-    "ar": "تم التأكيد من قبل",
+    "ar": "سبق تأكيده",
     "hi": "पहले से पुष्टि हो चुकी है"
   },
   "proofProvenText": {

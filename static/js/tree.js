@@ -378,6 +378,10 @@ export class StrategyTree extends Component {
       : { buy: 'Buy', sell: 'Sell', none: 'Wait', rulesTab: 'Blocks', qNum: 'At or below {t}?', qBool: 'Is it true?', leadBuy: 'Buys when', leadSell: 'Sells when', leadNone: 'Waits when', between: 'between {a} and {b}', and: 'and', allRules: 'See all rules in plain words ({n})', hideRules: 'Hide the rules', rulesOne: '{n} rule', rulesN: '{n} rules', start: 'Start', lockedRules: 'Branches in the paid part: {n}', leafFoot: 'Strength from −1 to +1: the average of the training days that ended here. Click to go to this result.', s1: 'Each box asks a question about one indicator from the chart.', s2h: 'If the answer is Yes the path goes up; if No, it goes down.', s2v: 'If the answer is Yes the path goes left; if No, it goes right.', s3: 'The path ends in an action (buy, sell or wait) with its strength, from −1 to +1.' });
     Object.assign(L, (this._ui && this._ui[lg]) || {});
     const rpl = (str, o) => str.replace(/\{(\w+)\}/g, (m, k) => (o[k] != null ? o[k] : m));
+    // un texto que cuenta trae las formas del plural de su idioma, si las necesita ({few, many, other…}: en árabe,
+    // «3 قواعد» pero «16 قاعدة»); las elige el número, con las reglas del idioma (Intl.PluralRules)
+    const plural = new Intl.PluralRules(L.locale);
+    const cnt = (x, n) => rpl(x && typeof x === 'object' ? x[plural.select(n)] || x.other || '' : x || '', { n });
     const dir = P.direction === 'vertical' ? 'vertical' : 'horizontal';
     const curved = P.edgeStyle !== 'elbow', exact = !!P.exactValues;
     const seg = on => on ? ['#ffffff', '#0950e3', '0 1px 3px rgba(22,38,58,.12)'] : ['transparent', '#5a6b80', 'none'];
@@ -530,7 +534,9 @@ export class StrategyTree extends Component {
       if (n.le) return { ...o, nameC: on ? '#0950e3' : '#16263a', name: fdesc(n.f)[0], q: isBoolN(n) ? L.qBool : rpl(L.qNum, { t: fmt(n.t) }), title: `if( ${n.f} <= ${n.raw} )`, ic: 'fa-solid fa-chart-line', icBg: on ? '#0950e3' : '#eef3fa', icC: on ? '#ffffff' : '#5a6b80', bg: on ? '#f5f8ff' : '#ffffff', bd: on ? '1.5px solid #0950e3' : '1px solid #e2e9f0', shadow: on ? '0 6px 18px rgba(9,80,227,.14)' : 'none', onEnter: e => this.showTip(e, { kind: 'node', id: n.id }), onLeave: () => this.hideTip(), onClick: e => this.clickNode(e, n.id, 'node') };
       if (n.leaf) {
         const S = SIG[n.sig];
-        return { ...o, verb: S[0], value: fmtV(n.v), str: Math.round(Math.min(1, Math.abs(n.v)) * 100) + '%', c: S[1], ic: ICO[n.sig], icBg: S[1], icC: '#ffffff', title: `ret := ${n.v.toFixed(6)}${n.mark ? ' // ' + n.mark : ''}`, bg: S[2], bd: end ? `2px solid ${S[1]}` : `1px solid ${S[3]}`, shadow: end ? `0 0 0 3px ${S[4]}, 0 6px 16px rgba(22,38,58,.12)` : 'none', onClick: e => this.clickNode(e, n.id, 'leaf'), onEnter: e => this.showTip(e, { kind: 'leaf', id: n.id }), onLeave: () => this.hideTip() };
+        // su nombre para un lector de pantalla, lo que enseña («Esperar −0,45», «Puntuación +0,89»), no la línea del
+        // script: su «// buy|sell» es de la fábrica (±0,7), no de los niveles, y decía «buy» donde la caja dice Esperar
+        return { ...o, verb: S[0], value: fmtV(n.v), str: Math.round(Math.min(1, Math.abs(n.v)) * 100) + '%', c: S[1], ic: ICO[n.sig], icBg: S[1], icC: '#ffffff', title: S[0] + ' ' + fmtV(n.v), bg: S[2], bd: end ? `2px solid ${S[1]}` : `1px solid ${S[3]}`, shadow: end ? `0 0 0 3px ${S[4]}, 0 6px 16px rgba(22,38,58,.12)` : 'none', onClick: e => this.clickNode(e, n.id, 'leaf'), onEnter: e => this.showTip(e, { kind: 'leaf', id: n.id }), onLeave: () => this.hideTip() };
       }
       return { ...o, ic: 'fa-solid fa-lock', icBg: '#e2e9f0', icC: '#5a6b80', title: L.paid, bg: '#f7f9fc', bd: end ? '2px dashed #5a6b80' : '1px dashed #b8c4d3', shadow: 'none', onEnter: e => this.showTip(e, { kind: 'lock' }), onLeave: () => this.hideTip(), onClick: e => this.clickNode(e, n.id, 'lock') };
     });
@@ -579,12 +585,12 @@ export class StrategyTree extends Component {
     const barsOf = cs => cs.map(c => { const F = FR[c.f]; if (!F) return null; const fr = x => Math.max(0, Math.min(100, (x - F.min) / (F.max - F.min) * 100)); const a = c.lo > -Infinity ? fr(c.lo) : 0, b = c.hi < Infinity ? fr(c.hi) : 100; const B = F.isBool; return { name: fdesc(c.f)[0], range: B ? (c.hi < Infinity ? L.no : L.yes) : c.lo > -Infinity && c.hi < Infinity ? rpl(L.between, { a: fmt(c.lo), b: fmt(c.hi) }) : c.hi < Infinity ? rpl(L.orLess, { v: fmt(c.hi) }) : rpl(L.moreThan, { v: fmt(c.lo) }), l: (B ? (c.hi < Infinity ? 0 : 50) : a) + '%', w: (B ? 50 : Math.max(2, b - a)) + '%' }; }).filter(Boolean);
     const strW = v => { const a = Math.abs(v); return a >= 0.9 ? L.strVery : a >= 0.7 ? L.strStrong : a >= 0.4 ? L.strMod : L.strWeak; };
     const strLabel = n => n.sig === 'score' ? '' : n.sig === 'none' ? (n.v > 0.2 ? L.leanBuy : n.v < -0.2 ? L.leanSell : L.neutral) : rpl(L.sigStr || '{s}', { s: strW(n.v) });
-    const phraseOf = n => { const cs = constraints(n), k = { buy: 'leadBuy', sell: 'leadSell', none: 'leadNone', score: 'leadScore' }[n.sig]; return { text: rpl(L[k + (cs.length === 1 ? '1' : 'N')] || '', { n: cs.length }), str: strLabel(n), bars: barsOf(cs) }; };
+    const phraseOf = n => { const cs = constraints(n), k = { buy: 'leadBuy', sell: 'leadSell', none: 'leadNone', score: 'leadScore' }[n.sig]; return { text: cnt(L[k + (cs.length === 1 ? '1' : 'N')], cs.length), str: strLabel(n), bars: barsOf(cs) }; };
     const leavesAll = all.filter(n => n.leaf);
     // sin niveles, un solo grupo: de la puntuación más alta a la más baja
     const groups = (scored ? ['score'] : ['buy', 'sell', 'none']).map(sig => {
       const S = SIG[sig], list = leavesAll.filter(n => n.sig === sig).sort((a, b) => (scored ? b.v - a.v : Math.abs(b.v) - Math.abs(a.v)));
-      return { verb: scored ? L.results : S[0], c: S[1], ic: ICO[sig], has: list.length > 0, count: rpl(list.length === 1 ? L.rulesOne : L.rulesN, { n: list.length }),
+      return { verb: scored ? L.results : S[0], c: S[1], ic: ICO[sig], has: list.length > 0, count: cnt(list.length === 1 ? L.rulesOne : L.rulesN, list.length),
         rules: list.map(n => { const ph = phraseOf(n), now = w.leaf.id === n.id; return { text: ph.text, bars: ph.bars, str: ph.str, val: fmtV(n.v), c: S[1], deg: Math.round(Math.min(1, Math.abs(n.v)) * 360) + 'deg', now, bd: now ? '2px solid #0950e3' : '1px solid #e2e9f0', sh: now ? '0 8px 22px rgba(9,80,227,.12)' : 'none', jump: () => this.jump(n.id) }; }) };
     }).filter(g => g.has);
     const BW = Math.max(sm ? 112 : 120, Math.min(sm ? 160 : 190, Math.ceil(mName) + 42, Math.floor((s.aw || 922) / (maxD + 1)))), BU = 42;
@@ -645,7 +651,7 @@ export class StrategyTree extends Component {
       hasLockedNote: tr.locked > 0, lockedNote: rpl(L.lockedRules, { n: tr.locked }),
       cw, ch, cwPx: cw + 'px', chPx: ch + 'px', heads, ...tipOut, unlock,
       title: `${tr.ticker} · ${tr.pattern}`,
-      summary: (tr.locked ? rpl(L.visible, { n: tr.leaves }) + ' · ' + rpl(tr.locked === 1 ? L.paid1 : L.paidN, { n: tr.locked }) : rpl(L.complete, { n: tr.leaves })) + (created ? ' · ' + rpl(L.created, { d: created }) : ''),
+      summary: (tr.locked ? cnt(L.visible, tr.leaves) + ' · ' + cnt(tr.locked === 1 ? L.paid1 : L.paidN, tr.locked) : cnt(L.complete, tr.leaves)) + (created ? ' · ' + rpl(L.created, { d: created }) : ''),
       params: `${tr.ticker}_${tr.interval}_${tr.key}_${tr.hash} · ${params}`,
       // qué es cada patrón: en y es, de features.json; los otros idiomas, de `pat` en ui.json; uno sin
       // traducir todavía, en inglés y dicho (lang), para un lector de pantalla, y de izquierda a derecha
@@ -655,7 +661,7 @@ export class StrategyTree extends Component {
       hasMarker: !!LS, markerLeft: LS ? ((LF.v + 1) / 2 * 100).toFixed(2) + '%' : '0%',
       hasUnused: unusedList.length > 0, unused: unusedList.join(', '),
       isOwner: s.owner, ownerHas, ownerFail, showCta: !s.owner && tr.locked > 0,
-      ctaText: rpl(tr.locked === 1 ? L.cta1 : L.ctaN, { n: tr.locked }) + L.ctaRest,
+      ctaText: cnt(tr.locked === 1 ? L.cta1 : L.ctaN, tr.locked) + L.ctaRest,
       ownerText, askSignIn: !P.signedIn, download
     };
   }

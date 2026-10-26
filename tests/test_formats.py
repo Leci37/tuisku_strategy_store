@@ -203,6 +203,53 @@ def test_markdown_rules_in_plain_words():
     assert "→ Wait (score 0.60)" in md2 and "## Tree 2 of 2" in md2 and "average" in md2
 
 
+# Una de WaveTrend y Triple EMA que pregunta por d__close (la distancia de WaveTrend dividida por el cierre),
+# ema2__close (la media intermedia de la Triple EMA), macd__close (de un patrón que no es suyo) y d.
+NAMED = """// Technical base pattern: Wave_Trend_Calculation, L_Triple_EMA
+// ID_model: TEST_1Day_1WAV_00000000 Date Creation: 2026/10/13 Expiry date: 2027/06/13
+//@version=5
+strategy("Tuisku_TEST_1Day_1WAV_00000000", overlay=true)
+decision_tree_0_TEST_1Day_00000000(d__close, ema2__close, macd__close, d)=>
+\tfloat ret = na  // # DecisionTreeRegressor(max_depth=3)
+\tif( d__close <= 0.01 )
+\t\tif( ema2__close <= 0.5 )
+\t\t\tret := 1.0 // buy
+\t\tif( ema2__close > 0.5 )
+\t\t\tif( d <= 3 )
+\t\t\t\tret := 0.2
+\t\t\tif( d > 3 )
+\t\t\t\tret := 0.1
+\tif( d__close > 0.01 )
+\t\tif( macd__close <= 0.1 )
+\t\t\tret := -1 // sell
+\t\tif( macd__close > 0.1 )
+\t\t\tret := 0.3
+"""
+
+
+def test_markdown_names_each_value_as_the_tree_does():
+    """«Values used» del .md busca cada nombre como el árbol (static/js/tree.js, keyOf): el de un patrón de la
+    estrategia (``d@Wave_Trend_Calculation``) antes que el suelto, éste sólo si es de uno de sus patrones, y el de un
+    valor dividido por el cierre sin ``__close``, con la nota del árbol. Antes miraba sólo la clave tal cual:
+    ``d__close`` salía sin nombre y ``d``, en una de WaveTrend, como la %D del RSI estocástico."""
+    fx = json.loads((STATIC / "trees" / "features.json").read_text(encoding="utf-8"))["features"]
+    tree_js = (STATIC / "js" / "tree.js").read_text(encoding="utf-8")
+    assert f"relNote: '{formats.REL_NOTE}'" in tree_js, "la misma nota que el árbol en inglés"
+    script = formats.parse(NAMED)
+    assert script.bases == ["Wave_Trend_Calculation", "L_Triple_EMA"]
+    md = formats.to_markdown(script, "Tuisku_TEST")
+    wave, ema2, stoch_d = fx["d@Wave_Trend_Calculation"], fx["ema2"], fx["d"]
+    assert f"- `d__close`: {wave[0]}. {wave[1]} {formats.REL_NOTE}" in md
+    assert f"- `ema2__close`: {ema2[0]}. {ema2[1]} {formats.REL_NOTE}" in md
+    assert f"- `d`: {wave[0]}. {wave[1]}\n" in md and stoch_d[0] not in md
+    assert "- `macd__close`\n" in md, "el MACD no es de sus patrones: sin nombre, como en el árbol"
+    # la misma pregunta en una del RSI estocástico: ahí d es la %D
+    md = formats.to_markdown(formats.parse(NAMED.replace("Wave_Trend_Calculation, L_Triple_EMA", "L_Stochastic_RSI")), "T")
+    assert f"- `d`: {stoch_d[0]}. {stoch_d[1]}\n" in md and f"- `d__close`: {stoch_d[0]}. {stoch_d[1]} {formats.REL_NOTE}" in md
+    # sin la línea de los patrones (un script de antes), el nombre suelto, como el árbol
+    assert formats.parse(TWO_TREES).bases == [] and "- `ema3`: Slow average." in formats.to_markdown(formats.parse(TWO_TREES), "T")
+
+
 def test_python_matches_the_pine_trees_and_combines_them_like_the_script():
     script = formats.parse(TWO_TREES)
     py, pine = generated(script), pine_as_python(TWO_TREES)

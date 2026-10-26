@@ -155,16 +155,17 @@ def config():
                     "since_release": catalogue.since_release, "grade_cutoffs": list(s.grade_cutoffs)})
 
 
+# La explicación del indicador de cada fila va en el idioma de la petición (la página manda el suyo: ?lang=).
 @bp.get("/api/strategies")
 @public
 def strategies():
-    return jsonify(search.strategies(shop().catalogue, shop().settings, request.args))
+    return jsonify(search.strategies(shop().catalogue, shop().settings, request.args, request_language()))
 
 
 @bp.get("/api/strategies/<strategy_id>")
 @public
 def strategy(strategy_id):
-    return jsonify(search.strategy(shop().catalogue, strategy_id))
+    return jsonify(search.strategy(shop().catalogue, strategy_id, request_language()))
 
 
 @bp.get("/api/bundles")

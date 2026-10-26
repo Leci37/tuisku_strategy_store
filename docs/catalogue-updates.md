@@ -64,7 +64,7 @@ Rebuilding 2,834 backtests every day means 5,668 new charts a day. That is heavy
 
 - **Repository size.** The assets are about 570 MB already, and monthly batches of thousands of PNGs will make the git history grow fast. Move the charts to object storage (S3 or R2) behind a CDN, and keep only `catalogue.csv` in the repo, or move it to the database.
 - **Versions.** Give every strategy a version and a release date. Buyers keep their old version, and "My strategies" shows when a newer one exists.
-- **Translations.** Indicator names and descriptions come from `catalogue/indicators.csv` in English only. New UI texts need all 8 languages.
+- **Translations.** Each indicator's explanation comes from `catalogue/indicators.csv` in the 8 languages (`Explanation`, in English, and `Explanation_es` … `Explanation_hi`); a new indicator without one of them shows the English one, marked as English. The tree's value names and descriptions live in `static/trees/features.json` (en, es) and `static/trees/ui.json` (`feat`, `featDesc`: the other six). New UI texts need all 8 languages.
 - **Heavy traffic.** Done: the page gets the catalogue from the API one page at a time and the server filters, sorts and counts.
 
 ## Verdict

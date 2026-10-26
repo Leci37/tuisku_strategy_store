@@ -50,7 +50,7 @@ Todo es de la herramienta salvo que se diga.
 | 6 | Intro envía, Esc cierra | hecho | Intro ya estaba (ahora no mientras se compone en zh/hi); Esc nuevo |
 | 6 | Pedir otra vez la misma gratis reinicia su enlace en Mis estrategias | ya estaba | `free.claim` da un enlace nuevo; Mis estrategias enseña el último |
 | 7 | Gracias: sin cambios | — | — |
-| 8 | «Pedir un enlace nuevo» conserva la fecha, el pedido y la versión | en parte | fecha y pedido, sí; **versión, no**: hay un solo script por estrategia, así que el enlace nuevo da la versión de hoy (pregunta abierta de STATUS: ¿la actualización se paga?) |
+| 8 | «Pedir un enlace nuevo» conserva la fecha, el pedido y la versión | en parte | fecha y pedido, sí; **versión, no**: hay un solo script por estrategia, así que el enlace nuevo da la versión de hoy (decidido el 2026-10-26: la versión nueva es gratis hasta que la estrategia caduca; después no se da: ver «Y la de la pantalla 8») |
 | 8 | Cada fila: `.zip` y «Ficha técnica ↗» / «Cómo decide ↗» | hecho | `mine.js` (los `.pine` y `.zip` son los enlaces contados de la tienda) |
 | 9 | Móvil: el carrito flotante y la píldora, 76 px arriba, sobre la barra de abajo | hecho | el carrito ya estaba; la píldora va ahora dentro del dock |
 | 9 | «Buscar» enfoca el buscador de la tienda | ya estaba | ahora con el atributo del diseño, `data-search`; en Lite, la tienda arriba, como en el diseño; en Pro, el buscador justo bajo la barra (es fija y alta en el móvil) |
@@ -107,7 +107,8 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Los enlaces de descarga** caducan y se cuentan; en la página de gracias sólo los ve el navegador que
   pagó o la cuenta dueña; los demás van a Mis estrategias.
 - **«¿Compraste sin cuenta?»** en Mis estrategias (demostrar un correo); Mis estrategias pide cuenta.
-- **El contacto** sólo si `CONTACT_EMAIL` está puesto; las cifras de la fila de confianza, las del servidor.
+- **El contacto**, el de `CONTACT_EMAIL` (por defecto, sales@tuisku.ai: sale siempre); las cifras de la fila de
+  confianza, las del servidor.
 - **Los precios, los lotes, el pack y los tramos** los pone el servidor; ningún código llega a la página
   (`DEMO20` es una maqueta).
 - **El paginador** de Pro funciona; «Ver más» sólo mientras queda algo; el selector del pack busca.
@@ -128,8 +129,9 @@ Se queda como está; el diseño no lo enseña o lo simula:
   `sellThreshold`, que el generador elige para cada modelo: de 0,4 a 1,0 para comprar, de −1,0 a −0,5 para
   cerrar; `tree.js` los lee como `edgefolio/formats.py`); el del visitante, con los que publica la tienda
   (`catalogue/levels.json`, leídos de cada script completo; API #3 los manda como `buy_at` y `close_at`),
-  porque la vista previa se corta antes de esas líneas. Algunos salen distintos que en la maqueta (AMZN 1BOL:
-  −0,78 y −0,90 «Esperar», +0,60 «Comprar»). Para hablarlo con el diseño.
+  porque la vista previa se corta antes de esas líneas. Con los niveles, algunos salían distintos que en la maqueta
+  (su AMZN 1BOL, del catálogo de 2024, que la tienda ya no vende: −0,78 y −0,90 «Esperar», +0,60 «Comprar»); hoy el
+  visitante no ve niveles, porque la tienda aún no los publica (abajo). Para hablarlo con el diseño.
 - **Sin los niveles del script** (el visitante, mientras la tienda no los publica para esa estrategia), ningún
   resultado dice Comprar, Vender ni Esperar (`scored` en `tree.js`): cada uno enseña su puntuación («Puntuación
   +0,88», en gris oscuro y con el icono de un medidor, en el árbol, en Bloques, en «Resultado del árbol» y en su
@@ -154,8 +156,16 @@ Se queda como está; el diseño no lo enseña o lo simula:
   propietario lo dice en ámbar con «Descargar .pine» (`ownFail`, `tree_main.js`), y el candado de una rama
   ofrece lo mismo; nunca «no está entre las compras…» ni «Comprar para desbloquear». El diseño no tiene ese
   estado.
-- **«Vista de propietario: este es el árbol completo»**, sin «primer»: el propietario elige cualquier árbol
-  del bosque.
+- **«Vista de propietario: este es el árbol completo»**, sin «primer»: el propietario ve el bosque entero y, si
+  tiene más de un árbol (28 de las 94: 17 de 5 árboles y 11 de 3), elige cualquiera; en las otras 66, de un solo
+  árbol, sigue diciendo «Árbol 1 del bosque».
+- **Cuántos árboles tiene el bosque** lo dice la frase bajo los tres pasos (desde el 2026-10-26; `forest1` y
+  `forestN`, en `tree.js` y en `static/trees/ui.json`), leído de la cabecera del script
+  («RANDOM FOREST AI: N tree(s)», que trae también la vista previa): con uno solo, «La estrategia tiene un solo
+  árbol, este, así que su señal es el resultado de este árbol.»; con más, «La estrategia combina 5 árboles como
+  este, así que su señal no la decide un solo árbol.», con la forma que pide su número (en árabe, «5 أشجار»). Sin
+  esa cabecera, la de antes. El diseño dice a todas «La estrategia combina muchos árboles como este…», y 66 de las
+  94 tienen un solo árbol.
 - **«Comprar para desbloquear»** del árbol sigue al carrito de la página (`inCart`, de la ficha): quitada con
   el botón de la cabecera, vuelve a decirlo y a añadirla. El diseño guardaba su propio «Añadida al carrito».
 - **Una estrategia que ya es de la cuenta tampoco se vende en el árbol**, como en la ficha («Ya es tuya»): en la
@@ -270,14 +280,17 @@ Se queda como está; el diseño no lo enseña o lo simula:
   filtro Indicadores.
 - **Lo que cuenta un ajuste** (los días y las descargas de un enlace, `DOWNLOAD_DAYS` y `MAX_DOWNLOADS`; las
   estrategias de un pack, `PACK_SIZE`) lleva la forma que pide su número, cada cuenta con su clave (`linkDays`,
-  `linkDownloads`): la fila de confianza bajo «Pagar» (`trustLinks`), la nota de los enlaces de Gracias
+  `linkDownloads`): la fila de confianza bajo «Pagar» (`trustLinks`), el «Hecho» del diálogo de la gratis
+  (`freeSent`, con los días de la fila de confianza, desde el 2026-10-26), la nota de los enlaces de Gracias
   (`linksNote`), el aviso de un pack que no vale (`errPackSize`), y los correos del recibo, de la gratis y de los
   avisos (`mailAlertBundle`). La tarjeta de «Arma tu pack» dice el tamaño de `PACK_SIZE` («Elige N más · 5 por …»
   y «5 por …», `packHint` y `packReady` con `{size}`, de API #4), no un 5 escrito, y cuántas faltan lleva su forma
   (en árabe, «اختر اثنتين أخريين»). En árabe, «يومين» y «تنزيلين» con 2, «11 يومًا» con 11; antes, el texto llevaba escritos
-  los 7 días y las 10 descargas de hoy («7 أيام», «10 تنزيلات»). La maqueta los escribe fijos: **para el diseño**.
-- **Una respuesta con el cuerpo cortado** (una navegación o la red la cortaron a medias) es «sin conexión», como no
-  tener respuesta (`api.js`): antes llegaba `null`, y leerlo era un error en la consola (`m.items`, `r.id`).
+  los 7 días y las 10 descargas de hoy («7 أيام», «10 تنزيلات»), y el «Hecho» de la gratis, sus 7 días. La maqueta los
+  escribe fijos: **para el diseño**.
+- **La respuesta buena de un GET con el cuerpo cortado** (una navegación o la red la cortaron a medias) es «sin
+  conexión», como no tener respuesta (`api.js`; la de un POST, un PUT o un DELETE sigue por su código): antes
+  llegaba `null`, y leerlo era un error en la consola (`m.items`, `r.id`).
 - **Las cajas de los resultados del árbol** se llaman (`aria-label`) como lo que enseñan, «Esperar −0,45» o
   «Puntuación +0,89», en el idioma de la página (`tree.js`; el marcado de la vista, igual). En el diseño se llaman con
   su línea de Pine (`ret := 0.452000 // buy`), cuyo comentario es de la fábrica (±0,7) y no de los niveles del
@@ -286,9 +299,9 @@ Se queda como está; el diseño no lo enseña o lo simula:
   a 99, el singular: «36 صفقة»): la nota de cada estrategia (`gradeTip`), sus operaciones en las fichas de Lite
   (`tradesWord`: la ficha lee `r?.tradesWord`, de cada fila, y no `v.tx?.tradesWord`, uno para todas; `lite.js`),
   entre cuántas se eligieron (`riskTried`, por las probadas), los cortes de la nota (`gradeCuts`, por el de la A) y, en
-  el árbol, sus reglas, sus resultados y sus ramas cortadas (`rulesN`, `visible`, `complete`, `paidN`, `ctaN`,
-  `fPaidN`, `fCtaN`, elegidas en `tree.js` con `Intl.PluralRules`). En español, alemán, francés y portugués, «1
-  operación cerrada». La maqueta pone una sola forma: **para el diseño**.
+  el árbol, sus reglas, sus resultados, sus ramas cortadas y los árboles de su bosque (`rulesN`, `visible`,
+  `complete`, `paidN`, `ctaN`, `fPaidN`, `fCtaN`, `forestN`, elegidas en `tree.js` con `Intl.PluralRules`). En
+  español, alemán, francés y portugués, «1 operación cerrada». La maqueta pone una sola forma: **para el diseño**.
 - **Árabe, los signos:** «بيع −1» y «شراء +1» de la escala del árbol, «من −1 إلى +1» de sus textos, «VI+», «DI−»,
   «%K» y la fórmula de la TEMA llevan una marca de izquierda a derecha (LRM, o aislada con LRI…PDI): sin ella el
   algoritmo bidi pintaba «1−», «+VI», «K%» y partía la fórmula.
@@ -393,7 +406,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 | 4 | ¿Qué hace «Conectar TradingView»? | Abre tradingview.com en otra pestaña y lo recuerda; no hay API a la que conectarse |
 | 5 | `tour1Pro` dice «y 15 más» y son 16 | Decidido (2026-10-25): «Acota el catálogo con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 16 más.», sin cifra (no se queda vieja), en los 8 idiomas |
 | 6 | La nota se explica al pasar el ratón | Igual (`title`); en el móvil no se ve |
-| 7 | ¿Comparar y Favorita en Filas y Fichas de Pro? | Igual que el diseño: sólo en la Tabla |
+| 7 | ¿Comparar y Favorita en Filas y Fichas de Pro? | Igual que el diseño: Comparar, sólo en la Tabla; Favorita, en ninguna vista de Pro (sí en Lite, en la ficha y en Mis estrategias) |
 | 8 | La ficha no tiene resumen del carrito | Igual; en el móvil la barra de abajo cuenta lo que hay |
 | 9 | Pro enseña «Pagar» con el carrito vacío | Igual; no hace nada |
 | 10 | Los tramos en USD y los totales en moneda local | Igual; se paga en USD («Pagas X US$ con PayPal») |
@@ -478,8 +491,10 @@ propietario del árbol no recibe el script entero (API #17): `Strategy.serves`.
   creados antes de pagar ninguno (dos pestañas) se cobran los dos.
 - **La revisión de un nativo** de zh, ar e hi (pregunta 11): también las explicaciones de los indicadores reescritas y
   los textos nuevos de esta vuelta (`riskTried`, `gradeCuts`, `errAlreadyOwned`, `cartUpdatedTitle`,
-  `errUpdateExpired`, `linkDays`, `linkDownloads`, `packHint`). Los textos en hindi de antes mezclan grafías
-  (ज़्यादा y ज्यादा) y comillas.
+  `errUpdateExpired`, `linkDays`, `linkDownloads`, `packHint`, y en el árbol `forest1` y `forestN`). Los textos en
+  hindi mezclan grafías, con y sin nukta (खरीद y ख़रीद, ताकत y ताक़त, खत्म y ख़त्म; ज़्यादा va siempre con
+  ella), y comillas: «…» (`tour3Text`, `inst3`, `inst4`), “…” (`i4X`, `i5X`, `mailAlertBundle` y dos `featDesc` del
+  árbol) y las rectas de `mailFreeBody`.
 - **Los niveles, en el servidor:** `flask --app app edgefolio levels` donde están los scripts de verdad, subir el
   `catalogue/levels.json` que deja y reiniciar la tienda. Hasta entonces, el árbol del visitante enseña puntuaciones
   en las 94 (los scripts de esta máquina son copias de prueba).
@@ -553,9 +568,10 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 
 ## Pruebas
 
-- `pytest`, hoy (2026-10-26): 332 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
-  están en la máquina), con Chromium; sin él, las pruebas en un navegador se saltan y no prueban nada. Las
-  de los arreglos del recorrido de 2026-10-25: `tests/test_keyboard.py` (los diálogos y el teclado),
+- `pytest`, hoy (2026-10-26): 336 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago de este
+  catálogo no están en `STRATEGIES_DIR`; los de la historia del repo son del catálogo de antes), con Chromium; sin
+  él, las pruebas en un navegador se saltan y no prueban nada. Las de los arreglos del recorrido de 2026-10-25:
+  `tests/test_keyboard.py` (los diálogos y el teclado),
   `tests/test_lists_cart.py` (Lite, el carrito, el recorrido y Gracias), `tests/test_scales.py` (las escalas
   de Pro y las barras de la ficha), `tests/test_strategy_page.py`, `tests/test_tree.py`,
   `tests/test_mine_page.py` y lo nuevo de `tests/test_phone_bar.py`, `test_pricing.py`, `test_orders.py` y
@@ -575,9 +591,10 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
   de descarga). Las de los niveles y los textos (E9, E12): `tests/test_levels.py` (los niveles de cada script, sólo del
   suyo; el comando `levels`), `tests/test_texts.py` (las explicaciones de los indicadores en los 8 idiomas, fieles a su
   código y sin promesas, pedidas con `ind_lang`; el nombre y el enlace de `indicators.csv`; los recuentos en la forma de
-  cada número, en la página y en los correos; los signos y los plurales en árabe; «Tree depth»; el tamaño del pack) y lo
-  nuevo de `test_tree.py` (cada valor que pregunta una vista previa publicada tiene nombre; el árbol sin niveles, con
-  su puntuación), `test_formats.py` (el .md nombra los valores como el árbol), `test_mine_page.py` (una respuesta
+  cada número, en la página y en los correos; los signos y los plurales en árabe; «Tree depth»; el tamaño del pack; el
+  «Hecho» de la gratis con los días de `DOWNLOAD_DAYS`) y lo nuevo de `test_tree.py` (cada valor que pregunta una vista
+  previa publicada tiene nombre; el árbol sin niveles, con su puntuación; la frase de cuántos árboles tiene el
+  bosque), `test_formats.py` (el .md nombra los valores como el árbol), `test_mine_page.py` (una respuesta
   cortada es un fallo de red), `test_search.py`, `test_lists_cart.py` y `test_proofs.py`.
 - Con esta exportación eran 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
   cada valor, campo y texto que leen las vistas lo da `static/js`; los textos en los 8 idiomas con las

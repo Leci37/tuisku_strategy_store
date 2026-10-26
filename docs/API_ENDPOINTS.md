@@ -18,11 +18,12 @@
 - **Errores:**
   - Llegan como `{"error": "<clave>"}`, una clave del diccionario, con extras cuando hacen falta: `field`, `vars`, `items`, `bundles`, `item`, `detail` y `paid`.
   - La página la muestra traducida como aviso flotante, o bajo el campo si es del correo.
-  - Sin respuesta (sin red), o con una que llega cortada a medias, la página muestra `errShopNetwork`.
+  - Sin respuesta (sin red), o con la de un GET que llega cortada a medias, la página muestra `errShopNetwork`.
 - **Idioma:** las llamadas #2 y #3 llevan `ind_lang=<idioma de la página>`, y la explicación del indicador de cada fila llega en él. No `lang=`: el núcleo lo toma por la dirección de una página en un idioma y lo guarda en la cookie `zt_lang`. Al cambiar de idioma, la página vuelve a pedir la ficha a la vista y las páginas de Pro que se ven.
 - **Dinero:** siempre en USD.
   - Presupuestos y recibos mandan los importes como texto con dos decimales (`"154.05"`).
   - Las filas y los packs los mandan como número.
+  - La configuración (#1) los manda como texto, tal como están en los ajustes (`"249"`, `"2500"`, `"0.70"`).
 - **Precios:** la página solo manda ids, claves de packs, el pack propio y el código que escribió el usuario. Nunca calcula un precio y nunca recibe la lista de códigos.
 - **Ids:** `TICKER_INTERVALO_CLAVE_HASH`, por ejemplo `SNOW_1Day_1BOL_7abec5de`. También valen la clave del catálogo (`TICKER - INTERVALO - CLAVE - HASH`) y el alias base64 de la tienda antigua.
 
@@ -62,21 +63,21 @@ Un número que falta llega como `null`.
 |---|---|---|
 | #1 `GET /api/config` | — | `mode` (`fake`, `sandbox` o `live`), `currency`, `max_discount`, `tiers` (`[{over, rate}]`), `pack` (`{size, price}`), `download_days`, `max_downloads`, `new_days`, `contact_email`, `strategies` (cuántas hay: 94), `npp_max` (el mejor % de beneficio neto de los backtests del catálogo, 0,44; `null` si ninguno lo tiene: la escala de las barras de la ficha), `tried` (entre cuántas probadas se eligieron, de `catalogue/release.json`: 1531; `null` si no se sabe: el aviso de sobreajuste lo dice), `since_release` (cuántas tienen cifra desde su publicación: hoy 0, y con 0 la página no enseña «Desde su publicación») y `grade_cutoffs` (`[100, 50, 25]`: la explicación de la nota) |
 | #4 `GET /api/bundles` | — | `bundles`: `[{key, name_key, ids, price, was}]`; `pack`: `{size, price, was}` |
-| #5 `GET /api/fx` | — | `base`, `date`, `rates` (`USD`, `EUR`, `INR`, `CNY`, `SAR`) y `source`. Si falla, todo sale en USD |
+| #5 `GET /api/fx` | — | `base`, `date`, `rates` y `source`. Con los cambios del día (`fx_update`), `rates` lleva todas las monedas que publica el BCE (unas 30) más `USD` y `SAR`; con los de ejemplo del repositorio (`"source": "example"`, `date` `null`), solo `USD`, `EUR`, `INR`, `CNY` y `SAR`. La página usa `EUR`, `INR`, `CNY` y `SAR`. Si falla, todo sale en USD |
 | #2 `GET /api/strategies` (la cinta) | `paid=1&sort=hot&size=12&ind_lang=…` | Las 12 de la cinta |
 | #14 `GET /api/me` (solo si la página llegó con sesión) | — | `{"email": "…"}` o `{"email": null}` |
 | #21 `PUT /api/favourites/<id>` (con sesión; una llamada por favorita guardada en el navegador) | `{"alerts": {"nv", "pd", "bd"}}` | `{id, alerts, row}`. Si el servidor rechaza una, se queda en el navegador para la próxima vez; con 404 (ya no está en el catálogo), se borra |
 | #15 `GET /api/mine` (si la página llegó con sesión, después de las #21) | — | Mis estrategias y las favoritas de la cuenta, que sustituyen a las del navegador (ver pantalla 8); con ellas, lo que ya es de la cuenta dice «Ya es tuya» (pantallas 1–3). Si falla, un aviso; con `401`, lleva a entrar. Después de un cobro, de una gratis o de un correo demostrado, la tienda y la ficha la piden otra vez, en silencio |
 | #3 `GET /api/strategies/<id>` (cada estrategia que la página nombra y no tiene: packs, carrito, pack propio, Comparar, favoritas) | `ind_lang=…` | La fila. Con un 404, la quita del carrito, del pack propio, de Comparar y de las favoritas, sin aviso |
 
-**Parámetros que llegan en la dirección** (se leen una vez y se borran):
+**Parámetros que llegan en la dirección** (se leen una vez y se borran al llegar, salvo `proof`):
 
 | Parámetro | De dónde viene | Qué muestra |
 |---|---|---|
 | `/?checkout=cancel` | PayPal, al cancelar | La tienda, con el carrito igual |
 | `?link=<clave de error>` | Un enlace de descarga que ya no vale (#10) | El motivo, como aviso |
 | `/?news=confirmed` o `/?news=expired` | El enlace de confirmación de novedades (#13) | El aviso |
-| `/mine?proof=<token>` | El correo para demostrar una dirección (#18) | La pantalla 8, en el paso de confirmar |
+| `/mine?proof=<token>` | El correo para demostrar una dirección (#18) | La pantalla 8, en el paso de confirmar. Este no se borra al llegar: se queda en la dirección hasta que se confirma (#20) o hasta que #19 dice que ya no vale |
 
 ---
 
@@ -87,7 +88,7 @@ Un número que falta llega como `null`.
 | Al abrir, al escribir (150 ms después de la última tecla), al cambiar de pestaña y al pulsar la pestaña marcada | #2 `GET /api/strategies` | `tab=<pestaña>&q=<texto>&size=24&page=1&ind_lang=<idioma>`; la pestaña es `hot`, `win`, `stocks`, `crypto`, `new` o `free`; `q`, hasta 100 caracteres | `rows` (24), `total` («Mostrando N de M») y `counts.new` («Novedades · N»: hoy 94) |
 | **Ver más** | #2 | Lo mismo, con `page=2, 3…` | Las 24 siguientes |
 | Al pintar cada tarjeta | #6 `GET /thumbs/<nombre>.webp` | — | La miniatura (WebP de 640 px), o un `307` al PNG |
-| Al buscar en el selector del pack | #2 | `paid=1&sort=hot&size=40&q=<texto>` (hasta 100 caracteres), con `ind_lang=` | Las estrategias de pago |
+| La primera vez que se abre el selector del pack, y al buscar en él (150 ms después de la última tecla) | #2 | `paid=1&sort=hot&size=40&q=<texto>` (al abrirlo, sin `q`; hasta 100 caracteres), con `ind_lang=`. Abierto otra vez con la misma búsqueda, no llama | Las estrategias de pago |
 | **Comprar**, **Añadir pack**, pack propio completo | #7 `POST /api/quote` | Ver pantalla 5 | Ver pantalla 5 |
 | **Ya es tuya · Descargar** (con sesión, en lo que ya es de la cuenta, según #15) | #10, con su enlace | — | El `.pine` (gasta una descarga). «Ya es tuya · Mis estrategias» no llama: va a la pantalla 8 |
 | ♡ con sesión | #21 / #22 | Ver pantalla 8 | Ver pantalla 8 |
@@ -115,7 +116,7 @@ Solo cuenta la respuesta más nueva. Si llega `400 errRequest` (con `field`), sa
 | Filtro | Parámetro |
 |---|---|
 | Buscador | `q` (hasta 100 caracteres) |
-| Ordenar (las pestañas de orden y las cabeceras de la Tabla) | `sort`: `np`, `npp`, `win`, `price`, `trades`, `avg`, `months` o `hot`, siempre de mayor a menor |
+| Ordenar (las pestañas de orden y las cabeceras de la Tabla) | `sort`: `np` (al llegar), `npp`, `win`, `price`, `trades`, `avg` o `months`, siempre de mayor a menor; va en cada consulta. Pro no manda `hot`: es el orden de la cinta y del selector del pack |
 | Solo GRATIS | `free=1` |
 | 16 rangos | `<clave>_min` y `<clave>_max`, con los decimales que enseña la etiqueta. Las claves son `np`, `price`, `npp`, `trades`, `win`, `pf`, `months`, `mlu`, `mlp`, `avg`, `avgp`, `bars`, `act`, `candles`, `prec` y `tree`. Un asa en el extremo no manda nada |
 | 5 desplegables | `sym`, `tf`, `ind`, `idx` y `rel`, repetidos por cada opción marcada (`sym=ADAUSDT&sym=AVAXUSDT`). Con todo quitado se manda el parámetro vacío (`sym=`), y la lista sale vacía |
@@ -133,7 +134,7 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 | Al cambiar de idioma | #3 otra vez | El `ind_lang=` nuevo | La explicación del indicador en el idioma nuevo, sin moverse de la página |
 | Al abrir | `GET /static/assets/previews/<archivo>.pine` | — | La vista previa, cortada |
 | Al abrir | `GET /static/assets/charts/<archivo>.png` | — | Los dos gráficos |
-| Al abrir, con sesión (una vez y sin avisos) | #15 `GET /api/mine` | — | Si la estrategia está en `items`, «Ya es tuya», sin el precio (con su `url` si vale y no hay `update`; si no, Mis estrategias); si `items[].update` trae una versión nueva de una compra (el servidor solo la manda mientras la estrategia no ha caducado), «Actualización disponible» |
+| Al llegar con sesión, la de «Al cargar, en cualquier pantalla» (con aviso si falla, y otra vez sin avisos; la ficha no la pide aparte, tampoco al abrir otra sin recargar), y otra vez, sin avisos, después de un cobro, una gratis, un correo demostrado o un `errAlreadyOwned` | #15 `GET /api/mine` | — | Si la estrategia está en `items`, «Ya es tuya», sin el precio (con su `url` si vale y no hay `update`; si no, Mis estrategias); si `items[].update` trae una versión nueva de una compra (el servidor solo la manda mientras la estrategia no ha caducado), «Actualización disponible» |
 | **Añadir al carrito** | #7 | Ver pantalla 5 | Ver pantalla 5 |
 | **Ya es tuya · Descargar** | #10, con su enlace | — | El `.pine` (gasta una descarga) |
 | ♡ (con sesión) | #21 / #22 | Ver pantalla 8 | Ver pantalla 8 |
@@ -164,7 +165,7 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 **Manda:**
 
 ```json
-{"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Day_2BS0_881db754"], "bundles": ["crypto"], "pack": ["id1", "id2", "id3", "id4", "id5"], "code": "demo20"}
+{"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Day_2BS0_881db754"], "bundles": ["crypto"], "pack": [], "code": "demo20"}
 ```
 
 - `pack`, siempre: vacío (`[]`) hasta que el pack propio, con sus 5 elegidas, está en el carrito;
@@ -233,6 +234,7 @@ Con la sesión abierta, lo que ya es de la cuenta no se vende suelto (decisión 
 
 | Estado | Clave | Cuándo | Dónde sale |
 |---|---|---|---|
+| 400 | `errRequest` (`field: "id"`) | Falta `id`, no es un texto o pasa de 200 caracteres | Aviso |
 | 400 | `errUnknownStrategy` | La estrategia no existe | Aviso |
 | 400 | `errNotFree` | No es gratis | Aviso |
 | 400 | `errEmailInvalid` (`field: "email"`) | El servidor no acepta el correo | Bajo el campo |
@@ -296,13 +298,13 @@ El tutorial de instalación no llama al servidor; solo enlaza a tradingview.com.
 |---|---|---|---|
 | Al abrir `/mine` sin sesión (el servidor) | `GET /mine` | — | El núcleo lleva a `/login?next=/mine` |
 | Al abrir | #15 `GET /api/mine` | — | Ver abajo. Con `401`, lleva a entrar |
-| **Pedir un enlace nuevo**, **Obtener la actualización · vN** | #16 `POST /api/mine/renew` | `{"id": "<id>"}` | La fila, como en #15. Errores: `404 errNotOwned` y `errUnknownStrategy`, y `403 errUpdateExpired` (una versión nueva de una de pago que ya caducó: la tienda guarda un script por estrategia, el de hoy, así que no da ningún enlace) |
+| **Pedir un enlace nuevo**, **Obtener la actualización · vN** | #16 `POST /api/mine/renew` | `{"id": "<id>"}` | La fila, como en #15. Errores: `400 errRequest` (`field: "id"`), `404 errNotOwned` y `errUnknownStrategy`, y `403 errUpdateExpired` (una versión nueva de una de pago que ya caducó: la tienda guarda un script por estrategia, el de hoy, así que no da ningún enlace) |
 | **.pine**, **.zip** | #10 | — | Como en la pantalla 7 |
 | **¿Compraste sin cuenta?** → enviar (o Intro) | #18 `POST /api/mine/proofs` | `{"email": "…"}`. La página no la hace con un correo vacío o mal escrito (error bajo el campo) ni con uno que ya está en `emails` (aviso «Ya está confirmado») | Siempre `{"sent": true}`. Errores: `400 errEmailInvalid` (`field: "email"`, bajo el campo), `429 errTooMany` y `503 errLater` |
-| Al abrir `/mine?proof=<token>` | #19 `POST /api/mine/proofs/peek` | `{"token": "…"}` | `{"email": "…"}`, o `null` si el enlace no vale. No gasta el enlace |
-| **Sí, <correo> es mío** | #20 `POST /api/mine/proofs/confirm` | `{"token": "…"}` | `{"email": "…"}`, y después #15 otra vez. Error: `400 errProofExpired` |
+| Al abrir `/mine?proof=<token>` | #19 `POST /api/mine/proofs/peek` | `{"token": "…"}` | `{"email": "…"}`, o `{"email": null}` si el enlace no vale (usado, caducado o de otra cuenta). No gasta el enlace. Error: `400 errRequest` (`field: "token"`), con un token que no es un texto de hasta 200 caracteres |
+| **Sí, <correo> es mío** | #20 `POST /api/mine/proofs/confirm` | `{"token": "…"}` | `{"email": "…"}`, y después #15 otra vez. Errores: `400 errProofExpired` y, como #19, `400 errRequest` (`field: "token"`) |
 | Alertas, y ♡ al añadir | #21 `PUT /api/favourites/<id>` | `{"alerts": {"nv": true, "pd": false, "bd": false}}` | `{id, alerts, row}`. Errores: `400 errRequest` (`field`) y `404 errUnknownStrategy`. Si falla, la página vuelve a lo que tiene la cuenta |
-| ♥ al quitar | #22 `DELETE /api/favourites/<id>` | — | `{"id": "…", "deleted": true}`. Si falla, la favorita vuelve a su sitio |
+| ♥ al quitar | #22 `DELETE /api/favourites/<id>` | — | `{"id": "…", "deleted": true}`, también si no era favorita. Error: `404 errUnknownStrategy`. Si falla, la favorita vuelve a su sitio |
 | **Salir** | `POST /logout` (núcleo) | — | Cierra la sesión |
 
 **Lo que recibe #15:**
@@ -318,10 +320,10 @@ El tutorial de instalación no llama al servidor; solo enlaza a tradingview.com.
 
 | Campo | Dónde se ve |
 |---|---|
-| `email` | «Has entrado como …» |
+| `email` | El correo de la cuenta, el mismo de #14 («Has entrado como …» lo toma de #14) |
 | `emails`, `proof_needed` | Los correos demostrados en la tienda. Con `proof_needed`, sale «¿Compraste sin cuenta?» |
 | `kind`, `date`, `order` | «Comprada el …» o «Descarga gratuita el …», y el pedido |
-| `valid`, `days_left`, `expires` | «Enlace válido N días más» o «El enlace caducó». `valid` es `false` también con el enlace de una versión de antes, si la estrategia de pago ya caducó y hay una nueva |
+| `valid`, `days_left` | «Enlace válido N días más» o «El enlace caducó». `valid` es `false` también con el enlace de una versión de antes, si la estrategia de pago ya caducó y hay una nueva; `expires`, cuándo caduca el enlace, no se enseña |
 | `url`, `zip` | Los botones **.pine** y **.zip** (`null` si el enlace no vale) |
 | `update` | **Obtener la actualización · vN** (`null` si no hay versión nueva o, en una de pago, si la estrategia ya caducó: la «Expiry date» de su script) |
 | `items` | También dicen «Ya es tuya» en la tienda y en la ficha (pantallas 1–3): «· Descargar» con su `url` si vale y no hay `update`; si no, «· Mis estrategias» |

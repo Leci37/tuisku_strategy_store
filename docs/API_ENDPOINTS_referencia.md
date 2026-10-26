@@ -36,7 +36,7 @@ What the shop's server receives and answers, read from the code on branch `_ztoo
   - Every endpoint that takes an id also accepts that key, and the base64 alias the old shop used.
 - **Money:**
   - Always in USD.
-  - Quotes and receipts send amounts as strings with two decimals (`"154.05"`). Strategy rows and bundles send numbers.
+  - Quotes and receipts send amounts as strings with two decimals (`"154.05"`). Strategy rows and bundles send numbers. The configuration (#1) sends its amounts and rates as strings, as the settings hold them (`"249"`, `"2500"`, `"0.70"`).
 - **Prices come from the server:**
   - The page only sends ids, bundle keys, the pack and the code the user typed; it never computes a price.
   - No valid discount code is ever sent to the page.
@@ -54,14 +54,14 @@ Every page uses the same template: `templates/edgefolio/shop.html`, inside the c
 | `/thanks` | public | Thank-you page. PayPal returns here with `?token=<order id>`. |
 | `/mine` | session | My strategies. Without a session, the core sends the browser to `/login?next=/mine`. |
 
-The page reads these query parameters, then removes them from the address bar:
+The page reads these query parameters, then removes them from the address bar (`proof` only later):
 
 | Parameter | Comes from | What the page shows |
 |---|---|---|
 | `/?checkout=cancel` | PayPal, when the user cancels | The shop, with the cart unchanged |
 | `?link=<error key>` | A download link opened in the tab that no longer works | The reason, as a toast |
 | `/?news=confirmed` or `/?news=expired` | The news confirmation link (#13) | A notice |
-| `/mine?proof=<token>` | The link that proves an email (#18), signed in only | The confirm step |
+| `/mine?proof=<token>` | The link that proves an email (#18), signed in only | The confirm step. This one is not removed on load: it stays in the address bar until the address is confirmed (#20), or until #19 says the link no longer works |
 
 The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page. Any other path, and a trailing slash (`/mine/`, `/s/<id>/`), gets the core's 404 page.
 
@@ -78,7 +78,7 @@ The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page. Any
 | 7 | `POST /api/quote` | public | The price of a cart | Every change to the cart |
 | 8 | `POST /api/orders` | public | Create the PayPal order | Checkout |
 | 9 | `POST /api/orders/<paypal_id>/capture` | public | Take the payment and get the receipt | `/thanks?token=…` |
-| 10 | `GET /api/download/<token>` | public (the token is the key) | One script, as `.pine` or `.zip` | Thank you, My strategies, «Ya es tuya · Descargar» (Lite, Pro, the strategy page), emails |
+| 10 | `GET /api/download/<token>` | public (the token is the key) | One script, as `.pine` or `.zip` | Thank you, My strategies, «Ya es tuya · Descargar» (Lite, Pro, the strategy page), «Descargar .pine» in the tree's owner view, emails |
 | 11 | `GET /api/download/all?t=…` | public | Several `.pine` files in one zip | Thank you, "Download all" |
 | 12 | `POST /api/free` | public | A free strategy by email | Free dialog |
 | 13 | `GET /api/news/confirm?token=…` | public | Confirm the news opt-in | Link in the email |
@@ -159,7 +159,7 @@ Each bar runs from its column's minimum to its maximum in the loaded catalogue, 
 | `prec` | Precision f1 (%) | no | 32 | 40 – 100 | 40 – 90 |
 | `tree` | Tree depth | no | 10 | 1 – 10 | 5 – 6 |
 
-A strategy with no value in a column (SPOT 1Day 1FIB has no profit factor) never passes an active range on it. The page sends each bound with the decimals its label shows: up to two for the profit factor and average profit (%) under 10, up to three for the activity.
+A strategy with no value in a column (SPOT 1Day 1FIB has no profit factor) never passes an active range on it. The page sends each bound with the decimals its label shows: two for net profit (%) and average profit (%) under 10 and for max loss (%), up to two for the profit factor under 10, up to three for the activity, and none for the others.
 
 **Response:**
 
@@ -234,7 +234,8 @@ Any missing number is `null`.
   - for any strategy it names but hasn't loaded yet: the cart, the pack, compare, favourites, bundle contents, the free dialog and the install tutorial.
 - **What the page does with the answer:**
   - If it asked by alias, it switches to the real id.
-  - On a 404, it removes the id from the cart, compare and favourites. On the strategy page it also shows the error and goes to the shop.
+  - On a 404, it removes the id from the cart, the own pack, compare and favourites, and closes the free dialog if it was for that strategy. On the strategy page it also shows the error and goes to the shop.
+  - Any other failure (offline, 5xx, 429) is a toast. A strategy page that had no row from a list then stays blank until a reload (or a language change).
   - When the language changes, it asks again for the strategy in view, with the new `ind_lang`, without moving.
 
 ### 4 · GET /api/bundles
@@ -247,20 +248,20 @@ Any missing number is `null`.
 - The bundles come from `catalogue/bundles.json`. Today three: `top5` («Top 5 por beneficio»: SNOW 1BOL, ADBE 2BV0, META 2BB0, AMD 1M00 and CRWD 1SQU, $249, $365 apart), `crypto` («Inicio en cripto»: LTCUSDT 2BC0 and ADAUSDT 1C00, $119, $142 apart) and `amzn` («Pareja Amazon»: AMZN 1S00 and 2MV0, daily, $119, $138 apart).
   - A bundle's `was` is the sum of its strategies' prices.
   - A bundle that lost a strategy, or that doesn't cost less than its strategies, is left out entirely and logged.
-- The pack's `was` is 5 × the median price of the paid strategies ($69 today). The custom pack card shows it before any strategy is chosen, and its texts say `size` («Elige N más · 5 por …»).
+- The pack's `was` is 5 × the median price of the paid strategies ($69 today, so $345). The custom pack card shows no crossed-out price: its «Ahorra un N %» compares `price` with `was` (28 % today) until the pack is in the cart, and then shows the quote's saving for the five chosen (#7, `pack.save`). Its texts say `size` («Elige N más · 5 por …»).
 
 ### 5 · GET /api/fx
 
 ```json
-{"base": "USD", "date": "2026-10-11", "rates": {"USD": 1, "EUR": 0.92, "INR": 83.5, "CNY": 7.2, "SAR": 3.75},
- "source": "ECB via frankfurter.app"}
+{"base": "USD", "date": null, "rates": {"USD": 1, "EUR": 0.92, "INR": 83.5, "CNY": 7.2, "SAR": 3.75},
+ "source": "example"}
 ```
 
 - **Where the rates come from:**
   - today's rates, once the `fx_update` task (or `fx-update` by hand) has run;
   - otherwise the repository's example rates (`"source": "example"`);
   - if neither can be read, only USD (`"source": "none"`).
-- The rates are only for showing «≈» prices; PayPal always charges USD.
+- The rates are only for showing «≈» prices; PayPal always charges USD. The example above is the repository's (`catalogue/fx.json`), served until `fx_update` has run. Today's rates come with `"source": "ECB via frankfurter.app"` and the ECB's `date`, and `rates` then holds every currency the ECB publishes (about 30) plus USD and SAR (pegged at 3.75). The page reads only EUR, INR, CNY and SAR.
 - If the call fails, the page shows prices in USD.
 
 ### 6 · GET /thumbs/<stem>.webp
@@ -275,7 +276,7 @@ Any missing number is `null`.
 **Request:**
 
 ```json
-{"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Day_2BS0_881db754"], "bundles": ["crypto"], "pack": ["id1", "id2", "id3", "id4", "id5"], "code": "demo20"}
+{"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Day_2BS0_881db754"], "bundles": ["crypto"], "pack": [], "code": "demo20"}
 ```
 
 - **Limits:** up to 500 items, 50 bundles and 50 pack ids; each id up to 200 characters; the code up to 64.
@@ -375,7 +376,7 @@ Any missing number is `null`.
 - It sends one order at a time, so «Pagar» stays busy and a double click doesn't make two orders.
 - It then goes to `approve_url`. Coming back with the browser's Back button frees the button.
 
-**With `PAYPAL_MODE=fake`** (local work and tests), `approve_url` is `<public URL>/thanks?token=FAKE-…&PayerID=FAKE`, and the capture always succeeds.
+**With `PAYPAL_MODE=fake`** (local work and tests), `approve_url` is `<public URL>/thanks?token=FAKE-…&PayerID=FAKE`. The capture succeeds for every order the same running process created. The fake keeps its orders in memory, so capturing an order made before a restart (the development server restarts itself when a file changes), or on another worker, answers `502 errPayPal`.
 
 For a signed-in account, #7 and #8 refuse a single strategy it already owns (`409 errAlreadyOwned`): the page then removes it, and no PayPal order is made. Lite's and Pro's cards, rows and table, the strategy page and the tree say «Ya es tuya» instead of selling it. The capture (#9) doesn't check it again (see «Points to check»).
 
@@ -478,6 +479,7 @@ The page then shows the reason, and My strategies offers a new link.
 
 **What the server checks, in this order:**
 1. The strategy:
+   - `id` must be a string of up to 200 characters → otherwise `400 errRequest`, with `field: "id"`;
    - an unknown strategy → `400 errUnknownStrategy`;
    - a strategy that isn't free → `400 errNotFree`.
 2. The email → `400 errEmailInvalid`, with `field: "email"`. The address is trimmed and lowercased, and must:
@@ -505,7 +507,6 @@ The page then shows the reason, and My strategies offers a new link.
 
 **How the page uses it:**
 - It checks the email first, with the core's texts: `errEmailRequired` (empty) and `errEmailInvalid`.
-- A server refusal about the email goes under the field; any other refusal is a toast.
 - The news box starts unticked every time the dialog opens.
 - A refusal about the email goes under the field; the others (`errFreeDaily`, `errTooMany`, `errFileMissing`, `errNotFree`, `errUnknownStrategy`, `errLater`) are toasts over the open dialog.
 - A signed-in user sees the strategy in My strategies straight away, the tree switches to the owner view, and its card and strategy page say «Ya es tuya» (the page asks for #15 again, quietly). Otherwise it shows there only once the account proves that address (#18–#20).
@@ -571,7 +572,7 @@ Nothing is included just because it matches the account's sign-up email, which t
   - **paid:** the link is added to the same order;
   - **free:** a new claim that keeps the first request's time, so it doesn't count towards the daily limit.
 
-**Errors:** `404 errNotOwned`; `404 errUnknownStrategy`; `403 errUpdateExpired`.
+**Errors:** `400 errRequest` (`field: "id"`); `404 errNotOwned`; `404 errUnknownStrategy`; `403 errUpdateExpired`.
 
 **Called by:** «Pedir un enlace nuevo» and «Obtener la actualización · vN».
 
@@ -607,6 +608,7 @@ Nothing is included just because it matches the account's sign-up email, which t
 
 - It doesn't use up the link, because email programs open links too.
 - `null` means the link is used, expired or belongs to another account.
+- A token that is not a string of up to 200 characters → `400 errRequest`, with `field: "token"`.
 
 ### 20 · POST /api/mine/proofs/confirm
 
@@ -614,6 +616,7 @@ Nothing is included just because it matches the account's sign-up email, which t
 
 - From then on, #15 includes that address's orders and free downloads.
 - **Errors:** `400 errProofExpired` if the link is used, expired or belongs to another account.
+- A token that is not a string of up to 200 characters → `400 errRequest`, with `field: "token"`.
 - **How the page uses #19 and #20:** opening `/mine?proof=<token>` calls #19 and asks the user to confirm. Their click calls #20 and reloads the list.
 
 ### 21 · PUT /api/favourites/<id>
@@ -631,7 +634,7 @@ Nothing is included just because it matches the account's sign-up email, which t
 
 ### 22 · DELETE /api/favourites/<id>
 
-**Response:** `{"id": "…", "deleted": true}`.
+**Response:** `{"id": "…", "deleted": true}`, also when it was not a favourite. **Errors:** `404 errUnknownStrategy`.
 
 While signed out, the page keeps favourites and alerts in this browser (`edgefolio-favs-v1`) and moves them to the account at sign-in (#14).
 

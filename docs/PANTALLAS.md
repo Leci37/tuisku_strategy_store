@@ -76,7 +76,7 @@ De arriba abajo:
 
 **Selector del pack:**
 - título «Arma tu pack», contador «N / 5» y buscador («Buscar»);
-- hasta 40 estrategias de pago, las elegidas arriba; cada fila con casilla, icono, «TICKER · CLAVE», indicador y beneficio neto %. Las que ya van en un pack del carrito llevan «✓ En el carrito» en lugar del %;
+- arriba, las elegidas y, debajo, hasta 40 estrategias de pago de la búsqueda; cada fila con casilla, icono, «TICKER · CLAVE», indicador y beneficio neto %. Las que ya van en un pack del carrito llevan «✓ En el carrito» en lugar del %;
 - **Hecho** (no tiene ×).
 
 ---
@@ -142,7 +142,7 @@ De arriba abajo:
 ## 4 · Cómo decide
 
 1. **Controles:** Árbol | Bloques y Visitante | Propietario. Empieza en Propietario si la estrategia es tuya; si no, Propietario explica cómo conseguirla.
-2. **Cómo se lee:** tres pasos («Cada caja hace una pregunta sobre un indicador del gráfico.», «Si la respuesta es Sí, el camino sube; si es No, baja.» y, con los niveles del script, «El camino termina en una acción (comprar, vender o esperar) con su fuerza, de −1 a +1.»; sin ellos, «El camino termina en un resultado: su puntuación, de −1 a +1.») y la nota del bosque.
+2. **Cómo se lee:** tres pasos («Cada caja hace una pregunta sobre un indicador del gráfico.», «Si la respuesta es Sí, el camino sube; si es No, baja.» y, con los niveles del script, «El camino termina en una acción (comprar, vender o esperar) con su fuerza, de −1 a +1.»; sin ellos, «El camino termina en un resultado: su puntuación, de −1 a +1.») y, debajo, la nota del bosque, que dice cuántos árboles tiene, de la cabecera del script: «La estrategia tiene un solo árbol, este, así que su señal es el resultado de este árbol.» (66 de las 94) o «La estrategia combina N árboles como este, así que su señal no la decide un solo árbol.» (N es 3 o 5; sin esa cabecera, «… muchos árboles …»).
 3. **Resultado del árbol:**
    - con los niveles (el propietario; el visitante, si la tienda los publica): Comprar, Vender o Esperar con su fuerza, la barra de «Venta −1» a «Compra +1», las condiciones del camino actual, y **Ejemplo de compra** y **Ejemplo de venta**;
    - sin ellos (el visitante, hoy en las 94): «Puntuación» y su valor («Puntuación +1,00»), la barra de −1 a +1 en gris, las condiciones del camino actual, y **Puntuación más alta** y **Puntuación más baja**, en gris;
@@ -155,7 +155,7 @@ De arriba abajo:
    - «TICKER · patrón», «Árbol 1 del bosque» (un botón por árbol si el propietario ve un bosque de varios), cuántos resultados se ven y cuántas ramas son de pago;
    - una línea bajo el título explica el patrón de la estrategia, en el idioma de la página, y debajo los parámetros del modelo;
    - la leyenda: Comprar, Vender, Esperar, Parte de pago y Camino actual; sin niveles, «Puntuación», Parte de pago y Camino actual, y debajo, por qué: «Las puntuaciones con las que este script compra y cierra están en su script completo: aquí cada resultado enseña solo su puntuación.»;
-   - cajas de pregunta («¿≤ valor?» o «¿Se cumple?») con sus ramas Sí y No, en columnas «Paso 1…» y «Resultado»; cada caja dice el nombre del valor (los 225 que toman los árboles del catálogo lo tienen, en los 8 idiomas);
+   - cajas de pregunta («¿≤ valor?» o «¿Se cumple?») con sus ramas Sí y No, en columnas «Paso 1…» y «Resultado»; cada caja dice el nombre del valor (todos los que toman los árboles del catálogo lo tienen, en los 8 idiomas);
    - cajas de resultado (Comprar, Vender o Esperar con su fuerza; sin niveles, «Puntuación» y su valor, en gris oscuro, con el icono de un medidor) y una barra, y un anillo en el resultado al que se llega;
    - para el visitante, ramas grises «Parte de pago» («Script completo» en una gratis) y, encima del árbol, la caja con **Comprar para desbloquear** («Añadida al carrito» si ya va en el carrito; **Conseguirla gratis** en una gratis), que también sale en la ventana de cada rama gris.
 6. **Bloques:** el mismo árbol en columnas, cada bloque con la condición que lleva a él.
@@ -205,7 +205,7 @@ Después de **Pagar** viene PayPal, fuera de la tienda.
 - el campo **Correo**, con el error debajo;
 - la casilla «Avísame también de estrategias nuevas (opcional)», sin marcar;
 - **Enviarme el enlace** y el enlace Privacidad;
-- al terminar: «Hecho. Mira tu correo: el enlace vale 7 días.» y **Volver a la tienda**.
+- al terminar: «Hecho. Mira tu correo: el enlace vale 7 días.» (los días de `DOWNLOAD_DAYS`) y **Volver a la tienda**.
 
 ---
 

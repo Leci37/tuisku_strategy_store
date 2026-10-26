@@ -15,13 +15,16 @@ import pytest
 
 from edgefolio import release
 from tests.conftest import ROWS
-from tests.test_publish import CONTRACT, PLACEHOLDER, factory, package_of, private_file, sha
+from tests.test_publish import (CONTRACT, CRYPTO_HOURLY, PLACEHOLDER, edit_manifest, factory, package_of, private_file,
+                                sha, with_since_release)
 
 
 @pytest.fixture
 def settings(settings, tmp_path):
-    """Las de conftest, con static/ también en tmp: el comando copia ahí los gráficos (nunca a los del repo)."""
-    return replace(settings, static=tmp_path / "static")
+    """Las de conftest, con static/ también en tmp: el comando copia ahí los gráficos (nunca a los del repo). Y con
+    las intradía de acciones: estas pruebas son de cómo se importa, con las cuatro de conftest (MSFT es de 1Hour);
+    las que se dejan fuera sin LIST_INTRADAY_STOCKS, aparte (test_the_import_leaves_out_intraday_stocks)."""
+    return replace(settings, static=tmp_path / "static", list_intraday_stocks=True)
 
 
 @pytest.fixture
@@ -235,3 +238,70 @@ def test_without_pandas_the_import_says_where_to_run_it(app, made, monkeypatch):
     assert result.exit_code != 0 and "requirements-dev.txt" in result.output
     assert "Traceback" not in result.output
 
+
+
+def test_the_import_leaves_out_intraday_stocks(app, settings, tmp_path):
+    """E2: sin LIST_INTRADAY_STOCKS (lo de por defecto), las estrategias intradía de acciones no se publican, ni sus
+    ficheros, y su script ni se pide ni se copia: el plan gratis de TradingView enseña otros datos intradía de las
+    acciones (sólo Cboe BZX), así que allí operan distinto que en su backtest. Las de cripto, también horarias, sí.
+    El resumen dice cuántas y por qué; release.json, cuáles. Con LIST_INTRADAY_STOCKS=1, todas."""
+    settings.list_intraday_stocks = False
+    d_result, rows = factory(tmp_path, ROWS + [CRYPTO_HOURLY])
+    package = package_of(d_result, rows)
+    msft = private_file(ROWS[1])
+    stale_msft = (settings.strategies_dir / msft).read_bytes()   # el de conftest: otro contenido
+    for r in rows:
+        if private_file(r) != msft:
+            (settings.strategies_dir / private_file(r)).write_bytes((d_result / "pine_TW_b" / private_file(r)).read_bytes())
+    result = run(app, package)   # sin --scripts: el de MSFT, de otro contenido, no se pide
+    assert result.exit_code == 0, result.output
+    assert "4 estrategias del contrato 1" in result.output and "0 scripts copiados" in result.output
+    assert ("1 estrategias intradía de acciones fuera (LIST_INTRADAY_STOCKS=1 las publica): el plan gratis de "
+            "TradingView enseña otros datos intradía de las acciones (sólo Cboe BZX)") in result.output
+    assert "duo (MSFT_1Hour_2BB0_bbbb2222)" in result.output, "el lote que la tenía se queda fuera, y se dice"
+    catalogue = pd.read_csv(settings.catalogue, sep="\t", dtype=str)
+    assert list(catalogue["ticker"]) == ["AAPL", "NVDA", "TSLA", "BTCUSDT"]
+    assert not [p for p in settings.static.rglob("*") if "MSFT" in p.name]
+    assert (settings.strategies_dir / msft).read_bytes() == stale_msft
+    left = json.loads((settings.catalogue.parent / "release.json").read_text())["left_out"]["intraday_stocks"]
+    assert (left["rows"], left["ids"]) == (1, ["MSFT_1Hour_2BB0_bbbb2222"])
+
+    settings.list_intraday_stocks = True
+    result = run(app, package, "--scripts", d_result / "pine_TW_b")
+    assert result.exit_code == 0, result.output
+    assert "5 estrategias del contrato 1" in result.output and "intradía" not in result.output
+    assert "left_out" not in json.loads((settings.catalogue.parent / "release.json").read_text())
+
+
+def test_list_intraday_stocks_from_the_environment(tmp_path):
+    from edgefolio.settings import Settings
+    assert Settings.from_env(tmp_path, {}).list_intraday_stocks is False
+    assert Settings.from_env(tmp_path, {"LIST_INTRADAY_STOCKS": "1"}).list_intraday_stocks is True
+    assert Settings.from_env(tmp_path, {"LIST_INTRADAY_STOCKS": "off"}).list_intraday_stocks is False
+    with pytest.raises(ValueError, match="LIST_INTRADAY_STOCKS"):
+        Settings.from_env(tmp_path, {"LIST_INTRADAY_STOCKS": "maybe"})
+
+
+def test_the_import_says_among_how_many_tried_and_brings_the_results_since_release(app, settings, made):
+    """E1 y E11: lo dice el resumen. tried, del manifiesto (o del release.json de la misma ejecución); el
+    since_release.csv del paquete, al lado del catálogo; uno de antes, sin otro en el paquete, se queda hasta --prune."""
+    d_result, package = made
+    scripts = d_result / "pine_TW_b"
+    result = run(app, package, "--scripts", scripts)
+    assert "el paquete no dice entre cuántas estrategias probadas se eligieron: la tienda no lo dice" in result.output
+    edit_manifest(package, lambda m: m.update(tried=1531))
+    with_since_release(package, "id,pct,as_of\nAAPL_1Day_1ADX_aaaa1111,-1.25,2026-10-25\n")
+    result = run(app, package, "--scripts", scripts)
+    assert result.exit_code == 0, result.output
+    assert "elegidas entre 1531 estrategias probadas (la tienda lo dice en el aviso de sobreajuste)" in result.output
+    assert "catalogue/since_release.csv: el resultado de cada estrategia desde su publicación, del paquete" in result.output
+    since = settings.catalogue.parent / "since_release.csv"
+    assert since.read_text() == "id,pct,as_of\nAAPL_1Day_1ADX_aaaa1111,-1.25,2026-10-25\n" == settings.since_release.read_text()
+
+    (package / "since_release.csv").unlink()
+    edit_manifest(package, lambda m: m["files"].pop("since_release.csv"))
+    result = run(app, package, "--scripts", scripts)
+    assert "es de un catálogo de antes y el paquete no trae uno: se queda (--prune lo borra)" in result.output
+    assert "elegidas entre 1531" in result.output and since.is_file()
+    result = run(app, package, "--scripts", scripts, "--prune")
+    assert "catalogue/since_release.csv borrado" in result.output and not since.exists()

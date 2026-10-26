@@ -142,14 +142,17 @@ def mine_page():
 @bp.get("/api/config")
 @public
 def config():
-    """Lo que la página necesita para pintar precios y enlaces: nunca un secreto ni un código."""
-    s = shop().settings
+    """Lo que la página necesita para pintar precios y enlaces: nunca un secreto ni un código. Y lo que dice del
+    catálogo: entre cuántas probadas se eligieron sus estrategias (``tried``, null si no se sabe), cuántas tienen
+    cifra desde su publicación (``since_release``: con 0 la página no habla de ello) y los cortes de la nota."""
+    s, catalogue = shop().settings, shop().catalogue
     return jsonify({"mode": s.paypal_mode, "currency": s.currency, "max_discount": str(s.max_discount),
                     "tiers": [{"over": str(o), "rate": str(r)} for o, r in s.tiers],
                     "pack": {"size": s.pack_size, "price": str(s.pack_price)},
                     "download_days": s.download_days, "max_downloads": s.max_downloads,
                     "new_days": s.new_days, "contact_email": s.contact_email,
-                    "strategies": len(shop().catalogue), "npp_max": shop().catalogue.best_npp})
+                    "strategies": len(catalogue), "npp_max": catalogue.best_npp, "tried": catalogue.tried,
+                    "since_release": catalogue.since_release, "grade_cutoffs": list(s.grade_cutoffs)})
 
 
 @bp.get("/api/strategies")

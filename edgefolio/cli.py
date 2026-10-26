@@ -30,6 +30,18 @@ from .settings import ROOT
 
 SCRIPTS_COMMIT = "c3fa796"
 SCRIPTS_PATH = "d_result/pine_TW_b"
+# Lo que dice el import de las filas que no publica, por regla (las de catalogue/publish.py, LEFT_OUT)
+LEFT_OUT_SAYS = {
+    "intraday_stocks": "{n} estrategias intradía de acciones fuera (LIST_INTRADAY_STOCKS=1 las publica): el plan "
+                       "gratis de TradingView enseña otros datos intradía de las acciones (sólo Cboe BZX), así que "
+                       "allí operan distinto que en su backtest. catalogue/release.json dice cuáles",
+}
+SINCE_RELEASE_SAYS = {
+    "copied": "catalogue/since_release.csv: el resultado de cada estrategia desde su publicación, del paquete",
+    "removed": "catalogue/since_release.csv borrado: era de un catálogo de antes y el paquete no trae uno",
+    "stale": "catalogue/since_release.csv es de un catálogo de antes y el paquete no trae uno: se queda (--prune lo "
+             "borra)",
+}
 
 
 def restore(target: Path, commit: str = SCRIPTS_COMMIT, path: str = SCRIPTS_PATH, repo: Path = ROOT,
@@ -97,6 +109,13 @@ def register(bp):
                                        "despliega lo que deja") from e
         click.echo(f"{done['rows']} estrategias del contrato {done['contract']}, de la ejecución del generador del "
                    f"{done['created']} (commit {done['commit'][:12] or 'desconocido'})")
+        for rule, n in done["left_out"].items():
+            click.echo(LEFT_OUT_SAYS[rule].format(n=n))
+        click.echo(f"elegidas entre {done['tried']} estrategias probadas (la tienda lo dice en el aviso de sobreajuste)"
+                   if done["tried"] else "el paquete no dice entre cuántas estrategias probadas se eligieron: la tienda "
+                                         "no lo dice")
+        if done["since_release"]:
+            click.echo(SINCE_RELEASE_SAYS[done["since_release"]])
         click.echo(f"{done['files']} ficheros copiados a static/assets ({done['cut']} vistas previas cortadas, "
                    f"{done['pruned']} sin usar borrados); {done['scripts']} scripts copiados; "
                    f"{done['thumbs']} miniaturas borradas")

@@ -4,8 +4,8 @@ The factory is the twin repository that generates the data, Leci37/tuisku_strate
 its step 7 (S_04_ladding_file_info_to_see_in_web.py) writes the export, d_result/ and a package of both,
 d_result/package/.
 
-    python catalogue/publish.py --package DIR [--prune]
-    python catalogue/publish.py EXPORT.csv [--assets DIR] [--prune]
+    python catalogue/publish.py --package DIR [--prune] [--intraday-stocks]
+    python catalogue/publish.py EXPORT.csv [--assets DIR] [--prune] [--intraday-stocks]
 
 catalogue/contract.json is the contract between the two repositories: the catalogue's columns, which
 factory folder holds each file a row names, which static/assets/ folder it goes to and how each full
@@ -21,15 +21,25 @@ not know, stops the publish before anything is written (drift between the twins 
                checked again as they are copied: the factory may be writing d_result/ meanwhile),
                replacing the charts and previews that changed and the factory's placeholder logos the
                shop still shows (any other logo the shop has is kept, and said), and
-               catalogue/release.json records which factory run the shop shows.
+               catalogue/release.json records which factory run the shop shows: its contract, date and
+               commit, the rows the shop shows, how many strategies they were chosen from (the manifest's
+               "tried"; kept from the release.json of the same run when the manifest has none) and the rows
+               left out, with why. A package may also bring since_release.csv (id, pct, as_of: each
+               strategy's result since its release), checked like the rest and copied beside
+               catalogue.csv.
 EXPORT.csv     the tab-separated export (pine_TW_img_info_*_WEB.csv), the form before packages;
 --assets DIR   then copies the files the catalogue uses from DIR (the factory's d_result/) into
                static/assets/, leaving the ones already there as they are. An export has no manifest:
                a release.json of an earlier package is deleted, since it no longer says what is shown.
---prune        deletes files in static/assets/{charts,previews} that no catalogue row uses.
+--prune        deletes files in static/assets/{charts,previews} that no catalogue row uses, and a
+               catalogue/since_release.csv of an earlier catalogue when the package brings none.
+--intraday-stocks
+               also publishes the stock strategies of minutes or hours, which are left out by default
+               (LEFT_OUT says why; the shop's import follows its LIST_INTRADAY_STOCKS instead).
 
 Publishing:
   - keeps one row per strategy (ticker, interval, key_techs, id_model): the export repeats some;
+  - leaves out the intraday stock strategies, unless asked for them;
   - rewrites every image and preview path to a relative assets/... path (under static/), whether the
     export gave a local path or an absolute raw.githubusercontent.com URL;
   - drops pine_path, the location of the full paid script, which must never be public;
@@ -56,10 +66,12 @@ import base64
 import hashlib
 import io
 import json
+import math
 import os
 import posixpath
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -73,7 +85,14 @@ CONTRACT = Path(__file__).resolve().parent / "contract.json"
 MANIFEST = "manifest.json"
 PACKAGE_CATALOGUE = "catalogue.csv"
 RELEASE = "release.json"              # beside OUT
+SINCE_RELEASE = "since_release.csv"   # in a package's root and, published, beside OUT
+SINCE_COLUMNS = ["id", "pct", "as_of"]
 KEY = ["ticker", "interval", "key_techs", "id_model"]
+# An interval of minutes or hours (1Min, 15Min, 1Hour, 4Hour…).
+INTRADAY = r"\d+\s*(?:m|min|mins|minute|minutes|h|hour|hours)"
+# Why rows of a package are left out, by rule (release.json says it with their ids).
+LEFT_OUT = {"intraday_stocks": "TradingView's free plan shows other intraday stock data (only Cboe BZX), so intraday "
+                               "stock strategies trade there differently from their backtest"}
 KEY_TYPES = {k: str for k in KEY}
 SHOWN = 10                            # names listed in one problem; the rest are counted
 
@@ -186,6 +205,19 @@ def private_name(ticker: str, interval: str, key_techs: str, id_model: str) -> s
     return base64.urlsafe_b64encode(key.encode("utf-8")).decode("ascii").rstrip("=") + ".pine"
 
 
+def ids_of(df: pd.DataFrame) -> list:
+    """Each row's id, as the shop names a strategy (its /s/<id>, since_release.csv): ticker_interval_key_id."""
+    return ["_".join(k) for k in df[KEY].fillna("").astype(str).itertuples(index=False)]
+
+
+def intraday_stocks(df: pd.DataFrame) -> pd.Series:
+    """The rows of stock strategies of minutes or hours: TradingView's free plan shows other intraday stock data
+    (LEFT_OUT), so they are left out unless asked for. Crypto (Index CRYPTO, as the shop tells them) is not."""
+    interval = df["interval"].fillna("").astype(str).str.strip()
+    crypto = df["Index"].fillna("").astype(str).str.strip().str.upper() == "CRYPTO"
+    return interval.str.fullmatch(INTRADAY, case=False).fillna(False).astype(bool) & ~crypto
+
+
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -208,17 +240,54 @@ def file_name(value: str) -> str:
 
 
 def path_problem(key, folders) -> str:
-    """Why a manifest key is not a safe package path (None if it is): catalogue.csv or <folder>/<name>,
-    one level, folder one of the contract's, so nothing outside the package is ever read or written."""
+    """Why a manifest key is not a safe package path (None if it is): catalogue.csv, since_release.csv or
+    <folder>/<name>, one level, folder one of the contract's, so nothing outside the package is ever read or
+    written."""
     if not isinstance(key, str) or "\\" in key or "\x00" in key:
         return f"{key!r}: not a package path (no backslashes)"
     parts = key.split("/")
-    if parts == [PACKAGE_CATALOGUE]:
+    if parts in ([PACKAGE_CATALOGUE], [SINCE_RELEASE]):
         return None
     if len(parts) != 2 or parts[0] not in folders or not parts[1] or parts[1].startswith("."):
-        return (f"{key!r}: not a package path ({PACKAGE_CATALOGUE} or <folder>/<name>, folder one of "
-                f"{', '.join(sorted(folders))})")
+        return (f"{key!r}: not a package path ({PACKAGE_CATALOGUE}, {SINCE_RELEASE} or <folder>/<name>, folder one "
+                f"of {', '.join(sorted(folders))})")
     return None
+
+
+def since_release_problems(data: bytes, ids: set) -> list:
+    """What is wrong with a package's since_release.csv (comma or tab separated, as the shop reads it): its
+    columns, an id that is no row of the package, a repeated id, a pct that is not a number, an as_of that is
+    not a date."""
+    try:
+        text = data.decode("utf-8")
+        sep = "\t" if "\t" in text.split("\n", 1)[0] else ","
+        df = pd.read_csv(io.StringIO(text), sep=sep, dtype=str, keep_default_na=False)
+    except ValueError as e:  # a UnicodeDecodeError is one too
+        return [f"{SINCE_RELEASE}: not a table ({e})"]
+    missing = [c for c in SINCE_COLUMNS if c not in df.columns]
+    if missing:
+        return [f"{SINCE_RELEASE}: no column {', '.join(missing)} (its columns are {', '.join(SINCE_COLUMNS)})"]
+    problems = []
+    stray = sorted(set(df["id"]) - ids)
+    if stray:
+        problems.append(f"{SINCE_RELEASE}: {len(stray)} ids of no row of {PACKAGE_CATALOGUE}: {listed(stray)}")
+    repeated = sorted(set(df.loc[df["id"].duplicated(), "id"]))
+    if repeated:
+        problems.append(f"{SINCE_RELEASE}: {len(repeated)} ids repeated: {listed(repeated)}")
+
+    def good(row) -> bool:
+        as_of = row["as_of"].strip()
+        try:
+            finite = math.isfinite(float(row["pct"]))
+            date.fromisoformat(as_of)
+        except ValueError:
+            return False
+        return finite and re.fullmatch(r"\d{4}-\d{2}-\d{2}", as_of) is not None
+    wrong = [i + 2 for i, row in df.iterrows() if not good(row)]
+    if wrong:
+        problems.append(f"{SINCE_RELEASE}: {len(wrong)} lines without a number in pct and a date (YYYY-MM-DD) in "
+                        f"as_of: {listed(wrong)}")
+    return problems
 
 
 def read_package(package: Path, assets: Path = None):
@@ -245,6 +314,10 @@ def read_package(package: Path, assets: Path = None):
         problems.append(f"{MANIFEST}: created is not a string")
     if "generator" in manifest and not isinstance(manifest["generator"], dict):
         problems.append(f"{MANIFEST}: generator is not an object")
+    if "tried" in manifest:  # how many strategies the run tried, its rows chosen among them
+        rows = manifest.get("rows") if type(manifest.get("rows")) is int else 1
+        if type(manifest["tried"]) is not int or manifest["tried"] < max(rows, 1):
+            problems.append(f"{MANIFEST}: tried is {manifest['tried']!r}, not a whole number of at least its rows")
     files = manifest.get("files", {})
     if not isinstance(files, dict):
         problems.append(f"{MANIFEST}: files is not an object")
@@ -253,6 +326,7 @@ def read_package(package: Path, assets: Path = None):
     folders = set(_contract["folders"].values())
     good = set()                   # keys that are safe files of the package with the right sha256
     table = None                   # catalogue.csv's bytes: the ones hashed are the ones parsed
+    since = None                   # since_release.csv's, likewise
     root = os.path.realpath(package)
     for key, digest in files.items():
         problem = path_problem(key, folders)
@@ -267,6 +341,9 @@ def read_package(package: Path, assets: Path = None):
             if key == PACKAGE_CATALOGUE:
                 table = path.read_bytes()
                 actual = hashlib.sha256(table).hexdigest()
+            elif key == SINCE_RELEASE:
+                since = path.read_bytes()
+                actual = hashlib.sha256(since).hexdigest()
             else:
                 actual = sha256(path)
         except OSError as e:
@@ -300,6 +377,8 @@ def read_package(package: Path, assets: Path = None):
         if type(rows) is not int or rows != len(df):
             problems.append(f"{MANIFEST}: rows is {rows!r}, {PACKAGE_CATALOGUE} has {len(df)}")
         problems += row_problems(df, package, assets, files, good, manifest.get("private"))
+        if since is not None and set(KEY) <= set(df.columns):
+            problems += since_release_problems(since, set(ids_of(df)))
     if problems:
         raise PackageError(problems)
     return manifest, df
@@ -413,14 +492,23 @@ def readable_names(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build(df: pd.DataFrame, assets_src: Path, out: Path, assets: Path, stage: Staged,
-          files: dict = None) -> pd.DataFrame:
+          files: dict = None, list_intraday_stocks: bool = True) -> pd.DataFrame:
     """The publish itself, for both forms, written into stage (nothing is in place until it is committed).
     files is the manifest's (a package): a file is copied only with the bytes it was checked with, a chart or
     preview already in the shop is replaced when the factory's differs (REPLACED) and a logo only when the
     shop's is the factory's placeholder; the logos kept although the package's differ are listed in
-    df.attrs["published"]["kept"]. Without files (an export), an asset already in the shop is left as it is."""
+    df.attrs["published"]["kept"]. Without files (an export), an asset already in the shop is left as it is.
+    Without list_intraday_stocks, the intraday stock rows are not published (nor their files): their ids, by
+    rule, are in df.attrs["published"]["left_out"]."""
     before = len(df)
     df = df.drop_duplicates(subset=KEY, keep="first").drop(columns=DROPPED, errors="ignore")
+    repeated = before - len(df)
+    left_out = {}
+    if not list_intraday_stocks:
+        intraday = intraday_stocks(df)
+        if intraday.any():
+            left_out["intraday_stocks"] = ids_of(df[intraday])
+            df = df[~intraday].copy()
     df = keep_optional(df, out)
     df = readable_names(df)
     copied = cut = 0
@@ -459,8 +547,8 @@ def build(df: pd.DataFrame, assets_src: Path, out: Path, assets: Path, stage: St
             cut += public != data
     cut += cut_previews(df[PREVIEW_COLUMN].map(file_name).unique(), assets, stage)
     stage.write(out, df.to_csv(sep="\t", index=False).encode("utf-8"))  # last: it names the files before it
-    df.attrs["published"] = {"rows": len(df), "dropped": before - len(df), "copied": copied, "cut": cut,
-                             "kept": sorted(kept)}
+    df.attrs["published"] = {"rows": len(df), "dropped": repeated, "copied": copied, "cut": cut,
+                             "kept": sorted(kept), "left_out": left_out}
     return df
 
 
@@ -469,13 +557,16 @@ def say(df: pd.DataFrame, out: Path):
     shown = out.relative_to(ROOT) if out.is_relative_to(ROOT) else out
     print(f"{shown}: {done['rows']} strategies ({done['dropped']} repeated rows dropped, {done['copied']} files "
           f"copied into static/assets, {done['cut']} previews cut to their public part)")
+    for why, ids in done["left_out"].items():
+        print(f"{len(ids)} rows left out ({LEFT_OUT[why]}): {listed(ids)}")
     if done["kept"]:
         print(f"{len(done['kept'])} logos of the package differ from the shop's and were kept (the shop's are taken "
               f"to be the real ones; delete one from static/assets/icons to take the factory's): "
               f"{listed(done['kept'])}")
 
 
-def publish(export: Path, assets_src: Path = None, out: Path = None, assets: Path = None) -> pd.DataFrame:
+def publish(export: Path, assets_src: Path = None, out: Path = None, assets: Path = None,
+            list_intraday_stocks: bool = True) -> pd.DataFrame:
     """The export form: EXPORT.csv [--assets DIR]. An export has no manifest, so the release.json of an
     earlier package, which would say the shop shows that run, is deleted."""
     out, assets = Path(out or OUT), Path(assets or ASSETS)
@@ -483,7 +574,8 @@ def publish(export: Path, assets_src: Path = None, out: Path = None, assets: Pat
     check_columns(df)
     stage = Staged()
     try:
-        df = build(df, Path(assets_src) if assets_src else None, out, assets, stage)
+        df = build(df, Path(assets_src) if assets_src else None, out, assets, stage,
+                   list_intraday_stocks=list_intraday_stocks)
         stage.commit()
     finally:
         stage.discard()
@@ -492,29 +584,73 @@ def publish(export: Path, assets_src: Path = None, out: Path = None, assets: Pat
     return df
 
 
+def kept_tried(path: Path, manifest: dict):
+    """The tried of the shop's release.json when it is of this same factory run (its created and generator) and
+    the manifest does not say it: the run of 2026-10 did not write it, and its count came from the factory's
+    notes. Of another run, or none, None: better nothing than another run's count."""
+    try:
+        before = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(before, dict) or type(before.get("tried")) is not int:
+        return None
+    same = before.get("created") == manifest["created"] and before.get("generator") == manifest["generator"]
+    return before["tried"] if same else None
+
+
+def release_of(manifest: dict, df: pd.DataFrame, out: Path) -> dict:
+    """What release.json says: the factory run (contract, created, generator), the rows the shop shows, how many
+    strategies they were chosen among (tried, when known) and the rows left out, by rule, with why."""
+    release = {k: manifest[k] for k in ("contract", "created", "generator")}
+    release["rows"] = len(df)
+    tried = manifest["tried"] if "tried" in manifest else kept_tried(out.parent / RELEASE, manifest)
+    if tried is not None:
+        release["tried"] = tried
+    left = df.attrs["published"]["left_out"]
+    if left:
+        release["left_out"] = {rule: {"rows": len(ids), "why": LEFT_OUT[rule], "ids": ids} for rule, ids in left.items()}
+    return release
+
+
 def publish_package(package: Path, prune: bool = False, out: Path = None, assets: Path = None,
-                    checked: tuple = None, stage: Staged = None) -> pd.DataFrame:
-    """The package form: read_package (nothing is written if it fails), the publish, release.json and,
-    with prune, the unused charts and previews deleted. Returns the catalogue, with what it did in
-    df.attrs["published"].
+                    checked: tuple = None, stage: Staged = None, list_intraday_stocks: bool = True) -> pd.DataFrame:
+    """The package form: read_package (nothing is written if it fails), the publish, release.json, the
+    package's since_release.csv if it brings one and, with prune, the unused charts and previews deleted (and a
+    since_release.csv of an earlier catalogue, when the package brings none). Returns the catalogue, with what
+    it did in df.attrs["published"]: since_release is "copied", "removed", "stale" (one of before, kept) or None.
 
     checked is what read_package already returned for this package (the import checks the scripts against
     its manifest): then that is what is published, not a second read of a package that may have changed.
-    stage brings the caller's own writes (the import's scripts): they are renamed with these, before them."""
+    stage brings the caller's own writes (the import's scripts): they are renamed with these, before them.
+    Without list_intraday_stocks, the intraday stock rows are left out (the shop's import passes its
+    LIST_INTRADAY_STOCKS; the command line, --intraday-stocks)."""
     package, out, assets = Path(package), Path(out or OUT), Path(assets or ASSETS)
     manifest, df = checked if checked is not None else read_package(package, assets)
     stage = stage if stage is not None else Staged()
-    release = {k: manifest[k] for k in ("contract", "created", "generator", "rows")}
+    since = out.parent / SINCE_RELEASE
+    since_state = "copied" if SINCE_RELEASE in manifest["files"] else "stale" if since.is_file() else None
     try:
-        df = build(df, package, out, assets, stage, files=manifest["files"])
+        df = build(df, package, out, assets, stage, files=manifest["files"], list_intraday_stocks=list_intraday_stocks)
+        release = release_of(manifest, df, out)
+        if since_state == "copied":
+            stage.write(since, checked_bytes(package / SINCE_RELEASE, SINCE_RELEASE, manifest["files"][SINCE_RELEASE]))
         stage.write(out.parent / RELEASE, (json.dumps(release, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
         stage.commit()
     finally:
         stage.discard()
     say(df, out)
     commit = str(manifest["generator"].get("commit") or "")[:12] or "unknown commit"
-    print(f"{RELEASE}: contract {manifest['contract']}, factory run of {manifest['created']} ({commit})")
-    df.attrs["published"].update(pruned=report_unused(df, assets, prune), release=release)
+    tried = f", chosen among {release['tried']} tried" if "tried" in release else ""
+    print(f"{RELEASE}: contract {manifest['contract']}, factory run of {manifest['created']} ({commit}){tried}")
+    if since_state == "stale" and prune:
+        since.unlink()
+        since_state = "removed"
+    if since_state:
+        print(f"{SINCE_RELEASE}: " + {"copied": "the package's results since release",
+                                      "removed": "deleted: of an earlier catalogue, and the package brings none",
+                                      "stale": "of an earlier catalogue, and the package brings none: kept "
+                                               "(--prune deletes it)"}[since_state])
+    df.attrs["published"].update(pruned=report_unused(df, assets, prune), release=release, since_release=since_state)
     return df
 
 
@@ -547,6 +683,9 @@ if __name__ == "__main__":
     ap.add_argument("--package", type=Path, help="the factory's package (its d_result/package/)")
     ap.add_argument("--assets", type=Path, help="with EXPORT.csv: factory d_result/ folder to copy assets from")
     ap.add_argument("--prune", action="store_true", help="delete charts/previews no row uses")
+    ap.add_argument("--intraday-stocks", action="store_true",
+                    help="also publish the stock strategies of minutes or hours, left out by default: "
+                         + LEFT_OUT["intraday_stocks"])
     args = ap.parse_args()
     if (args.export is None) == (args.package is None):
         ap.error("give either EXPORT.csv or --package DIR")
@@ -554,8 +693,9 @@ if __name__ == "__main__":
         ap.error("--assets goes with EXPORT.csv: a package brings its own files")
     try:
         if args.package:
-            publish_package(args.package, args.prune)
+            publish_package(args.package, args.prune, list_intraday_stocks=args.intraday_stocks)
         else:
-            report_unused(publish(args.export, args.assets), prune=args.prune)
+            report_unused(publish(args.export, args.assets, list_intraday_stocks=args.intraday_stocks),
+                          prune=args.prune)
     except ContractError as e:
         sys.exit("nothing published:\n" + "\n".join(f"  - {p}" for p in e.problems))

@@ -53,9 +53,10 @@ _catalogues = {}
 def load_catalogue(settings: Settings) -> Catalogue:
     """El catálogo de esos ficheros, leído una vez por proceso mientras no cambien (varias apps en el
     mismo proceso, como las pruebas, no lo leen y lo indexan cada una)."""
-    paths = (settings.catalogue, settings.indicators, settings.bundles, settings.since_release)
+    paths = (settings.catalogue, settings.indicators, settings.bundles, settings.since_release,
+             Path(settings.catalogue).parent / "release.json")
     stamp = tuple((str(p), hashlib.sha1(p.read_bytes()).hexdigest() if p.is_file() else None) for p in map(Path, paths))
-    key = (stamp, settings.new_days)
+    key = (stamp, settings.new_days, tuple(settings.grade_cutoffs))
     if key not in _catalogues:
         if len(_catalogues) > 8:
             _catalogues.clear()

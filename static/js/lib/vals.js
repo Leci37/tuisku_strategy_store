@@ -35,7 +35,14 @@ export function renderVals(app) {
   // la escala de las barras de la página de la estrategia: el mejor backtest del catálogo (del servidor).
   // Con la del diseño (100 %, para backtests de 71–86 %), los de 0,03–0,44 % del catálogo de 2026-10 no se veían
   const nppTop = s.cfg && s.cfg.npp_max > 0 ? s.cfg.npp_max : 100;
-  const c = { app, s, t, tx, f, lang, rtl, contact, nppTop };
+  const cfg = s.cfg || {};
+  // «Desde su publicación» sólo cuando alguna estrategia tiene cifra (since_release, API #1): sin ninguna, cada
+  // ficha decía «—» y su barra salía vacía. Vuelve sola cuando las hay
+  const liveOn = cfg.since_release > 0;
+  // la explicación de la nota dice desde cuántas operaciones es cada letra (GRADE_CUTOFFS, del servidor)
+  const cuts = Array.isArray(cfg.grade_cutoffs) && cfg.grade_cutoffs.length === 3 ? cfg.grade_cutoffs : null;
+  const gradeCuts = cuts ? ' ' + t('gradeCuts', { a: f.int(cuts[0]), b: f.int(cuts[1]), c: f.int(cuts[2]) }) : '';
+  const c = { app, s, t, tx, f, lang, rtl, contact, nppTop, liveOn, gradeCuts };
   c.mk = r => rowVals(c, r);
   const cart = cartVals(c); // also gives c.inCart and c.toggleCart, which every row uses
   const shop = shopVals(c);
@@ -43,7 +50,10 @@ export function renderVals(app) {
 
   return {
     lang, dir: rtl ? 'rtl' : 'ltr', g90: rtl ? '270deg' : '90deg', tickShift: rtl ? 'translateX(100%)' : 'translateX(-100%)',
-    tx, barStart: app.props.barStart, barEnd: app.props.barEnd,
+    tx, barStart: app.props.barStart, barEnd: app.props.barEnd, liveOn,
+    // el aviso de sobreajuste (Lite y Pro), cuando se sabe: entre cuántas estrategias probadas se eligieron
+    // estas, y que sus cifras son de datos que los modelos no vieron
+    riskTried: cfg.tried ? ' ' + t('riskTried', { n: f.int(cfg.strategies), m: f.int(cfg.tried) }) : '',
     tv: s.tv, tvOff: !s.tv, toggleTv: () => app.toggleTv(), tvTitle: s.tv ? tx.tvDisconnect : tx.tvConnect,
     isLocal: f.isLocal, curLabel: f.curLabel, curFixed: !canLocal, curCursor: canLocal ? 'pointer' : 'default',
     toggleCur: () => { if (canLocal) app.setState(st => ({ cur: st.cur === 'local' ? 'usd' : 'local' })); },
@@ -83,7 +93,7 @@ function rowVals(c, r) {
     id, ticker: r.ticker, name: r.name, key: r.key, ind: r.ind, ex: r.ind_text || '',
     icon: r.icon, interval: r.interval, index: r.index,
     priceLabel: r.price === 0 ? t('landingFree') : f.pmoney(r.price),
-    grade: r.grade, gradeBg: GRADE_BG[r.grade] || '#5a6b80', gradeTip: t('gradeTip', { n: f.int(r.tr) }),
+    grade: r.grade, gradeBg: GRADE_BG[r.grade] || '#5a6b80', gradeTip: t('gradeTip', { n: f.int(r.tr) }) + c.gradeCuts,
     // since release is measured by a daily job; until it has run there is nothing to show
     live: live == null ? '—' : f.pctS(live), liveColor: live == null ? '#8d9cae' : live >= 0 ? '#15803d' : '#c0392b',
     barBt: Math.max(0, Math.min(100, (r.npp || 0) / c.nppTop * 100)) + '%',

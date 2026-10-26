@@ -93,7 +93,7 @@ export default function Pro(v) {
             </div>` : null}
         <div role="note" style="display:flex;gap:12px;align-items:flex-start;border-radius:12px;padding:12px 14px;background:#eef3fd;border:1px solid #d6e2fb">
           <i class="fa-solid fa-triangle-exclamation" style="color:#f79009;font-size:16px;margin-top:2px"></i>
-          <div style="display:flex;flex-direction:column;gap:2px;font-size:13px"><strong style="font-size:13.5px">${v.tx?.riskTitle}</strong><span style="text-wrap:pretty">${v.tx?.riskText}</span></div>
+          <div style="display:flex;flex-direction:column;gap:2px;font-size:13px"><strong style="font-size:13.5px">${v.tx?.riskTitle}</strong><span style="text-wrap:pretty">${v.tx?.riskText}${v.riskTried}</span></div>
           </div>
         ${v.proEmpty ? html`<p style="margin:0;padding:32px 0;text-align:center;color:#8d9cae">${v.tx?.noMatch}</p>` : null}
         ${v.isTable ? html`

@@ -21,7 +21,7 @@ export default function Detail(v) {
               </div>
             </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:200px">
-            <span style="font-size:28px;font-weight:700;letter-spacing:-.4px;text-align:end">${v.det?.priceLabel}</span>
+            ${v.detOwned ? null : html`<span style="font-size:28px;font-weight:700;letter-spacing:-.4px;text-align:end">${v.det?.priceLabel}</span>`}
             ${v.det?.isPaid && !v.detOwned ? html`<button onClick=${v.det?.onCart} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid ${s(v.det?.cartBorder)};background:${s(v.det?.cartBg)};color:${s(v.det?.cartColor)}"><i class=${v.det?.cartIcon}></i>${T(v.det?.cartLabel)}</button>` : null}
             ${v.det?.isFree && !v.detOwned ? html`<button onClick=${v.det?.onFree} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>${T(v.tx?.download)}</button>` : null}
             ${v.detOwned ? html`<a href=${v.ownedHref} onClick=${v.ownedGo} data-ef-owned style="font-family:inherit;line-height:normal;text-decoration:none;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #b7e4c7;background:#e8f7ef;color:#15803d"><i class="fa-solid fa-circle-check"></i>${T(v.ownedLabel)}</a>` : null}

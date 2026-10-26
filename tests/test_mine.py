@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Mis estrategias: lo que tiene una cuenta, sus enlaces, renovar y las versiones nuevas, el script del
-propietario, las favoritas; y el zip de un pedido entero."""
+"""Mis estrategias: lo que tiene una cuenta, sus enlaces, renovar y las versiones nuevas (gratis mientras la estrategia
+no ha caducado), el script del propietario, las favoritas; y el zip de un pedido entero."""
 import csv
 import io
 import time
@@ -126,15 +126,16 @@ def test_a_spent_link_opened_in_the_browser_goes_back_to_the_shop(app, client, s
 
 
 def test_the_newest_purchase_comes_first_and_a_row_is_its_first_purchase(app):
-    """Lo último arriba, también el mismo día; y una estrategia comprada dos veces dice la fecha y el pedido
-    de la primera compra, no la fecha de una y el pedido de otra."""
+    """Lo último arriba, también el mismo día; y una estrategia comprada dos veces (suelta y después en un lote: suelta
+    no se vende otra vez, E8) dice la fecha y el pedido de la primera compra, no la fecha de una y el pedido de otra."""
     ana = signed(app, "ana@example.com")
     first = buy(ana, [AAPL])["order_id"]
     time.sleep(1.1)  # los segundos de la hora de cada pedido
     buy(ana, [MSFT])
     assert [x["id"] for x in my(ana)["items"]] == [MSFT, AAPL]
     time.sleep(1.1)
-    buy(ana, [AAPL])
+    order = ana.post("/api/orders", json={"bundles": ["duo"]})        # AAPL y MSFT otra vez, en el lote
+    assert order.status_code == 200 and ana.post(f"/api/orders/{order.json['id']}/capture").status_code == 200
     aapl = next(x for x in my(ana)["items"] if x["id"] == AAPL)
     assert aapl["order"] == first
 
@@ -294,3 +295,71 @@ def test_one_script_through_two_links_is_sent_and_counted_once(app, settings):
     assert zipfile.ZipFile(io.BytesIO(r.data)).namelist() == [f"Tuisku_{AAPL}.pine"]
     with app.app_context():
         assert (downloads.find_link(new).count, downloads.find_link("third-link-token").count) == (1, 0)
+
+
+def published_again(app, settings, paypal, versions: dict, expiries: dict):
+    """El catálogo publicado otra vez: ``versions`` (ticker → versión) y la «Expiry date» de la cabecera de la vista
+    previa de cada una (``expiries``, ticker → 'AAAA/MM/DD'), en una carpeta static de la prueba. Y la tienda,
+    arrancada otra vez con él."""
+    with open(settings.catalogue, newline="") as f:
+        rows = list(csv.DictReader(f, delimiter="\t"))
+    settings.static = settings.catalogue.parent.parent / "static"
+    previews = settings.static / "assets" / "previews"
+    previews.mkdir(parents=True, exist_ok=True)
+    for r in rows:
+        r["version"] = str(versions.get(r["ticker"], 1))
+        r["pine_path_shadow"] = f"assets/previews/{r['ticker']}.pine"
+        if r["ticker"] in expiries:
+            sid = f"{r['ticker']}_{r['interval']}_{r['key_techs']}_{r['id_model']}"
+            (previews / f"{r['ticker']}.pine").write_text(
+                f"//Welcome to © Tuisku Trading Strategy\n\n// ID_model: {sid} Date Creation: 2026/10/13 Expiry date: "
+                f"{expiries[r['ticker']]} (no new trades after it; download the updated version)\n//@version=5\n")
+    with open(settings.catalogue, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter="\t")
+        w.writeheader()
+        w.writerows(rows)
+    install(app, settings, paypal)
+
+
+def test_an_update_is_free_until_the_strategy_expires(app, client, settings, paypal, free_file):  # noqa: F811
+    """Decisión del dueño (2026-10-26): «Obtener la actualización» es gratis mientras la estrategia no ha caducado,
+    según la «Expiry date» de la cabecera de su script (la línea de su vista previa pública). Después, Mis estrategias
+    no la ofrece (``update`` es null) y #16 no da la versión nueva (403 errUpdateExpired), tampoco con el enlace de la
+    de antes caducado: la tienda guarda sólo el script de hoy, y el enlace nuevo lo daría. Renovar el enlace de la
+    versión comprada, cuando es la de hoy, sigue valiendo aunque haya caducado. Una gratis se actualiza siempre: se
+    pide otra vez sin pagar. Hoy ninguna pasa de la v1: con una v2 inventada."""
+    TSLA, NVDA = "TSLA_1Day_1C00_dddd4444", FREE_ID
+    ana = signed(app, "ana@example.com")
+    buy(ana, [AAPL, MSFT])
+    settings.download_days = -1                       # nacido caducado: el de TSLA se renueva
+    buy(ana, [TSLA])
+    assert claim(ana, "ana@example.com").json == {"sent": True}
+    settings.download_days = 7
+    published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2, "NVDA": 2},
+                    {"AAPL": "2099/01/01", "MSFT": "2020/01/01", "TSLA": "2020/01/01", "NVDA": "2020/01/01"})
+    with app.app_context():
+        from edgefolio.shop import of
+        cat = of(app).catalogue
+        assert [cat.resolve(i).expired for i in (AAPL, MSFT, TSLA)] == [False, True, True]
+        assert cat.resolve(AAPL).expiry.isoformat() == "2099-01-01"
+    items = {i["id"]: i for i in my(ana)["items"]}
+    assert (items[AAPL]["update"], items[MSFT]["update"], items[TSLA]["update"], items[NVDA]["update"]) == (2, None, None, 2)
+    got = ana.post("/api/mine/renew", json={"id": AAPL}).json
+    assert got["version"] == 2 and got["update"] is None, "sin caducar: la versión nueva, gratis"
+    refused = ana.post("/api/mine/renew", json={"id": MSFT})
+    assert refused.status_code == 403 and refused.json == {"error": "errUpdateExpired"}
+    assert next(i for i in my(ana)["items"] if i["id"] == MSFT)["version"] == 1, "la de antes, como estaba"
+    renewed = ana.post("/api/mine/renew", json={"id": TSLA}).json
+    assert renewed["valid"] and renewed["version"] == 1, "el enlace de la versión comprada, aunque haya caducado"
+    free = ana.post("/api/mine/renew", json={"id": NVDA}).json
+    assert free["version"] == 2 and free["kind"] == "free", "una gratis, siempre"
+
+
+def test_every_published_strategy_says_when_it_expires(real_app):
+    """La caducidad de cada estrategia del catálogo publicado sale de la cabecera de su vista previa (el generador la
+    escribe en cada script): todas la dicen, y es después de su publicación."""
+    from edgefolio.shop import of
+    catalogue = of(real_app).catalogue
+    assert len(catalogue) > 0
+    for s in catalogue:
+        assert s.expiry and s.release_date and s.expiry > s.release_date, s.id

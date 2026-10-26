@@ -42,7 +42,9 @@ export function renderVals(app) {
   // la explicación de la nota dice desde cuántas operaciones es cada letra (GRADE_CUTOFFS, del servidor)
   const cuts = Array.isArray(cfg.grade_cutoffs) && cfg.grade_cutoffs.length === 3 ? cfg.grade_cutoffs : null;
   const gradeCuts = cuts ? ' ' + t('gradeCuts', { a: f.int(cuts[0]), b: f.int(cuts[1]), c: f.int(cuts[2]) }) : '';
-  const c = { app, s, t, tx, f, lang, rtl, contact, nppTop, liveOn, gradeCuts };
+  // lo que ya es de la cuenta (API #15, Mis estrategias; sin sesión, nada), por id
+  const mine = new Map(((s.mine && s.mine.items) || []).map(x => [x.id, x]));
+  const c = { app, s, t, tx, f, lang, rtl, contact, nppTop, liveOn, gradeCuts, ownedOf: id => mine.get(id) || null };
   c.mk = r => rowVals(c, r);
   const cart = cartVals(c); // also gives c.inCart and c.toggleCart, which every row uses
   const shop = shopVals(c);
@@ -85,6 +87,9 @@ function rowVals(c, r) {
   const { app, s, t, tx, f } = c;
   const id = r.id, inCart = c.inCart(id), open = s.expanded === id;
   const fav = s.favs.includes(id), cmp = s.compare.includes(id);
+  // ya es de la cuenta: «Ya es tuya», nunca «Comprar» (el servidor tampoco la vende suelta: errAlreadyOwned, E8); su
+  // .pine si el enlace vale y es la versión de hoy, si no Mis estrategias (que da otro enlace o la actualización)
+  const own = c.ownedOf(id), ownedPine = own && own.url && !own.update ? own.url : '';
   const live = r.live;
   const tipFor = m => () => app.setState(st => ({ tip: st.tip === id + ':' + m ? '' : id + ':' + m }));
   const openAt = tab => e => { stop(e); app.go({ page: 'detail', detail: id, detTab: tab }); };
@@ -124,6 +129,11 @@ function rowVals(c, r) {
     tabHref: strategyPath(id), treeHref: strategyPath(id, true),
     indUrl: r.ind_url || 'https://www.tradingview.com/scripts/',
     onFree: e => { stop(e); app.openFree(id); },
+    isOwned: !!own, canBuy: r.price > 0 && !own, canClaim: r.price === 0 && !own,
+    ownedLabel: t('ownedYours') + ' · ' + (ownedPine ? tx.download : tx.myStrategies), ownedHref: ownedPine || '/mine',
+    // Mis estrategias sin recargar la página, salvo que se pida en otra pestaña o ventana (Ctrl, Cmd, Mayús); el clic
+    // no abre ni pliega la fila de la Tabla
+    ownedGo: e => { stop(e); if (ownedPine || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; e.preventDefault(); app.goMine(); },
     tipOpen: s.tip.startsWith(id + ':'),
     tipText: s.tip === id + ':npp' ? t('expNpp') : s.tip === id + ':win' ? t('expWin') : t('expTrades'),
     tipNpp: tipFor('npp'), tipWin: tipFor('win'), tipTrades: tipFor('trades'), tipClose: () => app.setState({ tip: '' })

@@ -195,10 +195,17 @@ def thumb(stem):
 
 # ── comprar ──────────────────────────────────────────────────────────────────
 
+def owned_now() -> set:
+    """Las claves de lo que ya tiene la cuenta con la sesión abierta, lo de Mis estrategias (sus compras y sus
+    gratis, y las de sus correos demostrados): suelta, no se vende otra vez. Sin sesión, nada."""
+    uid = user_id()
+    return set(mine.owned(uid, proofs.proven(uid))) if uid is not None else set()
+
+
 @bp.post("/api/quote")
 @public
 def quote():
-    return jsonify(orders.priced(shop(), orders.cart_of(request.get_json(silent=True))).as_dict())
+    return jsonify(orders.priced(shop(), orders.cart_of(request.get_json(silent=True)), owned_now()).as_dict())
 
 
 @bp.post("/api/orders")
@@ -211,7 +218,7 @@ def create_order():
     user = signed_in()
     created = orders.create(shop(), cart, buyer, return_url=link("edgefolio.thanks"),
                             cancel_url=link("edgefolio.index", checkout="cancel"),
-                            user_id=user.id if user else None, email=user.email if user else "")
+                            user_id=user.id if user else None, email=user.email if user else "", owned=owned_now())
     response = jsonify(created)
     response.set_cookie(BUYER_COOKIE, buyer, max_age=orders.BUYER_DAYS * 86400, path="/", httponly=True,
                         samesite="Lax", secure=bool(current_app.config.get("SESSION_COOKIE_SECURE", True)))

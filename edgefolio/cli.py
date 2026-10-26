@@ -4,8 +4,8 @@
     import PAQUETE [--scripts DIR | --skip-scripts] [--prune]
                                 publica un paquete del generador: catálogo, ficheros y scripts (release.py)
     restore-scripts [--force]   copia los scripts de pago a la carpeta privada desde la historia del repo
-    fx-update                   los cambios de moneda del día (del BCE)
-    send-alerts                 los avisos de las favoritas (una vez al día)
+    fx-update                   los cambios de moneda del día (del BCE), a mano: el reloj del núcleo los trae solo
+    send-alerts                 los avisos de las favoritas, a mano: el reloj del núcleo los manda cada día
     subscribers                 quién ha confirmado las novedades (CSV)
 
 Los scripts de pago no están en el repo, sólo en su historia (``git checkout c3fa796 --
@@ -154,28 +154,34 @@ def register(bp):
 
     @bp.cli.command("fx-update")
     def fx_update():
-        """Los cambios del día del BCE, para los precios «≈» en la moneda de quien mira."""
-        import httpx
-
+        """Los cambios del día del BCE, para los precios «≈» en la moneda de quien mira (el reloj del núcleo los trae
+        cada día laborable: la tarea fx_update)."""
         from . import fx
         out = shop().settings.fx_today
         try:
             data = fx.fetch()
-        except (httpx.HTTPError, KeyError, ValueError) as e:
+        except fx.FAILURES as e:
             raise click.ClickException(f"sin cambios nuevos ({out.name} sigue como estaba): {e}") from e
-        out.parent.mkdir(parents=True, exist_ok=True)
         fx.write(data, out)
         click.echo(f"{out}: {len(data['rates'])} cambios del {data['date']}")
 
     @bp.cli.command("send-alerts")
     def send_alerts():
-        """Los avisos de las favoritas: una vez al día (la primera vez sólo apunta cómo está el catálogo)."""
-        from zlecitool_core.http import public_base
+        """Los avisos de las favoritas (el reloj del núcleo los manda cada día: la tarea send_alerts; la primera vez
+        sólo apunta cómo está el catálogo)."""
         from zlecitool_core.mail import send
 
         from . import alerts
-        base = public_base() or f"http://localhost:{os.environ.get('PORT', '5105')}"
-        result = alerts.run(shop(), base, send)
+        from .tasks import public_link
+
+        def link(endpoint, **values):
+            try:
+                return public_link(endpoint, **values)
+            except RuntimeError as e:
+                raise click.ClickException(f"{e} (en desarrollo, ZLECITOOL_INSECURE_COOKIES=1 da los de "
+                                           "http://localhost:<PORT>)") from e
+
+        result = alerts.run(shop(), link, send)
         if result["first_run"]:
             click.echo("primera vez: apuntado cómo está el catálogo; los avisos salen desde la próxima")
         else:

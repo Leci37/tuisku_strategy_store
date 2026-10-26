@@ -63,12 +63,14 @@ export function pageVals(c) {
   };
 }
 
-// cada aviso, con sus textos <aviso>Title y <aviso>Text; proofProven: se pidió la prueba de un correo que la
-// cuenta ya demostró (app.askProof)
+// cada aviso, con sus textos <aviso>Title y <aviso>Text (o el texto que diga); proofProven: se pidió la prueba de
+// un correo que la cuenta ya demostró (app.askProof); cartUpdated: el carrito llevaba lo que ya es de la cuenta y la
+// página lo quitó (el rechazo del servidor, errAlreadyOwned, es su texto: app.dropOwned)
 const NOTICES = {
   newsConfirmed: ['fa-solid fa-circle-check', '#12b76a'],
   newsExpired: ['fa-solid fa-circle-info', '#9fb8ef'],
-  proofProven: ['fa-solid fa-circle-check', '#12b76a']
+  proofProven: ['fa-solid fa-circle-check', '#12b76a'],
+  cartUpdated: ['fa-solid fa-circle-check', '#12b76a', 'errAlreadyOwned']
 };
 
 function noticeVals(c, at) {
@@ -77,7 +79,7 @@ function noticeVals(c, at) {
   if (!n || s.error) return { noticeOpen: false };
   return {
     noticeOpen: true, noticeIcon: n[0], noticeColor: n[1],
-    noticeTitle: t(s.notice + 'Title'), noticeText: t(s.notice + 'Text'), noticeTop: at.top, noticeBottom: at.bottom,
+    noticeTitle: t(s.notice + 'Title'), noticeText: t(n[2] || s.notice + 'Text'), noticeTop: at.top, noticeBottom: at.bottom,
     closeNotice: () => app.setState({ notice: '' })
   };
 }
@@ -104,13 +106,10 @@ function detailVals(c) {
   const tree = s.detTab === 'tree';
   if (!r) return { isDetail: false, det: {}, detOverview: !tree, detTreeTab: tree };
   const det = { ...c.mk(r), profit: r.profit, candle: r.candle };
-  const owned = ((s.mine && s.mine.items) || []).find(x => x.id === r.id);
-  // «Update available» is for whoever bought an older version (My strategies says which: update), not for
-  // every visitor; a free download is renewed with the new version anyway
+  const owned = c.ownedOf(r.id);
+  // «Actualización disponible», solo para quien compró una versión anterior (lo dice Mis estrategias: update, y solo
+  // mientras la estrategia no ha caducado), no para cualquiera; una gratis renovada ya trae la versión nueva
   const detOwnOld = !!(owned && owned.update && owned.kind === 'paid');
-  // ya es de la cuenta (API #15): en vez de comprarla o pedirla otra vez, su .pine si el enlace vale y es la
-  // versión de hoy; si no, Mis estrategias, que da otro enlace o la versión nueva. El diseño no tiene este estado
-  const ownedPine = owned && owned.url && !owned.update ? owned.url : '';
   // una gratis no se compra: te llega por correo (el diseño dice «compras» también en ella)
   const free = r.price === 0;
   // lines 5–16 sharp, 17–21 fading out, as the design's preview
@@ -121,9 +120,9 @@ function detailVals(c) {
   const dash = '—';
   return {
     isDetail: true, det, detOverview: !tree, detTreeTab: tree, detOwnOld,
-    detOwned: !!owned, ownedLabel: t('ownedYours') + ' · ' + (ownedPine ? tx.download : tx.myStrategies), ownedHref: ownedPine || '/mine',
-    // Mis estrategias sin recargar la página, salvo que se pida en otra pestaña o ventana (Ctrl, Cmd, Mayús)
-    ownedGo: e => { if (ownedPine || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; e.preventDefault(); app.goMine(); },
+    // ya es de la cuenta (API #15): «Ya es tuya» como en las listas (rowVals), sin el precio encima (decisión del dueño):
+    // su .pine si el enlace vale y es la versión de hoy; si no, Mis estrategias. El diseño no tiene este estado
+    detOwned: det.isOwned, ownedLabel: det.ownedLabel, ownedHref: det.ownedHref, ownedGo: det.ownedGo,
     showOverview: () => app.go({ detTab: 'overview' }, { scroll: false }), showHowTab: () => app.showHow(),
     ovBg: !tree ? '#0950e3' : '#e9f0fd', ovColor: !tree ? '#ffffff' : '#0950e3', ovLine: '#0950e3',
     hwBg: tree ? '#0e7c98' : '#e3f4f8', hwColor: tree ? '#ffffff' : '#0e7c98', hwLine: '#0e7c98',

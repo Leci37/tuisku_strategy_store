@@ -56,7 +56,8 @@ def load_catalogue(settings: Settings) -> Catalogue:
     paths = (settings.catalogue, settings.indicators, settings.bundles, settings.since_release,
              Path(settings.catalogue).parent / "release.json")
     stamp = tuple((str(p), hashlib.sha1(p.read_bytes()).hexdigest() if p.is_file() else None) for p in map(Path, paths))
-    key = (stamp, settings.new_days, tuple(settings.grade_cutoffs))
+    # la carpeta static: de sus vistas previas sale la caducidad de cada script
+    key = (stamp, settings.new_days, tuple(settings.grade_cutoffs), str(settings.static))
     if key not in _catalogues:
         if len(_catalogues) > 8:
             _catalogues.clear()

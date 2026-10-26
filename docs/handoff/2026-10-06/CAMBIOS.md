@@ -239,10 +239,14 @@ Se queda como está; el diseño no lo enseña o lo simula:
   correo.» y «Formatos incluidos. Te llegan por correo y están en Mis estrategias.» (`scriptRestFree`,
   `buyScriptTitleFree`, `fmtPineDescFree`, `formatsNoteFree`). El diseño pone los de compra también en ella.
 - **Una estrategia que ya es de la cuenta** (con la sesión abierta, lo dice Mis estrategias, API #15) lleva
-  «Ya es tuya · Descargar», el enlace de su .pine, en vez de «Añadir al carrito» o «Descargar»; si el enlace
+  «Ya es tuya · Descargar», el enlace de su .pine, en vez de «Añadir al carrito», «Comprar» o «Descargar», y sin el
+  precio (decisiones del dueño del 2026-10-26, E8): en su ficha, en las fichas de Lite y en las Filas y Fichas de
+  Pro; en la Tabla de Pro, un ✓ verde en lugar del carrito, con ese nombre, y el precio en su columna. Si el enlace
   caducó, se gastó o hay una versión nueva, «Ya es tuya · Mis estrategias», que lleva allí sin recargar
-  (`ownedYours`, `data-ef-owned` en `detail.js`). El diseño no tiene ese estado. El servidor la sigue
-  presupuestando: si se puede comprar dos veces lo decide el dueño.
+  (`ownedYours`, `data-ef-owned`; `isOwned`, `canBuy` y `canClaim` de `vals.js`, en `detail.js`, `lite.js` y
+  `pro.js`). El servidor tampoco la vende suelta: un carrito que la lleva (el de antes de entrar, el de otra
+  pestaña) recibe `errAlreadyOwned`, y la página la quita y lo dice el aviso «Carrito actualizado»
+  (`cartUpdatedTitle`, `app.dropOwned`). En un lote o en el pack sí se vende. El diseño no tiene ese estado.
 - **El título de la pestaña** dice qué estrategia es («Snowflake · SNOW · 1BOL · 1Day · Edgefolio», con
   «Cómo decide» delante de «Edgefolio» en su pestaña): lo pone el servidor, también para la vista previa de
   un enlace (`og:title`), y la página al moverse por la tienda o cambiar de idioma (`app.tabTitle`). En la
@@ -264,13 +268,18 @@ Se queda como está; el diseño no lo enseña o lo simula:
   `aria-invalid`, como la gratis (`mine.js`, `proofErrOn`): vacío o mal escrito (`errEmailRequired`,
   `errEmailInvalid`, del núcleo) y el rechazo del servidor a la dirección. El campo se puede vaciar, Intro no
   manda mientras se compone en zh/hi, «Hecho» se queda también cuando el bloque salió por un enlace usado, y
-  un correo que la cuenta ya demostró lo dice el aviso `proofProven`, sin pedir nada. El diseño no tiene el
-  bloque.
+  un correo que la cuenta ya demostró lo dice el aviso `proofProven`, sin pedir nada. «Hecho» se anuncia: va con el
+  título del bloque en una región viva (`aria-live="polite"`), que ya está en la página antes de pedir el enlace.
+  El diseño no tiene el bloque.
 - **Un aviso nunca tapa un diálogo abierto:** con uno abierto, el aviso va arriba (`errTop`, `noticeTop`) y el
-  velo le deja su sitio: su `padding-top` y los `max-height` de Comparar, el pack y el tutorial descuentan
+  velo le deja su sitio: su `padding-top` y los `max-height` de Comparar, el pack, el tutorial y la gratis descuentan
   `toastRoom`, el alto del aviso, que mide `app.measureDock` por `data-ef-toast` (`dialogs.js`). En un móvil,
   encima del carrito flotante, el aviso tapaba «Enviarme el enlace» de la gratis, y el selector del pack (90vh)
   no le dejaba sitio ni arriba ni abajo. Los avisos no están en el diseño.
+- **La gratis se desliza por dentro** cuando mide más que la pantalla: en un móvil tumbado (844×390), en alemán o
+  en francés, con el error bajo el campo o con un aviso arriba. Mide como mucho la ventana menos el velo
+  (`max-height` en `100vh` y, donde se entiende, en `100dvh`, lo que se ve con la barra del navegador; `dialogs.js`):
+  antes se salía por abajo, y «Enviarme el enlace» con ella. En el diseño no se desliza.
 - **Si el código del árbol no llega** (`tree.js`, sin red), pulsar otra vez «Cómo decide» o volver a su pestaña
   lo pide de nuevo, en otra dirección (`tree.js?retry=N`: Chromium recuerda el fallo), nunca solo; cuando
   llega, el aviso de red que dejó el fallo se va (`app.loadTree`, `showHow`). El diseño no tiene ese estado.
@@ -324,8 +333,13 @@ Se queda como está; el diseño no lo enseña o lo simula:
 | 10 | Los tramos en USD y los totales en moneda local | Igual; se paga en USD («Pagas X US$ con PayPal») |
 | 11 | Revisión nativa de zh, ar e hi | Pendiente, también para los textos nuevos de 2026-10: `tour1Pro`, los plurales de `shown` y `selectedN`, `ownedYours`, los cuatro de una gratis en la ficha, `proofProvenTitle` / `proofProvenText`, y en el árbol los 22 `pat`, `ownFull`, `ownFail`, `fOwnSignIn`, `fOwnNotYours`, `ownedRest`, `ownedLock`, `ownedBtn` y `whatIs` |
 
-Y la de la pantalla 8: **¿«Obtener la actualización» se paga?** Hoy no hay versiones más allá de la v1;
-renovar un enlace da la versión de hoy. Si se paga, hace falta un script por versión y un pedido.
+Y la de la pantalla 8: **¿«Obtener la actualización» se paga?** Decidido (2026-10-26): es gratis mientras la
+estrategia no ha caducado, según la «Expiry date» de la cabecera de su script (la línea de su vista previa pública;
+hoy, 13 jun 2027 en las 94). Después, Mis estrategias no la ofrece, la ficha no dice «Actualización disponible» y
+API #16 no da la versión nueva (`errUpdateExpired`); renovar el enlace de la versión comprada sigue valiendo. Una
+gratis se actualiza siempre. Hoy no hay versiones más allá de la v1. La tienda guarda un script por estrategia, el
+de hoy: con una versión nueva publicada y la estrategia caducada, a quien tiene una de antes no le da ningún enlace
+nuevo (le daría la nueva).
 
 **Y las del dueño, abiertas** (salieron del recorrido de 2026-10-25 y 2026-10-26; la tienda no las decide):
 
@@ -344,11 +358,13 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
   «Pareja Amazon», AMZN 1S00 y 2MV0 de 1Day (138 US$, por 119 US$).
 - **Las condiciones de TradingView** (§23: desde el 2026-11-01, los scripts solo se venden en su Marketplace)
   y las normas de la UE y de España para vender estrategias.
-- **`fx-update` y `send-alerts`** siguen con `cron`, en un solo servidor; pasarlos a `"schedule"` del
-  núcleo está pendiente.
-- **Una estrategia que ya es de la cuenta se vuelve a vender.** La ficha y el árbol dicen «Ya es tuya», pero
-  el presupuesto y el pedido no lo miran: desde las tarjetas de Lite o de Pro se cobra otra vez. Negarlo
-  (p. ej. `errAlreadyOwned`) es una regla de negocio.
+- **`fx-update` y `send-alerts`:** hecho (2026-10-26, E4): son las tareas `fx_update` (los días laborables a las
+  17:00 de Madrid, después del BCE) y `send_alerts` (cada día a las 09:00) del reloj del núcleo (`"schedule"` de
+  `tool.json`, `edgefolio/tasks.py`), una vez entre todos los procesos y servidores; sin cron. Los comandos
+  siguen, para correrlos a mano.
+- **Una estrategia que ya es de la cuenta se vuelve a vender:** decidido (2026-10-26, E8): suelta, no (el
+  presupuesto y el pedido la rechazan con `errAlreadyOwned`, y la página la quita del carrito); en un lote o en el
+  pack, sí. Las fichas de Lite y de Pro dicen «Ya es tuya», como la suya (ver «a propósito»).
 - **El árbol del visitante** se colorea con 0,55 y −0,9 (los niveles de los scripts de 2024), porque la
   vista previa se corta antes de los de cada script: en 131 de los 143 árboles visibles algún resultado
   sale de otro color que su comentario. Publicar los niveles de cada script lo decide el dueño.
@@ -357,13 +373,13 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
   propósito») y vuelve sola con la primera. El import copia el `since_release.csv` (`id`, `pct`, `as_of`) de un
   paquete cuando el generador lo escriba, y con `--prune` borra uno de antes si el paquete no trae otro.
 - **Un clic en el velo oscuro** de los diálogos de la tienda (el recorrido de bienvenida, el tutorial de
-  instalación, el selector del pack, Comparar y el diálogo de la gratis), ¿debería cerrarlos? Hoy no los
-  cierra: lo hacen Esc y la × (o «Hecho» en el selector del pack, que no tiene ×).
+  instalación, el selector del pack, Comparar y el diálogo de la gratis): decidido (2026-10-26): se queda como
+  está, sin cerrarlos; los cierran Esc y la × (o «Hecho» en el selector del pack, que no tiene ×).
 - **Contenido y traducciones:** la explicación de cada indicador (`catalogue/indicators.csv`, solo en
   inglés) y las 44 descripciones del árbol (`static/trees/features.json`, solo en es y en); los nombres y
   descripciones de los 139 valores del árbol que salen con su código; la revisión nativa de zh, ar e hi
-  (pregunta 11); «Tree Deep» en inglés (para el diseño); si el precio sigue encima de «Ya es tuya» en la
-  ficha; y si una actualización se paga (la pregunta de arriba).
+  (pregunta 11); y «Tree Deep» en inglés (para el diseño). Decidido (2026-10-26): el precio ya no sale encima de
+  «Ya es tuya», y una actualización es gratis mientras la estrategia no ha caducado (la pregunta de arriba).
 
 ## Para el núcleo
 
@@ -384,8 +400,10 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
    tiene en memoria (la lista de Comparar, los filtros).
 5. **Hecho en el núcleo:** el alto de la barra fija es `--zt-bar-h` / `--zt-sticky-top` (0.24, con su
    `scroll-padding-top`) y la barra de abajo de una herramienta lleva `data-zt-bottom` (0.28), que la tienda
-   ya usa (`views/phonebar.js`; su `body.app-shell{padding-bottom:64px}` se quitó con el núcleo 0.30). Queda
-   en la tienda: `app.scrollUnderHeader` aún lee `header.app-topbar` en vez de `--zt-sticky-top`.
+   ya usa (`views/phonebar.js`; su `body.app-shell{padding-bottom:64px}` se quitó con el núcleo 0.30), y
+   `app.scrollUnderHeader` (el buscador y el carrito de Pro desde la barra de abajo) lee `--zt-sticky-top` y
+   `--zt-sticky-h`: antes medía `header.app-topbar`, también cuando la barra se suelta (una pantalla baja), y lo
+   dejaba su alto más abajo.
 6. **La barra en dos filas con la sesión abierta.** Con una cuenta, el chip de la cuenta enseña el correo
    entero y, con los chips de la herramienta, la barra sólo cabe en 1320 px con un correo corto: hasta unos
    136 px en español (unos 23 caracteres; «cuenta@example.com» cabe) y unos 145 px en inglés. Con uno más
@@ -411,7 +429,7 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 
 ## Pruebas
 
-- `pytest`, hoy (2026-10-26): 287 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
+- `pytest`, hoy (2026-10-26): 305 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
   están en la máquina), con Chromium; sin él, las pruebas en un navegador se saltan y no prueban nada. Las
   de los arreglos del recorrido de 2026-10-25: `tests/test_keyboard.py` (los diálogos y el teclado),
   `tests/test_lists_cart.py` (Lite, el carrito, el recorrido y Gracias), `tests/test_scales.py` (las escalas
@@ -421,6 +439,13 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
   `tests/test_listing_page.py` (el aviso de sobreajuste, la explicación de la nota y «Desde su publicación», sin
   cifras y con una) y lo nuevo de `test_publish.py`, `test_release.py`, `test_search.py`, `test_bundles.py` y
   `test_mine.py` (lo comprado de una estrategia que salió del catálogo: no se enseña ni se entrega, sin romper nada).
+  Las de las decisiones sobre comprar, las actualizaciones y los trabajos diarios (E8, E4…):
+  `tests/test_buying_page.py` («Ya es tuya» en Lite y en Pro, el carrito que la pierde con su aviso, la ficha sin
+  precio, Gracias sin rechazar lo que se acaba de pagar, la actualización solo hasta la caducidad, la gratis en un
+  móvil tumbado, «Hecho» anunciado y el buscador de Pro bajo la barra, también en una pantalla baja), `tests/test_tasks.py` (las dos tareas del reloj, dos veces
+  la misma vez, `testing.tick`, sin dirección pública y con una cuenta borrada) y lo nuevo de `test_orders.py`
+  (`errAlreadyOwned`), `test_mine.py` (`errUpdateExpired` y la caducidad de cada estrategia publicada),
+  `test_alerts.py`, `test_strategy_page.py` y `test_page_code.py`.
 - Con esta exportación eran 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
   cada valor, campo y texto que leen las vistas lo da `static/js`; los textos en los 8 idiomas con las
   mismas variables y sin claves del núcleo; los ganchos `data-search` y `data-sf-cart`); en

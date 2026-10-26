@@ -326,8 +326,8 @@ Sin sesión, un script recibe `401 {"error": "errLoginRequired"}` en lo que la p
 flask --app app edgefolio import PAQUETE [--scripts DIR | --skip-scripts] [--prune]
                                                       # un paquete del generador (ver «Publicar un catálogo nuevo»)
 flask --app app edgefolio restore-scripts [--force]   # los scripts de pago, de la historia del repo
-flask --app app edgefolio fx-update                   # los cambios del día del BCE (una vez al día)
-flask --app app edgefolio send-alerts                 # los avisos de las favoritas (una vez al día)
+flask --app app edgefolio fx-update                   # los cambios del día del BCE, a mano (el reloj los trae solo)
+flask --app app edgefolio send-alerts                 # los avisos de las favoritas, a mano (el reloj los manda solo)
 flask --app app edgefolio subscribers                 # quién confirmó las novedades, en CSV
 ```
 
@@ -341,8 +341,13 @@ tienda en un repo nuevo (o reescribir la historia) antes de volver a vender.
 `send-alerts` compara el catálogo con la vuelta anterior y manda un correo por persona con lo nuevo de
 sus favoritas (versión nueva, bajada de precio, un lote nuevo); la primera vez sólo apunta cómo está.
 `fx-update` escribe `<datos>/edgefolio/fx.json`; hasta entonces valen los cambios de ejemplo de
-`catalogue/fx.json`. Los dos, con cron (o el programador del alojamiento) y el mismo entorno que el
-servidor.
+`catalogue/fx.json`. Los dos los hace solos el reloj del núcleo (`"schedule"` de `tool.json`, núcleo 0.25),
+una vez entre todos los procesos y servidores: `fx_update` los días laborables a las 17:00 de Madrid
+(después de que publique el BCE) y `send_alerts` cada día a las 09:00. Sin cron: los comandos son para
+correrlos a mano (una vez del reloj que falló, otra vez: `flask --app app zt task run fx_update`). Las dos
+tareas apuntan cada vez hecha en `edgefolio_task_done`: si se repite, no hace nada. Los enlaces de los avisos
+necesitan `ZLECITOOL_PUBLIC_URL`: sin ella, en producción, la vez falla («Sistema» y el aviso de errores)
+y no manda nada.
 
 ## Configuración
 
@@ -540,7 +545,9 @@ Otras dos formas, sin Flask (sólo pandas):
    reloj del núcleo vive en cada proceso, y con él «Tus datos». Las tablas se crean solas. «Borrar mi
    cuenta» sale sola cuando todas las herramientas de la base de datos van en la 0.30 o más nueva y han
    latido; después de volver a una copia, `flask --app app zt privacy reclose` antes de abrir las puertas.
-7. **Los trabajos diarios**: `flask --app app edgefolio send-alerts` y `fx-update`, con cron.
+7. **Los trabajos diarios** los hace el reloj del núcleo (las tareas `fx_update` y `send_alerts` de
+   `tool.json`), en los mismos procesos de gunicorn: nada de cron. Si había un cron de `send-alerts` o
+   `fx-update`, se quita.
 8. **Los datos de la versión FastAPI** (`private/shop.db`) no se traen solos: sus pedidos no tienen cuenta
    del núcleo, así que pasarían a ser pedidos sin cuenta (que cada comprador ve al demostrar su correo).
    Si hace falta, se copian a `edgefolio_order` / `edgefolio_download` con un guion de una vez.

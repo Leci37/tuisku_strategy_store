@@ -223,10 +223,11 @@ def test_the_tree_tab_tries_again_and_follows_the_cart(real_app):
 
 def test_a_strategy_the_account_has_says_so(real_app):
     """B29: con la sesión abierta, la ficha de una estrategia que ya es de la cuenta dice «Ya es tuya» en vez
-    de «Añadir al carrito» (o «Descargar», en una gratis): su .pine si su enlace vale y es de la versión de
-    hoy; si no, Mis estrategias (que da otro, o la actualización), sin recargar la página. El servidor la
-    sigue presupuestando (decisión del dueño). Y el árbol dice lo mismo: su vista de visitante no la vende ni la
-    pide otra vez («Comprar para desbloquear» la añadía al carrito); su botón lleva a la de propietario."""
+    de «Añadir al carrito» (o «Descargar», en una gratis), sin el precio encima (decisión del dueño, 2026-10-26):
+    su .pine si su enlace vale y es de la versión de hoy; si no, Mis estrategias (que da otro, o la
+    actualización), sin recargar la página. El servidor tampoco la vende suelta (E8, tests/test_orders.py). Y el
+    árbol dice lo mismo: su vista de visitante no la vende ni la pide otra vez («Comprar para desbloquear» la
+    añadía al carrito); su botón lleva a la de propietario."""
     shop = of(real_app)
     free, paid, hourly = pick(real_app)
     other = next(r for r in rows(real_app, "paid=1&size=48")[::-1] if r["id"] not in (paid["id"], hourly["id"]))
@@ -265,6 +266,8 @@ def test_a_strategy_the_account_has_says_so(real_app):
                 assert owned.get_attribute("href") == href
                 buttons = page.evaluate(HEAD_BUTTONS)
                 assert UI["addToCart"]["es"] not in buttons and UI["download"]["es"] not in buttons, buttons
+                head = owned.locator("xpath=..").inner_text()
+                assert not re.search(r"US\$|€|Gratis", head), f"el precio, encima de «Ya es tuya»: {head}"
             assert mobile.contrast_problems(tab, "[data-ef-owned]") == []
             # sin su enlace, a Mis estrategias en la misma página
             page.evaluate("() => { window.__same = true; }")

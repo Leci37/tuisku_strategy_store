@@ -3,7 +3,8 @@
 
 A su lado: indicators.csv (qué es cada indicador, para la página de la estrategia), bundles.json (los
 lotes y sus precios), release.json (de qué ejecución del generador es: entre cuántas estrategias probadas se
-eligieron) y, si existe, since_release.csv: cuánto lleva cada una desde su publicación (id, pct, as_of).
+eligieron) y, si existe, since_release.csv: cuánto lleva cada una desde su publicación (id, pct, as_of). Y de la
+vista previa publicada de cada una (static/assets/previews/), la «Expiry date» de la cabecera de su script.
 """
 from __future__ import annotations
 
@@ -13,8 +14,9 @@ import csv
 import json
 import logging
 import math
+import re
 from dataclasses import dataclass, field, replace
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from functools import cached_property
 from pathlib import Path
@@ -24,6 +26,7 @@ from .settings import GRADE_CUTOFFS, Settings
 log = logging.getLogger(__name__)
 
 TV_SCRIPTS = "https://www.tradingview.com/scripts/"
+EXPIRY = re.compile(r"Expiry date:\s*(\d{4})/(\d{2})/(\d{2})")
 
 # Columna del CSV -> (campo de la fila, tipo). Cualquiera puede faltar o estar vacía: la fila dice null.
 NUMBERS = {
@@ -67,6 +70,22 @@ def grade(trades, cutoffs: tuple = GRADE_CUTOFFS) -> str:
     return "A" if t >= a else "B" if t >= b else "C" if t >= c else "D"
 
 
+def script_expiry(path: Path):
+    """La «Expiry date» de la cabecera de un script (``// ID_model: … Date Creation: … Expiry date: 2027/06/13``, la
+    misma en su vista previa pública), o None sin ella. Desde ese día, a las 00:00 UTC, el script no abre operaciones
+    (``isExpired = time >= expiryTime``)."""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            head = f.read(4096)   # la cabecera son las primeras líneas
+    except OSError:
+        return None
+    m = EXPIRY.search(head)
+    try:
+        return date(int(m[1]), int(m[2]), int(m[3])) if m else None
+    except ValueError:
+        return None
+
+
 def read_release(path: Path) -> dict:
     """release.json, o {} sin él (un catálogo publicado con la forma de antes de los paquetes) o roto."""
     try:
@@ -88,6 +107,7 @@ class Strategy:
     live_as_of: str = None
     new_days: int = 30
     grade_cutoffs: tuple = GRADE_CUTOFFS
+    expiry: date = None       # la «Expiry date» de su script publicado (su vista previa); None si no la dice
 
     @property
     def id(self) -> str:
@@ -147,6 +167,12 @@ class Strategy:
     def is_new(self) -> bool:
         d = self.release_date
         return bool(d) and date.today() - timedelta(days=self.new_days) <= d <= date.today()
+
+    @property
+    def expired(self) -> bool:
+        """Si su script ya caducó (desde su «Expiry date», a las 00:00 UTC, no abre operaciones): su versión nueva
+        deja de darse gratis a quien tiene una de antes (decisión del dueño, 2026-10-26)."""
+        return self.expiry is not None and datetime.now(timezone.utc).date() >= self.expiry
 
     @cached_property
     def numbers(self) -> dict:
@@ -221,6 +247,9 @@ class Catalogue:
                              grade_cutoffs=source.grade_cutoffs)
                 if s.id in live:
                     s = replace(s, live=number(live[s.id].get("pct")), live_as_of=live[s.id].get("as_of") or None)
+                preview = (row.get("pine_path_shadow") or "").strip()
+                if preview:
+                    s = replace(s, expiry=script_expiry(Path(source.static) / preview))
                 if s.key not in self.items:
                     self.items[s.key] = s
                     self.by_id[s.id] = s

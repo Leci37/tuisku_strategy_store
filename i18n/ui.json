@@ -2561,6 +2561,36 @@
     "ar": "هذه الاستراتيجية ليست في حسابك.",
     "hi": "यह रणनीति आपके खाते में नहीं है।"
   },
+  "errAlreadyOwned": {
+    "es": "Lo que ya es tuyo no se vuelve a cobrar: lo hemos quitado del carrito. Está en Mis estrategias.",
+    "en": "What's already yours isn't charged again: we've taken it out of your cart. It's in My strategies.",
+    "pt": "O que já é teu não se volta a cobrar: retirámo-lo do carrinho. Está em As minhas estratégias.",
+    "fr": "Ce qui est déjà à vous n’est pas facturé une seconde fois : nous l’avons retiré du panier. Retrouvez-le dans Mes stratégies.",
+    "de": "Was dir schon gehört, wird nicht noch einmal berechnet: Wir haben es aus dem Warenkorb genommen. Du findest es unter Meine Strategien.",
+    "zh": "已归你所有的策略不会重复收费：我们已将其从购物车中移除，可在“我的策略”中找到。",
+    "ar": "ما هو لك بالفعل لا يُحتسب ثمنه مرة أخرى: أزلناه من السلة، وتجده في استراتيجياتي.",
+    "hi": "जो पहले से आपका है, उसका दोबारा शुल्क नहीं लिया जाता: हमने उसे कार्ट से हटा दिया है। वह मेरी रणनीतियाँ में है।"
+  },
+  "cartUpdatedTitle": {
+    "es": "Carrito actualizado",
+    "en": "Cart updated",
+    "pt": "Carrinho atualizado",
+    "fr": "Panier mis à jour",
+    "de": "Warenkorb aktualisiert",
+    "zh": "购物车已更新",
+    "ar": "تم تحديث السلة",
+    "hi": "कार्ट अपडेट हो गई"
+  },
+  "errUpdateExpired": {
+    "es": "Esta estrategia caducó: su versión nueva ya no está incluida en tu compra.",
+    "en": "This strategy has expired: its new version is no longer included in your purchase.",
+    "pt": "Esta estratégia expirou: a versão nova já não está incluída na tua compra.",
+    "fr": "Cette stratégie a expiré : sa nouvelle version n’est plus incluse dans votre achat.",
+    "de": "Diese Strategie ist abgelaufen: Ihre neue Version ist nicht mehr in deinem Kauf enthalten.",
+    "zh": "该策略已过期：其新版本不再包含在你的购买中。",
+    "ar": "انتهت صلاحية هذه الاستراتيجية: لم يعد إصدارها الجديد مشمولًا في شرائك.",
+    "hi": "इस रणनीति की अवधि ख़त्म हो चुकी है: इसका नया वर्ज़न अब आपकी ख़रीद में शामिल नहीं है।"
+  },
   "errProofExpired": {
     "es": "Ese enlace de confirmación ha caducado, ya se usó o es de otra cuenta. Pide otro.",
     "en": "That confirmation link has expired, was already used or is for another account. Ask for a new one.",

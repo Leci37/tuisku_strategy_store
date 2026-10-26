@@ -221,7 +221,10 @@ export class App extends Component {
     if (s.page === 'detail' && s.detTab === 'tree' && !s.Tree && (!this.treeAsked || (this.treeFailed && changed('page', 'detail', 'detTab')))) this.loadTree();
 
     const body = this.cartBody(), quoteKey = JSON.stringify(body);
-    if (quoteKey !== this.quoteKey) {
+    // de vuelta de PayPal, el carrito espera al cobro: el que paga lo vacía (paid_now), y presupuestar antes lo que se
+    // acaba de comprar daría errAlreadyOwned (E8) y su aviso en la página de gracias
+    const capturing = s.page === 'thanks' && !s.receipt;
+    if (!capturing && quoteKey !== this.quoteKey) {
       this.quoteKey = quoteKey;
       if (body.items.length || body.bundles.length || body.pack.length) this.later('quote', () => this.loadQuote(body, quoteKey), 120);
       else if (s.quote) this.setState({ quote: null });
@@ -413,8 +416,21 @@ export class App extends Component {
       const d = e.detail || {}, gone = d.error === 'errUnknownItems' || d.error === 'errUnknownBundles' ? d.items || d.bundles || [] : [];
       if (e.status === 400 && gone.length) {
         this.setState(st => ({ cart: st.cart.filter(x => !gone.includes(x)), bundles: st.bundles.filter(x => !gone.includes(x)), packIds: st.packIds.filter(x => !gone.includes(x)) }));
-      } else this.fail(e);
+      } else if (!this.dropOwned(e)) this.fail(e);
     });
+  }
+
+  // Lo que ya es de la cuenta no se vende otra vez suelto (E8): el servidor lo rechaza (409 errAlreadyOwned, con los
+  // ids como se mandaron), la página lo quita del carrito y lo dice el aviso (su texto es el del rechazo). Un carrito
+  // de antes de entrar, o de otra pestaña, lo puede llevar. Lotes y pack, no: el servidor no los rechaza.
+  dropOwned(e) {
+    const d = (e && e.detail) || {}, own = Array.isArray(d.items) ? d.items : [];
+    if (e.status !== 409 || d.error !== 'errAlreadyOwned' || !own.length) return false;
+    this.setState(st => ({ cart: st.cart.filter(x => !own.includes(x)), error: '', notice: 'cartUpdated' }));
+    // lo que la página sabía de la cuenta era de antes (una compra en otra pestaña): otra vez, para que sus fichas digan
+    // «Ya es tuya»
+    if (this.signedIn() && !this.mineLoading) this.loadMine(true);
+    return true;
   }
 
   // The code is checked by the server's quote (never here). An empty box takes the code off; applying
@@ -437,7 +453,7 @@ export class App extends Component {
     this.paying = true;
     this.setState({ paying: true });
     post('/api/orders', body).then(o => window.location.assign(o.approve_url))
-      .catch(e => { this.paying = false; this.setState({ paying: false }); this.fail(e); });
+      .catch(e => { this.paying = false; this.setState({ paying: false }); if (!this.dropOwned(e)) this.fail(e); });
   }
 
   // Back from PayPal at /thanks?token=<order>: capturing again is harmless (the server makes it idempotent).
@@ -669,10 +685,13 @@ export class App extends Component {
 
   // ---- phone bar ---------------------------------------------------------------------------------
 
-  // Pone un elemento justo debajo de la barra fija (tapa lo de arriba de la página).
+  // Pone un elemento justo debajo de lo fijo de arriba: lo que mide la barra del núcleo mientras se queda fija
+  // (--zt-sticky-top: 0px en una pantalla baja, de 500 px o menos, donde se suelta) y lo fijo de la tienda debajo
+  // (--zt-sticky-h; hoy, nada). Antes medía header.app-topbar, también suelta: en una pantalla baja, el buscador de
+  // Pro quedaba el alto de la barra más abajo.
   scrollUnderHeader(el) {
-    const header = document.querySelector('header.app-topbar');
-    const top = el.getBoundingClientRect().top + window.scrollY - (header ? header.offsetHeight : 0) - 12;
+    const css = getComputedStyle(document.documentElement), px = name => parseFloat(css.getPropertyValue(name)) || 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - px('--zt-sticky-top') - px('--zt-sticky-h') - 12;
     try { window.scrollTo(0, Math.max(0, top)); } catch (e) { /* not scrollable */ }
   }
 

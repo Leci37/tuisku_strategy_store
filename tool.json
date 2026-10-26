@@ -8,5 +8,10 @@
   "_wordmark": "La marca de la tienda en la barra y en el pie: «Edge» y «folio», con la segunda parte en el color de la herramienta (núcleo 0.23). name_key: el nombre de la herramienta, en el idioma de quien lee.",
   "wordmark": ["Edge", "folio"],
   "name_key": "toolName",
-  "_prices": "Sin prices: la tienda cobra con PayPal, no con créditos. Sin tour: el recorrido de bienvenida y el tutorial de instalación son los del diseño, de la propia página."
+  "_prices": "Sin prices: la tienda cobra con PayPal, no con créditos. Sin tour: el recorrido de bienvenida y el tutorial de instalación son los del diseño, de la propia página.",
+  "_schedule": "Lo que corre solo, una vez al día entre todos los procesos y servidores (el reloj del núcleo, 0.25; antes, cron): los cambios del BCE para el «≈» de los precios, después de que los publique (hacia las 16:00 de Fráncfort, los días laborables), y los avisos de las favoritas. Sus funciones, en edgefolio/tasks.py; a mano, flask --app app edgefolio fx-update | send-alerts.",
+  "schedule": [
+    {"name": "fx_update", "at": "17:00", "tz": "Europe/Madrid", "days": ["mon", "tue", "wed", "thu", "fri"]},
+    {"name": "send_alerts", "at": "09:00", "tz": "Europe/Madrid"}
+  ]
 }

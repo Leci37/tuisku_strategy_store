@@ -14,7 +14,8 @@ de verdad con el kit del núcleo (``testing.mobile``, 0.28) sobre el catálogo d
   en WaveTrend, y ``ema2`` es la media intermedia de la Triple EMA y una de 2 velas en TMA Overlay. Lo mismo en
   los ocho idiomas: el nombre traducido (``feat``) tampoco vale fuera de su patrón.
 - «Comprar para desbloquear» sigue al carrito (la propiedad ``inCart`` de la página; sin ella, como fuera) y
-  añade la estrategia una sola vez.
+  añade la estrategia una sola vez; si ya es de la cuenta (``owned``), «Ver como propietario», que ni la compra ni
+  la pide. La «i» de cada valor dice «¿Qué es …?» en el idioma de la página.
 - El propietario: su script completo colorea los resultados con sus niveles (``buyThreshold``,
   ``sellThreshold``), el visitante con 0,55 y −0,9; «el árbol completo», sea cual sea el del bosque; si su script
   no llega, dónde bajarlo y nunca «Comprar». En una gratis, «pídela» y no «cómprala».
@@ -182,6 +183,7 @@ UNIT = """async ([scripts, preview, foreign]) => {
   return {
     none: unlockWith({}), out: unlockWith({ inCart: false }), in: unlockWith({ inCart: true }),
     free: unlockWith({ strategy: free, inCart: true }),
+    owned: unlockWith({ owned: true }), ownedFree: unlockWith({ strategy: free, owned: true }),
     fr: shown({ lang: 'fr' }).abouts, untranslated: shown({ lang: 'fr' }, { ...ui, fr: { ...ui.fr, pat: {} } }).abouts,
     foreign: ['es', 'fr', 'ar'].map(lang => shown({ lang }, ui, foreign).nodes.filter(n => n.isDec).map(n => n.name)),
     levels: scripts.map(levelsOf)
@@ -282,10 +284,12 @@ def test_every_published_pattern_is_explained_and_every_name_says_its_pattern():
         assert not missing, f"{b}: sin explicación en {missing} (static/trees/ui.json, pat)"
     for lg in OTHERS:
         assert set(UI[lg]["pat"]) == set(FX["patterns"]), lg
-        for key in ("ownFull", "ownFail", "fOwnSignIn", "fOwnNotYours"):
+        for key in ("ownFull", "ownFail", "fOwnSignIn", "fOwnNotYours", "ownedRest", "ownedLock", "ownedBtn", "whatIs"):
             assert UI[lg].get(key), (lg, key)
         # el propietario elige cualquier árbol del bosque: «el árbol completo», no «el primero»
         assert FIRST[lg] not in UI[lg]["ownFull"], (lg, UI[lg]["ownFull"])
+    # la «i» de cada valor dice cuál es, en los 8 idiomas
+    assert all("{f}" in text_of(lg, "whatIs") for lg in ("en", "es") + OTHERS)
     # el quinto campo: sin él, el d__close de WaveTrend saldría como la %D del RSI estocástico
     wrong = {f: e[4:] for f, e in FX["features"].items() if len(e) != 5 or e[4] not in FX["patterns"]}
     assert not wrong, wrong
@@ -333,7 +337,8 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             seen = wait_tree(tab)
             assert seen["about"] == [["ar", UI["ar"]["pat"]["MACD_ULT_MTF"], "rtl"]], seen["about"]
             assert box(seen, "if( signal__close <=").startswith(UI["ar"]["feat"]["signal"]), seen["boxes"]
-            tip = pinned(tab, tab.page.locator('button[aria-label="What is signal__close?"]'))
+            info = UI["ar"]["whatIs"].replace("{f}", "signal__close")
+            tip = pinned(tab, tab.page.locator(f'button[aria-label="{info}"]'))
             assert tip and tip["lang"] == "en" and tip["title"] == UI["ar"]["feat"]["signal"], tip
             assert tip["dir"] == "ltr" and tip["direction"] == "ltr", tip
             assert tip["text"] == FX["features"]["signal"][1] + " " + text_of("en", "relNote"), tip
@@ -354,7 +359,8 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             assert box(seen, "if( macd__close <=").startswith("macd__close"), seen["boxes"]
             assert box(seen, "if( ema2__close <=").startswith(FX["features"]["ema2"][2]), seen["boxes"]
             assert [lang for lang, _, _ in seen["about"]] == ["es", "es"], seen["about"]
-            tip = pinned(tab, tab.page.locator('button[aria-label="What is ema2__close?"]'))
+            info = es("whatIs").replace("{f}", "ema2__close")
+            tip = pinned(tab, tab.page.locator(f'button[aria-label="{info}"]'))
             assert tip and tip["lang"] == "es" and tip["text"] == FX["features"]["ema2"][3] + " " + es("relNote"), tip
             close_tip(tab)
             tab.page.get_by_role("button", name=es("unlockBtn"), exact=True).click()
@@ -367,6 +373,7 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             assert unit["none"] == [es("unlockBtn"), 2] and unit["out"] == [es("unlockBtn"), 2], unit
             assert unit["in"] == [es("added"), 0], unit
             assert unit["free"] == [es("fBtn"), 2], "una gratis abre su diálogo cada vez"
+            assert unit["owned"] == unit["ownedFree"] == [es("ownedBtn"), 0], "la de la cuenta, ni al carrito ni al diálogo"
             assert unit["fr"] == [{"text": UI["fr"]["pat"][b], "lang": "fr", "dir": None} for b in both], unit["fr"]
             assert unit["untranslated"] == [{"text": FX["patterns"][b][0], "lang": "en", "dir": "ltr"} for b in both]
             assert unit["foreign"] == [["d", "macd"]] * 3, \

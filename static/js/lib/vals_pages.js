@@ -122,6 +122,8 @@ function detailVals(c) {
     // si está en el carrito (sola, en un lote o en el pack) lo dice el carrito, no el árbol: quitada con el
     // botón de la cabecera, el árbol vuelve a ofrecer «Comprar para desbloquear»
     treeInCart: c.inCart(r.id),
+    // la × de las explicaciones del árbol, «Cerrar» en el idioma de la página, como las de la tienda
+    treeClose: tx.dialogClose,
     pineLines, pineFile: (r.file || 'strategy') + '.pine',
     detRest: free ? t('scriptRestFree') : tx.scriptRest, detGetTitle: free ? t('buyScriptTitleFree') : tx.buyScriptTitle,
     detFormatsNote: free ? t('formatsNoteFree') : tx.formatsNote,

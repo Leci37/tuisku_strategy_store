@@ -321,11 +321,14 @@ export class App extends Component {
   // Un módulo que no llega es un fallo de red. El navegador recuerda el fallo de su dirección (otro import()
   // falla en el acto, sin pedir nada): cada intento nuevo va a otra (?retry=N). Recuerda también el de una de
   // sus piezas (views/tree/…), que tree.js importa sin ?retry: si falló una de ellas, sólo recargar lo arregla.
+  // Si llega en otro intento, el aviso de red que dejó el fallo ya no es verdad: se va (antes se quedaba encima
+  // del árbol hasta cerrarlo).
   loadTree() {
     const n = this.treeTries || 0;
     this.treeAsked = true;
     this.treeFailed = false;
-    import(n ? './tree.js?retry=' + n : './tree.js').then(m => this.setState({ Tree: m.StrategyTree }))
+    import(n ? './tree.js?retry=' + n : './tree.js')
+      .then(m => this.setState(st => ({ Tree: m.StrategyTree, ...(n && st.error === 'errShopNetwork' ? { error: '' } : {}) })))
       .catch(e => { this.treeTries = n + 1; this.treeFailed = true; this.fail({ network: true, cause: e }); });
   }
 

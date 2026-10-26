@@ -92,7 +92,7 @@ export default function Detail(v) {
           </div>
         ` : null}
       ${v.detTreeTab ? html`
-        ${v.Tree ? html`<div class="sc-host"><${v.Tree} embedded=${true} strategy=${v.treeRow} lang=${v.treeLang} onBuy=${v.treeBuy} inCart=${v.treeInCart} owned=${v.treeOwned} signedIn=${v.treeSignedIn} ownerDownload=${v.treeDownload} /></div>` : null}
+        ${v.Tree ? html`<div class="sc-host"><${v.Tree} embedded=${true} strategy=${v.treeRow} lang=${v.treeLang} onBuy=${v.treeBuy} inCart=${v.treeInCart} closeLabel=${v.treeClose} owned=${v.treeOwned} signedIn=${v.treeSignedIn} ownerDownload=${v.treeDownload} /></div>` : null}
         <button class="sf-hover12" onClick=${v.backToSheet} style="align-self:flex-start;font-family:inherit;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;border:1.5px solid #0950e3;background:#e9f0fd;color:#0950e3"><i class="fa-regular fa-file-lines"></i>${T(v.tx?.toSheet)}</button>
         ` : null}
       </section>

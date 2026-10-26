@@ -140,6 +140,12 @@ Se queda como está; el diseño no lo enseña o lo simula:
   del bosque.
 - **«Comprar para desbloquear»** del árbol sigue al carrito de la página (`inCart`, de la ficha): quitada con
   el botón de la cabecera, vuelve a decirlo y a añadirla. El diseño guardaba su propio «Añadida al carrito».
+- **Una estrategia que ya es de la cuenta tampoco se vende en el árbol**, como en la ficha («Ya es tuya»): en la
+  vista de visitante, su aviso y el candado de una rama dicen «Ya es tuya: … en la vista de propietario»
+  (`ownedRest`, `ownedLock`) y su botón, «Ver como propietario» (`ownedBtn`), pasa a esa vista con el foco en
+  «Propietario» (`data-tree-owner`); Visitante | Propietario llevan `aria-pressed` (`tree_main.js`). El diseño no
+  tiene ese estado: decía «Comprar para desbloquear», que la añadía al carrito (o «Conseguirla gratis», que la
+  pedía otra vez).
 - **La explicación que abre un toque** (en el móvil, una pregunta; con el ratón, una rama cerrada) se queda
   abierta aunque la página se mueva sola justo después: el marco que sigue el camino y el navegador que deja
   la caja en su sitio cuando cambian los deslizadores de encima. En el diseño se cerraba en el acto.
@@ -173,7 +179,10 @@ Se queda como está; el diseño no lo enseña o lo simula:
   gratis, «Volver a la tienda». Esc en un desplegable de Pro devuelve el foco a su botón.
 - **Las × dicen qué hacen:** «Cerrar» (`dialogClose`, del núcleo) en la gratis, Comparar, los avisos y las
   explicaciones de las tarjetas de Lite; «Quitar …» (`removeName`) en cada columna de Comparar y en cada
-  filtro activo de Pro. En el diseño se llaman «×» (los avisos no están en el diseño).
+  filtro activo de Pro. En el diseño se llaman «×» (los avisos no están en el diseño). La × de las
+  explicaciones del árbol, «Close» en el diseño en todos los idiomas, también dice «Cerrar» (se lo pasa la
+  ficha: `closeLabel` en `detail.js`, `tipClose` en `tree_tip.js`), y la «i» de cada valor, «¿Qué es …?» en el
+  idioma de la página (`whatIs`, `tree_main.js`; en el diseño, «What is …?»).
 - **Las filas de la Tabla de Pro** llevan un botón en el ticker (`aria-expanded`): Tab llega a él, e Intro o
   Espacio abren la fila; con el ratón, la fila entera, como en el diseño. El ticker y el nombre van dentro en
   `<span>`, no en `<div>`: un `<button>` sólo admite texto en línea.

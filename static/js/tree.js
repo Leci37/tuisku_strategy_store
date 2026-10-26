@@ -46,6 +46,10 @@ const TEXT = {
     fOwnNotYours: 'Owner view: this strategy is not among the ones asked for with the email you are signed in with. It is free: ask for it by email to see its complete tree and download the script.',
     ownFull: 'Owner view: this is the complete tree. Download the script to use it in TradingView.',
     ownFail: 'Owner view: we could not load your complete script. Download it from My strategies or try again later.',
+    // la que ya es de la cuenta (la ficha dice «Ya es tuya»): la vista de visitante lleva a la de propietario
+    ownedRest: ' Already yours: the complete tree and every tree of its forest are in the owner view.',
+    ownedLock: 'Already yours: this branch and the complete tree are in the owner view.', ownedBtn: 'View as owner',
+    whatIs: 'What is {f}?',
     relNote: 'As the model sees it: divided by the close of the candle.'
   },
   es: {
@@ -83,6 +87,9 @@ const TEXT = {
     fOwnNotYours: 'Vista de propietario: esta estrategia no está entre las que se pidieron con el email con el que has entrado. Es gratis: pídela por email para ver su árbol completo y descargar el script.',
     ownFull: 'Vista de propietario: este es el árbol completo. Descarga el script para usarlo en TradingView.',
     ownFail: 'Vista de propietario: no pudimos cargar tu script completo. Descárgalo desde Mis estrategias o inténtalo más tarde.',
+    ownedRest: ' Ya es tuya: el árbol completo y todos los árboles de su bosque están en la vista de propietario.',
+    ownedLock: 'Ya es tuya: esta rama y el árbol completo están en la vista de propietario.', ownedBtn: 'Ver como propietario',
+    whatIs: '¿Qué es {f}?',
     relNote: 'Tal como lo ve el modelo: dividido por el cierre de la vela.'
   }
 };
@@ -359,7 +366,10 @@ export class StrategyTree extends Component {
     const [vBg, vColor, vShadow] = seg(!s.owner), [oBg, oColor, oShadow] = seg(s.owner);
     const free = !!(P.strategy && P.strategy.price === 0);
     if (free) Object.assign(L, { paid: L.fPaid, paid1: L.fPaid1, paidN: L.fPaidN, cta1: L.fCta1, ctaN: L.fCtaN, ctaRest: L.fCtaRest, lockText: L.fLock, ownSignIn: L.fOwnSignIn, ownNotYours: L.fOwnNotYours });
-    const unlockLabel = free ? L.fBtn : P.inCart ? L.added : L.unlockBtn;
+    // Ya es de la cuenta (la ficha dice «Ya es tuya»): la vista de visitante ni la vende ni la pide otra vez;
+    // su aviso y el candado de una rama llevan a la de propietario (unlock), que la enseña entera
+    if (P.owned) Object.assign(L, { ctaRest: L.ownedRest, lockText: L.ownedLock });
+    const unlockLabel = P.owned ? L.ownedBtn : free ? L.fBtn : P.inCart ? L.added : L.unlockBtn;
     const base = {
       L, steps: [L.s1, dir === 'vertical' ? L.s2v : L.s2h, L.s3].map((text, i) => ({ n: String(i + 1), text })),
       loading: !s.trees && !s.err, ready: !!s.trees, hasErr: !!s.err, err: s.err,
@@ -370,7 +380,8 @@ export class StrategyTree extends Component {
       standalone: !P.embedded, mainPad: P.embedded ? '0' : '28px 28px 64px',
       vBg, vColor, vShadow, oBg, oColor, oShadow, asVisitor: () => this.setOwner(false), asOwner: () => this.setOwner(true),
       panDown: e => this.panDown(e), panMove: e => this.panMove(e), panUp: () => this.panUp(),
-      tipOn: false, tipRows: [], heads: [], closeTip: () => this.setState({ tip: null }), unlockLabel,
+      // la × de una explicación, en el idioma de la página: la ficha le da el «Cerrar» del núcleo (closeLabel)
+      tipOn: false, tipRows: [], heads: [], closeTip: () => this.setState({ tip: null }), tipClose: P.closeLabel || null, unlockLabel,
       buyExample: () => this.example('buy'), sellExample: () => this.example('sell')
     };
     if (!s.trees) return { ...base, picks: [], forestPicks: [], feats: [], nodes: [], edges: [], labels: [], rules: [], pathChips: [], groups: [], blocks: [], tipBars: [] };
@@ -495,7 +506,7 @@ export class StrategyTree extends Component {
       const set = x => () => this.setState(st => ({ vals: { ...st.vals, [F.f]: x } }));
       const yes = v > 0.5;
       return {
-        name: nice(F.f), full: F.f, isBool: F.isBool, isNum: !F.isBool, label: fdesc(F.f)[0],
+        name: nice(F.f), full: F.f, infoLabel: rpl(L.whatIs, { f: F.f }), isBool: F.isBool, isNum: !F.isBool, label: fdesc(F.f)[0],
         onInfo: e => this.showTip(e, { kind: 'feat', f: F.f }, true), onEnter: e => this.showTip(e, { kind: 'feat', f: F.f }), onLeave: () => this.hideTip(),
         nameColor: used.length ? '#0950e3' : '#16263a',
         valueLabel: F.isBool ? (yes ? L.yes : L.no) : (v == null ? '' : fmt(v)),
@@ -559,6 +570,13 @@ export class StrategyTree extends Component {
       else if (TP.kind === 'lock') tip = s.owner && P.owned ? { title: L.paid, code: '', text: ownerText, rows: [], cta: L.download, act: download } : { title: L.paid, code: '', text: L.lockText, rows: [], cta: unlockLabel };
     }
     const unlock = () => {
+      // la de la cuenta, a su vista de propietario, con el foco en su botón (el pulsado desaparece), sin llevar la
+      // página hasta él: desde el candado de una rama, más abajo, se sigue viendo el árbol
+      if (P.owned) {
+        this.setOwner(true);
+        this.setState({ tip: null }, () => { const b = this.base && this.base.querySelector('[data-tree-owner]'); if (b) b.focus({ preventScroll: true }); });
+        return;
+      }
       // una gratis abre su diálogo cada vez; una de pago va al carrito mientras no está en él
       this.setState({ tip: null });
       if (P.onBuy && (free || !P.inCart)) P.onBuy({ stopPropagation() {}, preventDefault() {} });

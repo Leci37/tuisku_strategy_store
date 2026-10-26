@@ -9,21 +9,29 @@ núcleo, ``testing.mobile``) sobre el catálogo de verdad (``real_app``), y su t
 - Una estrategia que la cuenta ya tiene dice «Ya es tuya»: su .pine, o Mis estrategias si su enlace ya no vale
   o hay una versión nueva.
 - El título de la pestaña dice qué estrategia es, y «Cómo decide» en su pestaña: el servidor y la página.
-- El árbol sabe si la estrategia está en el carrito (``inCart``), también después de quitarla con la cabecera.
+- «Comprar para desbloquear» del árbol sigue al carrito de la página (``inCart``), también después de quitarla con
+  la cabecera: con el árbol de verdad, de punta a punta.
 - Si el código del árbol no llega, se pide otra vez (a otra dirección) al pulsar «Cómo decide» o al volver a
-  su pestaña, nunca solo.
+  su pestaña, nunca solo; cuando llega, su aviso de red se va.
+- El árbol y la cabecera dicen lo mismo de una que ya es de la cuenta: su vista de visitante no la vende ni la
+  pide otra vez, y su botón lleva a la de propietario (con el foco en ella).
+- La «i» de cada valor del árbol y la × de su explicación hablan el idioma de la página («¿Qué es …?», «Cerrar»).
 """
 import json
 import re
+from pathlib import Path
 
+import zlecitool_core
 from zlecitool_core.testing import mobile
 
 from edgefolio.settings import ROOT
 from edgefolio.shop import of
 from tests.conftest import ROWS, strategy_id
 from tests.test_mine import buy
+from tests.test_tree import CART, CRAFTED_PREVIEW, OWNED_SCRIPT, es, text_of
 
 UI = json.loads((ROOT / "i18n" / "ui.json").read_text(encoding="utf-8"))
+CORE = json.loads((Path(zlecitool_core.__file__).resolve().parent / "i18n" / "common.json").read_text(encoding="utf-8"))
 TOUR_SEEN = "try { localStorage.setItem('edgefolio-tour-v1', '1'); } catch (e) {}"
 SHOP_TITLE = "Edgefolio · " + UI["toolName"]["es"]
 # los dos textos con candado de la vista previa (el resto del script y la nota de los formatos)
@@ -31,13 +39,19 @@ LOCKS = "() => [...document.querySelectorAll('#app i.fa-lock')].map(i => i.paren
 PINE_DESC = """() => { const n = [...document.querySelectorAll('#app strong')].find(x => x.textContent === 'Pine Script');
   return n.closest('div').nextElementSibling.textContent; }"""
 HEAD_BUTTONS = "() => [...document.querySelectorAll('#app section section :is(button, a)')].map(b => b.textContent.trim())"
-# un árbol de mentira: enseña lo que le dice la página del carrito y compra como el de verdad (onBuy)
-STUB_TREE = """import { html } from '/static/js/lib/html.js';
-export function StrategyTree(p) {
-  return html`<div data-stub-tree data-in-cart=${String(p.inCart)}><button type="button"
-    onClick=${() => p.onBuy({ stopPropagation() {}, preventDefault() {} })}>stub</button></div>`;
-}
-"""
+# El árbol: su botón de compra (el del aviso de las ramas cortadas), lo que dice ese aviso, el texto del árbol, la
+# explicación abierta (su texto y sus botones, con su nombre) y lo que tiene el foco.
+UNLOCK = re.compile("^(" + "|".join(re.escape(es(k)) for k in ("unlockBtn", "added")) + ")$")
+TREE_SAYS = "t => { const s = document.querySelector('[data-tree-sec]'); return !!s && s.textContent.includes(t); }"
+CTA_BAR = """() => { const i = document.querySelector('[data-tree-sec] i.fa-lock'); if (!i) return null;
+  return [i.parentElement.querySelector('span').textContent, [...i.parentElement.querySelectorAll('button, a')].map(b => b.textContent.trim())]; }"""
+TIP_NOW = """() => { const t = document.querySelector('[role=tooltip]'); if (!t) return null;
+  return [t.querySelector('p').textContent, [...t.querySelectorAll('button')].map(b => [b.textContent.trim(), b.getAttribute('aria-label')])]; }"""
+FOCUSED = "() => [document.activeElement.textContent.trim(), document.activeElement.getAttribute('aria-pressed')]"
+# las «i» de los valores (su nombre) y la × de la explicación abierta
+ARIA = """() => ({ infos: [...document.querySelectorAll('aside button[aria-label]')].map(b => b.getAttribute('aria-label')).sort(),
+  close: (document.querySelector('[role=tooltip] button') || { getAttribute: () => null }).getAttribute('aria-label') })"""
+CRAFTED_VALUES = ("d__close", "ema2__close", "macd__close")
 
 
 def title_of(html: str) -> str:
@@ -46,6 +60,11 @@ def title_of(html: str) -> str:
 
 def tab_title(row: dict, *more) -> str:
     return " · ".join([row["name"], row["ticker"], row["key"], row["interval"], *more, "Edgefolio"])
+
+
+def serve(page, row: dict, text: str):
+    """La vista previa de ``row``, la de la prueba (una rama cortada: el árbol tiene su aviso y su candado)."""
+    page.route(re.compile(".*" + re.escape(row["preview"]) + "$"), lambda route: route.fulfill(body=text, content_type="text/plain"))
 
 
 def rows(app, query: str) -> list:
@@ -143,14 +162,15 @@ def test_the_tree_tab_tries_again_and_follows_the_cart(real_app):
             page.add_init_script(TOUR_SEEN)
             asked = []
 
-            def tree_js(route):            # dos fallos, y después un árbol de mentira
+            def tree_js(route):            # dos fallos, y después el de verdad
                 asked.append(route.request.url[len(live.origin):])
                 if len(asked) <= 2:
                     route.fulfill(status=500, content_type="text/plain", body="no")
                 else:
-                    route.fulfill(status=200, content_type="text/javascript", body=STUB_TREE)
+                    route.continue_()
 
             page.route(re.compile(r".*/static/js/tree\.js(\?.*)?$"), tree_js)
+            serve(page, paid, CRAFTED_PREVIEW)
             how = page.get_by_role("tab", name=UI["howItDecides"]["es"])
             alert = page.locator("[role=alert]")
             tab.goto(f"/s/{paid['id']}/tree")
@@ -164,24 +184,38 @@ def test_the_tree_tab_tries_again_and_follows_the_cart(real_app):
             alert.wait_for()
             page.wait_for_timeout(300)
             assert asked == ["/static/js/tree.js", "/static/js/tree.js?retry=1"]
-            # y volver a su pestaña sin pulsarla: a la ficha, y Atrás del navegador
-            alert.locator("button").click()
+            # y volver a su pestaña sin pulsarla: a la ficha, y Atrás del navegador; el aviso de la red, sin cerrarlo, se
+            # va cuando llega (se quedaba encima del árbol)
             page.get_by_role("tab", name=UI["overviewTab"]["es"]).click()
             page.wait_for_function("() => location.pathname.endsWith('/tree') === false")
             page.go_back()
-            stub = page.locator("[data-stub-tree]")
-            stub.wait_for()
+            unlock = page.locator("[data-tree-sec] button", has_text=UNLOCK)
+            unlock.wait_for()
             assert asked[2:] == ["/static/js/tree.js?retry=2"] and alert.count() == 0
 
-            # B31: el árbol sabe del carrito: «Comprar para desbloquear» la añade; quitada con la cabecera, ya no está
-            assert stub.get_attribute("data-in-cart") == "false"
-            stub.locator("button").click()
-            page.wait_for_function("() => document.querySelector('[data-stub-tree]').dataset.inCart === 'true'")
-            head = page.locator("#app section section button", has_text=UI["inCartBtn"]["es"])
-            head.click()
-            page.wait_for_function("() => document.querySelector('[data-stub-tree]').dataset.inCart === 'false'")
+            # B31, de punta a punta: «Comprar para desbloquear» la añade y lo dice la cabecera; quitada con la
+            # cabecera, el árbol vuelve a ofrecerlo (con una marca propia, seguía «Añadida al carrito») y la añade
+            assert unlock.inner_text() == es("unlockBtn")
+            unlock.click()
+            page.wait_for_function(f"id => ({CART})().join() === id", arg=paid["id"])
+            assert unlock.inner_text() == es("added")
+            page.locator("#app section section button", has_text=UI["inCartBtn"]["es"]).click()
+            page.wait_for_function(f"() => ({CART})().length === 0")
+            page.wait_for_function("t => [...document.querySelectorAll('[data-tree-sec] button')].some(b => b.textContent === t)",
+                                   arg=es("unlockBtn"))
             assert UI["addToCart"]["es"] in page.evaluate(HEAD_BUTTONS)
-            assert json.loads(page.evaluate("() => localStorage.getItem('edgefolio-cart-v1')"))["cart"] == []
+            unlock.click()
+            page.wait_for_function(f"id => ({CART})().join() === id", arg=paid["id"])
+
+            # la «i» de cada valor y la × de su explicación, en el idioma de la página (eran «What is …?» y «Close»)
+            for lang in ("es", "ar"):
+                if lang != "es":
+                    page.evaluate("l => zt.setLanguage(l)", lang)
+                said = sorted(text_of(lang, "whatIs").replace("{f}", f) for f in CRAFTED_VALUES)
+                page.wait_for_function(f"s => JSON.stringify(({ARIA})().infos) === JSON.stringify(s)", arg=said)
+                page.locator("aside button[aria-label]").first.click()
+                page.wait_for_function("() => { const t = document.querySelector('[role=tooltip]'); return t && t.querySelector('button'); }")
+                assert page.evaluate(ARIA) == {"infos": said, "close": CORE["dialogClose"][lang]}, lang
             assert tab.problems() == ["500 GET /static/js/tree.js", "500 GET /static/js/tree.js?retry=1"], tab.problems()
         finally:
             tab.close()
@@ -191,15 +225,20 @@ def test_a_strategy_the_account_has_says_so(real_app):
     """B29: con la sesión abierta, la ficha de una estrategia que ya es de la cuenta dice «Ya es tuya» en vez
     de «Añadir al carrito» (o «Descargar», en una gratis): su .pine si su enlace vale y es de la versión de
     hoy; si no, Mis estrategias (que da otro, o la actualización), sin recargar la página. El servidor la
-    sigue presupuestando (decisión del dueño)."""
+    sigue presupuestando (decisión del dueño). Y el árbol dice lo mismo: su vista de visitante no la vende ni la
+    pide otra vez («Comprar para desbloquear» la añadía al carrito); su botón lleva a la de propietario."""
     shop = of(real_app)
     free, paid, hourly = pick(real_app)
     other = next(r for r in rows(real_app, "paid=1&size=48")[::-1] if r["id"] not in (paid["id"], hourly["id"]))
-    script = shop.settings.strategies_dir / shop.catalogue.resolve(free["id"]).private_file
-    made = not script.exists()          # la tienda de las pruebas es de toda la sesión: sólo se quita lo puesto
-    if made:
-        script.parent.mkdir(parents=True, exist_ok=True)
-        script.write_text("//@version=5\nstrategy(\"free\")\n", encoding="utf-8")
+    # sus scripts completos (la gratis no se pide sin el suyo; con uno que se lee, la vista de propietario del árbol
+    # sale entera); la tienda de las pruebas es de toda la sesión: sólo se quita lo puesto
+    made = []
+    for row in (free, paid):
+        script = shop.settings.strategies_dir / shop.catalogue.resolve(row["id"]).private_file
+        if not script.exists():
+            script.parent.mkdir(parents=True, exist_ok=True)
+            script.write_text(OWNED_SCRIPT, encoding="utf-8")
+            made.append(script)
     days = shop.settings.download_days
     with mobile.serve(real_app) as live, mobile.browser() as chromium:
         tab = mobile.open_page(chromium, live, "laptop")
@@ -253,8 +292,34 @@ def test_a_strategy_the_account_has_says_so(real_app):
             page.wait_for_function("t => document.title === t", arg=tab_title(other))
             page.wait_for_timeout(300)
             assert owned.count() == 0 and UI["addToCart"]["es"] in page.evaluate(HEAD_BUTTONS)
+
+            # el árbol, como la cabecera: abre en la vista de propietario; en la de visitante, su aviso y el candado de
+            # una rama dicen «Ya es tuya…» y su botón lleva a la de propietario, con el foco en ella; nunca al carrito
+            # (lo hacía «Comprar para desbloquear») ni a pedir otra vez una gratis («Conseguirla gratis»)
+            for row, first in ((paid, "cta1"), (free, "fCta1")):
+                serve(page, row, CRAFTED_PREVIEW)
+                tab.goto(f"/s/{row['id']}/tree")
+                page.wait_for_function(TREE_SAYS, arg=es("ownFull"))
+                visitor = page.get_by_role("button", name=es("visitor"), exact=True)
+                visitor.click()
+                page.wait_for_function(f"() => !!({CTA_BAR})()")
+                assert page.evaluate(CTA_BAR) == [es(first) + es("ownedRest"), [es("ownedBtn")]], row["id"]
+                page.locator("[data-tree-sec] button", has_text=es("ownedBtn")).press("Enter")
+                page.wait_for_function(TREE_SAYS, arg=es("ownFull"))
+                assert page.evaluate(FOCUSED) == [es("owner"), "true"], "el foco, en Propietario (el botón pulsado se va)"
+                visitor.click()
+                lock = page.locator(f'[data-tree-scroll] button[aria-label="{es("fPaid" if row is free else "paid")}"]').first
+                lock.scroll_into_view_if_needed()
+                page.wait_for_timeout(250)
+                lock.click()
+                page.wait_for_function("() => { const t = document.querySelector('[role=tooltip]'); return t && t.querySelector('button'); }")
+                assert page.evaluate(TIP_NOW) == [es("ownedLock"), [["×", CORE["dialogClose"]["es"]], [es("ownedBtn"), None]]]
+                page.locator("[role=tooltip] button", has_text=es("ownedBtn")).click()
+                page.wait_for_function(TREE_SAYS, arg=es("ownFull"))
+                assert page.evaluate(FOCUSED)[1] == "true" and page.locator("[role=dialog]").count() == 0
+                assert page.evaluate(CART) == [], "una que ya es suya no va al carrito"
             assert tab.problems() == []
         finally:
             tab.close()
-            if made:
+            for script in made:
                 script.unlink()

@@ -23,7 +23,9 @@ The import (`edgefolio/release.py`, which uses `catalogue/publish.py`) already d
 - it removes the location of the paid file;
 - it copies only the charts, logos and previews the rows use; it replaces the charts and previews that changed, and a logo only when the shop's is the factory's placeholder;
 - it copies only the paid scripts the manifest lists;
-- with `--prune`, it deletes the charts and previews nothing uses;
+- it leaves out the intraday stock strategies (minutes or hours, not crypto) unless `LIST_INTRADAY_STOCKS=1`: TradingView's free plan shows other intraday stock data (only Cboe BZX), so they trade there differently from their backtest. `catalogue/release.json` lists them with why, and records how many strategies the listed ones were chosen among (`tried`, from the manifest; the shop's overfitting note says it);
+- it copies a package's `since_release.csv` (`id`, `pct`, `as_of`), checked like the rest, into `catalogue/`: the page shows "since release" only while some strategy has a figure;
+- with `--prune`, it deletes the charts and previews nothing uses, and a `catalogue/since_release.csv` of an earlier catalogue when the package brings none;
 - it writes everything beside its place and renames it at the end, so a failure leaves the shop as it was (one while renaming says how many files are already in place: import again).
 
 ## Before the first relaunch
@@ -40,13 +42,13 @@ The first update is therefore a full rebuild in the factory with those problems 
 A full refresh is one sequence of steps, and it can be run as a single CI job:
 
 1. Rebuild in the factory (`python run_pipeline.py`). Its step 7 writes the export CSV and the package, `d_result/package/`. The package must never be made public: the free strategies' previews in it are whole scripts, which the shop cuts when it publishes them.
-2. In the shop, with the development requirements (the import needs pandas, which is in `requirements-dev.txt` only): `flask --app app edgefolio import GENERATOR/d_result/package --scripts GENERATOR/d_result/pine_TW_b --prune`. It copies the listed paid scripts into `STRATEGIES_DIR` (private storage, never the repo), publishes the catalogue and its files, and records the factory run in `catalogue/release.json`. Without `--scripts` the scripts must already be in `STRATEGIES_DIR` with the right sha256; `--skip-scripts` publishes without them and says how many are missing.
+2. In the shop, with the development requirements (the import needs pandas, which is in `requirements-dev.txt` only): `flask --app app edgefolio import GENERATOR/d_result/package --scripts GENERATOR/d_result/pine_TW_b --prune`. It copies the listed paid scripts into `STRATEGIES_DIR` (private storage, never the repo), writes each script's buy and close levels into `catalogue/levels.json` (the visitor's tree colours its results with them), publishes the catalogue and its files, and records the factory run in `catalogue/release.json`. Without `--scripts` the scripts must already be in `STRATEGIES_DIR` with the right sha256; `--skip-scripts` publishes without them and says how many are missing.
 3. Fix or remove the bundles the import names: a bundle of `catalogue/bundles.json` that lost a strategy is dropped whole by the shop.
 4. `pytest`: the tests cover prices, bundles, filters, payment checks, download links, accounts, the generated formats and what must stay out of the page (including that every public preview is cut).
 5. Nothing to do for thumbnails: the server makes the WebP thumbnails of the cards and the table on the first request (`/thumbs/...`) and keeps them in `<ZLECITOOL_DATA_DIR>/edgefolio/thumbs`. The import empties that folder, and a thumbnail older than its chart is made again anyway.
 6. Commit `catalogue/` and `static/assets/`, deploy with the new paid scripts in the server's `STRATEGIES_DIR`, and restart the shop: it reads the catalogue when it starts. Then tell owners about new versions (paid updates) and email the people who opted in through the free downloads.
 
-Without Flask, `python catalogue/publish.py --package DIR [--prune]` makes the same checks of the package and the same publish, but the paid scripts are then copied by hand. The form before packages, `python catalogue/publish.py EXPORT.csv [--assets DIR] [--prune]`, still works; it checks the columns, but there are no hashes, and it leaves the files the shop already has as they are.
+Without Flask, `python catalogue/publish.py --package DIR [--prune]` makes the same checks of the package and the same publish, but the paid scripts are then copied by hand, and their levels written with `flask --app app edgefolio levels` (which reads `STRATEGIES_DIR` and only trusts a script named after its own strategy). The form before packages, `python catalogue/publish.py EXPORT.csv [--assets DIR] [--prune]`, still works; it checks the columns, but there are no hashes, and it leaves the files the shop already has as they are.
 
 **When the contract changes** (a column or a folder), its version goes up in both repositories at once: `catalogue/contract.json` here, `CONTRACT_VERSION` and `SHOP_COLUMNS` in the factory. Push the shop's change to its branch before the factory's, or with it, and merge it into `_ztool_main` first too: the factory's CI runs its bridge tests against the shop's `catalogue/` on `_ztool_dev` (on `_ztool_main` for runs on `_ztool_main` and pull requests into it), and a package of another contract version is refused.
 
@@ -62,7 +64,7 @@ Rebuilding 2,834 backtests every day means 5,668 new charts a day. That is heavy
 
 - **Repository size.** The assets are about 570 MB already, and monthly batches of thousands of PNGs will make the git history grow fast. Move the charts to object storage (S3 or R2) behind a CDN, and keep only `catalogue.csv` in the repo, or move it to the database.
 - **Versions.** Give every strategy a version and a release date. Buyers keep their old version, and "My strategies" shows when a newer one exists.
-- **Translations.** Indicator names and descriptions come from `catalogue/indicators.csv` in English only. New UI texts need all 8 languages.
+- **Translations.** Each indicator's explanation comes from `catalogue/indicators.csv` in the 8 languages (`Explanation`, in English, and `Explanation_es` … `Explanation_hi`); a new indicator without one of them shows the English one, marked as English. Each explanation says what the indicator's code in the generator computes (`TW_pines_script/pines_script/*.py`) and promises nothing; a combined one names only its two parts (`Key Combination`). The tree's value names and descriptions live in `static/trees/features.json` (en, es) and `static/trees/ui.json` (`feat`, `featDesc`: the other six). New UI texts need all 8 languages.
 - **Heavy traffic.** Done: the page gets the catalogue from the API one page at a time and the server filters, sorts and counts.
 
 ## Verdict

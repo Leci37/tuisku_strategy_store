@@ -1,6 +1,6 @@
 # Edgefolio · Pantallas
 
-- **Qué es:** qué hay en cada pantalla de la tienda, tal como está programada en `_ztool_dev`: leída del código el 12 oct 2026, recorrida en un navegador y corregida el 25 y el 26 oct 2026, con el catálogo de 143 estrategias.
+- **Qué es:** qué hay en cada pantalla de la tienda, tal como está programada en `_ztool_dev`: leída del código el 12 oct 2026, recorrida en un navegador y corregida el 25 y el 26 oct 2026, con el catálogo de 94 estrategias y las decisiones del dueño del 26 oct 2026.
 - **Repositorio:** `Leci37/tuisku_strategy_store`, rama `_ztool_dev`, núcleo zlecitool-core 0.31.2.
 - **Numeración:** las pantallas 1–9 son las mismas en los tres documentos:
   - `PANTALLAS.md` (este): qué contiene cada pantalla;
@@ -42,7 +42,7 @@ Todas usan la misma plantilla, `templates/edgefolio/shop.html`, y el estado de `
 
 **Pie** (núcleo): Privacidad, Cookies, Condiciones de uso, Aviso legal y Contacto; a la derecha, «Edgefolio» y «Estrategias de TradingView».
 
-**Avisos flotantes** (tienda): los rechazos del servidor («No se pudo hacer»); un enlace de descarga que ya no vale; un pedido o una estrategia que no existen. Y, con su propio título, la confirmación de las novedades o su enlace caducado, y «Ya está confirmado» (pantalla 8). Se cierran con su × («Cerrar»). Con un diálogo abierto, van arriba.
+**Avisos flotantes** (tienda): los rechazos del servidor («No se pudo hacer»); un enlace de descarga que ya no vale; un pedido o una estrategia que no existen. Y, con su propio título, la confirmación de las novedades o su enlace caducado, «Ya está confirmado» (pantalla 8) y «Carrito actualizado» (pantalla 5: el carrito llevaba algo que ya es de la cuenta). Se cierran con su × («Cerrar»). Con un diálogo abierto, van arriba.
 
 No hay anuncios ni aviso de cookies.
 
@@ -54,19 +54,19 @@ De arriba abajo:
 1. **Cinta de cotizaciones:** 12 estrategias de pago, cada una con su icono, su ticker, su clave y su beneficio neto %. No se mueve sola: se desliza de lado (dedo, trackpad o teclado), sin barra.
 2. **Cabecera:** un gráfico de velas difuminado de fondo, el título «Estrategias para TradingView», el subtítulo y el buscador («Busca una empresa, cripto o indicador»).
 3. **Pestañas:** Destacadas, Tasa de acierto, Acciones, Cripto, Novedades · N y Gratis.
-4. **Aviso «Riesgo de sobreajuste».**
+4. **Aviso «Riesgo de sobreajuste»**, que acaba diciendo entre cuántas probadas se eligieron las del catálogo: «Estas 94 estrategias se eligieron entre 1531 probadas; sus cifras salen de datos que los modelos nunca vieron.» (si no se sabe, sin esa frase).
 5. **Packs** (cuando llegan del servidor):
-   - una tarjeta por pack del catálogo: un icono por ticker, «Ahorra un N %», nombre, «N estrategias · TICKERS», precio de antes tachado, precio y **Añadir pack** («✓ En el carrito» si ya va en el carrito);
-   - la tarjeta del pack propio, «Arma tu pack»: «Ahorra un N %», 5 huecos (icono o «+»), «Elige N más · 5 por ≈ 229 €» («5 por ≈ 229 €» con las 5; en USD, «5 por 249,00 US$») y **Añadir pack** (gris hasta tener 5; «En el carrito» cuando va).
+   - una tarjeta por pack del catálogo (hoy, «Top 5 por beneficio», «Inicio en cripto» y «Pareja Amazon»): un icono por ticker, «Ahorra un N %», nombre, «N estrategias · TICKERS», precio de antes tachado, precio y **Añadir pack** («✓ En el carrito» si ya va en el carrito);
+   - la tarjeta del pack propio, «Arma tu pack»: «Ahorra un N %», 5 huecos (icono o «+»), «Elige N más · 5 por ≈ 229 €» («5 por ≈ 229 €» con las 5; en USD, «5 por 249,00 US$»; el 5 es `PACK_SIZE`) y **Añadir pack** (gris hasta tener 5; «En el carrito» cuando va).
 6. **Tarjetas** (24 por página), cada una con:
    - icono, ticker y nombre, y la etiqueta «Novedades» si es nueva;
    - beneficio neto % con su «?»;
    - la curva de beneficio con «⚠ Backtest»;
-   - tasa de acierto y operaciones, cada una con su «?», y la temporalidad y la bolsa («1Hour · NASDAQ»);
-   - la nota A–D y «Desde su publicación»;
+   - tasa de acierto y operaciones, cada una con su «?», y la temporalidad y la bolsa («1Day · NASDAQ»);
+   - la nota A–D (al pasar el ratón, su explicación, que dice desde cuántas operaciones es cada letra) y, cuando alguna estrategia tiene cifra, «Desde su publicación» (hoy, ninguna: no sale);
    - ♡ y **Comparar**;
    - **Ficha técnica** y **Cómo decide**;
-   - el precio (US$, «≈» en moneda local o «Gratis») y **Comprar** o **Descargar**.
+   - el precio (US$, «≈» en moneda local o «Gratis») y **Comprar** o **Descargar**; con la sesión abierta y la estrategia ya de la cuenta, en su lugar, «Ya es tuya · Descargar» o «Ya es tuya · Mis estrategias», en verde y sin el precio.
 7. «Mostrando N de M» y **Ver más**.
 8. Abajo, fijos: el **carrito flotante** (pantalla 5), si tiene algo, y la píldora **Comparar · N**, si hay algo que comparar: encima del carrito o, sin él, abajo a la izquierda.
 
@@ -76,7 +76,7 @@ De arriba abajo:
 
 **Selector del pack:**
 - título «Arma tu pack», contador «N / 5» y buscador («Buscar»);
-- hasta 40 estrategias de pago, las elegidas arriba; cada fila con casilla, icono, «TICKER · CLAVE», indicador y beneficio neto %. Las que ya van en un pack del carrito llevan «✓ En el carrito» en lugar del %;
+- arriba, las elegidas y, debajo, hasta 40 estrategias de pago de la búsqueda; cada fila con casilla, icono, «TICKER · CLAVE», indicador y beneficio neto %. Las que ya van en un pack del carrito llevan «✓ En el carrito» en lugar del %;
 - **Hecho** (no tiene ×).
 
 ---
@@ -86,7 +86,7 @@ De arriba abajo:
 De arriba abajo:
 1. **Franja del carrito con la escalera de descuento** (pantalla 5).
 2. **Panel de filtros** (a la izquierda; en el móvil, encima de la lista):
-   - «143» y debajo «estrategias mostradas» («1 estrategia mostrada» con una), y **Restablecer filtros**;
+   - «94» y debajo «estrategias mostradas» («1 estrategia mostrada» con una), y **Restablecer filtros**;
    - el interruptor **Solo GRATIS**;
    - **2 rangos abiertos**, Beneficio neto ($) y Precio ($), cada uno con su histograma, un deslizador de dos asas y las casillas mín. y máx.;
    - **5 desplegables:** Símbolo, Temporalidad, Indicadores, Mercado y Fecha de publicación. Cada uno dice «N seleccionados» («1 seleccionado»), los nombres de una o dos, o «—» sin ninguna; dentro, buscador, **Seleccionar todo** / **Quitar todo** y una casilla por opción con su recuento (en Símbolo, también el icono);
@@ -95,13 +95,13 @@ De arriba abajo:
    - el título «Estrategias», las cuatro pestañas de orden, sin rótulo (Beneficio neto, Tasa de acierto, Precio, Operaciones cerradas), y el buscador;
    - **Filas / Tarjetas / Tabla**;
    - una etiqueta por filtro activo con su × («Quitar …»), y **Borrar filtros**;
-   - el aviso de sobreajuste, en azul.
+   - el aviso de sobreajuste, en azul, con la misma frase de las probadas que el de Lite.
 4. **La lista**, en una de tres vistas:
-   - **Filas:** gráfico de velas de fondo; icono y nombre; ticker (enlace a TradingView), temporalidad y mercado; «CLAVE · indicador»; **Ficha técnica** y **Cómo decide**; la curva y 4 cifras (beneficio neto, tasa de acierto, beneficio neto %, operaciones); el precio y **Añadir al carrito** o **Descargar**.
-   - **Tarjetas:** nombre, icono de TradingView y ticker (enlace a TradingView), temporalidad, mercado y precio; las dos curvas; 6 cifras (las 4 de Filas, beneficio medio y meses de entrenamiento); «CLAVE · indicador», que enlaza a la página del indicador; **Ficha de la estrategia** (la misma página que **Ficha técnica**) y los dos botones; carrito o descarga.
+   - **Filas:** gráfico de velas de fondo; icono y nombre; ticker (enlace a TradingView), temporalidad y mercado; «CLAVE · indicador»; **Ficha técnica** y **Cómo decide**; la curva y 4 cifras (beneficio neto, tasa de acierto, beneficio neto %, operaciones); el precio y **Añadir al carrito** o **Descargar** (con la sesión abierta y la estrategia ya de la cuenta, «Ya es tuya · …», en verde y sin el precio).
+   - **Tarjetas:** nombre, icono de TradingView y ticker (enlace a TradingView), temporalidad, mercado y precio (sin él si ya es de la cuenta); las dos curvas; 6 cifras (las 4 de Filas, beneficio medio y meses de entrenamiento); «CLAVE · indicador», que enlaza a la página del indicador; **Ficha de la estrategia** (la misma página que **Ficha técnica**) y los dos botones; carrito o descarga, o «Ya es tuya · …».
    - **Tabla** (más ancha que la lista: se desplaza de lado también en el escritorio):
-     - columnas Símbolo (icono, ticker, nota y nombre; el ticker es un botón que abre la fila), Temporalidad, Indicadores, Backtest (minigráfico), Beneficio neto, Beneficio neto %, Tasa de acierto, Operaciones cerradas, Beneficio medio, Meses de entrenamiento, Precio y acciones (Comparar, y carrito o Descargar);
-     - una fila desplegada muestra, en la parte visible, las dos curvas, el indicador con su explicación (en inglés), **Abrir en TradingView** (la página del símbolo), **Ficha técnica** y **Cómo decide**;
+     - columnas Símbolo (icono, ticker, nota y nombre; el ticker es un botón que abre la fila), Temporalidad, Indicadores, Backtest (minigráfico), Beneficio neto, Beneficio neto %, Tasa de acierto, Operaciones cerradas, Beneficio medio, Meses de entrenamiento, Precio y acciones (Comparar, y carrito o Descargar; si ya es de la cuenta, un ✓ verde, «Ya es tuya · …», y el precio sigue en su columna);
+     - una fila desplegada muestra, en la parte visible, las dos curvas, el indicador con su explicación (en el idioma de la página), **Abrir en TradingView** (la página del símbolo), **Ficha técnica** y **Cómo decide**;
      - abajo, «Filas por página 25» (fijo), «a–b de N» y los botones de página.
 5. En Filas y Tarjetas, «a–b de N» y **Ver más**.
 
@@ -110,7 +110,7 @@ De arriba abajo:
 **Diálogo Comparar:**
 - «Comparar estrategias» y «Hasta 3 estrategias», con su × («Cerrar»);
 - una columna por estrategia, con su icono, «TICKER · CLAVE» y × («Quitar TICKER · CLAVE»);
-- filas de Beneficio neto (%), Tasa de acierto (%), Operaciones cerradas, Beneficio medio ($), Desde su publicación y Precio, con el mejor valor de cada fila en verde.
+- filas de Beneficio neto (%), Tasa de acierto (%), Operaciones cerradas, Beneficio medio ($), Desde su publicación (solo cuando alguna estrategia del catálogo tiene cifra: hoy, no sale) y Precio, con el mejor valor de cada fila en verde.
 
 ---
 
@@ -120,18 +120,18 @@ De arriba abajo:
    - **Volver a la tienda**;
    - gráfico de velas difuminado, icono y «Nombre · TICKER»;
    - **Abrir en TradingView** y las etiquetas de temporalidad, mercado y clave;
-   - el precio y **Añadir al carrito** o **Descargar**; con la sesión abierta y la estrategia ya de la cuenta, en su lugar, «Ya es tuya · Descargar» o «Ya es tuya · Mis estrategias» (en verde), con el precio encima;
+   - el precio y **Añadir al carrito** o **Descargar**; con la sesión abierta y la estrategia ya de la cuenta, en su lugar, «Ya es tuya · Descargar» o «Ya es tuya · Mis estrategias» (en verde), sin el precio;
    - **Abrir en otra pestaña** y ♡ Favoritas.
 2. **Pestañas:** Ficha técnica | Cómo decide (pantalla 4).
 3. **Ficha técnica**, de arriba abajo:
    1. la tarjeta «Mira cómo decide esta estrategia»;
    2. la temporalidad que hay que poner en TradingView, con el nombre de su menú («1D», «1h»);
    3. el aviso de sobreajuste;
-   4. **Backtest frente a resultado real:** la nota A–D y las barras del backtest y de «Desde su publicación», medidas contra el mejor backtest del catálogo, con «Aún sin medir: …» mientras no hay cálculo diario;
-   5. **Versiones**, de la actual a la 1 («Primera publicación»), con «Actualización disponible» para quien tiene una anterior;
+   4. **Backtest** (mientras ninguna estrategia tiene cifra desde su publicación, como hoy): la nota A–D (al pasar el ratón, su explicación con los cortes) y la barra «Beneficio neto %», medida contra el mejor backtest del catálogo. Con cifras, **Backtest frente a resultado real:** la nota y las barras «Backtest» y «Desde su publicación», con «Medido hasta el …» o, en una sin cifra, «—» y «Aún sin medir: …»;
+   5. **Versiones**, de la actual a la 1 («Primera publicación»), con «Actualización disponible» para quien tiene una anterior, mientras la estrategia no ha caducado;
    6. el **gráfico de la estrategia** y el **gráfico de velas**;
    7. los **14 resultados del backtest:** Beneficio neto ($), Beneficio neto (%), Operaciones cerradas, Tasa de acierto (%), Factor de beneficio, Pérdida máxima ($), Pérdida máxima (%), Beneficio medio ($), Beneficio medio (%), Velas medias por operación, Fecha de publicación, Entrenamiento (meses), Temporalidad y Mercado;
-   8. **Sobre el indicador:** «CLAVE · nombre», la descripción (en inglés en todos los idiomas) y «Ver el indicador en TradingView»;
+   8. **Sobre el indicador:** «CLAVE · nombre», la descripción (en el idioma de la página; el nombre, la descripción y el enlace, de `catalogue/indicators.csv`) y «Ver el indicador en TradingView»;
    9. la **vista previa del Pine Script:** editor oscuro con el nombre del archivo y «Pine Script v5», unas líneas legibles y otras difuminadas, y el candado «El resto del script se entrega tras la compra» («… te llega gratis por correo» en una gratis);
    10. **Lo que compras** («Lo que recibes» en una gratis): los 4 formatos: Pine Script (.pine), Markdown para IA (.md), Python (.py, BETA) y JavaScript (.js, BETA), y la nota de los formatos.
 
@@ -142,21 +142,24 @@ De arriba abajo:
 ## 4 · Cómo decide
 
 1. **Controles:** Árbol | Bloques y Visitante | Propietario. Empieza en Propietario si la estrategia es tuya; si no, Propietario explica cómo conseguirla.
-2. **Cómo se lee:** tres pasos («Cada caja hace una pregunta sobre un indicador del gráfico.», «Si la respuesta es Sí, el camino sube; si es No, baja.», «El camino termina en una acción…») y la nota del bosque.
-3. **Resultado del árbol:** Comprar, Vender o Esperar con su fuerza («Parte de pago», o «Script completo» en una gratis, si el camino acaba en una rama cerrada), la barra de «Venta −1» a «Compra +1», las condiciones del camino actual, y **Ejemplo de compra** y **Ejemplo de venta**.
+2. **Cómo se lee:** tres pasos («Cada caja hace una pregunta sobre un indicador del gráfico.», «Si la respuesta es Sí, el camino sube; si es No, baja.» y, con los niveles del script, «El camino termina en una acción (comprar, vender o esperar) con su fuerza, de −1 a +1.»; sin ellos, «El camino termina en un resultado: su puntuación, de −1 a +1.») y, debajo, la nota del bosque, que dice cuántos árboles tiene, de la cabecera del script: «La estrategia tiene un solo árbol, este, así que su señal es el resultado de este árbol.» (66 de las 94) o «La estrategia combina N árboles como este, así que su señal no la decide un solo árbol.» (N es 3 o 5; sin esa cabecera, «… muchos árboles …»).
+3. **Resultado del árbol:**
+   - con los niveles (el propietario; el visitante, si la tienda los publica): Comprar, Vender o Esperar con su fuerza, la barra de «Venta −1» a «Compra +1», las condiciones del camino actual, y **Ejemplo de compra** y **Ejemplo de venta**;
+   - sin ellos (el visitante, hoy en las 94): «Puntuación» y su valor («Puntuación +1,00»), la barra de −1 a +1 en gris, las condiciones del camino actual, y **Puntuación más alta** y **Puntuación más baja**, en gris;
+   - «Parte de pago», o «Script completo» en una gratis, si el camino acaba en una rama cerrada.
 4. **Valores de los indicadores:**
-   - la nota «Umbrales ya optimizados» y la leyenda (Compraría, Vendería, Esperaría, umbral comprobado);
-   - un deslizador por indicador, coloreado según lo que haría la estrategia, con marcas en los umbrales; **No | Sí** en los de verdadero o falso; la «i» («¿Qué es …?»), con su explicación;
+   - la nota «Umbrales ya optimizados» y la leyenda (Compraría, Vendería, Esperaría, umbral comprobado; sin niveles, solo «Umbral comprobado en el camino actual»);
+   - un deslizador por indicador, coloreado según lo que haría la estrategia (sin niveles, sin colores), con marcas en los umbrales; **No | Sí** en los de verdadero o falso; la «i» («¿Qué es …?»), con su explicación en el idioma de la página;
    - «No se usan en la parte visible: …».
 5. **El árbol:**
    - «TICKER · patrón», «Árbol 1 del bosque» (un botón por árbol si el propietario ve un bosque de varios), cuántos resultados se ven y cuántas ramas son de pago;
    - una línea bajo el título explica el patrón de la estrategia, en el idioma de la página, y debajo los parámetros del modelo;
-   - la leyenda: Comprar, Vender, Esperar, Parte de pago y Camino actual;
-   - cajas de pregunta («¿≤ valor?» o «¿Se cumple?») con sus ramas Sí y No, en columnas «Paso 1…» y «Resultado»; cada caja dice el nombre del indicador o, si `features.json` no lo tiene, su código;
-   - cajas de resultado (Comprar, Vender o Esperar) con su fuerza y una barra, y un anillo en el resultado al que se llega;
+   - la leyenda: Comprar, Vender, Esperar, Parte de pago y Camino actual; sin niveles, «Puntuación», Parte de pago y Camino actual, y debajo, por qué: «Las puntuaciones con las que este script compra y cierra están en su script completo: aquí cada resultado enseña solo su puntuación.»;
+   - cajas de pregunta («¿≤ valor?» o «¿Se cumple?») con sus ramas Sí y No, en columnas «Paso 1…» y «Resultado»; cada caja dice el nombre del valor (todos los que toman los árboles del catálogo lo tienen, en los 8 idiomas);
+   - cajas de resultado (Comprar, Vender o Esperar con su fuerza; sin niveles, «Puntuación» y su valor, en gris oscuro, con el icono de un medidor) y una barra, y un anillo en el resultado al que se llega;
    - para el visitante, ramas grises «Parte de pago» («Script completo» en una gratis) y, encima del árbol, la caja con **Comprar para desbloquear** («Añadida al carrito» si ya va en el carrito; **Conseguirla gratis** en una gratis), que también sale en la ventana de cada rama gris.
 6. **Bloques:** el mismo árbol en columnas, cada bloque con la condición que lleva a él.
-7. **Ver todas las reglas en frases (N)** / **Ocultar las reglas**.
+7. **Ver todas las reglas en frases (N)** / **Ocultar las reglas**: agrupadas en Comprar, Vender y Esperar; sin niveles, en un grupo, «Resultados», de la puntuación más alta a la más baja.
 8. **El recuadro de propietario**, según la estrategia:
    - si es tuya: en verde, «Vista de propietario: este es el árbol completo…» con **Descargar .pine**;
    - si es tuya pero su script no llega: el aviso en ámbar con **Descargar .pine**;
@@ -165,7 +168,7 @@ De arriba abajo:
    - si es gratis y no es tuya: «Script completo» y **Conseguirla gratis**, también en la vista de propietario (con **Entrar** sin sesión); si es gratis y ya es tuya, lo mismo que una comprada.
 9. **Volver a la ficha técnica**.
 
-![Cómo decide en la vista Bloques, como visitante](img/edgefolio_es_tree_blocks.png)
+![Cómo decide en la vista Bloques, como visitante y sin niveles publicados: cada resultado con su puntuación](img/edgefolio_es_tree_blocks.png)
 
 ---
 
@@ -202,7 +205,7 @@ Después de **Pagar** viene PayPal, fuera de la tienda.
 - el campo **Correo**, con el error debajo;
 - la casilla «Avísame también de estrategias nuevas (opcional)», sin marcar;
 - **Enviarme el enlace** y el enlace Privacidad;
-- al terminar: «Hecho. Mira tu correo: el enlace vale 7 días.» y **Volver a la tienda**.
+- al terminar: «Hecho. Mira tu correo: el enlace vale 7 días.» (los días de `DOWNLOAD_DAYS`) y **Volver a la tienda**.
 
 ---
 
@@ -239,7 +242,7 @@ Cada paso lleva su imagen, título y texto. Debajo, los puntos (se pueden pulsar
   - «Comprada el …» o «Descarga gratuita el …», de la primera vez, y el pedido si se pagó;
   - «Enlace válido N días más» o «El enlace caducó»;
   - **.pine** y **.zip**, o **Pedir un enlace nuevo**;
-  - **Obtener la actualización · vN**, si hay una versión nueva;
+  - **Obtener la actualización · vN**, si hay una versión nueva y la estrategia no ha caducado (en una gratis, siempre);
   - **Ficha técnica ↗** y **Cómo decide ↗**.
 - **Favoritas:** icono, «TICKER · CLAVE» (abre la ficha), las alertas **Versión nueva**, **Bajada de precio** y **En un pack**, y ♥. Sin favoritas: «Pulsa el corazón de una estrategia para seguirla.»
 - **Abajo:** **Añádela a TradingView** (solo con algo en la lista) y **Volver a la tienda**.

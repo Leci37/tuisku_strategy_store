@@ -318,10 +318,11 @@ export class App extends Component {
   }
 
   // Lo que se pide del catálogo, en el idioma de la página: la explicación del indicador de cada fila llega en él
-  // (API #2 y #3). ?lang= manda sobre la cookie y la cuenta, como en la carcasa: una página abierta con ?lang=fr y
-  // una cuenta en español no la recibe en español.
+  // (API #2 y #3). Manda sobre la cookie y la cuenta: una página abierta con ?lang=fr y una cuenta en español no la
+  // recibe en español. ?ind_lang= y no ?lang=, que el núcleo guarda en la cookie del idioma: una pestaña en otro idioma
+  // cambiaba con cada lista el de la próxima visita.
   inLang(path) {
-    return path + (path.includes('?') ? '&' : '?') + 'lang=' + encodeURIComponent(this.state.lang);
+    return path + (path.includes('?') ? '&' : '?') + 'ind_lang=' + encodeURIComponent(this.state.lang);
   }
 
   // Otro idioma: lo que enseña la explicación se pide otra vez, sin moverse de donde está: la ficha a la vista
@@ -580,6 +581,7 @@ export class App extends Component {
     this.mineLoading = true;
     if (quiet) this.mineQuietTried = true;
     api('/api/mine').then(m => {
+      if (!m) return; // por si un día contesta «null» (un cuerpo cortado ya es un fallo de red: api())
       this.keep(m.items.map(x => x.row));
       this.keep(m.favourites.map(x => x.row));
       const alerts = {};

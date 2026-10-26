@@ -259,7 +259,20 @@ Se queda como está; el diseño no lo enseña o lo simula:
   (`ind_text`) con su idioma (`ind_lang`). La `<p>` y el `<span>` llevan el `lang` y el `dir` que dice la fila
   (`exLang`, `exDir` en `detail.js` y `pro.js`): los de la página, y `lang="en"` con `dir="auto"` sólo si una falta
   (nunca `null`: Preact lo dejaría en `lang=""`, «idioma desconocido»). La página pide el catálogo en su idioma
-  (`?lang=`) y, al cambiarlo, otra vez la ficha a la vista y las páginas de Pro que se ven, sin moverse.
+  (`?ind_lang=`; con `?lang=`, el núcleo lo guardaba en la cookie del idioma, y una pestaña en otro idioma cambiaba
+  con cada lista el de la próxima visita) y, al cambiarlo, otra vez la ficha a la vista y las páginas de Pro que se
+  ven, sin moverse. Cada explicación dice lo que calcula el código del indicador en el generador
+  (`TW_pines_script/pines_script/*.py`) y no promete nada (revisión de W2): la de 1TMA hablaba de una media
+  triangular con bandas, y las de 1BOL, 1WIL y 1ULT de señales «fiables» y «precisas»; una combinada nombra sólo lo
+  que usa (`Key Combination`: 2MM0, 1M00; 2BB0, 1B00).
+- **Lo que cuenta un ajuste** (los días y las descargas de un enlace, `DOWNLOAD_DAYS` y `MAX_DOWNLOADS`; las
+  estrategias de un pack, `PACK_SIZE`) lleva la forma que pide su número, cada cuenta con su clave (`linkDays`,
+  `linkDownloads`): la fila de confianza bajo «Pagar» (`trustLinks`), la nota de los enlaces de Gracias
+  (`linksNote`), el aviso de un pack que no vale (`errPackSize`), y los correos del recibo, de la gratis y de los
+  avisos (`mailAlertBundle`). En árabe, «يومين» y «تنزيلين» con 2, «11 يومًا» con 11; antes, el texto llevaba escritos
+  los 7 días y las 10 descargas de hoy («7 أيام», «10 تنزيلات»). La maqueta los escribe fijos: **para el diseño**.
+- **Una respuesta con el cuerpo cortado** (una navegación o la red la cortaron a medias) es «sin conexión», como no
+  tener respuesta (`api.js`): antes llegaba `null`, y leerlo era un error en la consola (`m.items`, `r.id`).
 - **Las cajas de los resultados del árbol** se llaman (`aria-label`) como lo que enseñan, «Esperar −0,45» o
   «Puntuación +0,89», en el idioma de la página (`tree.js`; el marcado de la vista, igual). En el diseño se llaman con
   su línea de Pine (`ret := 0.452000 // buy`), cuyo comentario es de la fábrica (±0,7) y no de los niveles del
@@ -407,9 +420,11 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
   precio sigue encima de «Ya es tuya» en la ficha; y si una actualización se paga (la pregunta de arriba).
   Decidido el 2026-10-26: la explicación de cada indicador, en los 8 idiomas (`catalogue/indicators.csv`, E12a); los
   225 valores del árbol, con su nombre y su descripción en los 8; y «Tree depth» en inglés (E12d; la columna del
-  catálogo sigue siendo «Tree Deep»). La de 1TMA dice, como la inglesa, «media móvil triangular» con bandas, y el
-  `TMA_Overlay` del generador calcula cuatro medias suavizadas (SMMA), la de 2 velas y dos patrones de velas: el
-  texto inglés es del dueño, y sus siete traducciones lo siguen.
+  catálogo sigue siendo «Tree Deep»). Revisado el mismo día: cada explicación dice lo que calcula el código del
+  generador (la de 1TMA, sus cuatro medias suavizadas, la de 2 velas frente a la de 200 y sus dos patrones de velas)
+  y ninguna promete nada. El `indicator_tech_explanation.csv` del generador sigue con los textos de antes, «TMA Overlay
+  (Triangular Moving Average)» y la `Key Combination` de 2MM0 y 2BB0 equivocada; de él saca `S_04` el «Full Indicator
+  Name» de `catalogue.csv`, así que una estrategia 1TMA publicada saldría con ese nombre.
 
 ## Para el núcleo
 

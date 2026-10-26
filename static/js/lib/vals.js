@@ -1,7 +1,7 @@
 // renderVals(): the values object the views read, with the names of the prototype's renderVals()
 // (Storefront v7.dc.html), computed from the server's data. Split by area: shop (Lite, Pro, filters),
 // cart (bundles, pack, quote), pages (strategy page, compare, My strategies, thanks, dialogs).
-import { translator, formatters, tvSymbolUrl, LOCAL_CURRENCY } from './fmt.js';
+import { translator, formatters, tvSymbolUrl, LOCAL_CURRENCY, linkCounts } from './fmt.js';
 import { strategyPath } from './route.js';
 import { shopVals } from './vals_shop.js';
 import { cartVals } from './vals_cart.js';
@@ -29,8 +29,9 @@ export function renderVals(app) {
   TX_KEYS.forEach(k => { tx[k] = t(k); });
   const contact = (s.cfg && s.cfg.contact_email) || '';
   tx.contactProblems = t('contactProblems', { e: contact });
-  // the trust row says what the server's settings say, not the design's example figures
-  tx.trustLinks = t('trustLinks', { n: f.int((s.cfg && s.cfg.download_days) || 7), m: f.int((s.cfg && s.cfg.max_downloads) || 10) });
+  // la fila de confianza dice lo que dicen los ajustes del servidor, no las cifras de ejemplo del diseño; cada cuenta,
+  // con la forma que pide su número (en árabe, 2 lleva el dual, de 3 a 10 el plural y de 11 a 99 el singular)
+  tx.trustLinks = t('trustLinks', linkCounts(t, f, (s.cfg && s.cfg.download_days) || 7, (s.cfg && s.cfg.max_downloads) || 10));
 
   // la escala de las barras de la página de la estrategia: el mejor backtest del catálogo (del servidor).
   // Con la del diseño (100 %, para backtests de 71–86 %), los de 0,03–0,44 % del catálogo de 2026-10 no se veían

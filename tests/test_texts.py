@@ -11,6 +11,17 @@
 - Los plurales árabes: lo que cuenta lleva la forma que pide el número (3–10, el plural: «9 صفقات»; 11–99, el
   singular: «36 صفقة»), también en la nota de cada estrategia (``gradeTip``), en sus operaciones (``tradesWord``), entre
   cuántas se eligieron (``riskTried``, por las probadas) y en los cortes de la nota (``gradeCuts``, por el de la A).
+- Lo que cuenta un ajuste (los días y las descargas de un enlace, DOWNLOAD_DAYS y MAX_DOWNLOADS; las estrategias de un
+  pack, PACK_SIZE) o el catálogo (las de un lote): cada cuenta con su clave y su forma (``linkDays``,
+  ``linkDownloads``), en los correos (el recibo, la gratis, los avisos) y en la página (la fila de confianza, Gracias,
+  el aviso de un pack): en árabe, con 1, 2, 3, 11 y 100; en los demás, con 1 y con 7. Antes, cada texto valía sólo para
+  los 7 días y las 10 descargas de hoy.
+- Revisión de W2: la explicación de cada indicador dice lo que calcula su código en el generador
+  (``TW_pines_script/pines_script/*.py``) y no promete nada (antes, 1TMA hablaba de una media triangular con bandas, y
+  1BOL, 1WIL y 1ULT de señales «fiables» y «precisas»); una combinada nombra sólo lo que usa (``Key Combination``); y
+  una misma cosa lleva la misma palabra en la explicación, en el árbol y en sus variables (el momentum, el envolvente).
+- La API manda la explicación en el idioma que pide la página (``?ind_lang=``) sin tocar la cookie del idioma
+  (``?lang=`` la cambia: el núcleo lo toma por la dirección de una página en un idioma).
 """
 import csv
 import json
@@ -20,7 +31,10 @@ from zlecitool_core.testing import mobile
 
 from edgefolio.catalogue import Catalogue
 from edgefolio.settings import ROOT
+from tests.conftest import outbox
+from tests.test_free import claim, free_file  # noqa: F401 (free_file es un fixture)
 from tests.test_listing_page import CARDS, RISK, SEEN
+from tests.test_receipt import pay
 
 UI = json.loads((ROOT / "i18n" / "ui.json").read_text(encoding="utf-8"))
 TREES = json.loads((ROOT / "static" / "trees" / "ui.json").read_text(encoding="utf-8"))
@@ -79,13 +93,67 @@ def test_the_api_explains_each_indicator_in_the_language_asked(real_app):
     said = explanations(row)
     client = real_app.test_client()
     for lang in LANGS:
-        listed = client.get(f"/api/strategies?q=1BOL&size=1&lang={lang}").json["rows"][0]
-        detail = client.get(f"/api/strategies/{listed['id']}?lang={lang}").json
+        r = client.get(f"/api/strategies?q=1BOL&size=1&ind_lang={lang}")
+        listed = r.json["rows"][0]
+        detail = client.get(f"/api/strategies/{listed['id']}?ind_lang={lang}").json
         assert (listed["ind_text"], listed["ind_lang"]) == (detail["ind_text"], detail["ind_lang"]) == (said[lang], lang)
-    # sin ?lang=, el de la petición: el del navegador (Accept-Language), si no hay cookie ni cuenta (?lang= deja la
-    # suya, como en una página: por eso, otro navegador)
-    german = real_app.test_client().get("/api/strategies?q=1BOL&size=1", headers={"Accept-Language": "de-DE,de;q=0.9"}).json
+        # sin tocar la cookie del idioma: con ?lang=, cada lista de una pestaña en otro idioma cambiaba el de la visita
+        # siguiente
+        assert not [c for c in r.headers.getlist("Set-Cookie") if c.startswith("zt_lang=")], r.headers.getlist("Set-Cookie")
+    # sin ?ind_lang=, el de la petición: ?lang= (como una página), o el del navegador (Accept-Language) si no hay cookie
+    # ni cuenta; uno que la tienda no habla no cuenta
+    assert real_app.test_client().get("/api/strategies?q=1BOL&size=1&lang=fr").json["rows"][0]["ind_lang"] == "fr"
+    german = real_app.test_client().get("/api/strategies?q=1BOL&size=1&ind_lang=xx",
+                                        headers={"Accept-Language": "de-DE,de;q=0.9"}).json
     assert german["rows"][0]["ind_lang"] == "de" and german["rows"][0]["ind_text"] == said["de"]
+
+
+# Lo que una explicación no puede decir en una tienda de estrategias con backtest: promesas («fiable», «preciso», «da
+# oportunidades»). Por idioma, la raíz.
+PROMISES = {"en": r"reliab|accura|powerful|profit|better insight|more informed|suitable for|opportunit",
+            "es": r"fiable|precis|rentab|oportunidad", "pt": r"fiáve|precis|rentáve|oportunidade",
+            "fr": r"fiable|précis|rentab|opportunit", "de": r"zuverlässig|genauer|profitab|Gelegenheit|chance",
+            "zh": r"可靠|准确|机会", "ar": r"موثوق|أدق|فرص", "hi": r"भरोसेमंद|सटीक|मौक़े|मौके"}
+
+
+def test_the_explanations_say_what_the_code_computes_and_promise_nothing():
+    """Cada explicación, de lo que calcula su indicador en el generador (TW_pines_script/pines_script/*.py) y de cómo
+    se lee, sin prometer nada. 1TMA es TMA_Overlay.py: cuatro medias suavizadas (SMMA) de 21, 50, 100 y 200 velas, la
+    media de 2 velas, el three-line strike y las envolventes; ni una media triangular ni bandas."""
+    for row in INDICATORS:
+        for lang, said in explanations(row).items():
+            assert not re.search(PROMISES[lang], said, re.I), (row["Key"], lang, said)
+    tma = next(r for r in INDICATORS if r["Key"] == "1TMA")
+    en = tma["Explanation"]
+    assert all(x in en for x in ("SMMA", "21, 50, 100 and 200", "2-bar", "three-line strike", "engulfing")), en
+    assert "band" not in en.lower()
+    assert not [v for v in tma.values() if re.search("riangula|triangulaire|dreieckig|三角|المثلث|ट्रायंगुलर", v)], tma
+    assert tma["Full Indicator Name"] == "TMA Overlay"
+    # 1ULT: la segunda media (50) y el resaltado de las velas que cruzan una media son opcionales en el script
+    # (doma2 y spc, apagados): «puede añadir», no «dibuja»
+    ult = next(r for r in INDICATORS if r["Key"] == "1ULT")["Explanation"]
+    assert "can add a second one over 50 bars" in ult and "It can also highlight the bars" in ult, ult
+
+
+def test_a_combination_names_only_what_it_uses():
+    """«Key Combination» nombra sólo indicadores que la combinación usa (su «Associated Function», la de
+    TW_tech_Class.py): 2MM0 es MA Cross + Money Flow Index y decía 1M00|1SMA (Smart Money Concepts); 2BB0, Bollinger
+    Bands + Bull Bear Power, decía 1B00|1BOL (Bollinger RSI Double Strategy). Una parte sin clave propia en el catálogo
+    se deja fuera. Y la explicación de una combinada lleva, en cada idioma, la de cada parte que tiene clave."""
+    functions = {r["Key"]: {f.strip() for f in r["Associated Function"].split(",")} for r in INDICATORS}
+    by_key = {r["Key"]: r for r in INDICATORS}
+    for row in INDICATORS:
+        parts = row["Key Combination"].split("|")
+        assert all(p in functions and functions[p] <= functions[row["Key"]] for p in parts), (row["Key"], parts)
+        if not row["Key"].startswith("2"):
+            continue
+        for lang, said in explanations(row).items():
+            for p in parts:
+                part = explanations(by_key[p])[lang]
+                # (en alemán, la segunda va detrás de «Außerdem», con el verbo delante: sólo se mira la primera)
+                if lang != "de" or said.startswith("Dieser kombinierte Indikator vereint zwei Indikatoren. " + part):
+                    assert part[1:] in said, (row["Key"], lang, p)   # [1:]: «El indicador…» es «Además, el indicador…»
+        assert "Additionally, The" not in row["Explanation"] and "Außerdem gilt" not in row["Explanation_de"]
 
 
 def test_an_untranslated_explanation_is_english_and_says_so(tmp_path):
@@ -103,6 +171,54 @@ def test_an_untranslated_explanation_is_english_and_says_so(tmp_path):
         ("En español.", "es"), ("In English.", "en"), ("In English.", "en")]
     other = next(x for x in catalogue if x.key_techs != "1BOL")
     assert (catalogue.row(other, "ar")["ind_text"], catalogue.detail(other, "ar")["ind_lang"]) == ("", "ar")
+
+
+# Lo que dice cada número de un enlace (días, descargas) y de un lote (estrategias), en cada idioma: en árabe, el
+# dual de 2, el plural de 3 a 10 y el singular de 11 a 99 y de 100 (en genitivo: van tras «لمدة», «حتى» y «مقابل»).
+COUNTED = {
+    "ar": {1: ("يوم واحد", "تنزيل واحد", "مقابل استراتيجية واحدة"), 2: ("يومين", "تنزيلين", "مقابل استراتيجيتين"),
+           3: ("3 أيام", "3 تنزيلات", "مقابل 3 استراتيجيات"), 11: ("11 يومًا", "11 تنزيلًا", "مقابل 11 استراتيجية"),
+           100: ("100 يوم", "100 تنزيل", "مقابل 100 استراتيجية")},
+    "es": {1: ("1 día", "1 descarga", "por 1 estrategia."), 7: ("7 días", "7 descargas", "por 7 estrategias.")},
+    "en": {1: ("1 day", "1 download", "for 1 strategy."), 7: ("7 days", "7 downloads", "for 7 strategies.")},
+    "pt": {1: ("1 dia", "1 download", "por 1 estratégia."), 7: ("7 dias", "7 downloads", "por 7 estratégias.")},
+    "fr": {1: ("1 jour", "1 téléchargement", "pour 1 stratégie."), 7: ("7 jours", "7 téléchargements", "pour 7 stratégies.")},
+    "de": {1: ("1 Tag", "1 Download", "für 1 Strategie."), 7: ("7 Tage", "7 Downloads", "für 7 Strategien.")},
+    "zh": {1: ("1 天", "1 次", "1 个策略共"), 7: ("7 天", "7 次", "7 个策略共")},
+    "hi": {1: ("1 दिन", "1 डाउनलोड", "1 रणनीति $"), 7: ("7 दिन", "7 डाउनलोड", "7 रणनीतियाँ $")},
+}
+# Y cómo lo dice la frase de los enlaces del recibo y de la gratis, con las dos cuentas en su sitio.
+LINKS_LINE = {"ar": "لمدة {days} وحتى {downloads}", "es": "{days} y hasta {downloads}", "en": "{days} and up to {downloads}",
+              "pt": "{days} e até {downloads}", "fr": "{days} et ", "de": "{days} und für bis zu {downloads}",
+              "zh": "{days}", "hi": "{days} "}
+
+
+def test_the_mails_count_days_downloads_and_strategies_in_the_form_of_each_number(app, client, settings, shop,
+                                                                                  free_file):
+    """El recibo y la gratis dicen los días y las descargas de sus enlaces (DOWNLOAD_DAYS, MAX_DOWNLOADS: ajustes) y
+    el aviso de un lote, sus estrategias, con la forma que pide cada número (el núcleo la elige con n). Antes, en
+    árabe, «{n} أيام» y «{m} تنزيلات» sólo valían de 3 a 10, y en los demás idiomas «1 days»."""
+    sent = 0
+    for lang, cases in COUNTED.items():
+        for n, (days, downloads, strategies) in cases.items():
+            settings.download_days = settings.max_downloads = n
+            before = len(outbox("buyer@example.com"))      # quien paga en el PayPal de prueba
+            pay(client, {"items": ["AAPL_1Day_1ADX_aaaa1111"]}, lang=lang)
+            mails = outbox("buyer@example.com")
+            assert len(mails) == before + 1, (lang, n)
+            body = mails[-1]["body"]
+            line = LINKS_LINE[lang].format(days=days, downloads=downloads)
+            assert days in body and downloads in body and line in body, (lang, n, body)
+            if lang in ("ar", "es"):     # (la gratis tiene un tope por dirección y por hora)
+                sent += 1
+                assert claim(client, email=f"n{sent}@example.com", lang=lang).status_code == 200
+                body = outbox(f"n{sent}@example.com")[-1]["body"]
+                assert days in body and downloads in body and line in body, (lang, n, body)
+            with app.app_context():
+                alert = shop.texts.get("mailAlertBundle", lang, name="Tesla", ticker="TSLA", code="1C00", bundle="Duo",
+                                       price="$90.00", n=n, url="u")
+            assert strategies in alert, (lang, n, alert)
+    settings.download_days, settings.max_downloads = 7, 10
 
 
 def test_arabic_draws_signs_names_and_formulas_the_right_way_round():
@@ -128,6 +244,31 @@ def test_chinese_and_hindi_punctuation():
     assert not [(w, t) for w, t in in_language("zh") if "您" in t]
     period = [(w, t) for w, t in in_language("hi") if re.search(r"[ऀ-ॿ]\.(\s|$)", t)]
     assert not period, period[:5]
+
+
+# Una misma cosa, con la misma palabra en la explicación del indicador, en el árbol (lo que es el patrón) y en sus
+# variables: el momentum (MACD, WaveTrend, Squeeze) y el envolvente (TMA Overlay); en árabe, el nombre del ADX y la
+# barra del Williams Vix Fix (عمود, la barra de un histograma; شريط es la cinta de Madrid).
+TERMS = {"pt": ("impulso", "engolfo"), "fr": ("momentum", "avalement"), "de": ("momentum", "engulfing"),
+         "zh": ("动能", "吞没"), "ar": ("زخم", "ابتلاع"), "hi": ("मोमेंटम", "एनगल्फ़िंग")}
+OTHER_WORDS = {"fr": ("élan",), "de": ("Schwung",), "hi": ("गति",)}
+
+
+def test_one_word_for_each_thing_in_the_indicator_and_its_tree():
+    explained = {row["Key"]: explanations(row) for row in INDICATORS}
+    for lang, (momentum, engulfing) in TERMS.items():
+        tree = TREES[lang]
+        moving = [tree["pat"]["MACD_ULT_MTF"], tree["featDesc"]["hist"], tree["featDesc"]["val"],
+                  tree["pat"]["Wave_Trend_Calculation"], explained["1MAC"][lang], explained["1WAV"][lang],
+                  explained["1SQU"][lang]]
+        assert all(momentum in text.lower() for text in moving), (lang, [t for t in moving if momentum not in t.lower()])
+        assert not [t for t in moving for word in OTHER_WORDS.get(lang, ()) if word in t], lang
+        candles = [tree["pat"]["TMA_Overlay"], tree["feat"]["bullishEngulfingInt"], tree["feat"]["bearishEngulfingInt"],
+                   explained["1TMA"][lang], explained["1CAN"][lang]]
+        assert all(engulfing in text.lower() for text in candles), (lang, [t for t in candles if engulfing not in t.lower()])
+    ar = TREES["ar"]
+    assert ar["featDesc"]["adx"].startswith("مؤشر متوسط الاتجاه:") and "(مؤشر متوسط الاتجاه)" in explained["1ADX"]["ar"]
+    assert ar["feat"]["colInt"].startswith("عمود ") and "العمود" in ar["featDesc"]["colInt"]
 
 
 def test_arabic_counts_take_the_form_their_number_asks_for():
@@ -195,3 +336,49 @@ def test_arabic_lite_counts_with_the_right_form(real_app):
             assert tab.problems() == []
         finally:
             tab.close()
+
+
+def test_arabic_links_and_packs_count_with_the_right_form_in_the_page(real_app):
+    """En la página, lo que cuenta un ajuste: la fila de confianza bajo «Pagar» (DOWNLOAD_DAYS, MAX_DOWNLOADS), la nota
+    de los enlaces en Gracias y el aviso de un pack que no vale (PACK_SIZE). Antes, «الروابط لمدة 7 أيام وحتى 10
+    تنزيلات» llevaba sus números escritos, y con otros ajustes decía «11 أيام» o «2 تنزيلات»."""
+    rows = real_app.test_client().get("/api/strategies?paid=1&size=2").json["rows"]
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        tab = mobile.open_page(chromium, live, "laptop")
+        page = tab.page
+        try:
+            cart = json.dumps({"cart": [rows[0]["id"]], "bundles": [], "packIds": [], "code": "", "applied": ""})
+            page.add_init_script(SEEN + "try { localStorage.setItem('edgefolio-cart-v1', %s); } catch (e) {}" % json.dumps(cart))
+
+            def config(route):
+                response = route.fetch()
+                route.fulfill(response=response, json={**response.json(), "download_days": 11, "max_downloads": 2})
+            page.route(re.compile(r".*/api/config$"), config)
+            page.route(re.compile(r".*/api/quote$"),
+                       lambda route: route.fulfill(status=400, json={"error": "errPackSize", "vars": {"n": 5}}))
+            tab.goto("/?lang=ar")
+            page.get_by_text("الروابط لمدة 11 يومًا وحتى تنزيلين").wait_for()
+            page.locator("[data-ef-toast]").wait_for()
+            # con 5 (el PACK_SIZE de siempre), el plural; sin la cuenta, la forma «other»: «5 استراتيجية»
+            assert "تحتاج الباقة إلى 5 استراتيجيات مدفوعة مختلفة بالضبط." in page.locator("[data-ef-toast]").inner_text()
+            assert tab.problems() == ["400 POST /api/quote"], tab.problems()
+        finally:
+            tab.close()
+        for days, downloads, note in ((2, 11, "كل رابط صالح لمدة يومين وحتى 11 تنزيلًا."),
+                                      (1, 100, "كل رابط صالح لمدة يوم واحد وحتى 100 تنزيل.")):
+            tab = mobile.open_page(chromium, live, "laptop")
+            page = tab.page
+            try:
+                body = json.dumps({"order_id": "FAKE-AR", "status": "PAID", "total": "146.00", "currency": "USD",
+                                   "payer": "b•••@example.com", "valid_days": days, "max_downloads": downloads,
+                                   "download_all": "/api/download/all?t=x", "links_hidden": False, "paid_now": False,
+                                   "downloads": [{**r, "url": "/api/download/x", "zip": "/api/download/x?format=zip"}
+                                                 for r in rows]})
+                page.add_init_script(SEEN)
+                page.route("**/api/orders/*/capture",
+                           lambda route: route.fulfill(status=200, content_type="application/json", body=body))
+                tab.goto("/thanks?token=FAKE-AR&lang=ar")
+                page.get_by_text(note).wait_for()
+                assert tab.problems() == []
+            finally:
+                tab.close()

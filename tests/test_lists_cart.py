@@ -166,8 +166,8 @@ def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
             assert "US$\u200e" in note, repr(note)
             chip_off = next(t for t in page.evaluate(spans) if "\u2212" in t and "%" in t)
             assert chip_off.startswith("\u2066\u2212") and chip_off.endswith("\u2069"), repr(chip_off)
-            # (la página pide el catálogo en su idioma: ?lang=, la explicación de cada indicador va en él)
-            assert tab.problems() == ["500 GET /api/strategies?tab=crypto&q=&size=24&page=1&lang=es"], tab.problems()
+            # (la página pide el catálogo en su idioma, ?ind_lang=: la explicación de cada indicador va en él)
+            assert tab.problems() == ["500 GET /api/strategies?tab=crypto&q=&size=24&page=1&ind_lang=es"], tab.problems()
         finally:
             tab.close()
 

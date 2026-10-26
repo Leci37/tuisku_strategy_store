@@ -10,7 +10,10 @@
 // «Ver como propietario», el botón de quien ya la tiene; la «i» de cada valor, en el idioma de la página (infoLabel).
 // Sin los niveles del script (scored: el visitante, cuando la tienda no los publica), la leyenda dice «Puntuación» en
 // vez de Comprar | Vender | Esperar y por qué en una frase (data-tree-scored), y los valores no llevan las zonas de
-// colores ni su leyenda: dirían qué haría la estrategia, y sin los niveles no se sabe.
+// colores ni su leyenda: dirían qué haría la estrategia, y sin los niveles no se sabe. Por lo mismo, la escala y los
+// dos ejemplos de «Resultado del árbol» van en gris (gaugeBg, exBuy*, exSell*). La escala (data-tree-gauge) va de
+// izquierda a derecha (dir="ltr"), como su barra y los deslizadores, y cada extremo en su idioma (dir="auto"): en
+// árabe, «بيع −1» quedaba bajo el extremo verde, el de +1.
 import { html } from '../../lib/html.js';
 import { s, T } from '../../lib/tpl.js';
 
@@ -43,18 +46,18 @@ export default function TreeMain(v) {
           <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
             <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80">${v.L?.output}</span>
             <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><strong style="font-size:30px;font-weight:700;letter-spacing:-.5px;line-height:1.1;color:${s(v.sigColor)}">${v.sigLabel}</strong><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:${s(v.sigColor)}">${v.sigValue}</span></div>
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <div style="position:relative;height:8px;border-radius:999px;background:linear-gradient(90deg,#f3c1bb,#e2e9f0 50%,#b7e4c7)">${' '}
+            <div dir="ltr" data-tree-gauge style="display:flex;flex-direction:column;gap:4px">
+              <div style="position:relative;height:8px;border-radius:999px;background:${s(v.gaugeBg)}">${' '}
                 ${v.hasMarker ? html`<span style="position:absolute;top:-4px;left:${s(v.markerLeft)};width:4px;height:16px;margin-left:-2px;border-radius:2px;background:#16263a"></span>` : null}${' '}
                 </div>
-              <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a6b80"><span>${v.L?.sellEnd}</span><span>0</span><span>${v.L?.buyEnd}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a6b80"><span dir="auto">${v.L?.sellEnd}</span><span>0</span><span dir="auto">${v.L?.buyEnd}</span></div>
               </div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
               ${(v.pathChips || []).map((c, $index) => html`<span style="font-size:12px;font-weight:600;background:#e9f0fd;color:#0950e3;border-radius:999px;padding:3px 9px">${c?.text}</span>`)}
               </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button onClick=${v.buyExample} style="font-family:inherit;border:1px solid #b7e4c7;background:#e8f7ef;color:#15803d;font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.buyEx}</button>
-              <button onClick=${v.sellExample} style="font-family:inherit;border:1px solid #f3c1bb;background:#fdecea;color:#c0392b;font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.sellEx}</button>
+              <button onClick=${v.buyExample} style="font-family:inherit;border:1px solid ${s(v.exBuyBd)};background:${s(v.exBuyBg)};color:${s(v.exBuyC)};font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.buyEx}</button>
+              <button onClick=${v.sellExample} style="font-family:inherit;border:1px solid ${s(v.exSellBd)};background:${s(v.exSellBg)};color:${s(v.exSellC)};font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.sellEx}</button>
               </div>
             <span style="font-size:11.5px;color:#8d9cae;margin-top:-4px">${v.L?.exHelp}</span>
             </div>

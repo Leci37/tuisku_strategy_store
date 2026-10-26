@@ -25,7 +25,10 @@ de verdad con el kit del núcleo (``testing.mobile``, 0.28) sobre el catálogo d
   «Comprar». En una gratis, «pídela» y no «cómprala».
 - El visitante (E9): con los niveles que publica la tienda (API #3: ``buy_at``, ``close_at``); sin ellos, ningún
   resultado dice Comprar, Vender ni Esperar: cada uno, su puntuación, sin las zonas de colores, y la pestaña dice
-  por qué (``noLevels``). Nunca 0,55 y −0,9.
+  por qué (``noLevels``). Nunca 0,55 y −0,9. Tampoco «Resultado del árbol»: su escala dice −1 y +1, y ella y los
+  dos ejemplos van en gris; la ayuda de los valores y el pie de la explicación de un resultado, de la puntuación.
+- En árabe, la escala de «Resultado del árbol» va de izquierda a derecha, como su barra, y el + de una
+  puntuación sale delante de sus cifras, como el −.
 - En el móvil, tocar una pregunta enseña su explicación aunque la página se mueva sola justo después.
 """
 import json
@@ -58,7 +61,7 @@ TRANSLATED = {"L_Vortex_Indicator", "L_Triple_EMA", "MACD_ULT_MTF", "Bollinger_R
               "L_Chaikin_Money_Flow", "L_Money_Flow_Index", "L_Stochastic_RSI"}
 # Los textos del árbol sin los niveles del script (E9), y la nota de un valor dividido por el cierre.
 SCORED_TEXTS = ("relNote", "score", "results", "s3Score", "noLevels", "leadScore1", "leadScoreN", "hiEx", "loEx",
-                "exHelpScore")
+                "exHelpScore", "optTextScore", "leafFootScore")
 
 
 def text_of(lang: str, key: str) -> str:
@@ -285,6 +288,22 @@ ASIDE = """() => { const a = document.querySelector('aside'); if (!a) return nul
            zones: [...a.querySelectorAll('span')].filter(s => s.style.opacity !== '' && s.style.top === '3px').length }; }"""
 
 
+# «Resultado del árbol»: su escala (cada extremo, con dónde empieza y acaba; la barra y su fondo), sus dos ejemplos (texto,
+# color y fondo) y si el signo de la puntuación se pinta delante de sus cifras (null si no lleva signo).
+OUTPUT = """() => { const box = document.querySelector('aside > div'); if (!box) return null;
+  const gauge = box.querySelector('[data-tree-gauge]'), bar = gauge.children[0], value = box.querySelector('strong + span');
+  const rect = el => { const r = el.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; };
+  const node = [...value.childNodes].find(n => n.nodeType === 3 && /\\d/.test(n.data));
+  const at = i => { const r = document.createRange(); r.setStart(node, i); r.setEnd(node, i + 1); return r.getBoundingClientRect().left; };
+  const sign = node.data.search(/[+−-]/), digit = node.data.search(/\\d/);
+  return { labels: [...gauge.children[1].children].map(s => [s.textContent, ...rect(s)]), bar: rect(bar),
+           gradient: getComputedStyle(bar).backgroundImage, value: value.textContent,
+           buttons: [...box.querySelectorAll('button')].map(b => [b.textContent.trim(), getComputedStyle(b).color, getComputedStyle(b).backgroundColor]),
+           signFirst: sign < 0 ? null : at(sign) < at(digit) }; }"""
+TIP_TEXT = "() => { const t = document.querySelector('[role=tooltip]'); return t ? t.textContent : null; }"
+NEUTRAL, GREEN, RED = "rgb(22, 38, 58)", "rgb(21, 128, 61)", "rgb(192, 57, 43)"
+
+
 # La caja cuyo código empieza por arg[0] dice arg[1] (para until).
 LEAF_SAYS = "(seen, arg) => Object.entries(seen.boxes).some(([k, t]) => k.startsWith(arg[0]) && t.startsWith(arg[1]))"
 
@@ -423,6 +442,12 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             assert seen["about"] == [["ar", UI["ar"]["pat"]["MACD_ULT_MTF"], "rtl"]], seen["about"]
             assert box(seen, "if( signal__close <=").startswith(UI["ar"]["feat"]["signal"]), seen["boxes"]
             assert UI["ar"]["noLevels"] in seen["text"], "sin los niveles del script, lo dice"
+            # la escala de «Resultado del árbol» va de izquierda a derecha, como su barra (antes, en árabe, el extremo de
+            # venta quedaba bajo el verde); el + de la puntuación, delante de sus cifras, como el − (antes, «0.89+»)
+            out = tab.page.evaluate(OUTPUT)
+            (low, low_left, _), _, (high, _, high_right) = out["labels"]
+            assert (low, high) == ("−1", "+1") and (low_left, high_right) == tuple(out["bar"]), out
+            assert out["value"].lstrip("\u200e").startswith("+") and out["signFirst"] is True, out
             info = UI["ar"]["whatIs"].replace("{f}", "signal__close")
             tip = pinned(tab, tab.page.locator(f'button[aria-label="{info}"]'))
             assert tip and tip["lang"] == "ar" and tip["title"] == UI["ar"]["feat"]["signal"], tip
@@ -455,6 +480,12 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             aside = tab.page.evaluate(ASIDE)
             assert aside["buttons"][:2] == [es("hiEx"), es("loEx")] and aside["zones"] == 0, aside
             assert es("exHelpScore") in aside["text"] and es("s3Score") in tab.page.evaluate("document.body.textContent")
+            # «Resultado del árbol» tampoco: su escala, −1 y +1 (sin «Venta» ni «Compra») y en gris, como los dos ejemplos;
+            # la ayuda de los valores, a qué resultado llega (no qué haría); la explicación de un resultado, su puntuación
+            out = tab.page.evaluate(OUTPUT)
+            assert [t for t, _, _ in out["labels"]] == ["−1", "0", "+1"] and out["gradient"] == "none", out
+            assert {c for _, c, _ in out["buttons"]} == {NEUTRAL}, out
+            assert es("optTextScore") in aside["text"] and UI["es"]["optText"] not in aside["text"]
             assert box(seen, "if( macd__close <=").startswith("macd__close"), seen["boxes"]
             assert box(seen, "if( ema2__close <=").startswith(FX["features"]["ema2"][2]), seen["boxes"]
             assert [lang for lang, _, _ in seen["about"]] == ["es", "es"], seen["about"]
@@ -462,6 +493,17 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             tip = pinned(tab, tab.page.locator(f'button[aria-label="{info}"]'))
             assert tip and tip["lang"] == "es" and tip["text"] == FX["features"]["ema2"][3] + " " + es("relNote"), tip
             close_tip(tab)
+            # (después de esa explicación: con la página desplazada hasta el resultado, la × de aquélla quedaba encima de
+            # otro valor, que abría la suya al cerrarla)
+            leaf = tab.page.locator('[data-tree-scroll] button[aria-label^="ret := 1.0"]')
+            leaf.scroll_into_view_if_needed()
+            tab.page.wait_for_timeout(250)     # desplazarse cierra la explicación: antes, a la vista
+            leaf.hover()
+            tab.page.wait_for_function("() => !!document.querySelector('[role=tooltip]')")
+            tip = tab.page.evaluate(TIP_TEXT)
+            assert tip.startswith(es("score") + " +1,00") and es("leafFootScore") in tip, tip
+            tab.page.mouse.move(1, 1)
+            tab.page.wait_for_function("() => !document.querySelector('[role=tooltip]')")
             tab.page.get_by_role("button", name=es("unlockBtn"), exact=True).click()
             tab.page.wait_for_function(f"() => ({CART})().includes('{crafted}')")
             tab.page.locator("[data-tree-sec] button", has_text=re.compile(
@@ -508,7 +550,13 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             verbs = [next((w for w in VERBS if box(seen, f"ret := {v}").startswith(w)), None)
                      for v in ("0.700000", "0.100000", "-0.600000")]
             assert verbs == [BUY, WAIT, SELL], seen["boxes"]
-            assert es("noLevels") not in seen["text"] and tab.page.evaluate(ASIDE)["zones"] > 0
+            aside = tab.page.evaluate(ASIDE)
+            assert es("noLevels") not in seen["text"] and aside["zones"] > 0
+            # con ellos, «Resultado del árbol» es el del diseño: venta y compra en su escala, verde y rojo en los ejemplos
+            out = tab.page.evaluate(OUTPUT)
+            assert [t for t, _, _ in out["labels"]] == [es("sellEnd"), "0", es("buyEnd")] and "gradient" in out["gradient"]
+            assert [c for _, c, _ in out["buttons"]][:2] == [GREEN, RED], out
+            assert UI["es"]["optText"] in aside["text"] and es("optTextScore") not in aside["text"]
 
             # una gratis que la cuenta no tiene: pedirla, no comprarla
             tab.goto(f"/s/{free}/tree")

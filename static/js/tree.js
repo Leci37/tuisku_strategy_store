@@ -55,7 +55,9 @@ const TEXT = {
     score: 'Score', results: 'Results', s3Score: 'The path ends in a result: its score, from −1 to +1.',
     noLevels: 'The scores at which this script buys and closes are in its full script: here each result shows only its score.',
     leadScore1: 'Gives this score when this condition is met:', leadScoreN: 'Gives this score when these {n} conditions are met at the same time:',
-    hiEx: 'Highest score', loEx: 'Lowest score', exHelpScore: 'Sets the values that reach the highest or lowest score of this tree.'
+    hiEx: 'Highest score', loEx: 'Lowest score', exHelpScore: 'Sets the values that reach the highest or lowest score of this tree.',
+    optTextScore: 'The model chose these values from historical data and they are fixed in the script. Moving a slider does not change the strategy: it simulates a different market reading so you can see which result it reaches.',
+    leafFootScore: 'Score from −1 to +1: the average of the training days that ended here. Click to go to this result.'
   },
   es: {
     locale: 'es-ES', pageName: 'Árbol de la estrategia', store: 'Abrir la tienda', h1: 'Cómo decide una estrategia',
@@ -99,7 +101,9 @@ const TEXT = {
     score: 'Puntuación', results: 'Resultados', s3Score: 'El camino termina en un resultado: su puntuación, de −1 a +1.',
     noLevels: 'Las puntuaciones con las que este script compra y cierra están en su script completo: aquí cada resultado enseña solo su puntuación.',
     leadScore1: 'Da esta puntuación cuando se cumple esta condición:', leadScoreN: 'Da esta puntuación cuando se cumplen estas {n} condiciones a la vez:',
-    hiEx: 'Puntuación más alta', loEx: 'Puntuación más baja', exHelpScore: 'Pone los valores que llevan a la puntuación más alta o más baja de este árbol.'
+    hiEx: 'Puntuación más alta', loEx: 'Puntuación más baja', exHelpScore: 'Pone los valores que llevan a la puntuación más alta o más baja de este árbol.',
+    optTextScore: 'El modelo eligió estos valores con datos históricos y vienen fijados en el script. Mover un deslizador no cambia la estrategia: simula otra lectura del mercado para que veas a qué resultado llega.',
+    leafFootScore: 'Puntuación de −1 a +1: la media de los días de entrenamiento que acabaron aquí. Haz clic para ir a este resultado.'
   }
 };
 
@@ -125,6 +129,8 @@ const rowId = P => (P.strategy && P.strategy.id) || '';
 // no son los niveles.
 const BUY_AT = 0.55, CLOSE_AT = -0.9;
 const signalOf = (v, lv) => (v >= lv.buy ? 'buy' : v <= lv.close ? 'sell' : 'none');
+// Si el navegador pone el signo + del idioma (signDisplay, de Safari 14.1 en adelante): fmtV.
+const SIGNS = (() => { try { return new Intl.NumberFormat('en', { signDisplay: 'exceptZero' }).format(1) === '+1'; } catch (e) { return false; } })();
 // Los que publica la tienda para una estrategia (API #3), o null; sin el de cierre, ningún resultado cierra.
 const published = row => (row && typeof row.buy_at === 'number'
   ? { buy: row.buy_at, close: typeof row.close_at === 'number' ? row.close_at : -Infinity } : null);
@@ -384,12 +390,18 @@ export class StrategyTree extends Component {
     if (P.owned) Object.assign(L, { ctaRest: L.ownedRest, lockText: L.ownedLock });
     // con qué niveles se leen los resultados (signalOf): el bosque del propietario, con los de su script; el árbol del
     // visitante, con los publicados. Sin ellos (scored) nada dice comprar, vender ni esperar: el tercer paso, los dos
-    // ejemplos y su ayuda hablan de la puntuación, y la pestaña dice por qué (noLevels)
+    // ejemplos y su ayuda, la escala de «Resultado del árbol» (−1 y +1, sin venta ni compra), la ayuda de los valores
+    // (a qué resultado llega, no qué haría) y el pie de la explicación de un resultado hablan de la puntuación, y la
+    // pestaña dice por qué (noLevels)
     const lv = s.full && trees === s.full ? s.fullLv : published(P.strategy), scored = !lv;
-    if (scored) Object.assign(L, { s3: L.s3Score, buyEx: L.hiEx, sellEx: L.loEx, exHelp: L.exHelpScore });
+    if (scored) Object.assign(L, { s3: L.s3Score, buyEx: L.hiEx, sellEx: L.loEx, exHelp: L.exHelpScore, sellEnd: '−1', buyEnd: '+1', optText: L.optTextScore, leafFoot: L.leafFootScore });
+    // y sin sus colores: la escala y los dos ejemplos, en gris, sin el rojo de vender ni el verde de comprar
+    const ex = scored ? ['#16263a', '#f4f8fb', '#cfd8e3', '#16263a', '#f4f8fb', '#cfd8e3'] : ['#15803d', '#e8f7ef', '#b7e4c7', '#c0392b', '#fdecea', '#f3c1bb'];
     const unlockLabel = P.owned ? L.ownedBtn : free ? L.fBtn : P.inCart ? L.added : L.unlockBtn;
     const base = {
       L, scored, steps: [L.s1, dir === 'vertical' ? L.s2v : L.s2h, L.s3].map((text, i) => ({ n: String(i + 1), text })),
+      gaugeBg: scored ? '#e2e9f0' : 'linear-gradient(90deg,#f3c1bb,#e2e9f0 50%,#b7e4c7)',
+      exBuyC: ex[0], exBuyBg: ex[1], exBuyBd: ex[2], exSellC: ex[3], exSellBg: ex[4], exSellBd: ex[5],
       loading: !s.trees && !s.err, ready: !!s.trees, hasErr: !!s.err, err: s.err,
       isTree: s.view === 'tree', isRules: s.view === 'rules',
       showTree: () => this.setState({ view: 'tree' }), showRules: () => this.setState({ view: 'rules' }),
@@ -411,7 +423,9 @@ export class StrategyTree extends Component {
       const a = Math.abs(x);
       return minus(new Intl.NumberFormat(L.locale, { maximumFractionDigits: a >= 1000 ? 0 : a >= 100 ? 1 : a >= 10 ? 2 : 3 }).format(x));
     };
-    const fmtV = v => (v > 0 ? '+' : '') + minus(new Intl.NumberFormat(L.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v));
+    // el + lo pone el formato del idioma (signDisplay), como el −: en árabe, con su marca de izquierda a derecha, y una
+    // puntuación sale «+0.89», no «0.89+» (sólo el − la llevaba); un navegador sin signDisplay, el + de siempre
+    const fmtV = v => (SIGNS ? '' : v > 0 ? '+' : '') + minus(new Intl.NumberFormat(L.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(v));
     const isBoolF = f => /Int$/.test(f);
     const nice = f => f.replace(/Int$/, '');
     // [nombre, descripción, el idioma de la descripción]. Un nombre es el de su patrón (el quinto campo): `d` es la

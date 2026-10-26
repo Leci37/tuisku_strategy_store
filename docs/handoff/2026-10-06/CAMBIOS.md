@@ -134,10 +134,18 @@ Se queda como está; el diseño no lo enseña o lo simula:
   +0,88», en gris oscuro y con el icono de un medidor, en el árbol, en Bloques, en «Resultado del árbol» y en
   su explicación); la leyenda dice «Puntuación» en vez de Comprar | Vender | Esperar y, debajo, por qué
   (`noLevels`, `data-tree-scored` en `tree_main.js`); los deslizadores no pintan sus zonas de colores ni su
-  leyenda (dirían qué haría la estrategia); el tercer paso, los dos ejemplos y su ayuda hablan de la puntuación
-  (`s3Score`, `hiEx`, `loEx`, `exHelpScore`), y «Ver todas las reglas» las junta en un grupo, de la puntuación
-  más alta a la más baja (`results`, `leadScore1`, `leadScoreN`). El diseño no tiene ese estado: siempre dice
-  comprar, vender o esperar.
+  leyenda (dirían qué haría la estrategia), y su ayuda dice que se ve a qué resultado llega, no qué haría
+  (`optTextScore`); la escala de «Resultado del árbol» dice −1 y +1, sin «Venta» ni «Compra», y va en gris, como
+  los dos ejemplos (`gaugeBg`, `exBuy*` y `exSell*` en `tree_main.js`); el tercer paso, los dos ejemplos y su
+  ayuda y el pie de la explicación de un resultado hablan de la puntuación (`s3Score`, `hiEx`, `loEx`,
+  `exHelpScore`, `leafFootScore`), y «Ver todas las reglas» las junta en un grupo, de la puntuación más alta a la
+  más baja (`results`, `leadScore1`, `leadScoreN`). El diseño no tiene ese estado: siempre dice comprar, vender o
+  esperar.
+- **La escala de «Resultado del árbol» va de izquierda a derecha** también en árabe (`dir="ltr"` y el gancho
+  `data-tree-gauge` en `tree_main.js`), como su barra y los deslizadores, con cada extremo en su idioma
+  (`dir="auto"`): en árabe, «بيع −1» quedaba a la derecha, bajo el extremo verde (el de +1), donde estaba la marca
+  de una compra. Y el + de una puntuación lo pone el formato del idioma (`signDisplay` en `tree.js`), como el −:
+  en árabe salía «0.89+».
 - **En una gratis, el árbol** dice «Script completo» y «Conseguirla gratis», no «Parte de pago» y «Comprar
   para desbloquear»; el clic abre el diálogo de la gratis, como en el diseño. Su vista de propietario dice
   con qué correo se pidió y que se pide gratis (`fOwnSignIn`, `fOwnNotYours`), no «compraste» ni «Cómprala».

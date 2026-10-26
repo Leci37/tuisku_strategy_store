@@ -415,6 +415,8 @@
   "hiEx": "Pontuação mais alta",
   "loEx": "Pontuação mais baixa",
   "exHelpScore": "Coloca os valores que levam à pontuação mais alta ou mais baixa desta árvore.",
+  "optTextScore": "O modelo escolheu estes valores com dados históricos e estão fixos no script. Mover um cursor não muda a estratégia: simula outra leitura do mercado para veres a que resultado chega.",
+  "leafFootScore": "Pontuação de −1 a +1: a média dos dias de treino que terminaram aqui. Clica para ir para este resultado.",
   "featDesc": {
    "VIP": "Força dos movimentos de alta nas últimas velas; quanto mais alto, mais força.",
    "VIM": "Força dos movimentos de baixa nas últimas velas; quanto mais alto, mais força.",
@@ -828,6 +830,8 @@
   "hiEx": "Score le plus haut",
   "loEx": "Score le plus bas",
   "exHelpScore": "Place les valeurs qui mènent au score le plus haut ou le plus bas de cet arbre.",
+  "optTextScore": "Le modèle a choisi ces valeurs à partir de données historiques et elles sont fixées dans le script. Déplacer un curseur ne change pas la stratégie : cela simule une autre lecture du marché pour voir à quel résultat elle mène.",
+  "leafFootScore": "Score de −1 à +1 : la moyenne des jours d’entraînement arrivés ici. Cliquez pour aller à ce résultat.",
   "featDesc": {
    "VIP": "Force des mouvements haussiers sur les dernières bougies ; plus il est élevé, plus ils sont forts.",
    "VIM": "Force des mouvements baissiers sur les dernières bougies ; plus il est élevé, plus ils sont forts.",
@@ -1241,6 +1245,8 @@
   "hiEx": "Höchster Score",
   "loEx": "Niedrigster Score",
   "exHelpScore": "Setzt die Werte, die zum höchsten oder niedrigsten Score dieses Baums führen.",
+  "optTextScore": "Das Modell hat diese Werte mit historischen Daten gewählt, und sie sind im Skript festgelegt. Ein Regler ändert die Strategie nicht: Er simuliert eine andere Marktlage, damit du siehst, zu welchem Ergebnis sie führt.",
+  "leafFootScore": "Score von −1 bis +1: der Durchschnitt der Trainingstage, die hier endeten. Klicke, um zu diesem Ergebnis zu gehen.",
   "featDesc": {
    "VIP": "Stärke der Aufwärtsbewegungen der letzten Kerzen; je höher, desto stärker.",
    "VIM": "Stärke der Abwärtsbewegungen der letzten Kerzen; je höher, desto stärker.",
@@ -1654,6 +1660,8 @@
   "hiEx": "最高得分",
   "loEx": "最低得分",
   "exHelpScore": "设置可到达此树最高或最低得分的数值。",
+  "optTextScore": "模型根据历史数据选择了这些数值，并固定在脚本中。移动滑块不会改变策略：它只模拟另一种市场读数，让你看到会得到哪个结果。",
+  "leafFootScore": "得分 −1 到 +1：在此结束的训练日的平均值。点击可跳到此结果。",
   "featDesc": {
    "VIP": "最近几根K线上涨走势的力度；数值越高，上涨越强。",
    "VIM": "最近几根K线下跌走势的力度；数值越高，下跌越强。",
@@ -2067,6 +2075,8 @@
   "hiEx": "أعلى درجة",
   "loEx": "أدنى درجة",
   "exHelpScore": "يضع القيم التي تؤدي إلى أعلى أو أدنى درجة في هذه الشجرة.",
+  "optTextScore": "اختار النموذج هذه القيم ببيانات تاريخية، وهي ثابتة في السكربت. تحريك المنزلق لا يغيّر الاستراتيجية: إنه يحاكي قراءة أخرى للسوق لترى إلى أي نتيجة تصل.",
+  "leafFootScore": "الدرجة من −1 إلى +1: متوسط أيام التدريب التي انتهت هنا. انقر للانتقال إلى هذه النتيجة.",
   "featDesc": {
    "VIP": "قوة الحركات الصاعدة في الشموع الأخيرة؛ كلما ارتفع زادت قوتها.",
    "VIM": "قوة الحركات الهابطة في الشموع الأخيرة؛ كلما ارتفع زادت قوتها.",
@@ -2478,8 +2488,10 @@
   "leadScore1": "यह शर्त पूरी होने पर यह स्कोर देती है:",
   "leadScoreN": "ये {n} शर्तें एक साथ पूरी होने पर यह स्कोर देती है:",
   "hiEx": "सबसे ऊँचा स्कोर",
-  "loEx": "सबसे नीचा स्कोर",
-  "exHelpScore": "वे मान सेट करता है जो इस पेड़ के सबसे ऊँचे या सबसे नीचे स्कोर तक ले जाते हैं।",
+  "loEx": "सबसे कम स्कोर",
+  "exHelpScore": "वे मान सेट करता है जो इस पेड़ के सबसे ऊँचे या सबसे कम स्कोर तक ले जाते हैं।",
+  "optTextScore": "मॉडल ने ये मान ऐतिहासिक डेटा से चुने हैं और ये स्क्रिप्ट में तय हैं। स्लाइडर हिलाने से रणनीति नहीं बदलती: यह बाज़ार की कोई दूसरी स्थिति दिखाता है ताकि आप देखें कि वह किस नतीजे तक पहुँचती है।",
+  "leafFootScore": "स्कोर −1 से +1: यहाँ खत्म हुए ट्रेनिंग दिनों का औसत। इस नतीजे पर जाने के लिए क्लिक करें।",
   "featDesc": {
    "VIP": "पिछली कैंडलों में ऊपर की चालों की ताकत; जितना ऊँचा, उतनी ज़्यादा ताकत।",
    "VIM": "पिछली कैंडलों में नीचे की चालों की ताकत; जितना ऊँचा, उतनी ज़्यादा ताकत।",

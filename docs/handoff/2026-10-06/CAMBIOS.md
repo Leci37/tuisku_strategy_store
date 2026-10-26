@@ -30,7 +30,7 @@ Todo es de la herramienta salvo que se diga.
 
 | # | Cambio del diseño | Estado | Dónde |
 |---|---|---|---|
-| 1 | Insignia «Nuevo» (`tabNew`) en las fichas de Lite publicadas en los últimos 30 días | hecho | `is_new` del servidor (el mismo `NEW_DAYS` que la pestaña); `vals.js` `isNew`; `lite.js`. El catálogo de hoy no tiene ninguna de los últimos 30 días |
+| 1 | Insignia «Nuevo» (`tabNew`) en las fichas de Lite publicadas en los últimos 30 días | hecho | `is_new` del servidor (el mismo `NEW_DAYS` que la pestaña); `vals.js` `isNew`; `lite.js`. Con el catálogo de 2026-10, todas: se publicaron el 13 oct 2026 y la llevan hasta el 12 nov 2026 |
 | 1 | Añadir un lote o el pack quita los otros lotes que comparten estrategia | ya estaba | `vals_cart.js` `addBundle`; el servidor rechaza un carrito con una estrategia dos veces (`errBundleOverlap`) |
 | 1 | La píldora Comparar va encima del carrito flotante, no lo tapa | hecho | `lite.js` (el «dock»), `vals_pages.js` `cmpFloat`, `dockBottom` |
 | 1 | Esc cierra el selector del pack y Comparar | hecho | `app.js` `onKey`: una capa por pulsación (Comparar, pack, gratis, desplegable de Pro) |
@@ -163,7 +163,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
   inglesa: va en la dirección de la página, y en árabe «WaveTrend…», «SuperTrend…» y «CM Ultimate MA…» salían de
   izquierda a derecha.
 - **Árbol | Bloques** llevan `aria-selected`, como Ficha técnica | Cómo decide.
-- **«CLAVE · indicador»** de 1.402 estrategias (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
+- **«CLAVE · indicador»** de 68 estrategias de las 143 (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:
   `indicators.csv` no les da una dirección. Si se quiere otra, la pone el generador.
 - **Los avisos** (errores, novedades) son de la tienda: el diseño no los tiene.
@@ -289,7 +289,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 
 | # | Pregunta | Lo que hace la tienda hoy |
 |---|---|---|
-| 1 | Cortes de la nota (A ≥ 300, B ≥ 100, C ≥ 30) | Esos, sobre el número de operaciones; por acordar |
+| 1 | Cortes de la nota (A ≥ 300, B ≥ 100, C ≥ 30) | Esos, sobre el número de operaciones; por acordar. Con el catálogo de 2026-10 (5–63 operaciones) solo salen C (35) y D (108) |
 | 2 | ¿Los tramos se suman al precio de un lote? | Sí: tramo y código (con el tope `MAX_DISCOUNT`) también sobre lotes y pack; un código de precio fijo, no |
 | 3 | Un lote nuevo sustituye a otro que comparte estrategia | Sí, en la página; el servidor rechaza (nunca elige) un carrito con una estrategia dos veces |
 | 4 | ¿Qué hace «Conectar TradingView»? | Abre tradingview.com en otra pestaña y lo recuerda; no hay API a la que conectarse |
@@ -299,10 +299,35 @@ Se queda como está; el diseño no lo enseña o lo simula:
 | 8 | La ficha no tiene resumen del carrito | Igual; en el móvil la barra de abajo cuenta lo que hay |
 | 9 | Pro enseña «Pagar» con el carrito vacío | Igual; no hace nada |
 | 10 | Los tramos en USD y los totales en moneda local | Igual; se paga en USD («Pagas X US$ con PayPal») |
-| 11 | Revisión nativa de zh, ar e hi | Pendiente |
+| 11 | Revisión nativa de zh, ar e hi | Pendiente, también para los textos nuevos de 2026-10: `tour1Pro`, los plurales de `shown` y `selectedN`, `ownedYours`, los cuatro de una gratis en la ficha, `proofProvenTitle` / `proofProvenText`, y en el árbol los 22 `pat`, `ownFull`, `ownFail`, `fOwnSignIn`, `fOwnNotYours`, `ownedRest`, `ownedLock`, `ownedBtn` y `whatIs` |
 
 Y la de la pantalla 8: **¿«Conseguir la actualización» se paga?** Hoy no hay versiones más allá de la v1;
 renovar un enlace da la versión de hoy. Si se paga, hace falta un script por versión y un pedido.
+
+**Y las del dueño, abiertas** (salieron del recorrido de 2026-10-25 y 2026-10-26; la tienda no las decide):
+
+- **Cómo se listan las estrategias.** La tienda enseña el backtest del periodo de prueba de las estrategias
+  que eligió el generador. Probadas con datos que no vieron, pierden de media después de costes (Readme del
+  generador, sección 9). Cómo listarlas lo decide el dueño.
+- **Las 55 estrategias horarias** (49 de acciones): sus cifras salen del backtest en Python, que los datos
+  gratis de TradingView no reproducen.
+- **Las condiciones de TradingView** (§23: desde el 2026-11-01, los scripts solo se venden en su Marketplace)
+  y las normas de la UE y de España para vender estrategias.
+- **`fx-update` y `send-alerts`** siguen con `cron`, en un solo servidor; pasarlos a `"schedule"` del
+  núcleo está pendiente.
+- **Una estrategia que ya es de la cuenta se vuelve a vender.** La ficha y el árbol dicen «Ya es tuya», pero
+  el presupuesto y el pedido no lo miran: desde las tarjetas de Lite o de Pro se cobra otra vez. Negarlo
+  (p. ej. `errAlreadyOwned`) es una regla de negocio.
+- **El árbol del visitante** se colorea con 0,55 y −0,9 (los niveles de los scripts de 2024), porque la
+  vista previa se corta antes de los de cada script: en 131 de los 143 árboles visibles algún resultado
+  sale de otro color que su comentario. Publicar los niveles de cada script lo decide el dueño.
+- **Los cortes de la nota** (pregunta 1): con los de hoy y las 5–63 operaciones del catálogo, solo C y D.
+- **«Desde su publicación»** no tiene trabajo diario: sale siempre «—», y su barra, vacía.
+- **Contenido y traducciones:** la explicación de cada indicador (`catalogue/indicators.csv`, solo en
+  inglés) y las 44 descripciones del árbol (`static/trees/features.json`, solo en es y en); los nombres y
+  descripciones de los 139 valores del árbol que salen con su código; la revisión nativa de zh, ar e hi
+  (pregunta 11); «Tree Deep» en inglés (para el diseño); si el precio sigue encima de «Ya es tuya» en la
+  ficha; y si una actualización se paga (la pregunta de arriba).
 
 ## Para el núcleo
 
@@ -339,10 +364,22 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
    `zlecitool_core.i18n.format_money(valor, moneda, idioma)`): el recibo de la tienda dice «47.45 USD» en
    español, donde la página dice «47,45 US$». Con él, `orders.money()` lo usaría con el idioma de
    `email_receipt()`; la tienda no escribe su propio formateador.
+9. **«Entrar» y el `from=` de Contacto, al pulsarlos.** La carcasa los escribe en el servidor con la
+   dirección de llegada (`back_after_login`, `zt_contact_url`); en una herramienta con rutas en el
+   navegador (`pushState`), después de ir a otra ficha sin recargar, «Entrar» vuelve a la primera (o a
+   `/`), y Contacto dice que se venía de ella. Bastaría que `shell.js` les pusiera `location.pathname +
+   location.search` al pulsarlos.
 
 ## Pruebas
 
-- `pytest`: 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
+- `pytest`, hoy (2026-10-26): 267 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
+  están en la máquina), con Chromium; sin él, las pruebas en un navegador se saltan y no prueban nada. Las
+  de los arreglos del recorrido de 2026-10-25: `tests/test_keyboard.py` (los diálogos y el teclado),
+  `tests/test_lists_cart.py` (Lite, el carrito, el recorrido y Gracias), `tests/test_scales.py` (las escalas
+  de Pro y las barras de la ficha), `tests/test_strategy_page.py`, `tests/test_tree.py`,
+  `tests/test_mine_page.py` y lo nuevo de `tests/test_phone_bar.py`, `test_pricing.py`, `test_orders.py` y
+  `test_search.py`.
+- Con esta exportación eran 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
   cada valor, campo y texto que leen las vistas lo da `static/js`; los textos en los 8 idiomas con las
   mismas variables y sin claves del núcleo; los ganchos `data-search` y `data-sf-cart`); en
   `test_design_update.py`, la forma de octubre (`vendor/`, las notas nuevas, `versions/` fuera) y
@@ -353,5 +390,5 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 - `tools/screenshots.py`, el recorrido en un navegador, comprueba cada cambio de esta exportación; pasa
   entero, sobre una base de datos nueva, sin un error en la consola. Las 17 capturas del README, otra vez,
   y tres nuevas: `edgefolio_free_error.png`, `edgefolio_pro_es.png` y `edgefolio_phone_cart.png`.
-- La «insignia Nuevo» no se ve en el catálogo de hoy (nada publicado en los últimos 30 días): se probó con
-  datos de prueba.
+- La «insignia Nuevo» no se veía en el catálogo de entonces (nada publicado en los últimos 30 días): se probó
+  con datos de prueba. Con el de 2026-10 la llevan las 143, hasta el 12 nov 2026.

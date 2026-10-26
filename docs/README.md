@@ -6,7 +6,8 @@ aquí: está en `zlecitool-core` (CONTRATO.md, docs/PLAN.md, CHANGELOG.md).
 
 ## La tienda de hoy
 
-Sacado del código de `_ztool_dev` el 2026-10-12. Los cuatro llevan la misma numeración: las
+Sacado del código de `_ztool_dev` el 2026-10-12, recorrido en un navegador y corregido el 2026-10-25 y el
+2026-10-26 (núcleo 0.31.1, el catálogo de 143 estrategias). Los cuatro llevan la misma numeración: las
 pantallas 1–9 y las llamadas #1–#22.
 
 | Fichero | Qué |
@@ -31,9 +32,9 @@ eso estos ficheros se quedan donde los busca.
 | [USER-FLOW-v7.md](USER-FLOW-v7.md) | El flujo del diseño v7, con lo esperado de cada acción (en inglés) |
 | [catalogue-updates.md](catalogue-updates.md) | Cómo se mantiene al día el catálogo (en inglés) |
 | [design/](design/) | El diseño de referencia (`python docs/design/serve.py` lo abre), sus notas (`HANDOFF.md`, `STATUS.md`, `PR_DESCRIPTION.md`) y su flujo en español (`FLUJO_USUARIO.md`, hasta el 2026-10-12 en `docs/`) |
-| `handoff/<fecha>/` | Cada exportación tal como llegó y su `CAMBIOS.md` |
+| `handoff/<fecha>/` | Cada exportación tal como llegó y su `CAMBIOS.md`: lo que la tienda hace distinto a propósito, lo que se pide al núcleo y las preguntas abiertas del dueño |
 
 ## Lo demás
 
-- `img/`: las capturas del README (`tools/screenshots.py`).
+- `img/`: las capturas del README y, en español, las de `FLUJO_USUARIO.md` y `PANTALLAS.md` (`edgefolio_es_*.png`); las hace todas `tools/screenshots.py`.
 - `notes/`: notas del catálogo (los prompts con los que se escribieron las descripciones y qué es cada columna).

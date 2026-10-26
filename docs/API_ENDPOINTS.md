@@ -1,6 +1,6 @@
 # Edgefolio · Llamadas por pantalla
 
-- **Qué es:** lo que cada pantalla manda al servidor y lo que recibe, tal como está programado en `_ztool_dev`: leído del código el 12 oct 2026 y comprobado contra `edgefolio/routes.py` el 26 oct 2026, con los arreglos del recorrido del 25 y el 26 oct.
+- **Qué es:** lo que cada pantalla manda al servidor y lo que recibe, tal como está programado en `_ztool_dev`: leído del código el 12 oct 2026 y comprobado contra `edgefolio/routes.py` el 26 oct 2026, con los arreglos del recorrido del 25 y el 26 oct y las decisiones del dueño del 26 oct.
 - **Numeración:**
   - las pantallas 1–9 son las de `PANTALLAS.md` y `FLUJO_USUARIO.md`;
   - las llamadas #1–#22 son las de `API_ENDPOINTS_referencia.md`, que tiene el detalle completo en inglés: todas las reglas del servidor, los límites, la configuración y las tablas.
@@ -18,7 +18,8 @@
 - **Errores:**
   - Llegan como `{"error": "<clave>"}`, una clave del diccionario, con extras cuando hacen falta: `field`, `vars`, `items`, `bundles`, `item`, `detail` y `paid`.
   - La página la muestra traducida como aviso flotante, o bajo el campo si es del correo.
-  - Sin respuesta (sin red), la página muestra `errShopNetwork`.
+  - Sin respuesta (sin red), o con una que llega cortada a medias, la página muestra `errShopNetwork`.
+- **Idioma:** las llamadas #2 y #3 llevan `ind_lang=<idioma de la página>`, y la explicación del indicador de cada fila llega en él. No `lang=`: el núcleo lo toma por la dirección de una página en un idioma y lo guarda en la cookie `zt_lang`. Al cambiar de idioma, la página vuelve a pedir la ficha a la vista y las páginas de Pro que se ven.
 - **Dinero:** siempre en USD.
   - Presupuestos y recibos mandan los importes como texto con dos decimales (`"154.05"`).
   - Las filas y los packs los mandan como número.
@@ -32,7 +33,7 @@ Las listas, la ficha, los recibos y Mis estrategias mandan cada estrategia con l
 | Campo | Qué es |
 |---|---|
 | `id`, `ticker`, `interval`, `key`, `hash` | Quién es |
-| `name`, `ind`, `index`, `market` | Nombre, indicador, índice, y `stocks` o `crypto` |
+| `name`, `ind`, `index`, `market` | Nombre, indicador (el nombre de `catalogue/indicators.csv`; sin él, el de la fila del catálogo), índice, y `stocks` o `crypto` |
 | `price` | En USD; 0 = gratis |
 | `np`, `npp` | Beneficio neto, en $ y % |
 | `tr`, `w` | Operaciones cerradas; tasa de acierto (%) |
@@ -44,12 +45,12 @@ Las listas, la ficha, los recibos y Mis estrategias mandan cada estrategia con l
 | `prc`, `tdep` | Precisión f1 (%); profundidad del árbol |
 | `actv` | Operaciones por vela del backtest (la columna `Trade Activity Per Candle` del catálogo); `null` si falta |
 | `release`, `version`, `is_new` | Fecha de publicación; versión; publicada en los últimos 30 días |
-| `grade` | Nota A–D según las operaciones cerradas (hoy, solo C y D) |
-| `live`, `live_as_of` | % desde la publicación y su fecha; `null` hasta que haya cálculo diario |
+| `grade` | Nota A–D según las operaciones cerradas: A desde 100, B desde 50, C desde 25 (`GRADE_CUTOFFS`); hoy, 8 B, 22 C y 64 D |
+| `live`, `live_as_of` | % desde la publicación y su fecha, de `catalogue/since_release.csv`; `null` sin cifra (hoy, todas: no hay ese fichero) |
 | `profit`, `candle`, `icon`, `preview` | Gráficos, icono y vista previa cortada, en `/static/assets/` |
 | `thumb_profit`, `thumb_candle` | Miniaturas `/thumbs/<nombre>.webp` |
 | `tv_symbol`, `file` | Símbolo de TradingView (`NYSE:SNOW`); nombre del script (`Tuisku_<id>`) |
-| `ind_text`, `ind_url` | Explicación del indicador (en inglés) y su página (solo en las listas y en la ficha) |
+| `ind_text`, `ind_lang`, `ind_url` | Explicación del indicador en el idioma que pide `ind_lang=` (sin él, o con uno que la tienda no habla, el de la petición: `lang=`, la cuenta, la cookie `zt_lang` o el navegador), su idioma (`ind_lang`: `en` si falta la traducción, y la página la marca como inglés) y su página (solo en las listas y en la ficha) |
 
 Un número que falta llega como `null`.
 
@@ -59,14 +60,14 @@ Un número que falta llega como `null`.
 
 | Llamada | Manda | Recibe |
 |---|---|---|
-| #1 `GET /api/config` | — | `mode` (`fake`, `sandbox` o `live`), `currency`, `max_discount`, `tiers` (`[{over, rate}]`), `pack` (`{size, price}`), `download_days`, `max_downloads`, `new_days`, `contact_email`, `strategies` (cuántas hay: 143) y `npp_max` (el mejor % de beneficio neto de los backtests del catálogo, 0,44; `null` si ninguno lo tiene: la escala de las barras de la ficha) |
+| #1 `GET /api/config` | — | `mode` (`fake`, `sandbox` o `live`), `currency`, `max_discount`, `tiers` (`[{over, rate}]`), `pack` (`{size, price}`), `download_days`, `max_downloads`, `new_days`, `contact_email`, `strategies` (cuántas hay: 94), `npp_max` (el mejor % de beneficio neto de los backtests del catálogo, 0,44; `null` si ninguno lo tiene: la escala de las barras de la ficha), `tried` (entre cuántas probadas se eligieron, de `catalogue/release.json`: 1531; `null` si no se sabe: el aviso de sobreajuste lo dice), `since_release` (cuántas tienen cifra desde su publicación: hoy 0, y con 0 la página no enseña «Desde su publicación») y `grade_cutoffs` (`[100, 50, 25]`: la explicación de la nota) |
 | #4 `GET /api/bundles` | — | `bundles`: `[{key, name_key, ids, price, was}]`; `pack`: `{size, price, was}` |
 | #5 `GET /api/fx` | — | `base`, `date`, `rates` (`USD`, `EUR`, `INR`, `CNY`, `SAR`) y `source`. Si falla, todo sale en USD |
-| #2 `GET /api/strategies` (la cinta) | `paid=1&sort=hot&size=12` | Las 12 de la cinta |
+| #2 `GET /api/strategies` (la cinta) | `paid=1&sort=hot&size=12&ind_lang=…` | Las 12 de la cinta |
 | #14 `GET /api/me` (solo si la página llegó con sesión) | — | `{"email": "…"}` o `{"email": null}` |
 | #21 `PUT /api/favourites/<id>` (con sesión; una llamada por favorita guardada en el navegador) | `{"alerts": {"nv", "pd", "bd"}}` | `{id, alerts, row}`. Si el servidor rechaza una, se queda en el navegador para la próxima vez; con 404 (ya no está en el catálogo), se borra |
-| #15 `GET /api/mine` (si la página llegó con sesión, después de las #21) | — | Mis estrategias y las favoritas de la cuenta, que sustituyen a las del navegador (ver pantalla 8). Si falla, un aviso; con `401`, lleva a entrar |
-| #3 `GET /api/strategies/<id>` (cada estrategia que la página nombra y no tiene: packs, carrito, pack propio, Comparar, favoritas) | — | La fila. Con un 404, la quita del carrito, del pack propio, de Comparar y de las favoritas, sin aviso |
+| #15 `GET /api/mine` (si la página llegó con sesión, después de las #21) | — | Mis estrategias y las favoritas de la cuenta, que sustituyen a las del navegador (ver pantalla 8); con ellas, lo que ya es de la cuenta dice «Ya es tuya» (pantallas 1–3). Si falla, un aviso; con `401`, lleva a entrar. Después de un cobro, de una gratis o de un correo demostrado, la tienda y la ficha la piden otra vez, en silencio |
+| #3 `GET /api/strategies/<id>` (cada estrategia que la página nombra y no tiene: packs, carrito, pack propio, Comparar, favoritas) | `ind_lang=…` | La fila. Con un 404, la quita del carrito, del pack propio, de Comparar y de las favoritas, sin aviso |
 
 **Parámetros que llegan en la dirección** (se leen una vez y se borran):
 
@@ -83,11 +84,12 @@ Un número que falta llega como `null`.
 
 | Cuándo | Llamada | Manda | Recibe |
 |---|---|---|---|
-| Al abrir, al escribir (150 ms después de la última tecla), al cambiar de pestaña y al pulsar la pestaña marcada | #2 `GET /api/strategies` | `tab=<pestaña>&q=<texto>&size=24&page=1`; la pestaña es `hot`, `win`, `stocks`, `crypto`, `new` o `free`; `q`, hasta 100 caracteres | `rows` (24), `total` («Mostrando N de M») y `counts.new` («Novedades · N») |
+| Al abrir, al escribir (150 ms después de la última tecla), al cambiar de pestaña y al pulsar la pestaña marcada | #2 `GET /api/strategies` | `tab=<pestaña>&q=<texto>&size=24&page=1&ind_lang=<idioma>`; la pestaña es `hot`, `win`, `stocks`, `crypto`, `new` o `free`; `q`, hasta 100 caracteres | `rows` (24), `total` («Mostrando N de M») y `counts.new` («Novedades · N»: hoy 94) |
 | **Ver más** | #2 | Lo mismo, con `page=2, 3…` | Las 24 siguientes |
 | Al pintar cada tarjeta | #6 `GET /thumbs/<nombre>.webp` | — | La miniatura (WebP de 640 px), o un `307` al PNG |
-| Al buscar en el selector del pack | #2 | `paid=1&sort=hot&size=40&q=<texto>` (hasta 100 caracteres) | Las estrategias de pago |
+| Al buscar en el selector del pack | #2 | `paid=1&sort=hot&size=40&q=<texto>` (hasta 100 caracteres), con `ind_lang=` | Las estrategias de pago |
 | **Comprar**, **Añadir pack**, pack propio completo | #7 `POST /api/quote` | Ver pantalla 5 | Ver pantalla 5 |
+| **Ya es tuya · Descargar** (con sesión, en lo que ya es de la cuenta, según #15) | #10, con su enlace | — | El `.pine` (gasta una descarga). «Ya es tuya · Mis estrategias» no llama: va a la pantalla 8 |
 | ♡ con sesión | #21 / #22 | Ver pantalla 8 | Ver pantalla 8 |
 | ♡ sin sesión | — | Se guarda en el navegador (`edgefolio-favs-v1`) | — |
 
@@ -99,11 +101,13 @@ Solo cuenta la respuesta más nueva. Si llega `400 errRequest` (con `field`), sa
 
 | Cuándo | Llamada | Manda | Recibe |
 |---|---|---|---|
-| Cada cambio de filtro, orden o búsqueda (150 ms después del último) | #2 `GET /api/strategies` | Los filtros activos, `size=25&page=1` y `facets=1` | `rows` y `total`, y además: `hist` (un histograma por rango), `ranges` (`{min, max, log, bins}`: la barra de cada rango, del mínimo al máximo del catálogo, redondeados hacia fuera; `log` solo si el diseño la quiere y los valores abarcan más de dos órdenes de magnitud) y `options` (por desplegable: `[{v, label, count, icon}]`) |
+| Cada cambio de filtro, orden o búsqueda (150 ms después del último) | #2 `GET /api/strategies` | Los filtros activos, `size=25&page=1`, `facets=1` e `ind_lang=` | `rows` y `total`, y además: `hist` (un histograma por rango), `ranges` (`{min, max, log, bins}`: la barra de cada rango, del mínimo al máximo del catálogo, redondeados hacia fuera; `log` solo si el diseño la quiere y los valores abarcan más de dos órdenes de magnitud) y `options` (por desplegable: `[{v, label, count, icon}]`) |
 | Página de la Tabla | #2 | Lo mismo, con `page=n`, sin `facets` | La página, que sustituye a la anterior |
 | **Ver más** (Filas y Tarjetas) | #2 | `page=n`, sin `facets` | Se añade a la lista |
+| Al cambiar de idioma | #2 | Lo mismo sin `facets`, una llamada por cada página que se ve, con el `ind_lang=` nuevo | Las mismas filas, con la explicación del indicador en el idioma nuevo |
 | Imágenes | #6 | — | Miniaturas |
 | Carrito | #7 | Ver pantalla 5 | Ver pantalla 5 |
+| **Ya es tuya · Descargar** (Filas, Tarjetas y el ✓ de la Tabla) | #10, con su enlace | — | El `.pine` (gasta una descarga), como en Lite |
 | Comparar | — | Solo en el navegador | — |
 
 **Qué manda cada filtro:**
@@ -114,7 +118,7 @@ Solo cuenta la respuesta más nueva. Si llega `400 errRequest` (con `field`), sa
 | Ordenar (las pestañas de orden y las cabeceras de la Tabla) | `sort`: `np`, `npp`, `win`, `price`, `trades`, `avg`, `months` o `hot`, siempre de mayor a menor |
 | Solo GRATIS | `free=1` |
 | 16 rangos | `<clave>_min` y `<clave>_max`, con los decimales que enseña la etiqueta. Las claves son `np`, `price`, `npp`, `trades`, `win`, `pf`, `months`, `mlu`, `mlp`, `avg`, `avgp`, `bars`, `act`, `candles`, `prec` y `tree`. Un asa en el extremo no manda nada |
-| 5 desplegables | `sym`, `tf`, `ind`, `idx` y `rel`, repetidos por cada opción marcada (`sym=ADBE&sym=AMD`). Con todo quitado se manda el parámetro vacío (`sym=`), y la lista sale vacía |
+| 5 desplegables | `sym`, `tf`, `ind`, `idx` y `rel`, repetidos por cada opción marcada (`sym=ADAUSDT&sym=AVAXUSDT`). Con todo quitado se manda el parámetro vacío (`sym=`), y la lista sale vacía |
 
 Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si un parámetro no vale, llega `400 errRequest` con `field` (el parámetro) y sale un aviso.
 
@@ -125,10 +129,11 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 | Cuándo | Llamada | Manda | Recibe |
 |---|---|---|---|
 | Al abrir `/s/<id>` (el servidor) | `GET /s/<id>` | — | La página, con el título de la estrategia (también en `og:title`). Un id que no existe → `302` a `/`; un alias o una clave → `301` a `/s/<id>` |
-| Al abrir | #3 `GET /api/strategies/<id>` | — | La fila, más `ind_author` (la página no lo enseña) y `versions` (`[{v, date, note}]`, de la actual a la 1). Con `404 errUnknownStrategy` (página ya abierta o enlace `#s=`), sale un aviso y se vuelve a la tienda |
+| Al abrir | #3 `GET /api/strategies/<id>` | `ind_lang=<idioma>` | La fila, más `ind_author` (la página no lo enseña), `versions` (`[{v, date, note}]`, de la actual a la 1) y `buy_at` y `close_at`, los niveles de su script, de `catalogue/levels.json`, para Cómo decide (`null` sin ellos: hoy, en todas). Con `404 errUnknownStrategy` (página ya abierta o enlace `#s=`), sale un aviso y se vuelve a la tienda |
+| Al cambiar de idioma | #3 otra vez | El `ind_lang=` nuevo | La explicación del indicador en el idioma nuevo, sin moverse de la página |
 | Al abrir | `GET /static/assets/previews/<archivo>.pine` | — | La vista previa, cortada |
 | Al abrir | `GET /static/assets/charts/<archivo>.png` | — | Los dos gráficos |
-| Al abrir, con sesión (una vez y sin avisos) | #15 `GET /api/mine` | — | Si la estrategia está en `items`, «Ya es tuya» (con su `url`, o Mis estrategias); si `items[].update` trae una versión nueva de una compra, «Actualización disponible» |
+| Al abrir, con sesión (una vez y sin avisos) | #15 `GET /api/mine` | — | Si la estrategia está en `items`, «Ya es tuya», sin el precio (con su `url` si vale y no hay `update`; si no, Mis estrategias); si `items[].update` trae una versión nueva de una compra (el servidor solo la manda mientras la estrategia no ha caducado), «Actualización disponible» |
 | **Añadir al carrito** | #7 | Ver pantalla 5 | Ver pantalla 5 |
 | **Ya es tuya · Descargar** | #10, con su enlace | — | El `.pine` (gasta una descarga) |
 | ♡ (con sesión) | #21 / #22 | Ver pantalla 8 | Ver pantalla 8 |
@@ -142,7 +147,8 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 |---|---|---|---|
 | Al abrir la pestaña | `GET /static/js/tree.js` (en otro intento, `tree.js?retry=N`), sus piezas `views/tree/*.js`, `/static/trees/features.json` y `/static/trees/ui.json` | — | El código del árbol, los indicadores y sus textos. Si el código no llega, sale `errShopNetwork`, y se pide otra vez al pulsar «Cómo decide» o al volver a la pestaña |
 | Siempre (también el propietario) | `GET /static/assets/previews/<archivo>.pine` | — | La vista previa cortada, de la que sale el árbol del visitante; el propietario la ve mientras llega su script entero o si no llega |
-| Propietario (con sesión) | #17 `GET /api/mine/<id>/script` | — | El script entero, en texto; no gasta descargas. Errores: `404 errUnknownStrategy`, `errNotOwned` y `errFileMissing` (el recuadro de propietario lo dice en ámbar) |
+| Visitante | #3, la que pidió la ficha | — | `buy_at` y `close_at`: con ellos, cada resultado dice Comprar, Vender o Esperar; sin ellos (`null`: hoy, en todas), cada uno enseña su puntuación |
+| Propietario (con sesión) | #17 `GET /api/mine/<id>/script` | — | El script entero, en texto, con sus niveles; no gasta descargas. Errores: `404 errUnknownStrategy`, `errNotOwned` y `errFileMissing`, y `403 errUpdateExpired` (una versión de antes de una estrategia de pago ya caducada, con otra nueva publicada): el recuadro de propietario lo dice en ámbar |
 | **Comprar para desbloquear** | #7 | Ver pantalla 5 | Ver pantalla 5 |
 | **Conseguirla gratis** | — | Abre la pantalla 6 | — |
 | **Descargar .pine** (propietario) | #10, con su enlace | — | El `.pine`. Sin enlace válido, lleva a la pantalla 8 |
@@ -158,7 +164,7 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 **Manda:**
 
 ```json
-{"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Hour_2MM0_bf5c384c"], "bundles": ["crypto"], "pack": ["id1", "id2", "id3", "id4", "id5"], "code": "demo20"}
+{"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Day_2BS0_881db754"], "bundles": ["crypto"], "pack": ["id1", "id2", "id3", "id4", "id5"], "code": "demo20"}
 ```
 
 - `pack`, siempre: vacío (`[]`) hasta que el pack propio, con sus 5 elegidas, está en el carrito;
@@ -168,7 +174,7 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 **Recibe** (el pack «Inicio en cripto», de 119 US$, y dos estrategias de 59 US$, con un código del 20 %):
 
 ```json
-{"items": [{"id": "UPST_1Day_1ULT_aae26f99", "price": "38.35"}, {"id": "UBER_1Hour_2MM0_bf5c384c", "price": "38.35"}],
+{"items": [{"id": "UPST_1Day_1ULT_aae26f99", "price": "38.35"}, {"id": "UBER_1Day_2BS0_881db754", "price": "38.35"}],
  "bundles": [{"key": "crypto", "price": "77.35"}], "pack": null,
  "subtotal": "237.00", "tier_rate": "0.15", "code_rate": "0.20", "discount_rate": "0.35",
  "discount": "82.95", "total": "154.05", "code_status": "applied",
@@ -183,18 +189,19 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 | `tier_index`, `next_tier` | La escalera de Pro y «Añade X más para llegar al Y %» |
 | `pack` (`{ids, price, was, save}`) | El pack propio |
 
-**Errores (400):**
+**Errores** (400, salvo `errAlreadyOwned`, 409):
 
 | Clave | Cuándo | Qué hace la página |
 |---|---|---|
 | `errUnknownItems` (`items`) | Hay ids que ya no están en el catálogo | Los quita del carrito, sin aviso |
 | `errUnknownBundles` (`bundles`) | Hay packs que ya no existen | Los quita, sin aviso |
 | `errBundleOverlap` (`items`) | Dos packs, o un pack y el propio, comparten alguna estrategia | Aviso (la página no lo manda nunca: quita antes el pack repetido) |
-| `errPackSize` (`vars.n`) | El pack propio no son 5 estrategias de pago distintas | Aviso |
+| `errPackSize` (`vars.n`) | El pack propio no son 5 estrategias de pago distintas | Aviso, con la forma que pide `n` |
 | `errCartEmpty` | No hay nada | — (la página no pregunta con el carrito vacío) |
 | `errRequest` (`field`) | Un campo mal formado o demasiado largo | Aviso |
+| `errAlreadyOwned` (`items`, los ids como los mandó la página) | Con la sesión abierta, una estrategia suelta que la cuenta ya tiene: lo de Mis estrategias (sus compras y sus gratis, y las de sus correos demostrados). No si va también en un pack o en el pack propio del carrito | La quita del carrito, sale el aviso «Carrito actualizado» con el texto de la clave, pide otra vez el presupuesto y, en silencio, Mis estrategias (#15) |
 
-El servidor no mira si una estrategia ya es de la cuenta: la presupuesta y la cobra otra vez (decisión del dueño, en los puntos a revisar).
+Con la sesión abierta, lo que ya es de la cuenta no se vende suelto (decisión del dueño E8); en un pack o en el pack propio, sí. Sin sesión, el servidor no lo mira.
 
 ### #8 `POST /api/orders`: crear el pedido en PayPal
 
@@ -202,7 +209,7 @@ El servidor no mira si una estrategia ya es de la cuenta: la presupuesta y la co
 - **Manda:** lo mismo que #7.
 - **Recibe:** `{"id": "<id de PayPal>", "approve_url": "https://www.paypal.com/checkoutnow?token=…", …el presupuesto}`. También deja la cookie `edgefolio_buyer` (30 días), que marca este navegador como el que compró.
 - **Después:** el navegador va a `approve_url`. PayPal vuelve a `/thanks?token=<id>` (pantalla 7) o, si se cancela, a `/?checkout=cancel`.
-- **Errores:** los de #7, y además:
+- **Errores:** los de #7 (con `409 errAlreadyOwned` la página hace lo mismo, y el pedido no se crea), y además:
   - `400 errNothingToPay`, si el total es 0 (por ejemplo, un carrito guardado con solo estrategias que ahora son gratis);
   - `502 errPayPal` (`detail`);
   - `503 errLater`, si falta la dirección pública.
@@ -260,7 +267,7 @@ El servidor no mira si una estrategia ya es de la cuenta: la presupuesta y la co
 ```
 
 - Repetirla, por ejemplo al recargar, devuelve el mismo recibo y no cobra otra vez.
-- **`paid_now`:** `true` solo en el cobro que pasó el pedido a pagado (el que manda el recibo por correo); cualquier cobro después, de este navegador o de otro, da `false`. La página vacía el carrito solo con `true`.
+- **`paid_now`:** `true` solo en el cobro que pasó el pedido a pagado (el que manda el recibo por correo); cualquier cobro después, de este navegador o de otro, da `false`. La página vacía el carrito solo con `true`, y no pide presupuesto (#7) hasta que contesta: lo que se acaba de pagar ya sería `errAlreadyOwned`.
 - **Quién ve los enlaces:** el navegador que compró, la cuenta que lo hizo o, en un pedido hecho sin cuenta, una cuenta que demostró su correo (el del pedido o el de PayPal). A cualquier otro le llega `links_hidden: true`, con `downloads: []` y `download_all: null`, y la página no enseña el bloque de instalación.
 - `payer` llega recortado, pero la página no lo enseña.
 - Con el primer cobro, el servidor manda el recibo por correo, a la cuenta o al correo de PayPal.
@@ -272,11 +279,11 @@ El servidor no mira si una estrategia ya es de la cuenta: la presupuesta y la co
 | Botón | Llamada | Recibe |
 |---|---|---|
 | **.pine** | #10 | `Tuisku_<id>.pine` (texto) |
-| **.zip** | #10 con `?format=zip` | `Tuisku_<id>.zip`, con el `.pine`, las reglas en `.md`, el `.py` y el `.js` (beta) y un `README.txt` |
+| **.zip** | #10 con `?format=zip` | `Tuisku_<id>.zip`, con el `.pine`, las reglas en `.md` (cada valor, con el nombre que le da Cómo decide), el `.py` y el `.js` (beta) y un `README.txt` |
 | **Descargar todo** | #11, hasta 100 tokens | `edgefolio-strategies.zip`, con el `.pine` de cada enlace válido (los que no valen se saltan, sin aviso) |
 
 - Cada descarga gasta una de las 10 del enlace; un `.zip` cuenta como una.
-- **Errores:** `404 errLinkNotFound`, `410 errLinkExpired` (`vars.e` = el correo de contacto), `429 errDownloadLimit`, `404 errStrategyGone` y `404 errFileMissing`.
+- **Errores:** `404 errLinkNotFound`, `410 errLinkExpired` (`vars.e` = el correo de contacto), `429 errDownloadLimit`, `404 errStrategyGone`, `403 errUpdateExpired` (el enlace de una versión de antes, con la estrategia de pago ya caducada y una versión nueva publicada: daría la nueva) y `404 errFileMissing`.
 - **Abierto en una pestaña,** el error llega como un `303` a `/mine?link=<clave>` (con sesión) o a `/?link=<clave>`.
 
 El tutorial de instalación no llama al servidor; solo enlaza a tradingview.com.
@@ -289,7 +296,7 @@ El tutorial de instalación no llama al servidor; solo enlaza a tradingview.com.
 |---|---|---|---|
 | Al abrir `/mine` sin sesión (el servidor) | `GET /mine` | — | El núcleo lleva a `/login?next=/mine` |
 | Al abrir | #15 `GET /api/mine` | — | Ver abajo. Con `401`, lleva a entrar |
-| **Pedir un enlace nuevo**, **Obtener la actualización · vN** | #16 `POST /api/mine/renew` | `{"id": "<id>"}` | La fila, como en #15. Errores: `404 errNotOwned` y `errUnknownStrategy` |
+| **Pedir un enlace nuevo**, **Obtener la actualización · vN** | #16 `POST /api/mine/renew` | `{"id": "<id>"}` | La fila, como en #15. Errores: `404 errNotOwned` y `errUnknownStrategy`, y `403 errUpdateExpired` (una versión nueva de una de pago que ya caducó: la tienda guarda un script por estrategia, el de hoy, así que no da ningún enlace) |
 | **.pine**, **.zip** | #10 | — | Como en la pantalla 7 |
 | **¿Compraste sin cuenta?** → enviar (o Intro) | #18 `POST /api/mine/proofs` | `{"email": "…"}`. La página no la hace con un correo vacío o mal escrito (error bajo el campo) ni con uno que ya está en `emails` (aviso «Ya está confirmado») | Siempre `{"sent": true}`. Errores: `400 errEmailInvalid` (`field: "email"`, bajo el campo), `429 errTooMany` y `503 errLater` |
 | Al abrir `/mine?proof=<token>` | #19 `POST /api/mine/proofs/peek` | `{"token": "…"}` | `{"email": "…"}`, o `null` si el enlace no vale. No gasta el enlace |
@@ -314,9 +321,10 @@ El tutorial de instalación no llama al servidor; solo enlaza a tradingview.com.
 | `email` | «Has entrado como …» |
 | `emails`, `proof_needed` | Los correos demostrados en la tienda. Con `proof_needed`, sale «¿Compraste sin cuenta?» |
 | `kind`, `date`, `order` | «Comprada el …» o «Descarga gratuita el …», y el pedido |
-| `valid`, `days_left`, `expires` | «Enlace válido N días más» o «El enlace caducó» |
+| `valid`, `days_left`, `expires` | «Enlace válido N días más» o «El enlace caducó». `valid` es `false` también con el enlace de una versión de antes, si la estrategia de pago ya caducó y hay una nueva |
 | `url`, `zip` | Los botones **.pine** y **.zip** (`null` si el enlace no vale) |
-| `update` | **Obtener la actualización · vN** (`null` si no hay versión nueva) |
+| `update` | **Obtener la actualización · vN** (`null` si no hay versión nueva o, en una de pago, si la estrategia ya caducó: la «Expiry date» de su script) |
+| `items` | También dicen «Ya es tuya» en la tienda y en la ficha (pantallas 1–3): «· Descargar» con su `url` si vale y no hay `update`; si no, «· Mis estrategias» |
 | `items` vacío | Sin lista ni «Añádela a TradingView» |
 | `favourites` | Las favoritas, con sus alertas |
 
@@ -341,12 +349,12 @@ No tiene llamadas propias: manda y recibe lo mismo que las pantallas 1–8. La b
 | 7 | `POST /api/quote` | no | 5 (desde la 1, 2, 3 y 4) |
 | 8 | `POST /api/orders` | no | 5 |
 | 9 | `POST /api/orders/<id>/capture` | no | 7 |
-| 10 | `GET /api/download/<token>` | no (el token es la llave) | 7, 8, 3 y 4 (propietario) y los correos |
+| 10 | `GET /api/download/<token>` | no (el token es la llave) | 7, 8, 1–3 («Ya es tuya · Descargar»), 4 (propietario) y los correos |
 | 11 | `GET /api/download/all` | no | 7 |
 | 12 | `POST /api/free` | no | 6 |
 | 13 | `GET /api/news/confirm` | no | El correo de novedades → 1 |
 | 14 | `GET /api/me` | no | Todas, si la página llegó con sesión |
-| 15 | `GET /api/mine` | sí | Todas al cargar, si la página llegó con sesión; 8, y la 3 en silencio |
+| 15 | `GET /api/mine` | sí | Todas al cargar, si la página llegó con sesión; 8; y la 1, la 2 y la 3 en silencio, después de un cobro, una gratis o un correo demostrado |
 | 16 | `POST /api/mine/renew` | sí | 8 |
 | 17 | `GET /api/mine/<id>/script` | sí | 4 (propietario) |
 | 18 | `POST /api/mine/proofs` | sí | 8 |
@@ -359,7 +367,7 @@ No tiene llamadas propias: manda y recibe lo mismo que las pantallas 1–8. La b
 
 - La lista de códigos de descuento, ni sus porcentajes. Solo llega el resultado del código que escribió el usuario.
 - El script completo, salvo al propietario (#17) y por un enlace de descarga.
-- El enlace de una descarga gratis en la respuesta de #12: va por correo; después, solo a la cuenta que la tiene (#15: Mis estrategias y «Ya es tuya · Descargar» en la ficha).
+- El enlace de una descarga gratis en la respuesta de #12: va por correo; después, solo a la cuenta que la tiene (#15: Mis estrategias y «Ya es tuya · Descargar» en la ficha y en las tarjetas).
 - Las claves de PayPal.
 
 ## Puntos a revisar
@@ -367,13 +375,13 @@ No tiene llamadas propias: manda y recibe lo mismo que las pantallas 1–8. La b
 Salieron al leer el código. Pueden ser intencionados; los dejo apuntados para que decidas. El detalle está al final de `API_ENDPOINTS_referencia.md`, y las decisiones abiertas, en «Las preguntas abiertas» de `docs/handoff/2026-10-06/CAMBIOS.md`.
 
 1. **Vistas previas gratis:** la tienda corta todas, también las gratis. El encargo de la última exportación decía que las gratis van enteras.
-2. **Script del propietario (#17):** no gasta descargas, y sigue funcionando con el enlace caducado.
-3. **Actualizaciones:** renovar el enlace (#16) da la versión de hoy sin cobrar, así que «Obtener la actualización» es gratis.
+2. **Script del propietario (#17):** no gasta descargas, y sigue funcionando con el enlace caducado (salvo a quien tiene una versión de antes de una estrategia de pago ya caducada con otra nueva: `errUpdateExpired`).
+3. **Actualizaciones:** decidido el 26 oct 2026: «Obtener la actualización» es gratis mientras la estrategia no ha caducado (la «Expiry date» de su script), y después #16 no da la versión nueva (`errUpdateExpired`). Queda abierto: quien tiene una versión de antes de una que ya caducó no puede actualizarla ni volver a comprarla suelta (`errAlreadyOwned`), solo en un pack.
 4. **Versiones (#3):** no traen notas, y solo la actual trae fecha.
-5. **«Desde su publicación»:** `live` es `null` hasta que algo escriba `catalogue/since_release.csv`, y ningún comando del repositorio lo hace.
+5. **«Desde su publicación»:** `live` es `null` hasta que haya `catalogue/since_release.csv`, que ningún comando del repositorio escribe: el import lo copia de un paquete cuando el generador lo traiga. Mientras ninguna estrategia tiene cifra, la página no lo enseña (decidido el 26 oct 2026).
 6. **Factura:** la fila de confianza promete «Factura por correo», pero el servidor manda un recibo sin número de factura ni IVA.
 7. **Límites por IP:** cada proceso los guarda en memoria, y vuelven a cero al reiniciar.
 8. **Nombre del repositorio:** ahora es `tuisku_strategy_store`, pero los documentos de la exportación aún dicen `tuisku_Web_selling`.
-9. **Comprar dos veces (#7, #8):** el presupuesto y el pedido no miran si la estrategia ya es de la cuenta: se cobra otra vez. La ficha y el árbol dicen «Ya es tuya», pero desde las tarjetas de Lite o de Pro entra en el carrito.
+9. **Comprar dos veces (#7, #8):** decidido el 26 oct 2026: con la sesión abierta, el presupuesto y el pedido rechazan una estrategia suelta que ya es de la cuenta (`errAlreadyOwned`), y las tarjetas dicen «Ya es tuya». Queda: el cobro (#9) no lo mira, así que dos pedidos de la misma estrategia creados antes de pagar ninguno se cobran los dos; y un pack que lleva una que ya es de la cuenta se cobra entero, sin aviso.
 
 (El antiguo punto 7, el filtro de actividad que dividía las operaciones entre los meses, ya está arreglado: `act` es la columna `Trade Activity Per Candle` del catálogo.)

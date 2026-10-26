@@ -131,16 +131,16 @@ Se queda como está; el diseño no lo enseña o lo simula:
   −0,78 y −0,90 «Esperar», +0,60 «Comprar»). Para hablarlo con el diseño.
 - **Sin los niveles del script** (el visitante, mientras la tienda no los publica para esa estrategia), ningún
   resultado dice Comprar, Vender ni Esperar (`scored` en `tree.js`): cada uno enseña su puntuación («Puntuación
-  +0,88», en gris oscuro y con el icono de un medidor, en el árbol, en Bloques, en «Resultado del árbol» y en
-  su explicación); la leyenda dice «Puntuación» en vez de Comprar | Vender | Esperar y, debajo, por qué
-  (`noLevels`, `data-tree-scored` en `tree_main.js`); los deslizadores no pintan sus zonas de colores ni su
-  leyenda (dirían qué haría la estrategia), y su ayuda dice que se ve a qué resultado llega, no qué haría
-  (`optTextScore`); la escala de «Resultado del árbol» dice −1 y +1, sin «Venta» ni «Compra», y va en gris, como
-  los dos ejemplos (`gaugeBg`, `exBuy*` y `exSell*` en `tree_main.js`); el tercer paso, los dos ejemplos y su
-  ayuda y el pie de la explicación de un resultado hablan de la puntuación (`s3Score`, `hiEx`, `loEx`,
-  `exHelpScore`, `leafFootScore`), y «Ver todas las reglas» las junta en un grupo, de la puntuación más alta a la
-  más baja (`results`, `leadScore1`, `leadScoreN`). El diseño no tiene ese estado: siempre dice comprar, vender o
-  esperar.
+  +0,88», en gris oscuro y con el icono de un medidor, en el árbol, en Bloques, en «Resultado del árbol» y en su
+  explicación); la leyenda dice «Puntuación» en vez de Comprar | Vender | Esperar y, debajo, por qué (`noLevels`,
+  `data-tree-scored` en `tree_main.js`); los deslizadores no pintan sus zonas de colores ni la leyenda de esas
+  zonas, Compraría, Vendería y Esperaría (dirían qué haría la estrategia; queda «Umbral comprobado en el camino
+  actual»), y su ayuda dice que se ve a qué resultado llega, no qué haría (`optTextScore`); la escala de «Resultado
+  del árbol» dice −1 y +1, sin «Venta» ni «Compra», y va en gris, como los dos ejemplos (`gaugeBg`, `exBuy*` y
+  `exSell*` en `tree_main.js`); el tercer paso, los dos ejemplos y su ayuda y el pie de la explicación de un
+  resultado hablan de la puntuación (`s3Score`, `hiEx`, `loEx`, `exHelpScore`, `leafFootScore`), y «Ver todas las
+  reglas» las junta en un grupo, de la puntuación más alta a la más baja (`results`, `leadScore1`, `leadScoreN`). El
+  diseño no tiene ese estado: siempre dice comprar, vender o esperar.
 - **La escala de «Resultado del árbol» va de izquierda a derecha** también en árabe (`dir="ltr"` y el gancho
   `data-tree-gauge` en `tree_main.js`), como su barra y los deslizadores, con cada extremo en su idioma
   (`dir="auto"`): en árabe, «بيع −1» quedaba a la derecha, bajo el extremo verde (el de +1), donde estaba la marca
@@ -166,15 +166,15 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **La explicación que abre un toque** (en el móvil, una pregunta; con el ratón, una rama cerrada) se queda
   abierta aunque la página se mueva sola justo después: el marco que sigue el camino y el navegador que deja
   la caja en su sitio cuando cambian los deslizadores de encima. En el diseño se cerraba en el acto.
-- **Los valores divididos por el cierre** que usa el generador de 2026 (`macd__close`, `BBlower__close`…)
-  llevan el nombre del valor sin `__close`, con una nota en su explicación, y un nombre sólo vale en su
-  patrón (el quinto campo de cada valor en `static/trees/features.json`), también el traducido (`feat`):
-  la `d` de WaveTrend no es la %D del RSI estocástico. Cada valor que toman los árboles del catálogo tiene su
-  nombre y su descripción, escritos de lo que calcula el código del generador (`TW_pines_script/`): eran 44, y
-  181 salían con su código (entre ellos, 140 de los 182 que preguntan las vistas previas). Un nombre que usan dos
-  patrones lleva el suyo en la clave (`d@Wave_Trend_Calculation`, `basis@Squeeze_Momentum_Indicator`), que
-  `tree.js` mira antes (`keyOf`). Ocho de los 44 no decían lo que calcula el código y se corrigieron
-  (`ema12`, `ema13`, `ad_mf`, `MFI_High`, `MFI_Low`, `d_k`, `smoothK_k`, `smoothD_d`).
+- **Los valores divididos por el cierre** que usa el generador de 2026 (`macd__close`, `BBlower__close`…) llevan el
+  nombre del valor sin `__close`, con una nota en su explicación, y un nombre sólo vale en su patrón (el quinto
+  campo de cada valor en `static/trees/features.json`), también el traducido (`feat`): la `d` de WaveTrend no es la
+  %D del RSI estocástico. Cada valor que toman los árboles del catálogo tiene su nombre y su descripción, escritos
+  de lo que calcula el código del generador (`TW_pines_script/`): eran 44, y 181 salían con su código (entre ellos,
+  140 de los 182 que preguntaban las vistas previas del catálogo de 143). Un nombre que usan dos patrones lleva el
+  suyo en la clave (`d@Wave_Trend_Calculation`, `basis@Squeeze_Momentum_Indicator`), que `tree.js` mira antes
+  (`keyOf`). Ocho de los 44 no decían lo que calcula el código y se corrigieron (`ema12`, `ema13`, `ad_mf`,
+  `MFI_High`, `MFI_Low`, `d_k`, `smoothK_k`, `smoothD_d`).
 - **Los idiomas del árbol:** la explicación de los 22 patrones de 2026-10 (15 no tenían), en los 8 idiomas
   (`patterns` de `features.json` en en y es; `pat` de `static/trees/ui.json` en los otros seis). El nombre de
   cada valor, también en los 8 (`feat`), y su descripción, en los 8 la de los 225 (`featDesc` de `ui.json`, con la
@@ -264,12 +264,16 @@ Se queda como está; el diseño no lo enseña o lo simula:
   ven, sin moverse. Cada explicación dice lo que calcula el código del indicador en el generador
   (`TW_pines_script/pines_script/*.py`) y no promete nada (revisión de W2): la de 1TMA hablaba de una media
   triangular con bandas, y las de 1BOL, 1WIL y 1ULT de señales «fiables» y «precisas»; una combinada nombra sólo lo
-  que usa (`Key Combination`: 2MM0, 1M00; 2BB0, 1B00).
+  que usa (`Key Combination`: 2MM0, 1M00; 2BB0, 1B00). El nombre que se enseña de cada indicador sale del mismo
+  fichero, como su enlace (el de la fila del catálogo, sólo si no lo tiene): también es el que buscan el buscador y el
+  filtro Indicadores.
 - **Lo que cuenta un ajuste** (los días y las descargas de un enlace, `DOWNLOAD_DAYS` y `MAX_DOWNLOADS`; las
   estrategias de un pack, `PACK_SIZE`) lleva la forma que pide su número, cada cuenta con su clave (`linkDays`,
   `linkDownloads`): la fila de confianza bajo «Pagar» (`trustLinks`), la nota de los enlaces de Gracias
   (`linksNote`), el aviso de un pack que no vale (`errPackSize`), y los correos del recibo, de la gratis y de los
-  avisos (`mailAlertBundle`). En árabe, «يومين» y «تنزيلين» con 2, «11 يومًا» con 11; antes, el texto llevaba escritos
+  avisos (`mailAlertBundle`). La tarjeta de «Arma tu pack» dice el tamaño de `PACK_SIZE` («Elige N más · 5 por …»
+  y «5 por …», `packHint` y `packReady` con `{size}`, de API #4), no un 5 escrito, y cuántas faltan lleva su forma
+  (en árabe, «اختر اثنتين أخريين»). En árabe, «يومين» y «تنزيلين» con 2, «11 يومًا» con 11; antes, el texto llevaba escritos
   los 7 días y las 10 descargas de hoy («7 أيام», «10 تنزيلات»). La maqueta los escribe fijos: **para el diseño**.
 - **Una respuesta con el cuerpo cortado** (una navegación o la red la cortaron a medias) es «sin conexión», como no
   tener respuesta (`api.js`): antes llegaba `null`, y leerlo era un error en la consola (`m.items`, `r.id`).
@@ -303,6 +307,11 @@ Se queda como está; el diseño no lo enseña o lo simula:
   después de un cobro, de una gratis o de un correo demostrado (`app.mineChanged`), también en la tienda, y una lista
   que llega de antes no vale: al volver de Gracias o al mandar la gratis, lo de la cuenta volvía a decir «Comprar»
   hasta recargar. El diseño no tiene ese estado.
+- **La actualización, gratis hasta la caducidad** (decisión del dueño del 2026-10-26): «Actualización disponible» en
+  la ficha y «Obtener la actualización · vN» en Mis estrategias salen sólo mientras la estrategia no ha caducado: la
+  «Expiry date» de la cabecera de su script, que dice su vista previa (hoy, el 13 jun 2027 en las 94;
+  `Strategy.expiry` en `catalogue.py`, y el `update` de API #15). Después, API #16 no da la versión nueva
+  (`errUpdateExpired`). Una gratis se actualiza siempre. El diseño la ofrece siempre. Hoy todas son v1: no se ve.
 - **El título de la pestaña** dice qué estrategia es («Snowflake · SNOW · 1BOL · 1Day · Edgefolio», con
   «Cómo decide» delante de «Edgefolio» en su pestaña): lo pone el servidor, también para la vista previa de
   un enlace (`og:title`), y la página al moverse por la tienda o cambiar de idioma (`app.tabTitle`). En la
@@ -387,7 +396,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 | 8 | La ficha no tiene resumen del carrito | Igual; en el móvil la barra de abajo cuenta lo que hay |
 | 9 | Pro enseña «Pagar» con el carrito vacío | Igual; no hace nada |
 | 10 | Los tramos en USD y los totales en moneda local | Igual; se paga en USD («Pagas X US$ con PayPal») |
-| 11 | Revisión nativa de zh, ar e hi | Revisados por la tienda (2026-10-26, E12c: gramática, trato, términos de la tienda, números, plurales y signos en árabe, puntuación de cada escritura) los textos de 2026-10: `tour1Pro`, los plurales de `shown` y `selectedN`, `ownedYours`, los cuatro de una gratis en la ficha, `proofProvenTitle` / `proofProvenText`, `removeName`, `riskTried`, `gradeCuts`, `gradeTip`, `tradesWord`, y en el árbol los 22 `pat`, los 225 `feat` y `featDesc` y sus textos nuevos; y la explicación de los 38 indicadores. La revisión de un nativo sigue pendiente |
+| 11 | Revisión nativa de zh, ar e hi | Revisados por la tienda (2026-10-26, E12c: gramática, trato, términos de la tienda, números, plurales y signos en árabe, puntuación de cada escritura) los textos de 2026-10: `tour1Pro`, los plurales de `shown` y `selectedN`, `ownedYours`, los cuatro de una gratis en la ficha, `proofProvenTitle` / `proofProvenText`, `removeName`, `riskTried`, `gradeCuts`, `gradeTip`, `tradesWord`, `errAlreadyOwned`, `cartUpdatedTitle`, `errUpdateExpired`, `linkDays`, `linkDownloads`, `packHint`, y en el árbol los 22 `pat`, los 225 `feat` y `featDesc` y sus textos nuevos; y la explicación de los 38 indicadores. La revisión de un nativo sigue pendiente (abajo, «Lo que sigue abierto») |
 
 Y la de la pantalla 8: **¿«Obtener la actualización» se paga?** Decidido (2026-10-26): es gratis mientras la
 estrategia no ha caducado, según la «Expiry date» de la cabecera de su script (la línea de su vista previa pública;
@@ -399,7 +408,8 @@ nuevo (le daría la nueva), su enlace de antes, aunque no haya caducado, tampoco
 `errUpdateExpired`; Mis estrategias no lo da por válido y «Ya es tuya» lleva a Mis estrategias) y la vista de
 propietario del árbol no recibe el script entero (API #17): `Strategy.serves`.
 
-**Y las del dueño, abiertas** (salieron del recorrido de 2026-10-25 y 2026-10-26; la tienda no las decide):
+**Y las del dueño** (salieron del recorrido de 2026-10-25 y 2026-10-26; la tienda no las decide). Las decidió el
+2026-10-26, y cada una dice cómo; lo que queda abierto va después, en «Lo que sigue abierto»:
 
 - **Cómo se listan las estrategias.** La tienda enseña el backtest del periodo de prueba de las estrategias
   que eligió el generador. Probadas con datos que no vieron, pierden de media después de costes (Readme del
@@ -414,16 +424,16 @@ propietario del árbol no recibe el script entero (API #17): `Strategy.serves`.
   las deja fuera mientras el generador las liste (`LIST_INTRADAY_STOCKS`, apagado). Los lotes, por la misma regla:
   «Top 5 por beneficio», SNOW 1BOL, ADBE 2BV0, META 2BB0, AMD 1M00 y CRWD 1SQU (365 US$ sueltas, por 249 US$);
   «Pareja Amazon», AMZN 1S00 y 2MV0 de 1Day (138 US$, por 119 US$).
-- **Las condiciones de TradingView** (§23: desde el 2026-11-01, los scripts solo se venden en su Marketplace)
-  y las normas de la UE y de España para vender estrategias.
-- **`fx-update` y `send-alerts`:** hecho (2026-10-26, E4): son las tareas `fx_update` (los días laborables a las
+- **`fx-update` y `send-alerts`:** decidido y hecho (2026-10-26, E4): son las tareas `fx_update` (los días laborables a las
   17:00 de Madrid, después del BCE) y `send_alerts` (cada día a las 09:00) del reloj del núcleo (`"schedule"` de
   `tool.json`, `edgefolio/tasks.py`), una vez entre todos los procesos y servidores; sin cron. Los comandos
   siguen, para correrlos a mano.
 - **Una estrategia que ya es de la cuenta se vuelve a vender:** decidido (2026-10-26, E8): suelta, no (el
   presupuesto y el pedido la rechazan con `errAlreadyOwned`, y la página la quita del carrito); en un lote o en el
   pack, sí. Las fichas de Lite y de Pro dicen «Ya es tuya», como la suya (ver «a propósito»).
-- **El árbol del visitante** (decidido el 2026-10-26): se colorea con los niveles de cada script que publica la
+- **El precio encima de «Ya es tuya»:** decidido (2026-10-26): se va. La ficha de una estrategia que ya es de la
+  cuenta dice «Ya es tuya» sin el precio (en una gratis, sin «Gratis»), como sus tarjetas.
+- **El árbol del visitante:** decidido (2026-10-26, E9): se colorea con los niveles de cada script que publica la
   tienda, `catalogue/levels.json` (lo escriben `flask --app app edgefolio import … --scripts` y, para el catálogo
   ya publicado, `flask --app app edgefolio levels` desde `STRATEGIES_DIR`; API #3 los manda como `buy_at` y
   `close_at`). Sin ellos, ningún resultado dice Comprar, Vender ni Esperar: enseña su puntuación y la pestaña
@@ -437,11 +447,10 @@ propietario del árbol no recibe el script entero (API #17): `Strategy.serves`.
 - **Un clic en el velo oscuro** de los diálogos de la tienda (el recorrido de bienvenida, el tutorial de
   instalación, el selector del pack, Comparar y el diálogo de la gratis): decidido (2026-10-26): se queda como
   está, sin cerrarlos; los cierran Esc y la × (o «Hecho» en el selector del pack, que no tiene ×).
-- **Contenido y traducciones:** la revisión nativa de zh, ar e hi (pregunta 11). Decidido el 2026-10-26: el precio
-  ya no sale encima de «Ya es tuya», y una actualización es gratis mientras la estrategia no ha caducado (la
-  pregunta de arriba); la explicación de cada indicador, en los 8 idiomas (`catalogue/indicators.csv`, E12a); los
-  225 valores del árbol, con su nombre y su descripción en los 8; y «Tree depth» en inglés (E12d; la columna del
-  catálogo sigue siendo «Tree Deep»). Revisado el mismo día: cada explicación dice lo que calcula el código del
+- **Contenido y traducciones:** decidido (2026-10-26): la explicación de cada indicador, en los 8 idiomas
+  (`catalogue/indicators.csv`, E12a); los 225 valores del árbol, con su nombre y su descripción en los 8 (E12b); la
+  revisión de la tienda de los textos en zh, ar e hi (E12c, pregunta 11); y «Tree depth» en inglés (E12d; la columna
+  del catálogo sigue siendo «Tree Deep»). Revisado el mismo día: cada explicación dice lo que calcula el código del
   generador (la de 1TMA, sus cuatro medias suavizadas, la de 2 velas frente a la de 200 y sus dos patrones de velas)
   y ninguna promete nada. El `indicator_tech_explanation.csv` del generador sigue con los textos de antes, «TMA Overlay
   (Triangular Moving Average)» y la `Key Combination` de 2MM0 y 2BB0 equivocada; de él saca `S_04` el «Full Indicator
@@ -451,6 +460,49 @@ propietario del árbol no recibe el script entero (API #17): `Strategy.serves`.
   ChrisMoody (llevaba a la estrategia MACD + SMA 200 de ChartArt); 1SMA, al SMC de LuxAlgo (llevaba a otra
   estrategia); 1ICH es «Ichimoku Cloud», la nube que calcula su código, y no «Ichimoku Oscillator»; 1KON, de
   manboto; todos en www.tradingview.com (es.tradingview.com enseñaba TradingView en español a todos).
+
+**Lo que sigue abierto** (de los informes de esas decisiones, 2026-10-26; lo decide el dueño):
+
+- **Quien compró una de las 49 horarias de acciones que salieron** (E2) ya no la ve en Mis estrategias: su enlace
+  dice `errStrategyGone` y renovarlo da 404 (el zip del pedido y su página de gracias dan el resto). Mirar en los
+  pedidos del servidor de verdad si alguien las compró, y qué se le da. Allí, además, se pueden borrar las miniaturas
+  de sus gráficos (la tienda ya no las sirve).
+- **Una versión de antes, caducada:** con una versión nueva y la estrategia de pago caducada, quien tiene la de antes
+  no puede actualizarla (`errUpdateExpired`) ni volver a comprarla suelta (`errAlreadyOwned`): sólo en un lote o en el
+  pack. Y cuenta la caducidad del script de hoy (una por versión pediría guardar un script por versión).
+- **Lo caducado se sigue vendiendo:** sin un catálogo nuevo, después del 13 jun 2027 la tienda vende estrategias cuyo
+  script ya no abre operaciones.
+- **Un lote o el pack con algo que ya es de la cuenta** se venden enteros, sin decir nada (E8 sólo rechaza lo suelto).
+- **«Ya es tuya» se mira al presupuestar y al crear el pedido, no al cobrar:** dos pedidos de la misma estrategia
+  creados antes de pagar ninguno (dos pestañas) se cobran los dos.
+- **La revisión de un nativo** de zh, ar e hi (pregunta 11): también las explicaciones de los indicadores reescritas y
+  los textos nuevos de esta vuelta (`riskTried`, `gradeCuts`, `errAlreadyOwned`, `cartUpdatedTitle`,
+  `errUpdateExpired`, `linkDays`, `linkDownloads`, `packHint`). Los textos en hindi de antes mezclan grafías
+  (ज़्यादा y ज्यादा) y comillas.
+- **Los niveles, en el servidor:** `flask --app app edgefolio levels` donde están los scripts de verdad, subir el
+  `catalogue/levels.json` que deja y reiniciar la tienda. Hasta entonces, el árbol del visitante enseña puntuaciones
+  en las 94 (los scripts de esta máquina son copias de prueba).
+- **Al desplegar:** quitar del servidor el cron de `send-alerts` y `fx-update` (si no, correrían dos veces) y poner
+  `ZLECITOOL_PUBLIC_URL` (sin ella, los avisos de las favoritas no salen).
+- **«Ejemplo de compra»** va al resultado más alto del árbol que se ve, que, con los niveles, puede decir Esperar si
+  ninguno de la parte visible llega al nivel de compra del script: con uno de 0,7123 (el de la plantilla de 2026 del
+  generador), en ABNB 1SUP el más alto que se ve es +0,45. Para hablarlo con el diseño.
+- **Las cajas de pregunta del árbol** se llaman, para un lector de pantalla, con su condición de Pine
+  (`if( macd__close <= … )`); las de resultado ya dicen lo que enseñan.
+- **Las condiciones de TradingView** (§23: desde el 2026-11-01, los scripts solo se venden en su Marketplace)
+  y las normas de la UE y de España para vender estrategias.
+- **Del generador** (la tienda no lo puede cambiar):
+  - cómo elegir las estrategias (su Readme, sección 9), escribir `tried` en el manifiesto del paquete y el
+    `since_release.csv` (el trabajo diario que mide cada estrategia desde su publicación);
+  - sigue listando las estrategias intradía de acciones: el import las deja fuera (`LIST_INTRADAY_STOCKS`);
+  - su `indicator_tech_explanation.csv` (arriba): los textos de antes, «TMA Overlay (Triangular Moving Average)», la
+    `Key Combination` de 2MM0 y 2BB0, y las «Variables it returns» de 1TMA;
+  - cinco gráficos de la estrategia son el panel vacío de TradingView («Not enough data to show»): los de AVAXUSDT
+    2MT0, XRPUSDT 2MM0, XRPUSDT 2MV0, XRPUSDT 1MAD y UPST 1ULT (los `*_profit.png` de unos 32 KB). Hay que rehacerlos;
+    AVAXUSDT 2MT0 sale en las capturas de los filtros de Pro;
+  - valores raros: `d_tci`, `ad_mf`, `smoothK_k`, `smoothD_d`, `FVG_UpInt` y `FVG_DownInt`, `ma_upInt` y
+    `ma_downInt`, y las zonas Premium, Discount y Equilibrium, que en Pine son siempre `na`. Y SMC entrena con
+    `fillna(0)`, mientras que Pine da `na` en la mayoría de las velas: en TradingView no da señal en ellas.
 
 ## Para el núcleo
 
@@ -500,7 +552,7 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 
 ## Pruebas
 
-- `pytest`, hoy (2026-10-26): 308 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
+- `pytest`, hoy (2026-10-26): 332 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
   están en la máquina), con Chromium; sin él, las pruebas en un navegador se saltan y no prueban nada. Las
   de los arreglos del recorrido de 2026-10-25: `tests/test_keyboard.py` (los diálogos y el teclado),
   `tests/test_lists_cart.py` (Lite, el carrito, el recorrido y Gracias), `tests/test_scales.py` (las escalas
@@ -519,7 +571,13 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
   (`errAlreadyOwned`, nunca por la compra de otra cuenta), `test_mine.py` (`errUpdateExpired`, también en el enlace
   de antes y en el script del propietario, la caducidad de cada estrategia publicada, a las 00:00 UTC como el
   script), `test_alerts.py`, `test_strategy_page.py` y `test_page_code.py` (la página conoce cada rechazo de un enlace
-  de descarga).
+  de descarga). Las de los niveles y los textos (E9, E12): `tests/test_levels.py` (los niveles de cada script, sólo del
+  suyo; el comando `levels`), `tests/test_texts.py` (las explicaciones de los indicadores en los 8 idiomas, fieles a su
+  código y sin promesas, pedidas con `ind_lang`; el nombre y el enlace de `indicators.csv`; los recuentos en la forma de
+  cada número, en la página y en los correos; los signos y los plurales en árabe; «Tree depth»; el tamaño del pack) y lo
+  nuevo de `test_tree.py` (cada valor que pregunta una vista previa publicada tiene nombre; el árbol sin niveles, con
+  su puntuación), `test_formats.py` (el .md nombra los valores como el árbol), `test_mine_page.py` (una respuesta
+  cortada es un fallo de red), `test_search.py`, `test_lists_cart.py` y `test_proofs.py`.
 - Con esta exportación eran 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
   cada valor, campo y texto que leen las vistas lo da `static/js`; los textos en los 8 idiomas con las
   mismas variables y sin claves del núcleo; los ganchos `data-search` y `data-sf-cart`); en

@@ -1,7 +1,7 @@
 # Edgefolio (`edgefolio`) · la tienda de estrategias de TradingView
 
 La tienda de tuisku.ai, que se vende como **Edgefolio**: un catálogo de **estrategias de TradingView**
-(Pine Script v5; 143 en el de octubre de 2026) con su backtest. Se miran en una vista sencilla,
+(Pine Script v5; 94 en el de octubre de 2026) con su backtest. Se miran en una vista sencilla,
 **Lite**, o se filtran en **Pro**; se ve cómo decide cada una; se compran con PayPal y se descarga el
 script. El servidor pone el precio de cada carrito, cobra, y sólo entrega los scripts de pago por
 enlaces firmados que caducan.
@@ -58,7 +58,7 @@ entero y lo publica; lo que trae lo fija `catalogue/contract.json`, el contrato 
 <td width="50%"><img src="docs/img/edgefolio_table.png" alt="Los mismos filtros en la vista de tabla"></td>
 </tr>
 <tr>
-<td><sub><b>Filtrar.</b> Adobe y AMD, aciertos ≥ 60 %: el recuento, las etiquetas, los histogramas y la lista salen del servidor.</sub></td>
+<td><sub><b>Filtrar.</b> Cardano y Avalanche (ADAUSDT y AVAXUSDT), aciertos ≥ 60 %: el recuento, las etiquetas, los histogramas y la lista salen del servidor.</sub></td>
 <td><sub>El mismo resultado, en una tabla que se ordena.</sub></td>
 </tr>
 <tr>
@@ -165,7 +165,7 @@ scripts de pago todo funciona, y una descarga contesta que el fichero no está.
 
 ```
 pip install -r requirements-dev.txt
-python -m playwright install chromium        # tests/test_phone_bar.py y tools/screenshots.py
+python -m playwright install chromium        # las pruebas en un navegador y tools/screenshots.py
 pytest
 ```
 
@@ -173,28 +173,40 @@ Ninguna prueba sale a la red: PayPal es el de prueba y los correos se quedan en
 `testing.mail_outbox()`. `tests/test_smoke.py` lleva `testing.check_tool(app, privacy_sample=sample)`, el
 contrato del núcleo hecho prueba (desde la 0.30, también «Tus datos»: exporta lo de una cuenta, la borra y
 comprueba que no queda nada fuera de los pedidos). Las de los scripts de pago (`test_formats.py`,
-`test_cli.py`) los sacan de la historia del repo; en un clon sin ella, se saltan. `test_phone_bar.py` abre
-un Chromium (el kit del núcleo, `testing.mobile`); sin él, se salta.
+`test_cli.py`) los sacan de la historia del repo; en un clon sin ella, se saltan. Las de la página
+en un navegador (las de `test_phone_bar.py`, `test_keyboard.py`, `test_listing_page.py`, `test_buying_page.py`,
+`test_mine_page.py` y `test_scales.py`, y parte de las de `test_lists_cart.py`, `test_strategy_page.py`,
+`test_tree.py` y `test_texts.py`) abren un Chromium (el kit del núcleo, `testing.mobile`); sin él, se saltan y no
+prueban nada.
 
 | Fichero | Qué prueba |
 |---|---|
 | `test_smoke.py` | el contrato del núcleo (con «Tus datos»); la ficha (pública, sin precios en créditos, la palabra Edgefolio); lo público y lo que pide sesión; la página en el idioma de la carcasa |
 | `test_privacy.py` | «Tus datos»: lo que sale en «Descargar mis datos» (lo de la cuenta y lo hecho sin ella con un correo demostrado, aquí o en el núcleo; nunca con uno sin demostrar, ni lo de otra cuenta, ni un enlace o un hash); al borrar la cuenta, los pedidos se quedan sin quién los hizo y lo demás se va; el pedido de una cuenta borrada no se cobra; los avisos no le escriben |
 | `test_phone_bar.py` | en un Chromium, la barra de abajo del móvil con el gancho del núcleo (`data-zt-bottom`): la página deja lo que tapa, y el pie queda encima; en un ordenador, ni barra ni sitio |
-| `test_pricing.py`, `test_bundles.py` | los precios sólo del catálogo; los escalones y el código sumados con el tope del 70 %; los códigos de precio único; los lotes y el pack; una estrategia nunca dos veces; los lotes que se publican |
-| `test_search.py` | los filtros, el orden, las páginas y los histogramas contra el catálogo de verdad; que sean rápidos |
-| `test_orders.py` | pagar y descargar; el importe de PayPal comprobado; los enlaces que caducan y se gastan (también a la vez); el recibo con enlaces sólo para el navegador que compró, la cuenta que compró o la que demostró el correo |
+| `test_pricing.py`, `test_bundles.py` | los precios sólo del catálogo; los escalones y el código sumados con el tope del 70 %; los códigos de precio único; los lotes y el pack; una estrategia nunca dos veces; los lotes que se publican, cada uno más barato que sus estrategias sueltas |
+| `test_search.py` | los filtros, el orden, las páginas y los histogramas contra el catálogo de verdad; que sean rápidos; la nota según `GRADE_CUTOFFS`; lo que dice `/api/config` (entre cuántas probadas, `tried`); la explicación del indicador en el idioma que pide `ind_lang` |
+| `test_orders.py` | pagar y descargar; el importe de PayPal comprobado; los enlaces que caducan y se gastan (también a la vez); el recibo con enlaces sólo para el navegador que compró, la cuenta que compró o la que demostró el correo; lo que ya es de la cuenta (también por sus correos demostrados y sus gratis) no se vende suelto otra vez (`errAlreadyOwned`), nunca por la compra de otra cuenta |
 | `test_receipt.py` | el recibo por correo: una vez por pedido, en el idioma de la página, línea a línea; sin dirección pública no sale y el pago sigue |
-| `test_publish.py` | el puente con el generador: `contract.json` es lo que lee `publish.py`, y las columnas que faltan o sobran se rechazan (también en el export); el paquete, comprobado entero antes de escribir nada (contrato, sha256, rutas, ficheros fuera del manifiesto, lo que nombran las filas, el script de cada fila, ningún script entero como gráfico) y publicado tal como se comprobó; los logos de la tienda; un fallo a medias deja la tienda como estaba; sin la ruta del script de pago y con las vistas previas cortadas; `publish.py` solo, con pandas |
-| `test_release.py` | `flask edgefolio import`: sólo los scripts del manifiesto, con su sha256; sin `--scripts`, ya en `STRATEGIES_DIR`; `--skip-scripts` dice cuántos faltan; si algo falla, nada escrito; las miniaturas vaciadas; los logos que se quedan; los lotes que pierden una estrategia |
+| `test_publish.py` | el puente con el generador: `contract.json` es lo que lee `publish.py`, y las columnas que faltan o sobran se rechazan (también en el export); el paquete, comprobado entero antes de escribir nada (contrato, sha256, rutas, ficheros fuera del manifiesto, lo que nombran las filas, el script de cada fila, ningún script entero como gráfico) y publicado tal como se comprobó; los logos de la tienda; un fallo a medias deja la tienda como estaba; sin la ruta del script de pago y con las vistas previas cortadas; las intradía de acciones fuera (salvo con `--intraday-stocks`), también en el catálogo publicado; `tried` en `release.json`; el `since_release.csv` de un paquete, comprobado como lo lee la tienda; `publish.py` solo, con pandas |
+| `test_release.py` | `flask edgefolio import`: sólo los scripts del manifiesto, con su sha256; sin `--scripts`, ya en `STRATEGIES_DIR`; `--skip-scripts` dice cuántos faltan; si algo falla, nada escrito; las miniaturas vaciadas; los logos que se quedan; los lotes que pierden una estrategia; los niveles de los scripts comprobados, en `catalogue/levels.json`; las intradía de acciones fuera, también con `LIST_INTRADAY_STOCKS`; `tried` y el `since_release.csv` del paquete |
+| `test_levels.py` | los niveles de cada script (`edgefolio/levels.py`), sólo del que lleva el nombre de su estrategia; `flask edgefolio levels` los escribe desde `STRATEGIES_DIR` y, sin ningún script de su estrategia, no toca el fichero |
+| `test_tasks.py` | las tareas del reloj del núcleo (`"schedule"`): `fx_update` y `send_alerts`, a su hora (`testing.tick`) y una vez aunque se repitan (`testing.run_task` dos veces); los cambios sin una transacción abierta; un fallo deja los cambios de antes; sin dirección pública, los avisos fallan y no mandan nada; a una cuenta borrada, nada |
 | `test_free.py` | las gratis por correo; el límite del día (también a la vez); las novedades con doble confirmación; el idioma del correo |
-| `test_mine.py` | Mis estrategias: lo de la cuenta y lo de un correo demostrado; renovar; las versiones nuevas; el script del propietario; las favoritas; el zip de un pedido |
+| `test_mine.py` | Mis estrategias: lo de la cuenta y lo de un correo demostrado; renovar; las versiones nuevas, gratis hasta que la estrategia caduca (a las 00:00 UTC de la «Expiry date» de su script; después, `errUpdateExpired`, también en el enlace de antes y en el script del propietario); el script del propietario; las favoritas; el zip de un pedido; lo comprado de una estrategia que salió del catálogo |
 | `test_proofs.py` | la prueba de un correo: un uso, en dos pasos, sólo para la cuenta que la pidió, sólo hashes, sin llenar buzones, CSRF, el idioma |
-| `test_alerts.py` | los avisos de las favoritas: una vez, en su idioma, sólo a un correo demostrado |
+| `test_alerts.py` | los avisos de las favoritas: una vez, en su idioma, sólo a un correo demostrado; sin dirección pública, el comando no manda nada |
 | `test_security.py` | los enlaces nunca con la cabecera Host; la cookie de quien compra; correos que un programa leería distinto; los límites por IP; la forma de los rechazos; CSRF |
-| `test_formats.py` | los formatos del zip (.md, .py, .js) contra el script; cada script de pago entendido |
+| `test_formats.py` | los formatos del zip (.md, .py, .js) contra el script; cada script de pago entendido; el .md nombra cada valor como «Cómo decide» |
+| `test_texts.py` | los textos en los 8 idiomas: la explicación de cada indicador (fiel a su código, sin promesas, pedida con `ind_lang`), su nombre y su enlace de `indicators.csv`; cada recuento en la forma de su número, en la página y en los correos; los signos y los plurales en árabe; la puntuación del chino y del hindi; «Tree depth»; el tamaño del pack |
 | `test_site.py`, `test_media.py`, `test_cli.py`, `test_layout.py` | la página sobre la carcasa; nada privado en `static/`; las vistas previas cortadas, también dentro de un zip del diseño archivado; las miniaturas y los cambios; los comandos; la forma del repo |
-| `test_page_code.py` | el código de la página después de mezclar el diseño: ninguna marca de conflicto; cada valor, campo de fila y texto que leen las vistas lo da `static/js`; los textos de la tienda en los 8 idiomas, con las mismas variables y sin repetir una clave del núcleo; los ganchos que busca `app.js` (`data-search`, `data-sf-cart`, `data-sf-bundles`) |
+| `test_page_code.py` | el código de la página después de mezclar el diseño: ninguna marca de conflicto; cada valor, campo de fila y texto que leen las vistas lo da `static/js`; los textos de la tienda en los 8 idiomas, con las mismas variables y sin repetir una clave del núcleo; los ganchos que busca `app.js` (`data-search`, `data-sf-cart`, `data-sf-bundles`); cada rechazo de un enlace de descarga, explicado |
+| `test_keyboard.py` | en un Chromium, el teclado: los diálogos se quedan con el foco y lo devuelven; las × dicen qué quitan; Lite \| Pro con las flechas; una fila de la Tabla y los desplegables de Pro con el teclado |
+| `test_lists_cart.py` | en un Chromium, las listas, el carrito y el recorrido: los packs esperan a los lotes; los buscadores no pasan de 100; Intro aplica el código; el árabe; el singular de Pro; la fila desplegada de la Tabla; al llegar, el diccionario, las favoritas y la página de gracias |
+| `test_listing_page.py` | en un Chromium, lo que la tienda dice de su catálogo: entre cuántas probadas en el aviso de sobreajuste, los cortes de la nota y «Desde su publicación» sólo con cifras |
+| `test_buying_page.py` | en un Chromium, «Ya es tuya» en Lite, Pro y la ficha (sin precio) y el carrito que la pierde con su aviso; la página de gracias, que no rechaza lo que se acaba de pagar; la actualización sólo hasta la caducidad; la gratis en un móvil tumbado; «Hecho» anunciado; el buscador de Pro bajo la barra |
+| `test_strategy_page.py`, `test_scales.py` | en un Chromium, la ficha: la temporalidad de TradingView, la explicación del indicador en el idioma de la página, una gratis, «Ya es tuya», el título de la pestaña, «Cómo decide» que se pide otra vez y sigue al carrito; las escalas de Pro y las barras de la ficha, del catálogo |
+| `test_tree.py`, `test_mine_page.py` | «Cómo decide»: cada patrón y cada valor de las vistas previas publicadas con su nombre, en los 8 idiomas; en un Chromium, la pestaña como visitante (con los niveles publicados o, sin ellos, con la puntuación de cada resultado; la escala y los signos en árabe) y como propietario, y el móvil. Mis estrategias en un Chromium: la prueba de un correo, las favoritas, el tutorial y una respuesta cortada |
 | `test_design_update.py` | aplicar una exportación del diseño: una igual a la anterior no cambia nada; un cambio del diseño llega a la vista adaptada; la forma de las de octubre (`vendor/`, las notas nuevas, `versions/` y `offline/` fuera); `docs/design/serve.py` encuentra el núcleo |
 
 ## Cómo funciona
@@ -350,8 +362,8 @@ sus favoritas (versión nueva, bajada de precio, un lote nuevo); la primera vez 
 `fx-update` escribe `<datos>/edgefolio/fx.json`; hasta entonces valen los cambios de ejemplo de
 `catalogue/fx.json`. Los dos los hace solos el reloj del núcleo (`"schedule"` de `tool.json`, núcleo 0.25),
 una vez entre todos los procesos y servidores: `fx_update` los días laborables a las 17:00 de Madrid
-(después de que publique el BCE) y `send_alerts` cada día a las 09:00. Sin cron: los comandos son para
-correrlos a mano (una vez del reloj que falló, otra vez: `flask --app app zt task run fx_update`). Las dos
+(después de que publique el BCE) y `send_alerts` cada día a las 09:00. Los comandos son para correrlos a
+mano (una vez del reloj que falló, otra vez: `flask --app app zt task run fx_update`). Las dos
 tareas apuntan cada vez hecha en `edgefolio_task_done`: si se repite, no hace nada. Los enlaces de los avisos
 necesitan `ZLECITOOL_PUBLIC_URL`: sin ella, en producción, la vez falla («Sistema» y el aviso de errores)
 y no manda nada.
@@ -371,7 +383,7 @@ los enlaces de los correos y la vuelta de PayPal se hacen con ella, nunca con la
 | `DISCOUNT_CODES` | ninguno | pares `código=porcentaje`: `spring20=0.20,partner40=0.40` |
 | `FLAT_PRICE_CODES` | ninguno | pares `código=precio` que ponen un precio a cada estrategia suelta |
 | `MAX_DISCOUNT` | `0.70` | el tope del escalón más el código, juntos |
-| `PACK_SIZE`, `PACK_PRICE` | `5`, `249` | «Crea tu pack» |
+| `PACK_SIZE`, `PACK_PRICE` | `5`, `249` | «Arma tu pack»: cuántas estrategias y por cuánto; su tarjeta dice ese tamaño («Elige N más · 5 por …») |
 | `DOWNLOAD_DAYS`, `MAX_DOWNLOADS` | `7`, `10` | lo que vale un enlace de descarga |
 | `NEW_DAYS` | `30` | lo que una estrategia sale en «Nuevas» |
 | `GRADE_CUTOFFS` | `100,50,25` | las operaciones cerradas desde las que una estrategia lleva la nota A, B o C (con menos, D): cuánta prueba respalda su backtest. Su explicación en la página los dice |
@@ -492,8 +504,9 @@ de desarrollo (el del lanzador), donde el generador está al lado.
   `catalogue/since_release.csv` de antes si el paquete no trae uno.
 
 Sin `LIST_INTRADAY_STOCKS=1`, deja fuera las estrategias intradía de acciones (de minutos u horas; las de
-cripto, no): ni las publica ni pide o copia sus scripts, y dice cuántas y por qué. Así se quitaron del catálogo
-de 2026-10 sus 49 horarias de acciones (quedan 94, con las 6 horarias de cripto).
+cripto, no): ni las publica ni pide o copia sus scripts, y dice cuántas y por qué. Por esa regla salieron del
+catálogo de 2026-10 sus 49 horarias de acciones (quedan 94, con las 6 horarias de cripto); `catalogue/release.json`
+las apunta en `left_out`, con por qué.
 
 Antes de escribir nada lo comprueba todo, y si algo falla dice todo lo que falla y no escribe nada: el
 contrato del paquete es el de `catalogue/contract.json` y sus columnas, las del contrato; cada fichero
@@ -548,14 +561,17 @@ Otras dos formas, sin Flask (sólo pandas):
    despliegues): los de un catálogo nuevo, del `d_result/pine_TW_b/` del generador (`import --scripts`
    los copia, comprobados con el manifiesto del paquete, al `STRATEGIES_DIR` de la máquina donde se
    importa: al servidor se llevan de ahí); los del de ahora, con `flask --app app edgefolio
-   restore-scripts` desde un clon con la historia.
+   restore-scripts` desde un clon con la historia. Con los scripts de verdad en su sitio, `flask --app app
+   edgefolio levels` escribe `catalogue/levels.json` (ver «Comandos»): se sube al repo y se reinicia la tienda;
+   hasta entonces, el árbol del visitante enseña la puntuación de cada resultado.
 6. **Arrancar**: `gunicorn -c gunicorn.conf.py "app:create_app()"` (el `Procfile`), sin `--preload`: el
    reloj del núcleo vive en cada proceso, y con él «Tus datos». Las tablas se crean solas. «Borrar mi
    cuenta» sale sola cuando todas las herramientas de la base de datos van en la 0.30 o más nueva y han
    latido; después de volver a una copia, `flask --app app zt privacy reclose` antes de abrir las puertas.
 7. **Los trabajos diarios** los hace el reloj del núcleo (las tareas `fx_update` y `send_alerts` de
-   `tool.json`), en los mismos procesos de gunicorn: nada de cron. Si había un cron de `send-alerts` o
-   `fx-update`, se quita.
+   `tool.json`), en los mismos procesos de gunicorn, una vez entre todos. Si el servidor tenía un cron de
+   `send-alerts` o `fx-update`, se quita: si no, correrían dos veces. Los avisos necesitan `ZLECITOOL_PUBLIC_URL`
+   (paso 4).
 8. **Los datos de la versión FastAPI** (`private/shop.db`) no se traen solos: sus pedidos no tienen cuenta
    del núcleo, así que pasarían a ser pedidos sin cuenta (que cada comprador ve al demostrar su correo).
    Si hace falta, se copian a `edgefolio_order` / `edgefolio_download` con un guion de una vez.

@@ -111,7 +111,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
   (`DEMO20` es una maqueta).
 - **El paginador** de Pro funciona; «Ver más» sólo mientras queda algo; el selector del pack busca.
 - **Las cifras de ejemplo** del diseño («Desde su publicación», «2.834», la v2, los cambios de moneda)
-  son las de verdad o «—» mientras no hay cálculo diario.
+  son las de verdad; «Desde su publicación» no sale mientras ninguna estrategia tiene cifra (abajo).
 - **Toda vista previa pública va cortada**, también las gratis (STATUS y FLUJO dicen lo contrario de la
   tienda: la maqueta, al cortarla, coincide con ella).
 - **El recorrido de bienvenida y el tutorial de instalación** son de la tienda, una vez por navegador (el
@@ -185,7 +185,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
   inglesa: va en la dirección de la página, y en árabe «WaveTrend…», «SuperTrend…» y «CM Ultimate MA…» salían de
   izquierda a derecha.
 - **Árbol | Bloques** llevan `aria-selected`, como Ficha técnica | Cómo decide.
-- **«CLAVE · indicador»** de 68 estrategias de las 143 (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
+- **«CLAVE · indicador»** de 43 estrategias de las 94 (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:
   `indicators.csv` no les da una dirección. Si se quiere otra, la pone el generador.
 - **Los avisos** (errores, novedades) son de la tienda: el diseño no los tiene.
@@ -272,7 +272,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Las escalas de los rangos de Pro salen del catálogo:** cada barra va del mínimo al máximo de sus
   estrategias, redondeados hacia fuera (con el catálogo de 2026-10, las operaciones 0–70 y el beneficio
   neto 0–0,5 %), y es logarítmica sólo si sus valores abarcan más de dos órdenes de magnitud (hoy, el
-  factor de beneficio: 1–200). Las del diseño (§12) eran las del catálogo de 2024, y las 143 estrategias
+  factor de beneficio: 1–200). Las del diseño (§12) eran las del catálogo de 2024, y las 94 estrategias
   caían en un rincón de cada barra. Por debajo de 10, el factor de beneficio va con hasta dos decimales y el
   beneficio medio (%) con dos; la actividad por vela, con hasta tres. Hasta la primera respuesta del
   servidor, las cajas de mínimo y máximo salen vacías (no con las cifras del diseño), y lo que se escribe
@@ -300,6 +300,22 @@ Se queda como está; el diseño no lo enseña o lo simula:
   estrategia para seguirla.» (`favEmpty`, `vals_pages.js`), como «Packs» espera a los lotes. Un ♥ o una alerta
   cambian al momento y, si el servidor no lo guarda (un 401 tras salir en otra pestaña), vuelven a como los
   tiene la cuenta, la favorita a su sitio, con el aviso (`app.setFav`). El diseño no habla con un servidor.
+- **«Desde su publicación», sólo con cifras** (decisión del dueño E11, 2026-10-26): mientras ninguna estrategia
+  tiene cifra (`since_release` de API #1 a 0: `catalogue/since_release.csv` no está o está vacío), no sale en las
+  fichas de Lite (`lite.js`, `liveOn`), en Comparar (su fila, `vals_pages.js`) ni en la ficha, cuya caja es
+  entonces la del backtest: «Backtest» de título y «Beneficio neto %» en su barra, sin la segunda barra ni «Aún
+  sin medir…» (`detail.js`: `liveHead`, `btLabel`). Con la primera cifra vuelve sola, como en el diseño: «—» y
+  «Aún sin medir…» en las que no la tienen. La Tabla de Pro no la tiene. El diseño la enseña siempre, con sus
+  cifras de ejemplo.
+- **El aviso de sobreajuste de Lite y de Pro** dice, cuando se sabe, entre cuántas estrategias probadas se
+  eligieron las del catálogo y de dónde salen sus cifras: «… Estas 94 estrategias se eligieron entre 1531
+  probadas; sus cifras salen de datos que los modelos nunca vieron.» (decisión E1; `riskTried`, con `tried` de
+  API #1, que sale de `catalogue/release.json`; `lite.js`, `pro.js`). Sin `tried`, el aviso del diseño. El de la
+  ficha se queda como el del diseño.
+- **La explicación de la nota** (su `title`, en las fichas de Lite, la Tabla de Pro y la ficha) dice desde cuántas
+  operaciones es cada letra: «Muestra: 37 operaciones cerradas. Menos operaciones, más riesgo de sobreajuste. A
+  desde 100 operaciones, B desde 50, C desde 25; D, menos de 25.» (decisión E10; `gradeCuts`, con los
+  `grade_cutoffs` de API #1; `vals.js`). El diseño no los dice.
 
 ## Correcciones a la exportación
 
@@ -318,7 +334,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 
 | # | Pregunta | Lo que hace la tienda hoy |
 |---|---|---|
-| 1 | Cortes de la nota (A ≥ 300, B ≥ 100, C ≥ 30) | Esos, sobre el número de operaciones; por acordar. Con el catálogo de 2026-10 (5–63 operaciones) solo salen C (35) y D (108) |
+| 1 | Cortes de la nota (A ≥ 300, B ≥ 100, C ≥ 30) | Decidido (2026-10-26): la nota sigue diciendo cuánta prueba respalda el backtest, hecho con datos que el modelo no vio (cerca de año y medio): A desde 100 operaciones cerradas, B desde 50, C desde 25; D, menos. Se cambian con `GRADE_CUTOFFS` (`100,50,25`) y su explicación los dice. Con las 94 del catálogo (5–63 operaciones): 8 B, 22 C y 64 D |
 | 2 | ¿Los tramos se suman al precio de un lote? | Sí: tramo y código (con el tope `MAX_DISCOUNT`) también sobre lotes y pack; un código de precio fijo, no |
 | 3 | Un lote nuevo sustituye a otro que comparte estrategia | Sí, en la página; el servidor rechaza (nunca elige) un carrito con una estrategia dos veces |
 | 4 | ¿Qué hace «Conectar TradingView»? | Abre tradingview.com en otra pestaña y lo recuerda; no hay API a la que conectarse |
@@ -337,9 +353,17 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
 
 - **Cómo se listan las estrategias.** La tienda enseña el backtest del periodo de prueba de las estrategias
   que eligió el generador. Probadas con datos que no vieron, pierden de media después de costes (Readme del
-  generador, sección 9). Cómo listarlas lo decide el dueño.
+  generador, sección 9). Decidido en lo que toca a la tienda (2026-10-26, E1): el aviso de sobreajuste de Lite y
+  de Pro dice entre cuántas probadas se eligieron (`tried` de `catalogue/release.json`: 1.531 las de la ejecución
+  2d00ddc; el import lo toma del manifiesto cuando el generador lo escriba) y que sus cifras son de datos que los
+  modelos no vieron. Cómo elegirlas es del generador.
 - **Las 55 estrategias horarias** (49 de acciones): sus cifras salen del backtest en Python, que los datos
-  gratis de TradingView no reproducen.
+  gratis de TradingView no reproducen. Decidido (2026-10-26, E2): fuera del catálogo las 49 de acciones, con sus
+  gráficos, sus vistas previas y los logos que ya no usa ninguna fila (GOOG y QCOM); se quedan las 6 de cripto: 94
+  estrategias (84 de pago y 10 gratis) de 36 tickers. `catalogue/release.json` dice cuáles y por qué, y el import
+  las deja fuera mientras el generador las liste (`LIST_INTRADAY_STOCKS`, apagado). Los lotes, por la misma regla:
+  «Top 5 por beneficio», SNOW 1BOL, ADBE 2BV0, META 2BB0, AMD 1M00 y CRWD 1SQU (365 US$ sueltas, por 249 US$);
+  «Pareja Amazon», AMZN 1S00 y 2MV0 de 1Day (138 US$, por 119 US$).
 - **Las condiciones de TradingView** (§23: desde el 2026-11-01, los scripts solo se venden en su Marketplace)
   y las normas de la UE y de España para vender estrategias.
 - **`fx-update` y `send-alerts`** siguen con `cron`, en un solo servidor; pasarlos a `"schedule"` del
@@ -354,8 +378,10 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
   dice por qué. Nunca 0,55 y −0,9. Sólo vale el script que lleva el nombre de su estrategia: los de esta
   máquina son copias de prueba, así que el catálogo de hoy no tiene niveles hasta que se ejecute el comando
   donde están los de verdad (y se suba el `levels.json` que deja).
-- **Los cortes de la nota** (pregunta 1): con los de hoy y las 5–63 operaciones del catálogo, solo C y D.
-- **«Desde su publicación»** no tiene trabajo diario: sale siempre «—», y su barra, vacía.
+- **Los cortes de la nota** (pregunta 1): decidido (2026-10-26, E10): A desde 100, B desde 50, C desde 25; D, menos.
+- **«Desde su publicación»:** decidido (2026-10-26, E11): no sale mientras ninguna estrategia tiene cifra (ver «a
+  propósito») y vuelve sola con la primera. El import copia el `since_release.csv` (`id`, `pct`, `as_of`) de un
+  paquete cuando el generador lo escriba, y con `--prune` borra uno de antes si el paquete no trae otro.
 - **Un clic en el velo oscuro** de los diálogos de la tienda (el recorrido de bienvenida, el tutorial de
   instalación, el selector del pack, Comparar y el diálogo de la gratis), ¿debería cerrarlos? Hoy no los
   cierra: lo hacen Esc y la × (o «Hecho» en el selector del pack, que no tiene ×).
@@ -411,13 +437,16 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 
 ## Pruebas
 
-- `pytest`, hoy (2026-10-26): 267 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
+- `pytest`, hoy (2026-10-26): 287 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
   están en la máquina), con Chromium; sin él, las pruebas en un navegador se saltan y no prueban nada. Las
   de los arreglos del recorrido de 2026-10-25: `tests/test_keyboard.py` (los diálogos y el teclado),
   `tests/test_lists_cart.py` (Lite, el carrito, el recorrido y Gracias), `tests/test_scales.py` (las escalas
   de Pro y las barras de la ficha), `tests/test_strategy_page.py`, `tests/test_tree.py`,
   `tests/test_mine_page.py` y lo nuevo de `tests/test_phone_bar.py`, `test_pricing.py`, `test_orders.py` y
-  `test_search.py`.
+  `test_search.py`. Las de las decisiones del dueño del 2026-10-26 sobre el catálogo (E1, E2, E10, E11):
+  `tests/test_listing_page.py` (el aviso de sobreajuste, la explicación de la nota y «Desde su publicación», sin
+  cifras y con una) y lo nuevo de `test_publish.py`, `test_release.py`, `test_search.py`, `test_bundles.py` y
+  `test_mine.py` (lo comprado de una estrategia que salió del catálogo: no se enseña ni se entrega, sin romper nada).
 - Con esta exportación eran 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
   cada valor, campo y texto que leen las vistas lo da `static/js`; los textos en los 8 idiomas con las
   mismas variables y sin claves del núcleo; los ganchos `data-search` y `data-sf-cart`); en
@@ -430,4 +459,4 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
   entero, sobre una base de datos nueva, sin un error en la consola. Las 17 capturas del README, otra vez,
   y tres nuevas: `edgefolio_free_error.png`, `edgefolio_pro_es.png` y `edgefolio_phone_cart.png`.
 - La «insignia Nuevo» no se veía en el catálogo de entonces (nada publicado en los últimos 30 días): se probó
-  con datos de prueba. Con el de 2026-10 la llevan las 143, hasta el 12 nov 2026.
+  con datos de prueba. Con el de 2026-10 la llevan las 94, hasta el 12 nov 2026.

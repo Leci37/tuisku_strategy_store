@@ -14,6 +14,10 @@ d_result/pine_TW_b/). Importarlo es, por este orden:
    publicar el catálogo y sus ficheros (``publish_package``, que apunta en catalogue/release.json de qué
    ejecución del generador es) y vaciar las miniaturas, que pueden ser de gráficos de antes.
 
+Sin LIST_INTRADAY_STOCKS, las estrategias intradía de acciones (de minutos u horas) se quedan fuera, y sus
+scripts ni se piden ni se copian: el plan gratis de TradingView enseña otros datos intradía de las acciones,
+así que allí operan distinto que en su backtest. release.json dice cuáles y por qué.
+
 Lo que se publica es lo que se comprobó en el paso 1, no una segunda lectura del paquete: el paso 7 puede
 volver a escribirlo mientras tanto (y sus ficheros son enlaces a d_result/, que cambia en su sitio), así que
 cada fichero se vuelve a comprobar con su sha256 al copiarlo. Y todo (scripts, static/assets, catálogo y
@@ -177,8 +181,11 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
         checked = pub.read_package(package, assets=assets)
     except pub.ContractError as e:
         raise Refused(e.problems) from e
-    manifest = checked[0]
-    wanted = manifest["private"]["files"]
+    manifest, df = checked
+    left = set()   # los scripts de lo que no se publica: ni se piden ni se copian
+    if not settings.list_intraday_stocks:
+        left = {pub.private_name(*k) for k in df[pub.intraday_stocks(df)][pub.KEY].astype(str).itertuples(index=False)}
+    wanted = {name: digest for name, digest in manifest["private"]["files"].items() if name not in left}
     target = Path(settings.strategies_dir)
     have = already_there(target, wanted)
     # los que no están, y los que están con otro contenido: la tienda entregaría ese, el de antes
@@ -202,7 +209,8 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
         # otras estrategias)
         stage.write(Path(settings.levels), levels.dumps(found))
         catalogue = pub.publish_package(package, prune=prune, out=Path(settings.catalogue), assets=assets,
-                                        checked=checked, stage=stage)
+                                        checked=checked, stage=stage,
+                                        list_intraday_stocks=settings.list_intraday_stocks)
     except Exception as e:
         problems = e.problems if isinstance(e, (Refused, pub.ContractError)) else [f"{type(e).__name__}: {e}"]
         if stage.done:
@@ -224,4 +232,6 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
         "bundles_out": bundles_left_out(settings.bundles, catalogue),
         "contract": manifest["contract"], "created": manifest["created"],
         "commit": str(manifest["generator"].get("commit") or ""),
+        "left_out": {rule: len(ids) for rule, ids in done["left_out"].items()},
+        "tried": done["release"].get("tried"), "since_release": done["since_release"],
     }

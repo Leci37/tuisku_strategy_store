@@ -2,7 +2,7 @@
 """El catálogo filtrado en el servidor: GET /api/strategies, /api/strategies/<id> y /api/bundles.
 
 El panel Pro pide cada histograma y cada recuento de opciones en cada cambio, cada uno contado contra
-«todos los demás filtros». Con unos miles de filas como mucho (2.834 el catálogo de 2024; 143 el de 2026-10)
+«todos los demás filtros». Con unos miles de filas como mucho (2.834 el catálogo de 2024; 94 el de 2026-10)
 basta Python a secas si cada filtro es una máscara de bits (un bit por fila): los recuentos son AND y
 popcount, nunca una vuelta por las filas.
 """

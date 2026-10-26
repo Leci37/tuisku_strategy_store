@@ -16,6 +16,8 @@ MAX_DOWNLOADS         las descargas de cada enlace (10)
 PACK_SIZE, PACK_PRICE «Crea tu pack»: cuántas estrategias y por cuánto (5 por 249)
 NEW_DAYS              los días que una estrategia sale en «Nuevas» desde que se publicó (30)
 CONTACT_EMAIL         la dirección que la página da para los problemas (sales@tuisku.ai)
+GRADE_CUTOFFS         las operaciones cerradas de las notas A, B y C (100,50,25); con menos, D
+LIST_INTRADAY_STOCKS  1: el import publica también las estrategias intradía de acciones (por defecto, no)
 
 Con PayPal de verdad (sandbox o live) hace falta ZLECITOOL_PUBLIC_URL: el enlace de vuelta de PayPal se
 hace con ella y nunca con la cabecera Host, que la escribe quien pide.
@@ -37,6 +39,11 @@ DEFAULT_TIERS = ((Decimal("2500"), Decimal("0.70")), (Decimal("1000"), Decimal("
                  (Decimal("500"), Decimal("0.25")), (Decimal("290"), Decimal("0.20")),
                  (Decimal("160"), Decimal("0.15")))
 PAYPAL_MODES = ("fake", "sandbox", "live")
+# La nota dice cuánta prueba respalda el backtest, hecho con datos que el modelo no vio (cerca de año y medio):
+# A desde 100 operaciones cerradas, B desde 50, C desde 25; D, menos. Con los de antes (300, 100, 30), las 5–63
+# operaciones del catálogo de 2026-10 sólo daban C y D
+GRADE_CUTOFFS = (100, 50, 25)
+YES, NO = ("1", "true", "yes", "on"), ("0", "false", "no", "off", "")
 
 
 def _pairs(raw: str) -> dict:
@@ -47,6 +54,25 @@ def _pairs(raw: str) -> dict:
             if k.strip():
                 out[k.strip().lower()] = Decimal(v.strip())
     return out
+
+
+def _cutoffs(raw: str) -> tuple:
+    try:
+        cuts = tuple(int(x) for x in raw.split(","))
+    except ValueError:
+        cuts = ()
+    if len(cuts) != 3 or not cuts[0] > cuts[1] > cuts[2] > 0:
+        raise ValueError(f"GRADE_CUTOFFS son las operaciones de las notas A, B y C, de más a menos: «100,50,25», "
+                         f"no {raw!r}")
+    return cuts
+
+
+def _flag(name: str, raw: str) -> bool:
+    if raw.strip().lower() in YES:
+        return True
+    if raw.strip().lower() in NO:
+        return False
+    raise ValueError(f"{name} es 1 o 0, no {raw!r}")
 
 
 @dataclass
@@ -77,6 +103,10 @@ class Settings:
     pack_price: Decimal = Decimal("249")
     new_days: int = 30
     contact_email: str = "sales@tuisku.ai"
+    grade_cutoffs: tuple = GRADE_CUTOFFS
+    # El plan gratis de TradingView enseña otros datos intradía de las acciones (sólo Cboe BZX): sus
+    # estrategias intradía operan allí distinto que en su backtest, y el import las deja fuera
+    list_intraday_stocks: bool = False
 
     @classmethod
     def for_data_dir(cls, data_dir: Path, **values) -> "Settings":
@@ -106,6 +136,8 @@ class Settings:
             pack_price=Decimal(e("PACK_PRICE") or "249"),
             new_days=int(e("NEW_DAYS") or "30"),
             contact_email=(e("CONTACT_EMAIL") or "sales@tuisku.ai").strip(),
+            grade_cutoffs=_cutoffs(e("GRADE_CUTOFFS") or "100,50,25"),
+            list_intraday_stocks=_flag("LIST_INTRADAY_STOCKS", e("LIST_INTRADAY_STOCKS") or ""),
         )
         if e("STRATEGIES_DIR"):
             s.strategies_dir = Path(e("STRATEGIES_DIR"))

@@ -369,6 +369,8 @@ los enlaces de los correos y la vuelta de PayPal se hacen con ella, nunca con la
 | `PACK_SIZE`, `PACK_PRICE` | `5`, `249` | «Crea tu pack» |
 | `DOWNLOAD_DAYS`, `MAX_DOWNLOADS` | `7`, `10` | lo que vale un enlace de descarga |
 | `NEW_DAYS` | `30` | lo que una estrategia sale en «Nuevas» |
+| `GRADE_CUTOFFS` | `100,50,25` | las operaciones cerradas desde las que una estrategia lleva la nota A, B o C (con menos, D): cuánta prueba respalda su backtest. Su explicación en la página los dice |
+| `LIST_INTRADAY_STOCKS` | `0` | con `1`, `edgefolio import` publica también las estrategias intradía de acciones (de minutos u horas), que deja fuera: el plan gratis de TradingView enseña otros datos intradía de las acciones (sólo Cboe BZX), así que allí operan distinto que en su backtest |
 | `CONTACT_EMAIL` | `sales@tuisku.ai` | la dirección que la página da para los problemas |
 | `STRATEGIES_DIR` | `<datos>/edgefolio/strategies` | los `.pine` de pago |
 | `PORT` | `5105` | el de `python app.py` (y `gunicorn.conf.py`) |
@@ -447,7 +449,8 @@ Dónde se conectan (lo que escribe el generador → lo que lee la tienda):
 | Los logos | `d_result/icons/` | `static/assets/icons/` | en el paquete (`icons/`); `import` añade los que faltan: uno de verdad de la tienda se queda aunque el del paquete sea otro, y uno provisional de la tienda (el círculo gris del generador) deja sitio al del paquete. Con `SHOP_ICONS_DIR=<tienda>/static/assets/icons`, el paso 7 no hace logos que la tienda ya tiene |
 | Las vistas previas públicas | `d_result/pine_TW_hide/` | `static/assets/previews/` | en el paquete (`pine_TW_hide/`); `import` las corta a su parte pública |
 | Los scripts de pago | `d_result/pine_TW_b/` | `STRATEGIES_DIR` (por defecto `<ZLECITOOL_DATA_DIR>/edgefolio/strategies`) | nunca en el paquete, sólo su sha256 en el manifiesto: `import --scripts <generador>/d_result/pine_TW_b` copia los de la lista, comprobados |
-| De qué ejecución es | `manifest.json` del paquete | `catalogue/release.json` | `import` copia el contrato, la fecha, el generador y las filas |
+| De qué ejecución es | `manifest.json` del paquete | `catalogue/release.json` | `import` copia el contrato, la fecha y el generador, y apunta las filas que publica, entre cuántas probadas se eligieron (`tried` del manifiesto, si lo trae) y las que deja fuera, con por qué |
+| El resultado desde la publicación | aún nada: cuando lo escriba, `since_release.csv` del paquete (`id`, `pct`, `as_of`) | `catalogue/since_release.csv` | `import` lo comprueba y lo copia; con `--prune`, borra uno de antes si el paquete no trae otro |
 | La vuelta a la tienda | cada script, al caducar, pide bajar la versión nueva de `SHOP_URL` (`settings.py` del generador, por defecto `tuisku.ai`) | — | el texto del script |
 
 Lo que no pasa: los mosaicos del paso 8 del generador (`d_result/mosaico/`) eran de la página de antes;
@@ -480,7 +483,12 @@ de desarrollo (el del lanzador), donde el generador está al lado.
   contenido).
 - `--skip-scripts`: publica aunque falten o sean de antes, y dice cuántos: los que faltan no se entregan
   hasta que estén, y los de antes se entregan en su versión de antes. No va con `--scripts`.
-- `--prune`: borra los gráficos y las vistas previas que ya no usa ninguna fila.
+- `--prune`: borra los gráficos y las vistas previas que ya no usa ninguna fila, y un
+  `catalogue/since_release.csv` de antes si el paquete no trae uno.
+
+Sin `LIST_INTRADAY_STOCKS=1`, deja fuera las estrategias intradía de acciones (de minutos u horas; las de
+cripto, no): ni las publica ni pide o copia sus scripts, y dice cuántas y por qué. Así se quitaron del catálogo
+de 2026-10 sus 49 horarias de acciones (quedan 94, con las 6 horarias de cripto).
 
 Antes de escribir nada lo comprueba todo, y si algo falla dice todo lo que falla y no escribe nada: el
 contrato del paquete es el de `catalogue/contract.json` y sus columnas, las del contrato; cada fichero
@@ -494,7 +502,13 @@ su sha256; ver `levels` en «Comandos») y publica `catalogue/catalogue.csv` y `
 comprobaron: una fila por estrategia, rutas relativas, sin `pine_path`, un nombre legible para los que tienen
 el código de la bolsa, cada vista previa cortada a su parte pública; los gráficos y las vistas previas que cambiaron se
 reemplazan, y los logos que faltan se añaden (ver la tabla de arriba). Apunta en
-`catalogue/release.json` de qué ejecución del generador es. Todo se escribe primero al lado de su sitio y
+`catalogue/release.json` de qué ejecución del generador es: su contrato, su fecha y su commit, las filas que
+enseña la tienda, entre cuántas estrategias probadas se eligieron (`tried`, si el manifiesto lo dice; si no lo
+dice y es la misma ejecución, se queda el que había: las de 2026-10, entre 1.531) y las que dejó fuera, con
+por qué. La página dice ese `tried` en el aviso de sobreajuste. Si el paquete trae `since_release.csv` (`id`,
+`pct`, `as_of`: lo que lleva cada estrategia desde su publicación; el generador aún no lo escribe), se
+comprueba con lo demás y se copia a `catalogue/`; mientras ninguna estrategia tiene cifra, la página no habla
+de «Desde su publicación». Todo se escribe primero al lado de su sitio y
 se renombra al final: un fallo a medias deja la tienda como estaba (si falla al renombrar, lo último, dice
 cuántos ficheros ya estaban en su sitio: se vuelve a importar). Por último vacía las miniaturas WebP,
 dice qué lotes de `catalogue/bundles.json` pierden una estrategia (la tienda deja fuera el lote entero:
@@ -504,13 +518,14 @@ carpeta privada de la máquina donde se importa.
 
 Otras dos formas, sin Flask (sólo pandas):
 
-- `python catalogue/publish.py --package DIR [--prune]`: las mismas comprobaciones del paquete y la misma
-  publicación, pero los scripts se copian a mano, no escribe sus niveles (`flask --app app edgefolio levels`,
-  con los scripts ya copiados), no vacía las miniaturas (una más vieja que su gráfico se rehace sola) ni avisa
-  de los lotes.
-- `python catalogue/publish.py EXPORT.csv [--assets DIR] [--prune]`, la de antes de los paquetes: también
-  comprueba las columnas contra el contrato, pero no hay sha256 ni lista privada, deja como están los
-  ficheros que la tienda ya tiene y borra `catalogue/release.json`, que ya no diría qué se enseña.
+- `python catalogue/publish.py --package DIR [--prune] [--intraday-stocks]`: las mismas comprobaciones del
+  paquete y la misma publicación (sin `--intraday-stocks`, también sin las intradía de acciones), pero los
+  scripts se copian a mano, no escribe sus niveles (`flask --app app edgefolio levels`, con los scripts ya
+  copiados), no vacía las miniaturas (una más vieja que su gráfico se rehace sola) ni avisa de los lotes.
+- `python catalogue/publish.py EXPORT.csv [--assets DIR] [--prune] [--intraday-stocks]`, la de antes de los
+  paquetes: también comprueba las columnas contra el contrato (y deja fuera las intradía de acciones), pero no
+  hay sha256 ni lista privada, deja como están los ficheros que la tienda ya tiene y borra
+  `catalogue/release.json`, que ya no diría qué se enseña.
 
 `docs/catalogue-updates.md` cuenta la renovación mensual y la diaria.
 

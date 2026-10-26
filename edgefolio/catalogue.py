@@ -2,8 +2,9 @@
 """Las estrategias a la venta, leídas de catalogue/catalogue.csv: el único sitio de donde salen los precios.
 
 A su lado: indicators.csv (qué es cada indicador, para la página de la estrategia), bundles.json (los
-lotes y sus precios) y, si existen, since_release.csv, que escribe el trabajo diario, y levels.json, los niveles
-de cada script (levels.py).
+lotes y sus precios), release.json (de qué ejecución del generador es: entre cuántas estrategias probadas se
+eligieron) y, si existen, since_release.csv: cuánto lleva cada una desde su publicación (id, pct, as_of), y
+levels.json, los niveles de cada script (levels.py).
 """
 from __future__ import annotations
 
@@ -20,7 +21,7 @@ from functools import cached_property
 from pathlib import Path
 
 from .levels import load as load_levels
-from .settings import Settings
+from .settings import GRADE_CUTOFFS, Settings
 
 log = logging.getLogger(__name__)
 
@@ -62,10 +63,19 @@ def asset(path: str) -> str:
     return "/static/" + path.lstrip("/") if path else ""
 
 
-def grade(trades) -> str:
-    """Cuánta prueba tiene el backtest: los cortes del diseño (aún por acordar)."""
-    t = trades or 0
-    return "A" if t >= 300 else "B" if t >= 100 else "C" if t >= 30 else "D"
+def grade(trades, cutoffs: tuple = GRADE_CUTOFFS) -> str:
+    """Cuánta prueba tiene el backtest: sus operaciones cerradas contra los cortes de A, B y C (GRADE_CUTOFFS)."""
+    t, (a, b, c) = trades or 0, cutoffs
+    return "A" if t >= a else "B" if t >= b else "C" if t >= c else "D"
+
+
+def read_release(path: Path) -> dict:
+    """release.json, o {} sin él (un catálogo publicado con la forma de antes de los paquetes) o roto."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 @dataclass(frozen=True)
@@ -76,9 +86,10 @@ class Strategy:
     id_model: str
     price: Decimal
     row: dict = field(repr=False, compare=False)  # la fila entera del catálogo
-    live: float = None        # % desde la publicación, del trabajo diario; None hasta que corra
+    live: float = None        # % desde la publicación, de since_release.csv; None hasta que haya cifra
     live_as_of: str = None
     new_days: int = 30
+    grade_cutoffs: tuple = GRADE_CUTOFFS
 
     @property
     def id(self) -> str:
@@ -117,7 +128,7 @@ class Strategy:
 
     @property
     def grade(self) -> str:
-        return grade(self.numbers["tr"])
+        return grade(self.numbers["tr"], self.grade_cutoffs)
 
     @property
     def version(self) -> int:
@@ -209,12 +220,19 @@ class Catalogue:
         with open(source.catalogue, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f, delimiter="\t"):
                 s = Strategy(row["ticker"], row["interval"], row["key_techs"], row["id_model"],
-                             Decimal(row["Price"]).quantize(Decimal("0.01")), row, new_days=source.new_days)
+                             Decimal(row["Price"]).quantize(Decimal("0.01")), row, new_days=source.new_days,
+                             grade_cutoffs=source.grade_cutoffs)
                 if s.id in live:
                     s = replace(s, live=number(live[s.id].get("pct")), live_as_of=live[s.id].get("as_of") or None)
                 if s.key not in self.items:
                     self.items[s.key] = s
                     self.by_id[s.id] = s
+        # cuántas tienen cifra desde su publicación: sin ninguna, la página no habla de ello
+        self.since_release = sum(1 for s in self.items.values() if s.live is not None)
+        # release.json va siempre al lado de catalogue.csv (publish.py). Entre cuántas estrategias probadas se
+        # eligieron, si el generador lo dijo; uno que no puede ser (menos que las que hay) no se cuenta
+        tried = read_release(Path(source.catalogue).parent / "release.json").get("tried")
+        self.tried = tried if type(tried) is int and tried >= len(self.items) > 0 else None
         self.indicators = {}
         for r in read_table(source.indicators):
             lower = {k.strip().lower(): v for k, v in r.items() if k}

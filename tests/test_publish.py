@@ -40,6 +40,10 @@ FACTORY_ROW = {**FIGURES, "Price": "79", "ticker": "AAPL", "interval": "1Day", "
                "path_ico": "d_result/icons/AAPL.png", "path_ico_big": "d_result/icons/AAPL_big.png",
                "pine_path_shadow": "d_result/pine_TW_hide/AAPL_1Day_1ADX_aaaa1111.pine"}
 
+# Una estrategia horaria de cripto: intradía, pero no de acciones (se publica siempre).
+CRYPTO_HOURLY = {"Price": "61", "ticker": "BTCUSDT", "interval": "1Hour", "key_techs": "1SMA", "id_model": "eeee5555",
+                 "Name": "Bitcoin / TetherUS", "Release date": "2026-10-13", "Index": "CRYPTO"}
+
 # El logo de relleno que escribe el paso 7 cuando no tiene el de verdad (placeholder_svg de su S_04).
 PLACEHOLDER = ('<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 {size} {size}">'
                '<circle cx="{half}" cy="{half}" r="{half}" fill="#5b6b7c"/>'
@@ -123,6 +127,13 @@ def rewrite_catalogue(package: Path, change):
     df = change(pd.read_csv(package / "catalogue.csv", sep="\t", dtype=str))
     df.to_csv(package / "catalogue.csv", sep="\t", index=False)
     edit_manifest(package, lambda m: m["files"].update({"catalogue.csv": sha(package / "catalogue.csv")}))
+
+
+def with_since_release(package: Path, text: str) -> Path:
+    """El since_release.csv que traerá el paquete cuando el generador lo escriba (id, pct, as_of), en el manifiesto."""
+    (package / "since_release.csv").write_text(text, encoding="utf-8")
+    edit_manifest(package, lambda m: m["files"].update({"since_release.csv": sha(package / "since_release.csv")}))
+    return package
 
 
 @pytest.fixture
@@ -440,7 +451,13 @@ def test_publish_runs_alone_with_a_package(tmp_path):
     edit_manifest(package, lambda m: m.update(rows=4))
     ok = run("--package", package, "--prune")
     assert ok.returncode == 0, ok.stderr
-    assert "4 strategies" in ok.stdout and (shop / "catalogue" / "release.json").is_file()
+    # sin --intraday-stocks, la horaria de acciones (MSFT 1Hour) se queda fuera, como en el import de la tienda
+    assert "3 strategies" in ok.stdout and (shop / "catalogue" / "release.json").is_file()
+    assert "1 rows left out (TradingView's free plan shows other intraday stock data" in ok.stdout
+    assert "MSFT_1Hour_2BB0_bbbb2222" in ok.stdout and len(list((shop / "static" / "assets" / "charts").iterdir())) == 6
+    every = run("--package", package, "--intraday-stocks")
+    assert every.returncode == 0, every.stderr
+    assert "4 strategies" in every.stdout and "left out" not in every.stdout
     assert len(list((shop / "static" / "assets" / "charts").iterdir())) == 8
 
 
@@ -554,3 +571,115 @@ def test_the_preview_is_cut_wherever_the_contract_sends_it(tmp_path, shop):
     for f in published:
         text = f.read_text()
         assert text.endswith(sys.modules["previews"].PREVIEW_TAIL) and "x70 = 70" not in text, f.name
+
+
+# ── E2, E1 y E11 (2026-10-26): lo que se deja fuera, entre cuántas probadas y las cifras desde la publicación ──
+
+def test_intraday_stock_strategies_are_left_out_unless_asked(publish, tmp_path, shop):
+    """El plan gratis de TradingView enseña otros datos intradía de las acciones (sólo Cboe BZX): sus estrategias
+    de minutos u horas operan allí distinto que en su backtest. Sin list_intraday_stocks no se publican, ni sus
+    ficheros, y release.json dice cuáles y por qué; las de cripto, también horarias, sí."""
+    d_result, rows = factory(tmp_path, ROWS + [CRYPTO_HOURLY])
+    package = package_of(d_result, rows)
+    df = publish.publish_package(package, list_intraday_stocks=False, **into(shop))
+    assert list(df["ticker"]) == ["AAPL", "NVDA", "TSLA", "BTCUSDT"]
+    assert df.attrs["published"]["left_out"] == {"intraday_stocks": ["MSFT_1Hour_2BB0_bbbb2222"]}
+    assert not [p for p in (shop / "static").rglob("*") if "MSFT_1Hour" in p.name], "ni sus gráficos ni su vista previa"
+    release = json.loads((shop / "catalogue" / "release.json").read_text())
+    assert release["rows"] == 4 and release["left_out"] == {"intraday_stocks": {
+        "rows": 1, "why": publish.LEFT_OUT["intraday_stocks"], "ids": ["MSFT_1Hour_2BB0_bbbb2222"]}}
+    assert "Cboe BZX" in release["left_out"]["intraday_stocks"]["why"]
+
+    every = publish.publish_package(package, list_intraday_stocks=True, prune=True, **into(shop))
+    assert len(every) == 5 and every.attrs["published"]["left_out"] == {}
+    assert "left_out" not in json.loads((shop / "catalogue" / "release.json").read_text())
+
+    frame = pd.DataFrame({"interval": ["1Min", "15min", "1Hour", "4Hour", "1h", "1Day", "1Week", "1Hour", None],
+                          "Index": ["NASDAQ"] * 7 + ["CRYPTO", "NYSE"]})
+    assert list(publish.intraday_stocks(frame)) == [True] * 5 + [False] * 4
+
+
+def test_the_export_form_leaves_them_out_too(publish, tmp_path):
+    export = tmp_path / "export.csv"
+    pd.DataFrame([FACTORY_ROW, {**FACTORY_ROW, "interval": "1Hour", "id_model": "ffff6666"}]).to_csv(
+        export, sep="\t", index=False)
+    assert len(publish.publish(export, list_intraday_stocks=False, **into(tmp_path / "shop"))) == 1
+    assert len(publish.publish(export, **into(tmp_path / "shop"))) == 2, "la función, sin pedirlo, publica todo"
+
+
+def test_release_says_among_how_many_tried(publish, tmp_path, shop):
+    """E1: el manifiesto puede decir entre cuántas estrategias probadas se eligieron sus filas (tried). Si no lo
+    dice y es la misma ejecución (su created y su generador) que la que enseña la tienda, se queda el de su
+    release.json (el de 2026-10 lo puso el dueño); de otra ejecución, se quita: mejor nada que otra cuenta."""
+    d_result, rows = factory(tmp_path)
+    package = package_of(d_result, rows)
+    release = shop / "catalogue" / "release.json"
+    edit_manifest(package, lambda m: m.update(tried=1531))
+    publish.publish_package(package, **into(shop))
+    assert json.loads(release.read_text())["tried"] == 1531
+    edit_manifest(package, lambda m: m.pop("tried"))
+    publish.publish_package(package, **into(shop))
+    assert json.loads(release.read_text())["tried"] == 1531, "la misma ejecución"
+    edit_manifest(package, lambda m: m.update(generator={**m["generator"], "commit": "fedcba9876543210"}))
+    publish.publish_package(package, **into(shop))
+    assert "tried" not in json.loads(release.read_text()), "otra ejecución sin decirlo"
+    for bad in (3, "1531", True, 1.5, None):
+        edit_manifest(package, lambda m: m.update(tried=bad))
+        assert f"tried is {bad!r}, not a whole number of at least its rows" in refused(publish, package, tmp_path / bad.__class__.__name__)
+
+
+def test_a_package_brings_its_results_since_release(publish, tmp_path, shop):
+    """E11: cuando el generador escriba since_release.csv (id, pct, as_of) en el paquete, se comprueba con lo demás y
+    se publica al lado de catalogue.csv, de donde lo lee la tienda. Un paquete sin él deja el de antes, que es de
+    otro catálogo: se dice, y --prune lo borra."""
+    from edgefolio.catalogue import Catalogue
+    d_result, rows = factory(tmp_path)
+    aapl = "AAPL_1Day_1ADX_aaaa1111"
+    package = with_since_release(package_of(d_result, rows), f"id\tpct\tas_of\n{aapl}\t2.5\t2026-10-20\n")
+    df = publish.publish_package(package, **into(shop))
+    since = shop / "catalogue" / "since_release.csv"
+    assert df.attrs["published"]["since_release"] == "copied"
+    assert since.read_bytes() == (package / "since_release.csv").read_bytes()
+    cat = Catalogue(shop / "catalogue" / "catalogue.csv")
+    assert (cat.by_id[aapl].live, cat.by_id[aapl].live_as_of, cat.since_release) == (2.5, "2026-10-20", 1)
+
+    d_other, others = factory(tmp_path / "otra", ROWS[:2])
+    without = package_of(d_other, others)
+    assert publish.publish_package(without, **into(shop)).attrs["published"]["since_release"] == "stale"
+    assert since.is_file(), "sin --prune se queda"
+    assert publish.publish_package(without, prune=True, **into(shop)).attrs["published"]["since_release"] == "removed"
+    assert not since.exists() and publish.publish_package(without, **into(shop)).attrs["published"]["since_release"] is None
+
+
+@pytest.mark.parametrize("text, says", [
+    ("id,pct\nAAPL_1Day_1ADX_aaaa1111,2.5\n", "since_release.csv: no column as_of"),
+    ("id,pct,as_of\nGONE_1Day_X_0,2.5,2026-10-20\n", "since_release.csv: 1 ids of no row of catalogue.csv: GONE_1Day_X_0"),
+    ("id,pct,as_of\nAAPL_1Day_1ADX_aaaa1111,x,2026-10-20\nTSLA_1Day_1C00_dddd4444,1,20/10/2026\n",
+     "since_release.csv: 2 lines without a number in pct and a date (YYYY-MM-DD) in as_of: 2, 3"),
+    ("id\tpct\tas_of\nAAPL_1Day_1ADX_aaaa1111\t2.5\t2026-10-20\nAAPL_1Day_1ADX_aaaa1111\tnan\t2026-10-21\n",
+     "since_release.csv: 1 ids repeated: AAPL_1Day_1ADX_aaaa1111"),
+    # un campo de más o de menos: la comprobación, con pandas, tomaba el id por el índice y se rompía
+    ("id,pct,as_of\nAAPL_1Day_1ADX_aaaa1111,2.5,2026-10-20,x\nTSLA_1Day_1C00_dddd4444,1\n",
+     "since_release.csv: 2 lines with more or fewer fields than its header: 2, 3"),
+    # con la marca BOM, la tienda (csv) no vería la columna id: ninguna cifra, sin decir por qué
+    ("\ufeffid,pct,as_of\nAAPL_1Day_1ADX_aaaa1111,2.5,2026-10-20\n", "since_release.csv: no column id"),
+])
+def test_a_wrong_since_release_is_refused(publish, tmp_path, shop, text, says):
+    d_result, rows = factory(tmp_path)
+    assert says in refused(publish, with_since_release(package_of(d_result, rows), text), shop)
+
+
+def test_the_published_catalogue_lists_no_intraday_stocks(publish):
+    """E2 (2026-10-26): las 49 estrategias horarias de acciones de la ejecución 2d00ddc salieron del catálogo, con sus
+    gráficos, sus vistas previas y los logos que ya no usa ninguna fila (GOOG, QCOM), como las deja fuera un import
+    sin LIST_INTRADAY_STOCKS: release.json dice cuáles y por qué, y entre cuántas probadas se eligieron."""
+    df = pd.read_csv(ROOT / "catalogue" / "catalogue.csv", sep="\t", dtype=str)
+    release = json.loads((ROOT / "catalogue" / "release.json").read_text(encoding="utf-8"))
+    assert not publish.intraday_stocks(df).any()
+    assert release["rows"] == len(df) == 94 and release["tried"] == 1531
+    gone = release["left_out"]["intraday_stocks"]
+    assert gone["rows"] == len(set(gone["ids"])) == 49 and "TradingView" in gone["why"]
+    assert all("_1Hour_" in i for i in gone["ids"]) and not set(gone["ids"]) & set(publish.ids_of(df))
+    assert publish.unused_assets(df) == [], "ni un gráfico ni una vista previa de las que salieron"
+    for ticker in {i.split("_")[0] for i in gone["ids"]} - set(df["ticker"]):
+        assert not list((publish.ASSETS / "icons").glob(f"{ticker}*.svg")), ticker

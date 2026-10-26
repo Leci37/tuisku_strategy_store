@@ -23,7 +23,9 @@ The import (`edgefolio/release.py`, which uses `catalogue/publish.py`) already d
 - it removes the location of the paid file;
 - it copies only the charts, logos and previews the rows use; it replaces the charts and previews that changed, and a logo only when the shop's is the factory's placeholder;
 - it copies only the paid scripts the manifest lists;
-- with `--prune`, it deletes the charts and previews nothing uses;
+- it leaves out the intraday stock strategies (minutes or hours, not crypto) unless `LIST_INTRADAY_STOCKS=1`: TradingView's free plan shows other intraday stock data (only Cboe BZX), so they trade there differently from their backtest. `catalogue/release.json` lists them with why, and records how many strategies the listed ones were chosen among (`tried`, from the manifest; the shop's overfitting note says it);
+- it copies a package's `since_release.csv` (`id`, `pct`, `as_of`), checked like the rest, into `catalogue/`: the page shows "since release" only while some strategy has a figure;
+- with `--prune`, it deletes the charts and previews nothing uses, and a `catalogue/since_release.csv` of an earlier catalogue when the package brings none;
 - it writes everything beside its place and renames it at the end, so a failure leaves the shop as it was (one while renaming says how many files are already in place: import again).
 
 ## Before the first relaunch

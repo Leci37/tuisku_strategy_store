@@ -147,7 +147,10 @@ function detailVals(c) {
     // con el nombre que le da TradingView en su menú (1D, 1h), como el tutorial de instalación; el del
     // catálogo (1Day, 1Hour) no sale en él
     detTf: t('tfNote', { tf: tvInterval(r.interval) }),
-    liveNote: r.live == null ? tx.liveUnknown : r.live_as_of ? t('liveAsOf', { date: f.fmtDate(r.live_as_of) }) : '',
+    // sin ninguna cifra desde la publicación en el catálogo, la caja es sólo del backtest: su título no promete el
+    // resultado real y la barra dice qué mide (con las dos, «Backtest» frente a «Desde su publicación»)
+    liveHead: c.liveOn ? tx.liveVsBacktest : tx.colBacktest, btLabel: c.liveOn ? tx.colBacktest : tx.npPct,
+    liveNote: !c.liveOn ? '' : r.live == null ? tx.liveUnknown : r.live_as_of ? t('liveAsOf', { date: f.fmtDate(r.live_as_of) }) : '',
     versions: versions.map((x, i) => ({
       // the date isolated (FSI…PDI): in Arabic "27/09/2024" would otherwise mix with "v1 · "
       title: 'v' + x.v + (x.date ? ' · \u2068' + f.fmtDate(x.date) + '\u2069' : ''), note: x.note || (x.v === 1 ? tx.v1note : ''),
@@ -172,9 +175,10 @@ function compareVals(c, liteDock) {
     const m = known.length ? (low ? Math.min(...known) : Math.max(...known)) : null;
     return vals.map(v => v != null && v === m && known.length > 1);
   };
+  // «Desde su publicación», sólo cuando alguna estrategia del catálogo tiene cifra (c.liveOn)
   const defs = [
     [t('fNetProfitPct'), r => r.npp, r => f.pctS(r.npp)], [t('fWinRate'), r => r.w, r => f.pct(r.w)], [t('fClosedTrades'), r => r.tr, r => f.int(r.tr)],
-    [t('fAvgProfitUsd'), r => r.avg, r => f.money(r.avg)], [tx.sinceRelease, r => r.live, r => f.pctS(r.live)],
+    [t('fAvgProfitUsd'), r => r.avg, r => f.money(r.avg)], ...(c.liveOn ? [[tx.sinceRelease, r => r.live, r => f.pctS(r.live)]] : []),
     [tx.sortPrice, r => r.price, r => (r.price ? f.pmoney(r.price) : t('landingFree')), true]
   ];
   return {

@@ -1154,14 +1154,14 @@
     "hi": "मुझे लिंक भेजें"
   },
   "freeSent": {
-    "es": "Hecho. Mira tu correo: el enlace vale 7 días.",
-    "en": "Done. Check your inbox: the link is valid for 7 days.",
-    "pt": "Feito. Vê o teu e-mail: a ligação vale 7 dias.",
-    "fr": "C’est fait. Consultez votre boîte de réception : le lien est valable 7 jours.",
-    "de": "Erledigt. Schau in dein Postfach: Der Link gilt 7 Tage.",
-    "zh": "已发送。请查收邮件：链接 7 天内有效。",
-    "ar": "تم. تفقّد بريدك: الرابط صالح لمدة 7 أيام.",
-    "hi": "हो गया। अपना इनबॉक्स देखें: लिंक 7 दिन तक चलेगा।"
+    "es": "Hecho. Mira tu correo: el enlace vale {days}.",
+    "en": "Done. Check your inbox: the link is valid for {days}.",
+    "pt": "Feito. Vê o teu e-mail: a ligação vale {days}.",
+    "fr": "C’est fait. Consultez votre boîte de réception : le lien est valable {days}.",
+    "de": "Erledigt. Schau in dein Postfach: Der Link gilt {days}.",
+    "zh": "已发送。请查收邮件：链接 {days}内有效。",
+    "ar": "تم. تفقّد بريدك: الرابط صالح لمدة {days}.",
+    "hi": "हो गया। अपना इनबॉक्स देखें: लिंक {days} तक चलेगा।"
   },
   "myStrategies": {
     "es": "Mis estrategias",

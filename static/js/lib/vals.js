@@ -31,7 +31,10 @@ export function renderVals(app) {
   tx.contactProblems = t('contactProblems', { e: contact });
   // la fila de confianza dice lo que dicen los ajustes del servidor, no las cifras de ejemplo del diseño; cada cuenta,
   // con la forma que pide su número (en árabe, 2 lleva el dual, de 3 a 10 el plural y de 11 a 99 el singular)
-  tx.trustLinks = t('trustLinks', linkCounts(t, f, (s.cfg && s.cfg.download_days) || 7, (s.cfg && s.cfg.max_downloads) || 10));
+  const links = linkCounts(t, f, (s.cfg && s.cfg.download_days) || 7, (s.cfg && s.cfg.max_downloads) || 10);
+  tx.trustLinks = t('trustLinks', links);
+  // el «Hecho» de la gratis: su enlace vale DOWNLOAD_DAYS (decía 7, escrito en el texto)
+  tx.freeSent = t('freeSent', { days: links.days });
 
   // la escala de las barras de la página de la estrategia: el mejor backtest del catálogo (del servidor).
   // Con la del diseño (100 %, para backtests de 71–86 %), los de 0,03–0,44 % del catálogo de 2026-10 no se veían

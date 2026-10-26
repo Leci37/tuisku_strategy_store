@@ -355,6 +355,59 @@ def test_an_update_is_free_until_the_strategy_expires(app, client, settings, pay
     assert free["version"] == 2 and free["kind"] == "free", "una gratis, siempre"
 
 
+def test_an_old_link_does_not_give_the_new_version_once_the_strategy_has_expired(app, settings, paypal):
+    """La tienda guarda un script por estrategia, el de hoy: un enlace aún válido de la versión de antes da la nueva.
+    Sin caducar, vale (la actualización es gratis); caducada, ni Mis estrategias lo da por válido (sin .pine: «Ya es
+    tuya» lleva a Mis estrategias) ni descarga nada (API #10: 403 errUpdateExpired; abierto en el navegador, a Mis
+    estrategias con el aviso), como al renovarlo, ni la vista de propietario del árbol lo enseña entero (API #17). El de
+    la versión comprada, cuando es la de hoy, sí, aunque caducara."""
+    ana = signed(app, "ana@example.com")
+    links = {d["id"]: d["url"] for d in buy(ana, [AAPL, MSFT])["downloads"]}
+    published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2}, {"AAPL": "2099/01/01", "MSFT": "2020/01/01"})
+    items = {i["id"]: i for i in my(ana)["items"]}
+    assert (items[AAPL]["valid"], items[AAPL]["url"], items[AAPL]["update"]) == (True, links[AAPL], 2)
+    assert (items[MSFT]["valid"], items[MSFT]["url"], items[MSFT]["update"]) == (False, None, None)
+    assert ana.get(links[AAPL]).status_code == 200, "sin caducar: la versión nueva, gratis"
+    refused = ana.get(links[MSFT])
+    assert refused.status_code == 403 and refused.json == {"error": "errUpdateExpired"}
+    opened = ana.get(links[MSFT], headers={"Sec-Fetch-Dest": "document"})
+    assert opened.status_code == 303 and opened.headers["location"] == "/mine?link=errUpdateExpired"
+    assert ana.post("/api/mine/renew", json={"id": MSFT}).json == {"error": "errUpdateExpired"}
+    # el script entero de la vista de propietario del árbol (API #17) es también el de hoy
+    assert ana.get(f"/api/mine/{AAPL}/script").status_code == 200
+    whole = ana.get(f"/api/mine/{MSFT}/script")
+    assert whole.status_code == 403 and whole.json == {"error": "errUpdateExpired"}
+    published_again(app, settings, paypal, {"AAPL": 2}, {"AAPL": "2099/01/01", "MSFT": "2020/01/01"})
+    assert ana.get(links[MSFT]).status_code == 200, "la versión que compró, aunque haya caducado"
+    assert next(i for i in my(ana)["items"] if i["id"] == MSFT)["valid"]
+    assert ana.get(f"/api/mine/{MSFT}/script").status_code == 200
+
+
+def test_a_strategy_expires_at_midnight_utc_as_its_script(monkeypatch):
+    """Como el script (``isExpired = time >= expiryTime``, ``expiryTime`` a las 00:00 UTC de su «Expiry date»): el día
+    de antes a las 23:59:59 UTC aún no ha caducado; a las 00:00 UTC del día, sí. En UTC y no en la hora de la máquina:
+    con un reloj de UTC+14, el mediodía UTC del día de antes ya sería el día de la caducidad."""
+    from datetime import date, datetime, timedelta, timezone
+    from decimal import Decimal
+
+    from edgefolio import catalogue
+    from edgefolio.catalogue import Strategy
+
+    class At(datetime):
+        moment = None
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.moment.astimezone(tz) if tz else (cls.moment + timedelta(hours=14)).replace(tzinfo=None)
+
+    monkeypatch.setattr(catalogue, "datetime", At)
+    s = Strategy("AAPL", "1Day", "1ADX", "aaaa1111", Decimal("79"), {"version": "2"}, expiry=date(2027, 6, 13))
+    for moment, expired in (((2027, 6, 12, 12, 0, 0), False), ((2027, 6, 12, 23, 59, 59), False),
+                            ((2027, 6, 13, 0, 0, 0), True)):
+        At.moment = datetime(*moment, tzinfo=timezone.utc)
+        assert (s.expired, s.serves(1), s.serves(2), s.serves(1, paid=False)) == (expired, not expired, True, True), moment
+
+
 def test_every_published_strategy_says_when_it_expires(real_app):
     """La caducidad de cada estrategia del catálogo publicado sale de la cabecera de su vista previa (el generador la
     escribe en cada script): todas la dicen, y es después de su publicación."""

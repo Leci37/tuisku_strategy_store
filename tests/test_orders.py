@@ -269,13 +269,17 @@ def test_a_single_strategy_the_account_has_is_not_sold_again(app, ids, settings,
 def test_what_the_account_has_includes_its_proven_emails_and_free_downloads(app, client, ids, settings, paypal,
                                                                            free_file):  # noqa: F811
     """Lo que tiene la cuenta es lo de Mis estrategias: también lo comprado sin cuenta con un correo que la cuenta
-    demostró (no con el mismo correo sin demostrar) y sus descargas gratis (una gratis que pasa a ser de pago)."""
+    demostró (no con el mismo correo sin demostrar) y sus descargas gratis (una gratis que pasa a ser de pago). Nunca
+    lo que otra cuenta compró con la sesión abierta, aunque se pagara con el correo demostrado."""
     assert buy(client, [ids[3]]).status_code == 200                    # TSLA, sin cuenta: lo pagó buyer@example.com
+    ana = signed(app, "ana@example.com")
+    assert buy(ana, [ids[1]]).status_code == 200                       # MSFT, otra cuenta (PayPal: buyer@example.com)
     bo = signed(app, "buyer@example.com")
     assert bo.post("/api/quote", json={"items": [ids[3]]}).status_code == 200, "sin demostrar el correo, no es suya"
     prove(bo)
     r = bo.post("/api/quote", json={"items": [ids[3], ids[1]]})
-    assert r.status_code == 409 and r.json["items"] == [ids[3]]
+    assert r.status_code == 409 and r.json["items"] == [ids[3]], "la de otra cuenta no es suya"
+    assert bo.post("/api/quote", json={"items": [ids[1]]}).json["total"] == "93.00"
     assert claim(bo, "buyer@example.com").json == {"sent": True}      # la gratis, con la sesión abierta
     with open(settings.catalogue, newline="") as f:
         rows = [dict(r, Price="30" if r["ticker"] == "NVDA" else r["Price"]) for r in csv.DictReader(f, delimiter="\t")]

@@ -246,7 +246,10 @@ Se queda como está; el diseño no lo enseña o lo simula:
   (`ownedYours`, `data-ef-owned`; `isOwned`, `canBuy` y `canClaim` de `vals.js`, en `detail.js`, `lite.js` y
   `pro.js`). El servidor tampoco la vende suelta: un carrito que la lleva (el de antes de entrar, el de otra
   pestaña) recibe `errAlreadyOwned`, y la página la quita y lo dice el aviso «Carrito actualizado»
-  (`cartUpdatedTitle`, `app.dropOwned`). En un lote o en el pack sí se vende. El diseño no tiene ese estado.
+  (`cartUpdatedTitle`, `app.dropOwned`). En un lote o en el pack sí se vende. Lo que tiene la cuenta se pide otra vez
+  después de un cobro, de una gratis o de un correo demostrado (`app.mineChanged`), también en la tienda, y una lista
+  que llega de antes no vale: al volver de Gracias o al mandar la gratis, lo de la cuenta volvía a decir «Comprar»
+  hasta recargar. El diseño no tiene ese estado.
 - **El título de la pestaña** dice qué estrategia es («Snowflake · SNOW · 1BOL · 1Day · Edgefolio», con
   «Cómo decide» delante de «Edgefolio» en su pestaña): lo pone el servidor, también para la vista previa de
   un enlace (`og:title`), y la página al moverse por la tienda o cambiar de idioma (`app.tabTitle`). En la
@@ -339,7 +342,9 @@ hoy, 13 jun 2027 en las 94). Después, Mis estrategias no la ofrece, la ficha no
 API #16 no da la versión nueva (`errUpdateExpired`); renovar el enlace de la versión comprada sigue valiendo. Una
 gratis se actualiza siempre. Hoy no hay versiones más allá de la v1. La tienda guarda un script por estrategia, el
 de hoy: con una versión nueva publicada y la estrategia caducada, a quien tiene una de antes no le da ningún enlace
-nuevo (le daría la nueva).
+nuevo (le daría la nueva), su enlace de antes, aunque no haya caducado, tampoco descarga (API #10:
+`errUpdateExpired`; Mis estrategias no lo da por válido y «Ya es tuya» lleva a Mis estrategias) y la vista de
+propietario del árbol no recibe el script entero (API #17): `Strategy.serves`.
 
 **Y las del dueño, abiertas** (salieron del recorrido de 2026-10-25 y 2026-10-26; la tienda no las decide):
 
@@ -429,7 +434,7 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 
 ## Pruebas
 
-- `pytest`, hoy (2026-10-26): 305 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
+- `pytest`, hoy (2026-10-26): 308 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
   están en la máquina), con Chromium; sin él, las pruebas en un navegador se saltan y no prueban nada. Las
   de los arreglos del recorrido de 2026-10-25: `tests/test_keyboard.py` (los diálogos y el teclado),
   `tests/test_lists_cart.py` (Lite, el carrito, el recorrido y Gracias), `tests/test_scales.py` (las escalas
@@ -441,11 +446,14 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
   `test_mine.py` (lo comprado de una estrategia que salió del catálogo: no se enseña ni se entrega, sin romper nada).
   Las de las decisiones sobre comprar, las actualizaciones y los trabajos diarios (E8, E4…):
   `tests/test_buying_page.py` («Ya es tuya» en Lite y en Pro, el carrito que la pierde con su aviso, la ficha sin
-  precio, Gracias sin rechazar lo que se acaba de pagar, la actualización solo hasta la caducidad, la gratis en un
-  móvil tumbado, «Hecho» anunciado y el buscador de Pro bajo la barra, también en una pantalla baja), `tests/test_tasks.py` (las dos tareas del reloj, dos veces
-  la misma vez, `testing.tick`, sin dirección pública y con una cuenta borrada) y lo nuevo de `test_orders.py`
-  (`errAlreadyOwned`), `test_mine.py` (`errUpdateExpired` y la caducidad de cada estrategia publicada),
-  `test_alerts.py`, `test_strategy_page.py` y `test_page_code.py`.
+  precio, Gracias sin rechazar lo que se acaba de pagar y la tienda después, sin «Comprar» en lo comprado ni en la
+  gratis pedida, la actualización solo hasta la caducidad, la gratis en un móvil tumbado, «Hecho» anunciado y el
+  buscador de Pro bajo la barra, también en una pantalla baja), `tests/test_tasks.py` (las dos tareas del reloj, dos
+  veces la misma vez, `testing.tick`, sin dirección pública y con una cuenta borrada) y lo nuevo de `test_orders.py`
+  (`errAlreadyOwned`, nunca por la compra de otra cuenta), `test_mine.py` (`errUpdateExpired`, también en el enlace
+  de antes y en el script del propietario, la caducidad de cada estrategia publicada, a las 00:00 UTC como el
+  script), `test_alerts.py`, `test_strategy_page.py` y `test_page_code.py` (la página conoce cada rechazo de un enlace
+  de descarga).
 - Con esta exportación eran 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
   cada valor, campo y texto que leen las vistas lo da `static/js`; los textos en los 8 idiomas con las
   mismas variables y sin claves del núcleo; los ganchos `data-search` y `data-sf-cart`); en

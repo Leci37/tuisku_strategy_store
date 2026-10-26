@@ -70,7 +70,7 @@ def update_of(s, latest: dict):
     pide otra vez sin pagar."""
     if s.version <= latest["version"]:
         return None
-    return s.version if latest["kind"] == "free" or not s.expired else None
+    return s.version if s.serves(latest["version"], latest["kind"] == "paid") else None
 
 
 def entry(settings, s, links: list) -> dict:
@@ -78,7 +78,9 @@ def entry(settings, s, links: list) -> dict:
     vez o se renovara el enlace); el enlace, el último."""
     now = utcnow()
     latest, first = links[-1], min(links, key=lambda x: x["date"])
-    valid = latest["expires"] > now and latest["count"] < settings.max_downloads
+    # el de una versión de antes, con la estrategia caducada, ya no vale: daría el script de hoy (downloads.checked)
+    valid = (latest["expires"] > now and latest["count"] < settings.max_downloads
+             and s.serves(latest["version"], latest["kind"] == "paid"))
     url = f"/api/download/{latest['token']}"
     return {"id": s.id, "kind": latest["kind"], "date": iso(first["date"], True), "at": iso(first["date"]),
             "order": first["paypal_id"] or None, "expires": iso(latest["expires"]),
@@ -115,7 +117,7 @@ def renew(shop, user_id: int, emails: list, item_id: str) -> dict:
     settings = shop.settings
     current = entry(settings, s, links)
     latest = links[-1]
-    if latest["kind"] == "paid" and s.version > latest["version"] and not current["update"]:
+    if not s.serves(latest["version"], latest["kind"] == "paid"):
         raise Refusal("errUpdateExpired", 403)
     if current["valid"] and not current["update"]:
         return current
@@ -134,10 +136,14 @@ def renew(shop, user_id: int, emails: list, item_id: str) -> dict:
 
 
 def script_path(shop, user_id: int, emails: list, item_id: str):
-    """El script completo para quien lo tiene (la vista de propietario del árbol)."""
+    """El script completo para quien lo tiene (la vista de propietario del árbol). Es el de hoy: a quien tiene una versión
+    de antes de una que ya caducó, no (sería la versión nueva, como su enlace: ``Strategy.serves``)."""
     s = strategy_or_404(shop.catalogue, item_id)
-    if s.key not in owned(user_id, emails):
+    links = owned(user_id, emails).get(s.key)
+    if not links:
         raise Refusal("errNotOwned", 404)
+    if not s.serves(links[-1]["version"], links[-1]["kind"] == "paid"):
+        raise Refusal("errUpdateExpired", 403)
     path = shop.settings.strategies_dir / s.private_file
     if not path.is_file():
         raise Refusal("errFileMissing", 404, item=s.key)

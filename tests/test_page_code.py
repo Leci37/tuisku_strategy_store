@@ -145,3 +145,15 @@ def test_a_toast_keeps_clear_of_an_open_dialog():
     toasts = re.findall(r'<div role="(alert|status)" data-ef-toast style="([^"]*)"', dialogs)
     assert [(role, "top:${s(v.%sTop)};bottom:${s(v.%sBottom)}" % ((p,) * 2) in style)
             for (role, style), p in zip(toasts, ("err", "notice"))] == [("alert", True), ("status", True)], toasts
+
+
+def test_the_page_explains_every_refusal_of_a_download_link():
+    """Un enlace de descarga abierto en la pestaña que ya no vale vuelve a la tienda con su rechazo (``?link=errAlgo``,
+    routes._download), y la página sólo lo dice si lo conoce (``LINK_ERRORS`` de app.js): cada rechazo de
+    edgefolio/downloads.py tiene que estar ahí, también ``errUpdateExpired`` (el enlace de una versión de antes, con la
+    estrategia caducada). Sin él, la persona volvía a la tienda sin saber por qué."""
+    refusals = set(re.findall(r'Refusal\("(err\w+)"', (ROOT / "edgefolio" / "downloads.py").read_text(encoding="utf-8")))
+    app = (ROOT / "static" / "js" / "app.js").read_text(encoding="utf-8")
+    known = set(re.findall(r"'(err\w+)'", re.search(r"const LINK_ERRORS = \[([^\]]*)\]", app).group(1)))
+    assert "errUpdateExpired" in refusals and refusals <= known, sorted(refusals - known)
+    assert all(key in TEXTS or key in CORE for key in known), sorted(k for k in known if k not in TEXTS and k not in CORE)

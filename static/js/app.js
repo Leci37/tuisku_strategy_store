@@ -20,8 +20,9 @@ const PACK_FIND = 40;
 const CART_KEY = 'edgefolio-cart-v1';
 const FAVS_KEY = 'edgefolio-favs-v1';
 const list = x => (Array.isArray(x) ? x.filter(v => typeof v === 'string') : []);
-// what a download link opened in the tab can answer: the server sends the person back here with the key
-const LINK_ERRORS = ['errLinkNotFound', 'errLinkExpired', 'errDownloadLimit', 'errStrategyGone', 'errFileMissing'];
+// lo que contesta un enlace de descarga abierto en la pestaña: el servidor devuelve aquí a la persona con la clave
+// (errUpdateExpired: el de una versión de antes, con la estrategia caducada, daría la nueva)
+const LINK_ERRORS = ['errLinkNotFound', 'errLinkExpired', 'errDownloadLimit', 'errStrategyGone', 'errFileMissing', 'errUpdateExpired'];
 
 // Quita de la barra de direcciones lo que sólo vale una vez (un enlace de confirmación, un aviso).
 function dropParams(...keys) {
@@ -230,9 +231,11 @@ export class App extends Component {
       else if (s.quote) this.setState({ quote: null });
     }
 
-    // My strategies, on its page; on a strategy page too (what the account owns says whether «Update
-    // available» is for it), but quietly and once: there a failure is not worth a toast
-    const mineWanted = s.page === 'mine' || (s.page === 'detail' && !this.mineQuietTried);
+    // Mis estrategias, en su página; en la de una estrategia («Actualización disponible» es sólo para quien la tiene) y en
+    // la tienda (sus fichas dicen «Ya es tuya», E8), en silencio y una vez: ahí un fallo no merece un aviso. Después de un
+    // cobro, una gratis o un correo demostrado (mineChanged), otra vez: antes, al volver de Gracias o al mandar la
+    // gratis, todo lo de la cuenta decía «Comprar» en la tienda hasta recargar
+    const mineWanted = s.page === 'mine' || ((s.page === 'detail' || s.page === 'shop') && !this.mineQuietTried);
     if (s.me && s.me.email && mineWanted && !s.mine && !this.mineLoading && !this.uploading) this.loadMine(s.page !== 'mine');
     if (s.packOpen && s.packQ.trim().slice(0, Q_MAX) !== this.packKey) {
       const first = this.packKey == null;
@@ -467,7 +470,7 @@ export class App extends Component {
       const first = (rc.downloads || [])[0];
       // another browser than the one that paid gets no links (they are in My strategies): the
       // tutorial waits until there is a script to install
-      this.mineQuietTried = false;
+      this.mineChanged();
       this.setState({ receipt: rc, ...(rc.paid_now ? { cart: [], bundles: [], packIds: [] } : {}), instFor: first ? first.id : '', mine: null,
         instStep: !first || read('edgefolio-install-v1') ? -1 : 0 });
     }).catch(e => { this.fail(e); this.go({ page: 'shop' }, { replace: true }); });
@@ -530,7 +533,7 @@ export class App extends Component {
     this.proofBusy = true;
     post('/api/mine/proofs/confirm', { token }).then(() => {
       dropParams('proof');
-      this.mineQuietTried = false;
+      this.mineChanged();
       this.setState({ proofToken: '', proofAs: '', proofSent: false, proofExpired: false, mine: null });
     }).catch(e => {
       if (e.status === 400) { this.setState({ proofExpired: true, proofToken: '', proofAs: '' }); dropParams('proof'); } else this.fail(e);
@@ -561,10 +564,21 @@ export class App extends Component {
       });
   }
 
+  // Lo que tiene la cuenta acaba de cambiar (un cobro, una gratis pedida con la sesión abierta, un correo demostrado):
+  // quien la tenga (mine: null) la pide otra vez, también en silencio, y una respuesta que estaba en camino es de antes
+  mineChanged() {
+    this.mineEpoch = (this.mineEpoch || 0) + 1;
+    this.mineQuietTried = false;
+  }
+
   loadMine(quiet = false) {
     this.mineLoading = true;
     if (quiet) this.mineQuietTried = true;
+    const epoch = this.mineEpoch;
+    let again = false;
     api('/api/mine').then(m => {
+      // pedida antes del cambio (la de entrar, mientras se cobraba): sin lo que se acaba de comprar; se pide otra vez
+      if (epoch !== this.mineEpoch) { again = true; return; }
       this.keep(m.items.map(x => x.row));
       this.keep(m.favourites.map(x => x.row));
       const alerts = {};
@@ -574,7 +588,7 @@ export class App extends Component {
       if (quiet) return;
       if (e.status === 401) toLogin();
       else this.fail(e);
-    }).then(() => { this.mineLoading = false; });
+    }).then(() => { this.mineLoading = false; if (again) this.loadMine(quiet); });
   }
 
   renew(id) {
@@ -642,7 +656,7 @@ export class App extends Component {
     if (err) { this.setState({ freeErr: err }); return; }
     this.freeBusy = true;
     post('/api/free', { id: s.freeFor, email, news: s.freeNews })
-      .then(() => { this.mineQuietTried = false; this.setState({ freeSent: true, freeErr: '', mine: null }); })
+      .then(() => { this.mineChanged(); this.setState({ freeSent: true, freeErr: '', mine: null }); })
       .catch(e => {
         const d = e.detail || {};
         if (e.status === 400 && d.field === 'email' && e.key && this.state.dict && this.state.dict[e.key]) this.setState({ freeErr: e.key });

@@ -174,6 +174,14 @@ class Strategy:
         deja de darse gratis a quien tiene una de antes (decisión del dueño, 2026-10-26)."""
         return self.expiry is not None and datetime.now(timezone.utc).date() >= self.expiry
 
+    def serves(self, version: int, paid: bool = True) -> bool:
+        """Si un enlace de la versión ``version`` (de pago; con ``paid=False``, de una gratis) da el script de hoy, el único
+        que guarda la tienda. El de su versión, siempre; el de una de antes, mientras la estrategia no ha caducado (la
+        versión nueva es gratis hasta su «Expiry date»; decisión del dueño, 2026-10-26); el de una gratis, siempre. Lo
+        miran Mis estrategias, renovar (API #16) y la descarga (API #10): si no, el enlace de antes, aún válido, daría la
+        versión nueva."""
+        return not paid or version >= self.version or not self.expired
+
     @cached_property
     def numbers(self) -> dict:
         return {name: number(self.row.get(col), kind) for col, (name, kind) in NUMBERS.items()}

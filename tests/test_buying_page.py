@@ -139,9 +139,21 @@ def test_what_the_account_has_is_already_yours_everywhere_and_leaves_the_cart(re
 
 def test_paying_does_not_refuse_what_was_just_bought(real_app):
     """De vuelta de PayPal, el carrito espera al cobro: antes se presupuestaba enseguida lo que se acababa de pagar,
-    el servidor lo rechazaba (ya es de la cuenta) y la página de gracias salía con «Carrito actualizado»."""
+    el servidor lo rechazaba (ya es de la cuenta) y la página de gracias salía con «Carrito actualizado». Y de Gracias a
+    la tienda, sin recargar, lo que se acaba de comprar dice «Ya es tuya», también cuando lo de la cuenta se leyó antes
+    del cobro (al entrar: esa lista no vale, se pide otra vez), como después de pedir una gratis desde su ficha: antes,
+    en los dos casos, lo de la cuenta volvía a decir «Comprar» (o «Descargar») hasta recargar."""
     [sid] = first_paid_in_both(real_app, 1)
     cart = json.dumps({"cart": [sid], "bundles": [], "packIds": [], "code": "", "applied": ""})
+    # la primera gratis de Lite, con su script (la gratis no se manda sin él); la tienda de las pruebas es de toda la
+    # sesión: sólo se quita lo puesto
+    shop = of(real_app)
+    free = next(r for r in rows(real_app, "tab=hot&size=24") if r["price"] == 0)
+    script = shop.settings.strategies_dir / shop.catalogue.resolve(free["id"]).private_file
+    made = not script.exists()
+    if made:
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text('//@version=5\nstrategy("free")\n', encoding="utf-8")
     with mobile.serve(real_app) as live, mobile.browser() as chromium:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
@@ -149,21 +161,64 @@ def test_paying_does_not_refuse_what_was_just_bought(real_app):
             page.add_init_script(TOUR_SEEN + "try { localStorage.setItem('edgefolio-install-v1', '1');"
                                  " if (!sessionStorage.getItem('set')) { sessionStorage.setItem('set', '1');"
                                  " localStorage.setItem('edgefolio-cart-v1', %s); } } catch (e) {}" % json.dumps(cart))
-            mobile.sign_in(tab)
+            client = mobile.sign_in(tab)
             tab.goto("/")
             pay = page.locator("[data-sf-cart] button", has=page.locator("i.fa-paypal"))
             pay.wait_for()
+            # en Gracias, el cobro espera a que se lea lo que tiene la cuenta (la lista de entrar, sin lo que se paga), y
+            # esa lista llega después del cobro
+            held = {}
+
+            def hold(route):
+                what = "capture" if route.request.method == "POST" else "mine"
+                if what in held:
+                    route.continue_()
+                else:
+                    held[what] = (route, route.fetch() if what == "mine" else None)
+
+            page.route(re.compile(r".*/api/(mine|orders/[^/]+/capture)$"), hold)
             with page.expect_navigation(url=lambda u: "/thanks" in u):
                 pay.click()
+            for _ in range(200):
+                if len(held) == 2:
+                    break
+                page.wait_for_timeout(50)
+            assert sorted(held) == ["capture", "mine"], sorted(held)
+            held["capture"][0].continue_()
             page.wait_for_selector("#app a[href*='/api/download/']")
+            stale, answer = held["mine"]
+            stale.fulfill(response=answer)
             page.wait_for_function(f"() => ({CART})().length === 0")
             page.wait_for_timeout(400)
             assert page.locator(NOTICE).count() == 0 and tab.problems() == [], tab.problems()
+
+            # a la tienda, sin recargar: lo comprado ya es suyo
+            page.locator("#app button", has_text=say("backShop")).first.click()
+            page.wait_for_function(f"() => document.querySelectorAll('{OWNED}').length === 1")
+            bought = next(i["url"] for i in client.get("/api/mine").json["items"] if i["id"] == sid)
+            assert page.evaluate(AROUND, OWNED) == [{"text": say("ownedYours") + " · " + say("download"), "href": bought,
+                                                     "price": False}]
+            # una gratis desde su ficha, con la sesión abierta: lo de antes sigue siendo suyo, y la gratis también
+            page.locator("#app button", has_text=re.compile("^" + re.escape(say("download")) + "$")).first.click()
+            dialog = page.locator("[role=dialog]")
+            dialog.get_by_text(free["name"] + " · " + free["ticker"]).wait_for()
+            dialog.locator("input[type=email]").fill(client.email)
+            dialog.get_by_role("button", name=say("sendLink")).click()
+            dialog.get_by_text(say("freeSent")).wait_for()
+            page.keyboard.press("Escape")
+            page.wait_for_function(f"() => document.querySelectorAll('{OWNED}').length === 2")
+            assert sorted(x["text"] for x in page.evaluate(AROUND, OWNED)) == [say("ownedYours") + " · " + say("download")] * 2
+            assert tab.problems() == [], tab.problems()
         finally:
             tab.close()
+            if made:
+                script.unlink()
 
 
 def test_an_update_is_offered_only_until_the_strategy_expires(real_app):
+    """Con una v2 publicada, la v1 comprada: sin caducar, «Obtener la actualización» y «Actualización disponible»; caducada,
+    ninguna de las dos, y su enlace de antes, aún válido, tampoco se ofrece (daría el script de hoy, la v2): ni el .pine
+    de Mis estrategias ni «Ya es tuya · Descargar», que lleva a Mis estrategias."""
     [sid] = first_paid_in_both(real_app, 1)
     get_update = say("getUpdate") + " · v2"
     with mobile.serve(real_app) as live, mobile.browser() as chromium:
@@ -178,10 +233,12 @@ def test_an_update_is_offered_only_until_the_strategy_expires(real_app):
                     tab.goto("/mine")
                     page.get_by_text(say("favEmpty")).wait_for()          # API #15 ya está
                     assert (page.get_by_role("button", name=get_update).count() == 1) is offered, expiry
+                    assert page.locator("#app a[href^='/api/download/']").count() == (2 if offered else 0), expiry
                     tab.goto(f"/s/{sid}")
                     page.locator(OWNED).wait_for()
                     page.locator("#app strong", has_text=re.compile(r"^v2 · ")).wait_for()     # la v2 en «Versiones»
                     assert (page.get_by_text(say("updateAvail"), exact=True).count() == 1) is offered, expiry
+                    assert page.locator(OWNED).get_attribute("href") == "/mine", expiry
             assert tab.problems() == []
         finally:
             tab.close()

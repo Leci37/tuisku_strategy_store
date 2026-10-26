@@ -2611,6 +2611,26 @@
     "ar": "نعم، {e} بريدي",
     "hi": "हाँ, {e} मेरा है"
   },
+  "proofProvenTitle": {
+    "es": "Ya está confirmado",
+    "en": "Already confirmed",
+    "pt": "Já está confirmado",
+    "fr": "Déjà confirmé",
+    "de": "Bereits bestätigt",
+    "zh": "已确认过",
+    "ar": "تم التأكيد من قبل",
+    "hi": "पहले से पुष्टि हो चुकी है"
+  },
+  "proofProvenText": {
+    "es": "Ese correo ya es de esta cuenta: lo que se compró o descargó con él ya aparece aquí.",
+    "en": "That email already belongs to this account: what was bought or downloaded with it already shows up here.",
+    "pt": "Esse e-mail já é desta conta: o que se comprou ou descarregou com ele já aparece aqui.",
+    "fr": "Cet e-mail appartient déjà à ce compte : ce qui a été acheté ou téléchargé avec lui apparaît déjà ici.",
+    "de": "Diese E-Mail gehört bereits zu diesem Konto: Was damit gekauft oder heruntergeladen wurde, erscheint schon hier.",
+    "zh": "该邮箱已属于此账户：用它购买或下载的策略已经显示在这里。",
+    "ar": "هذا البريد يخص هذا الحساب بالفعل: ما اشتُري أو نُزّل به يظهر هنا.",
+    "hi": "यह ईमेल पहले से इसी खाते का है: इससे जो ख़रीदा या डाउनलोड किया गया, वह यहाँ दिखता है।"
+  },
   "mailProofSubject": {
     "es": "Confirma tu correo en Edgefolio",
     "en": "Confirm your email on Edgefolio",

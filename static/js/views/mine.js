@@ -24,7 +24,7 @@ export default function Mine(v) {
           ${v.proofNotSent ? html`
             ${v.proofExpired ? html`<div role="note" style="display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;background:#fff7ec;border:1px solid #f6d9ae;font-size:13.5px"><i class="fa-solid fa-triangle-exclamation" style="color:#f79009;margin-top:2px"></i>${T(v.tx?.errProofExpired)}</div>` : null}
             <p style="margin:0;color:#5a6b80;font-size:14px">${v.tx?.proofText}</p>
-            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:600;color:#5a6b80">${v.tx?.email}</span><input type="email" value=${v.proofEmail ?? ''} onInput=${v.onProofEmail} onKeyDown=${v.proofKey} placeholder="ana@example.com" style="font-family:inherit;font-size:14px;color:#16263a;border:1px solid #e2e9f0;border-radius:10px;padding:10px 12px" /></label>
+            <label style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:600;color:#5a6b80">${v.tx?.email}</span><input type="email" value=${v.proofEmail ?? ''} onInput=${v.onProofEmail} onKeyDown=${v.proofKey} aria-invalid=${v.proofErrOn} placeholder="ana@example.com" style="font-family:inherit;font-size:14px;color:#16263a;border:1px solid ${s(v.proofBd)};border-radius:10px;padding:10px 12px" />${v.proofErrOn ? html`<span role="alert" style="font-size:12px;font-weight:600;color:#c0392b">${v.proofErr}</span>` : null}</label>
             <button onClick=${v.askProof} style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 22px;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22)">${v.tx?.sendLink}</button>
             ${v.legalOn ? html`<a href=${v.legalPrivacyUrl} target="_blank" rel="noopener" style="font-size:12px;color:#5a6b80;cursor:pointer">${v.tx?.legalPrivacy}</a>` : null}
             ` : null}
@@ -56,7 +56,7 @@ export default function Mine(v) {
             </div>
           `)}
         </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button onClick=${v.openInst0} style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 18px;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:16px;height:16px" />${T(v.tx?.installTitle)}</button><button onClick=${v.goShop} style="font-family:inherit;background:none;border:none;color:#0950e3;font-weight:600;font-size:14px;cursor:pointer">${v.tx?.backShop}</button></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${v.mineHas ? html`<button onClick=${v.openInst0} style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 18px;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:16px;height:16px" />${T(v.tx?.installTitle)}</button>` : null}<button onClick=${v.goShop} style="font-family:inherit;background:none;border:none;color:#0950e3;font-weight:600;font-size:14px;cursor:pointer">${v.tx?.backShop}</button></div>
       </section>
     ` : null}
 `;

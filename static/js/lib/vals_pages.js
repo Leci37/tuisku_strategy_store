@@ -214,6 +214,8 @@ function mineVals(c) {
     proofErrOn: !!s.proofErr, proofErr: s.proofErr ? t(s.proofErr) : '', proofBd: s.proofErr ? '#c0392b' : '#e2e9f0',
     proofSent: s.proofSent, proofNotSent: !s.proofSent, proofExpired: s.proofExpired && !s.proofSent,
     signOut: () => app.signOut(),
+    // algo de la cuenta (API #15): la lista y «Añádela a TradingView». Sin nada, el tutorial no tenía qué enseñar
+    // («strategy.pine», «el intervalo ,», TradingView sin símbolo) o enseñaba la primera de Lite, que no es suya
     mineHas: items.length > 0,
     mineRows: items.map(it => ({ ...c.mk(it.row),
       when: t(it.kind === 'free' ? 'freeOn' : 'boughtOn', { date: f.fmtDate(it.date) }), order: it.order ? t('orderN', { id: it.order }) : '',

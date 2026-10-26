@@ -67,13 +67,15 @@ def test_on_a_laptop_there_is_no_bar_and_no_room(real_app):
             tab.close()
 
 
-# El aviso y el diálogo abierto, en px de la ventana: si se cruzan, y si en medio del botón ``name`` del diálogo
-# está el botón (y no el aviso encima).
+# El aviso y el diálogo abierto, en px de la ventana: si se cruzan, si en medio del botón ``name`` del diálogo
+# está el botón (y no el aviso encima) y lo que el velo deja arriba, además de sus 16 px, menos lo que mide el
+# aviso (8: el aviso medido, no un alto supuesto).
 APART = """name => { const d = document.querySelector('[role=dialog]'), t = document.querySelector('[data-ef-toast]');
   const b = [...d.querySelectorAll('button')].find(x => x.textContent.trim() === name), r = b.getBoundingClientRect();
   const at = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2), D = d.getBoundingClientRect(),
     T = t.getBoundingClientRect();
-  return { apart: T.bottom <= D.top || D.bottom <= T.top, onTop: !!at && b.contains(at), toastTop: Math.round(T.top) }; }"""
+  return { apart: T.bottom <= D.top || D.bottom <= T.top, onTop: !!at && b.contains(at), toastTop: Math.round(T.top),
+    room: Math.round(parseFloat(getComputedStyle(d.parentElement).paddingTop) - 16 - T.height) }; }"""
 ABOVE_CART = """() => document.querySelector('[data-ef-toast]').getBoundingClientRect().bottom <=
   document.querySelector('[data-sf-cart]').getBoundingClientRect().top"""
 
@@ -102,7 +104,7 @@ def test_on_a_phone_a_toast_never_covers_an_open_dialog(real_app):
                 page.wait_for_selector("[role=dialog]")
                 page.wait_for_function(f"n => ({APART})(n).apart", arg=name)
                 seen = page.evaluate(APART, name)
-                assert seen == {"apart": True, "onTop": True, "toastTop": 16}, (name, seen)
+                assert seen == {"apart": True, "onTop": True, "toastTop": 16, "room": 8}, (name, seen)
                 page.keyboard.press("Escape")
                 page.wait_for_selector("[role=dialog]", state="detached")
                 page.wait_for_function(ABOVE_CART)

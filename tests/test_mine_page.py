@@ -10,14 +10,18 @@
 - Las favoritas esperan a API #15: sin ella, nada de «Pulsa el corazón…» (decía que no había ninguna).
 - Una alerta o un ♥ que el servidor no guarda (la sesión se cerró en otra pestaña: 401) vuelven a como
   estaban, la favorita a su sitio, y el aviso dice por qué.
+- «Añádela a TradingView» sólo sale con algo de la cuenta que instalar, como en Gracias con los enlaces
+  escondidos (antes abría el tutorial sin estrategia: «strategy.pine» y TradingView sin símbolo).
 """
 import json
+from urllib.parse import quote
 
 from zlecitool_core import testing
 from zlecitool_core.testing import mobile
 
 from edgefolio.settings import ROOT
 from tests.conftest import outbox, proof_token, prove
+from tests.test_mine import buy
 
 UI = json.loads((ROOT / "i18n" / "ui.json").read_text(encoding="utf-8"))
 TOUR_SEEN = "try { localStorage.setItem('edgefolio-tour-v1', '1'); } catch (e) {}"
@@ -157,5 +161,34 @@ def test_the_favourites_wait_for_the_account_and_come_back_when_refused(real_app
             favs = again.get("/api/mine").json["favourites"]
             assert [f["id"] for f in favs] == ids and all(not any(f["alerts"].values()) for f in favs)
             assert tab.problems() == [f"401 PUT /api/favourites/{ids[1]}", f"401 DELETE /api/favourites/{ids[1]}"], tab.problems()
+        finally:
+            tab.close()
+
+
+def test_the_install_tutorial_waits_for_a_strategy_of_the_account(real_app):
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        tab = mobile.open_page(chromium, live, "laptop")
+        page = tab.page
+        try:
+            page.add_init_script(TOUR_SEEN)
+            client = mobile.sign_in(tab)
+            install = page.get_by_role("button", name=UI["installTitle"]["es"], exact=True)
+            # sin nada de la cuenta (API #15 ya llegó), ni el botón ni el tutorial de una estrategia que no hay
+            tab.goto("/mine")
+            page.get_by_text(UI["favEmpty"]["es"]).wait_for()
+            assert install.count() == 0, "el tutorial sin estrategia: «strategy.pine», TradingView sin símbolo"
+            # con una comprada, el tutorial es el suyo
+            row = client.get("/api/strategies?paid=1&size=1").json["rows"][0]
+            buy(client, [row["id"]])
+            tab.goto("/mine")
+            install.click()
+            dialog = page.get_by_role("dialog")
+            dialog.get_by_text(row["file"] + ".pine", exact=True).wait_for()
+            page.keyboard.press("ArrowRight")
+            page.keyboard.press("ArrowRight")
+            assert f"Busca {row['ticker']} y elige el intervalo " in dialog.locator("p").inner_text()
+            link = dialog.get_by_role("link", name=UI["instOpenTv"]["es"].format(sym=row["ticker"]))
+            assert "?symbol=" + quote(row["tv_symbol"], safe="") + "&" in link.get_attribute("href")
+            assert tab.problems() == []
         finally:
             tab.close()

@@ -56,7 +56,7 @@ export default function Mine(v) {
             </div>
           `)}
         </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button onClick=${v.openInst0} style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 18px;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:16px;height:16px" />${T(v.tx?.installTitle)}</button><button onClick=${v.goShop} style="font-family:inherit;background:none;border:none;color:#0950e3;font-weight:600;font-size:14px;cursor:pointer">${v.tx?.backShop}</button></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${v.mineHas ? html`<button onClick=${v.openInst0} style="font-family:inherit;background:#fff;border:1px solid #e2e9f0;color:#16263a;font-weight:600;border-radius:12px;padding:11px 18px;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:16px;height:16px" />${T(v.tx?.installTitle)}</button>` : null}<button onClick=${v.goShop} style="font-family:inherit;background:none;border:none;color:#0950e3;font-weight:600;font-size:14px;cursor:pointer">${v.tx?.backShop}</button></div>
       </section>
     ` : null}
 `;

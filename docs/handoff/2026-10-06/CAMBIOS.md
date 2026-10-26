@@ -181,6 +181,10 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Gracias, con los enlaces escondidos** (otro navegador, sin la cuenta dueña): sin el bloque «Añádela a
   TradingView» ni «Ver el tutorial», que no tenían estrategia que enseñar (`thanks.js`); los enlaces y el
   tutorial están en Mis estrategias. El diseño no tiene ese estado.
+- **Mis estrategias, sin nada de la cuenta:** sin «Añádela a TradingView» (`mine.js`, `mineHas`), como Gracias
+  con los enlaces escondidos: el tutorial no tenía estrategia que enseñar («strategy.pine», «Busca y elige el
+  intervalo , …» y «Abrir en TradingView» sin símbolo) o, llegando desde la tienda, enseñaba la primera de Lite,
+  que no es suya. Sale cuando API #15 trae algo. En el diseño, Mis estrategias siempre tiene compras.
 - **Árabe:** los importes en USD llevan detrás una marca de izquierda a derecha (salía «$US 172.25») y el
   chip del descuento de Lite va aislado (salía «35%−»): `fmt.js`, `vals_cart.js`. La maqueta pinta lo mismo:
   **para el diseño**.

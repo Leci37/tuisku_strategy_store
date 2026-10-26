@@ -99,10 +99,11 @@ README de aquí: la base de datos, las compras, la prueba de un correo.
     del núcleo (el BCE o PayPal, con httpx), `db.end_idle_transaction()`. Sus
     enlaces, con `external_url(…, trusted_host_ok=False)`. En sus pruebas,
     `testing.run_task(app, "nombre", at=…)` dos veces y `testing.tick(app, at)`.
-    `fx-update` y `send-alerts` son de antes y van aún con `cron`, en un solo
-    servidor (README, «Comandos»): pasarlos a `"schedule"` (con sus enlaces de
-    `public_base()` a `external_url()`) está pendiente, y se hace a la vez que
-    se quita su `cron`.
+    Así van, desde el 2026-10-26, `fx_update` (los cambios del BCE, los días
+    laborables a las 17:00 de Madrid) y `send_alerts` (los avisos de las
+    favoritas, cada día a las 09:00), en `edgefolio/tasks.py`; los comandos
+    `fx-update` y `send-alerts` se quedan para hacerlo a mano. Un `cron` de
+    antes en el servidor se quita (README, «Desplegar»).
 21. **El móvil es del núcleo** (0.28). La app se pide en la ficha (`"app"`;
     la tienda no la tiene); ni *service worker* ni manifiesto propios; nada de
     nadie en las cachés del navegador (lo que es de alguien, nunca

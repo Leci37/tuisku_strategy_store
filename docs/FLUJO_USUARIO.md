@@ -73,7 +73,7 @@
 **Al llegar:**
 1. Llegan los textos del núcleo (`zt.i18nReady`). **Hasta que llegan, no se pinta nada de la tienda.**
 2. A la vez se llaman API #1 (configuración), #4 (packs), #5 (cambios) y #2 (la cinta, en cualquier pantalla); en la tienda, también #2 de su lista. Si la página llegó con sesión, también #14. Después, API #3 de cada estrategia que la página nombra y aún no tiene: las de los packs, el carrito, el pack propio, Comparar y las favoritas (en una visita nueva, hoy, las 9 de los tres packs).
-3. Con sesión, las favoritas guardadas en el navegador pasan a la cuenta (API #21, una llamada por favorita). Una que ya no está en el catálogo (404) se borra del navegador, sin aviso. Si el servidor rechaza otra, se queda en el navegador para la próxima vez y sale un aviso.
+3. Con sesión, las favoritas guardadas en el navegador pasan a la cuenta (API #21, una llamada por favorita). Una que ya no está en el catálogo (404) se borra del navegador, sin aviso. Si el servidor rechaza otra, se queda en el navegador para la próxima vez y sale un aviso. Después, en cualquier pantalla, se piden Mis estrategias y las favoritas de la cuenta (API #15), que sustituyen a las de este navegador; si falla, sale un aviso, y sin sesión (401) va a `/login`.
 4. La dirección decide la pantalla. Estos parámetros valen una vez y se borran de la barra de direcciones:
    - `?checkout=cancel`: se vuelve de PayPal sin pagar, y el carrito sigue igual.
    - `?link=<clave>`: un enlace de descarga que ya no vale. Sale un aviso con el motivo.
@@ -100,7 +100,7 @@
 **Distinto del diseño:**
 - Direcciones de verdad, en lugar de `#s=`.
 - La barra, el idioma, la cuenta y el pie son del núcleo:
-  - con sesión en el escritorio, la barra baja a dos filas (88 px en lugar de 59, a cualquier ancho), porque el correo de la cuenta ocupa unos 210 px; «Lite | Pro» pasa a la segunda. Está pedido al núcleo en `CAMBIOS.md` («Para el núcleo» 6);
+  - con sesión en el escritorio, la barra enseña el correo entero de la cuenta y solo cabe en una fila con un correo corto: hasta unos 136 px en español (unos 23 caracteres; «cuenta@example.com» cabe) y unos 145 px en inglés. Con uno más largo baja a dos filas (88 px en lugar de 59) a 1366, 1440 y 1600 px, y «Lite | Pro» pasa a la segunda. Está pedido al núcleo en `CAMBIOS.md` («Para el núcleo» 6);
   - el idioma lleva su código («ES Español»), no una bandera.
 - 📱 Igual que en el diseño, a 390 px la barra ocupa cuatro filas (165 px; cinco en portugués) y se queda fija arriba al bajar. Con sesión también son cuatro: de la cuenta solo se ve la inicial.
 - El chip de TradingView empieza apagado; la maqueta lo enseña encendido, como ejemplo.
@@ -209,7 +209,7 @@ Solo cuenta la respuesta más nueva: una búsqueda vieja que llega tarde no pisa
 | «Novedades» | Sale si `is_new` [Servidor, `NEW_DAYS`]. Hoy, en todas |
 | «Desde su publicación» | El `live` del servidor. Mientras no haya cálculo diario (hoy no lo hay: ningún trabajo escribe `since_release.csv`), «—», sin explicación en la tarjeta; el porqué (`liveUnknown`) sale en la ficha |
 | ♡ | Sin sesión, se guarda en el navegador [`edgefolio-favs-v1`]. Con sesión, API #21 / #22; si el servidor no lo guarda, vuelve como estaba y sale el aviso |
-| Comparar | Hasta 3 estrategias; la cuarta no entra, sin aviso. No se guarda: al recargar se pierde. Sale la píldora **Comparar · N**, abajo a la izquierda o, si el carrito tiene algo, encima del carrito flotante. El diálogo, en la pantalla 2 |
+| Comparar | Hasta 3 estrategias; la cuarta no entra, sin aviso. No se guarda: al recargar se pierde. Sale la píldora **Comparar · N**, abajo a la izquierda o, si el carrito tiene algo, encima del carrito flotante; sin recargar, sigue en la ficha, Cómo decide, Gracias y Mis estrategias, y abre Comparar encima de ellas. El diálogo, en la pantalla 2 |
 | **Ficha técnica** / **Cómo decide** | Pantallas 3 y 4 |
 | **Comprar** / «✓ En el carrito» | Entra en el carrito o sale de él [Navegador `edgefolio-cart-v1`]. Si va dentro de un pack, quita el pack. Cada cambio pide presupuesto (API #7) |
 | **Descargar** (gratis) | Pantalla 6 |
@@ -349,7 +349,7 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
    - **Abrir en TradingView** abre en otra pestaña la página del símbolo (`tradingview.com/symbols/NYSE-SNOW/`), con `tv_symbol`: `NYSE:SNOW`, o `BINANCE:BTCUSDT` en cripto;
    - la temporalidad (`1Day` o `1Hour`), el mercado (NASDAQ, NYSE o CRYPTO) y la clave.
 2. **Compra:** el precio, en la moneda de la barra («≈ 67 €» en español), con **Añadir al carrito** / «✓ En el carrito», o **Descargar** si es gratis (pantalla 6).
-   - Al añadirla se pide el presupuesto (API #7). Otro clic en «✓ En el carrito» la quita.
+   - Al añadirla se pide el presupuesto (API #7). Otro clic en «✓ En el carrito» la quita; si estaba en un pack (o en el pack propio), quita el pack entero (las elegidas del pack propio siguen en su tarjeta).
    - En la ficha no hay carrito: se paga desde la tienda (pantalla 5). 📱 La barra de abajo cuenta lo que hay en el carrito, y **Carrito** lleva a la tienda.
    - **Ya es tuya:** con la sesión abierta, si la estrategia ya es de la cuenta (lo dice API #15), en vez de **Añadir al carrito** (o **Descargar**, en una gratis) sale «Ya es tuya · Descargar» (`ownedYours`), que baja su .pine (gasta una de sus descargas). Si su enlace caducó, se gastó o hay una versión nueva, «Ya es tuya · Mis estrategias», que lleva a Mis estrategias sin recargar la página. El precio sigue encima: si debe quitarse está por decidir.
    - [Servidor] La sigue presupuestando: si está en el carrito (desde las tarjetas de Lite o de Pro), se cobra otra vez. Si el servidor debe negarse lo decide el dueño (`CAMBIOS.md`).
@@ -397,7 +397,7 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 - Toda vista previa pública va cortada, también la de las gratis. El diseño mostraba entera la gratis; está en los puntos a revisar de `API_ENDPOINTS_referencia.md`.
 - Las versiones son las del servidor: solo la 1 lleva nota («Primera publicación», como en el diseño) y la nota de la v2 del diseño no sale. Lleva fecha solo la actual (en el diseño, la v1).
 - «Desde su publicación» sale como «—», con «Aún sin medir: …»: no hay cálculo diario, y hacerlo está por decidir.
-- Las barras del backtest y de «Desde su publicación» miden contra el mejor backtest del catálogo, no contra el 100 %. El diseño las dibujó para backtests de 71–86 %; con los de 0,03–0,44 % se veían vacías.
+- Las barras del backtest y de «Desde su publicación» miden contra el mejor backtest del catálogo, no contra el 100 %. El diseño las dibujó para sus backtests, la mayoría del 71–86 % (de 0,49 a 85,80 %); con los de 0,03–0,44 % se veían vacías.
 - La temporalidad dice el nombre del menú de TradingView («1D»); el diseño escribe «1Day», el del catálogo.
 - En una gratis, la vista previa y los formatos no hablan de comprar; el diseño pone los textos de compra también en ella.
 - El estado «Ya es tuya» no está en el diseño.
@@ -482,13 +482,13 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 
 ![La franja de Pro con un pack, dos estrategias y el código demo20: la escalera y lo que falta para el 20 %](img/edgefolio_es_strip.png)
 
-<sub>El carrito del diseño: «Inicio en cripto» (119 US$) y dos estrategias de 59 US$, con «demo20»: «15 % de descuento por volumen + 20 % con el código» y «Añade 53,01 US$ más para llegar al 20 %».</sub>
+<sub>Un carrito del mismo importe que el del diseño (237 US$; allí, tres estrategias de 79 US$): «Inicio en cripto» (119 US$) y dos estrategias de 59 US$, con «demo20»: «15 % de descuento por volumen + 20 % con el código» y «Añade 53,01 US$ más para llegar al 20 %».</sub>
 
 | Elemento | Comportamiento |
 |---|---|
 | «Carrito · N» | — |
 | ¿Tienes un código? (Lite) / Código + **Aplicar** | El código va al servidor al pulsar **Aplicar** o con Intro (no mientras se compone en chino o en hindi). Da igual en mayúsculas o con espacios. Según `code_status`, sale «Código de descuento aplicado» o, en rojo, «Código no válido: sin descuento». Un código no válido deja de aplicarse, pero sigue escrito en la casilla. Con el carrito vacío no sale nada hasta que entra algo. Aplicar otra vez el mismo no borra el mensaje, y la casilla vacía quita el código. En Lite, la casilla ya no se cierra, y sale abierta si al llegar hay un código aplicado |
-| Escalera (Pro) | Los tramos vienen de API #1. «Añade X más para llegar al Y %» usa `next_tier.missing` (detalle bajo la tabla). Sin tramo, «Aún sin descuento por volumen»; pasado el último, «Descuento máximo alcanzado» |
+| Escalera (Pro) | Los tramos vienen de API #1. «Añade X más para llegar al Y %» usa `next_tier.missing` (detalle bajo la tabla). Sin tramo, «Aún sin descuento por volumen» (con un código, «Aún sin descuento por volumen + 20 % con el código»); pasado el último, «Descuento máximo alcanzado». Con un código de precio fijo no hay escalera: «Aún sin descuento por volumen», sin «Añade …», y el subtotal tachado si el precio baja |
 | Totales | El subtotal tachado solo si hay descuento, y el total. En moneda local, «≈ …» («≈» va pegado al importe: nunca se queda solo al final de una línea) y «Pagas X US$ con PayPal» |
 | Fila de confianza | «PayPal: nunca vemos tu tarjeta»; «Enlaces: 7 días, 10 descargas», con las cifras de API #1; «Factura por correo» (es un recibo, ver los puntos a revisar); el correo de contacto (`CONTACT_EMAIL`, sales@tuisku.ai) |
 | **Vaciar carrito** (Pro) | Saca del carrito las estrategias, los packs y el pack propio. Las elegidas para «Arma tu pack» siguen en su tarjeta, y el código se queda, con su mensaje |
@@ -512,7 +512,7 @@ Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 5
 5. Si se cancela, vuelve a `/?checkout=cancel`: la tienda, en el modo que tenía, con el carrito y el código intactos, sin aviso. Con el botón Atrás del navegador, **Pagar** se libera.
 
 **Estados:**
-- **Vacío:** Lite no muestra el carrito; Pro muestra «Carrito · 0», «Aún sin descuento por volumen» y «Añade 160,01 US$ más para llegar al 15 %».
+- **Vacío:** Lite no muestra el carrito; Pro muestra «Carrito · 0», «Aún sin descuento por volumen», «Añade 160,01 US$ más para llegar al 15 %» y un total de 0 (en español, «≈ 0 €» y «Pagas 0,00 US$ con PayPal»).
 - **Cargando:**
   - se ve el presupuesto anterior hasta que llega el nuevo;
   - **Pagar** está ocupado mientras se crea el pedido.
@@ -579,6 +579,12 @@ Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 5
 - **Error:** bajo el campo, o como aviso.
 - **Hecho:** el mensaje verde.
 
+**Distinto del diseño:**
+- La casilla de novedades empieza sin marcar cada vez que se abre el diálogo; en el diseño se queda como estaba.
+- La casilla es un botón: Tab y Espacio llegan a ella. En el diseño no se alcanza con el teclado.
+- El diálogo se queda con el teclado: el cursor entra en el campo y, mandado, el foco va a «Volver a la tienda»; al cerrarse, vuelve al botón que lo abrió.
+- El enlace va por correo de verdad (7 días, 10 descargas). El rechazo del servidor a la dirección sale bajo el campo y los demás, como aviso (el diseño no tiene avisos).
+
 ---
 
 ## 7 · Gracias (/thanks)
@@ -604,12 +610,12 @@ Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 5
 3. **El carrito** de este navegador se vacía con el cobro que paga el pedido (`paid_now`): las estrategias, los packs y el pack propio. El código aplicado se queda. Abrir otra vez la página de gracias (el historial, un marcador), o abrirla en otro navegador, no toca el carrito.
 4. **El pedido:** el total en USD y «Pagado con PayPal · Pedido <id de PayPal>». El cobro devuelve también el correo de quien pagó, recortado, pero la página no lo enseña.
 5. **Los enlaces:**
-   - **Quién los ve:** el navegador que hizo el pedido, la cuenta que lo hizo o una cuenta que demostró el correo del pedido. Ven una fila por estrategia (también las de un pack) con:
+   - **Quién los ve:** el navegador que hizo el pedido, la cuenta que lo hizo o, en un pedido hecho sin cuenta, una cuenta que demostró su correo (el del pedido o el de PayPal). Ven una fila por estrategia (también las de un pack) con:
      - **.pine** y **.zip** (API #10);
      - **Ficha técnica ↗** y **Cómo decide ↗**, en otra pestaña.
 
      Encima, **Descargar todo** (API #11): un .zip con el .pine de cada enlace que aún vale. Los gastados o caducados no van, sin aviso. Cada descarga gasta una de las 10 del enlace.
-   - **Cualquier otro** ve «Tus enlaces están en Mis estrategias» (`linksHiddenTitle`, `linksHiddenText`), con **Entrar para descargar** (`signInToDownload`). El botón lleva a entrar (`/login?next=/mine`; el núcleo ofrece contraseña, enlace por correo o llave de acceso) y después a Mis estrategias.
+   - **Cualquier otro** ve «Tus enlaces están en Mis estrategias» (`linksHiddenTitle`, `linksHiddenText`), con **Entrar para descargar** (`signInToDownload`). Sin sesión, el botón lleva a entrar (`/login?next=/mine`; el núcleo ofrece contraseña, enlace por correo o llave de acceso) y después a Mis estrategias; con la sesión de otra cuenta, va directo a Mis estrategias.
    - **Un enlace gastado o caducado** (un clic aquí o el enlace de un correo) deja esta página: sin sesión, va a la tienda; con sesión, a Mis estrategias. Sale el aviso del motivo: `errDownloadLimit`, `errLinkExpired` o `errLinkNotFound`.
 6. **El tutorial de instalación** (5 pasos), solo con los enlaces a la vista:
    - se abre solo hasta que se cierra una vez [Navegador `edgefolio-install-v1`];
@@ -741,12 +747,12 @@ Nunca entra algo solo porque coincide con el correo de alta.
 <tr>
 <td align="center"><img src="img/edgefolio_phone.png" alt="Lite en un móvil, con la barra de abajo" width="240"></td>
 <td align="center"><img src="img/edgefolio_phone_cart.png" alt="El carrito flotante y la píldora Comparar, sobre la barra de abajo" width="240"></td>
-<td align="center"><img src="img/edgefolio_phone_tree.png" alt="Cómo decide en un móvil, con los deslizadores encima del árbol" width="240"></td>
+<td align="center"><img src="img/edgefolio_phone_tree.png" alt="Cómo decide en un móvil: los tres pasos que lo explican y el resultado del árbol" width="240"></td>
 </tr>
 <tr>
 <td><sub>Lite, con la barra de abajo.</sub></td>
 <td><sub>El carrito flotante y Comparar, encima de la barra.</sub></td>
-<td><sub>Cómo decide: los deslizadores, encima del árbol.</sub></td>
+<td><sub>Cómo decide: los tres pasos y el resultado del árbol; más abajo, los deslizadores, encima del árbol.</sub></td>
 </tr>
 <tr>
 <td align="center"><img src="img/edgefolio_es_phone_pro.png" alt="Pro en un móvil: la barra del núcleo en cuatro filas, la franja del carrito y el principio del panel" width="240"></td>
@@ -805,5 +811,3 @@ Nunca entra algo solo porque coincide con el correo de alta.
 - **Los diálogos se quedan con el teclado.** Al abrirse, el foco entra en su botón de avanzar (**Continuar**, o **Listo** si el tutorial de instalación se abre en su último paso), en el buscador (el selector del pack), en la × (Comparar) o en el campo del correo (la gratis); en una pantalla táctil, en el propio diálogo, sin contorno. Mientras están abiertos, la página de detrás no se alcanza (ni con Tab, ni con el ratón, ni con un lector de pantalla) y no se desplaza; los avisos sí: su × se pulsa. Al cerrarse (×, **Esc**, **Hecho**, **Empezar**, **Listo** o la última columna de Comparar), el foco vuelve al botón que lo abrió. Si se abrió solo (el recorrido de la primera vez, el tutorial de /thanks) o ese botón ya no está (la píldora de Comparar, sin estrategias), va a la página (`<main>`), y el siguiente Tab sigue desde el principio del contenido.
 - **El foco se ve** en todo lo que se pulsa: el contorno del núcleo y, en los cuatro buscadores (Lite, Pro, un desplegable de Pro y el selector del pack), su caja, con el borde azul y el halo del diseño.
 - **Las × dicen lo que hacen:** «Cerrar» (`dialogClose`, del núcleo) en el diálogo de la gratis, en Comparar, en los avisos, en las explicaciones de las tarjetas de Lite y en las del árbol; «Quitar …» (`removeName`) en cada columna de Comparar («Quitar NVDA · 1M00») y en cada filtro activo de Pro («Quitar Símbolo: ADBE, AMD»). El recorrido y el tutorial de instalación dicen «Cerrar el tutorial» (`tourClose`, del núcleo). En el diseño, las demás se llaman «×».
-</content>
-</invoke>

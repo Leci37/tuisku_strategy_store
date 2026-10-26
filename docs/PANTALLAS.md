@@ -12,7 +12,7 @@
 
 - **9 pantallas** numeradas.
 - **5 direcciones:** `/` (Lite y Pro), `/s/<id>` (ficha), `/s/<id>/tree` (Cómo decide), `/thanks` (Gracias) y `/mine` (Mis estrategias).
-- **5 diálogos:** bienvenida (en la 1, y desde «Ver tutorial» en cualquier pantalla), selector del pack (en la 1), comparar (en la 1 y la 2), estrategia gratis (la 6) y tutorial de instalación (en la 7 y la 8).
+- **5 diálogos:** bienvenida (en la 1, y desde «Ver tutorial» en cualquier pantalla), selector del pack (en la 1), comparar (se llena en la 1 y la 2; su píldora sigue en las demás pantallas, y lo abre encima de ellas, hasta recargar), estrategia gratis (la 6) y tutorial de instalación (en la 7 y la 8).
 - **Comunes a todas:** la barra superior, el pie y los avisos flotantes.
 
 | # | Pantalla | Dónde | Tipo | Archivo en el repositorio | Archivo del diseño |
@@ -57,7 +57,7 @@ De arriba abajo:
 4. **Aviso «Riesgo de sobreajuste».**
 5. **Packs** (cuando llegan del servidor):
    - una tarjeta por pack del catálogo: un icono por ticker, «Ahorra un N %», nombre, «N estrategias · TICKERS», precio de antes tachado, precio y **Añadir pack** («✓ En el carrito» si ya va en el carrito);
-   - la tarjeta del pack propio, «Arma tu pack»: «Ahorra un N %», 5 huecos (icono o «+»), «Elige N más · 5 por 249 US$» («5 por 249 US$» con las 5) y **Añadir pack** (gris hasta tener 5; «En el carrito» cuando va).
+   - la tarjeta del pack propio, «Arma tu pack»: «Ahorra un N %», 5 huecos (icono o «+»), «Elige N más · 5 por ≈ 229 €» («5 por ≈ 229 €» con las 5; en USD, «5 por 249,00 US$») y **Añadir pack** (gris hasta tener 5; «En el carrito» cuando va).
 6. **Tarjetas** (24 por página), cada una con:
    - icono, ticker y nombre, y la etiqueta «Novedades» si es nueva;
    - beneficio neto % con su «?»;
@@ -88,10 +88,9 @@ De arriba abajo:
 2. **Panel de filtros** (a la izquierda; en el móvil, encima de la lista):
    - «143» y debajo «estrategias mostradas» («1 estrategia mostrada» con una), y **Restablecer filtros**;
    - el interruptor **Solo GRATIS**;
-   - **16 rangos**, cada uno con su histograma, un deslizador de dos asas y las casillas mín. y máx.; la escala de cada barra sale del catálogo:
-     - abiertos: Beneficio neto ($) y Precio ($);
-     - plegados (se abre uno cada vez): Beneficio neto (%), Operaciones cerradas, Tasa de acierto (%), Factor de beneficio, Entrenamiento (meses), Pérdida máxima ($), Pérdida máxima (%), Beneficio medio ($), Beneficio medio (%), Velas medias por operación, Actividad por vela, Número de velas, Precisión f1 (%) y Profundidad del árbol;
-   - **5 desplegables:** Símbolo, Temporalidad, Indicadores, Mercado y Fecha de publicación. Cada uno dice «N seleccionados» («1 seleccionado»), los nombres de una o dos, o «—» sin ninguna; dentro, buscador, **Seleccionar todo** / **Quitar todo** y una casilla por opción con su recuento (en Símbolo, también el icono).
+   - **2 rangos abiertos**, Beneficio neto ($) y Precio ($), cada uno con su histograma, un deslizador de dos asas y las casillas mín. y máx.;
+   - **5 desplegables:** Símbolo, Temporalidad, Indicadores, Mercado y Fecha de publicación. Cada uno dice «N seleccionados» («1 seleccionado»), los nombres de una o dos, o «—» sin ninguna; dentro, buscador, **Seleccionar todo** / **Quitar todo** y una casilla por opción con su recuento (en Símbolo, también el icono);
+   - **14 rangos plegados** (se abre uno cada vez), con lo mismo que los abiertos: Beneficio neto (%), Operaciones cerradas, Tasa de acierto (%), Factor de beneficio, Entrenamiento (meses), Pérdida máxima ($), Pérdida máxima (%), Beneficio medio ($), Beneficio medio (%), Velas medias por operación, Actividad por vela, Número de velas, Precisión f1 (%) y Profundidad del árbol. La escala de cada barra de los 16 rangos sale del catálogo.
 3. **Encima de la lista:**
    - el título «Estrategias», las cuatro pestañas de orden, sin rótulo (Beneficio neto, Tasa de acierto, Precio, Operaciones cerradas), y el buscador;
    - **Filas / Tarjetas / Tabla**;
@@ -163,7 +162,7 @@ De arriba abajo:
    - si es tuya pero su script no llega: el aviso en ámbar con **Descargar .pine**;
    - si es tuya y miras como visitante: «Ya es tuya: …» y **Ver como propietario**, en vez de **Comprar para desbloquear**;
    - si no es tuya: cómo conseguirla, con **Entrar** (sin sesión) y **Comprar para desbloquear**;
-   - si es gratis: «Script completo» y **Conseguirla gratis**, también en la vista de propietario.
+   - si es gratis y no es tuya: «Script completo» y **Conseguirla gratis**, también en la vista de propietario (con **Entrar** sin sesión); si es gratis y ya es tuya, lo mismo que una comprada.
 9. **Volver a la ficha técnica**.
 
 ![Cómo decide en la vista Bloques, como visitante](img/edgefolio_es_tree_blocks.png)
@@ -175,7 +174,7 @@ De arriba abajo:
 **En Lite, el carrito flotante** (abajo, fijo; solo sale con algo dentro):
 - «Carrito · N» (cuenta también las estrategias de un pack) y la etiqueta «−N %» si hay descuento;
 - **¿Tienes un código?**, que abre la casilla «Código», **Aplicar** y el mensaje del código;
-- el subtotal tachado (solo con descuento), el total, el «≈» en moneda local y «Pagas X US$ con PayPal»;
+- el subtotal tachado (solo con descuento), el total y, en moneda local, el «≈» y «Pagas X US$ con PayPal»;
 - **Pagar**, con el icono de PayPal;
 - la fila de confianza.
 
@@ -184,7 +183,7 @@ De arriba abajo:
 - el texto de la escalera («15 % de descuento por volumen + 20 % con el código»; sin tramo, «Aún sin descuento por volumen») y el siguiente tramo («Añade X US$ más para llegar al Y %»; pasado el último, «Descuento máximo alcanzado»);
 - la barra con 5 marcas: 15 % / 160 US$, 20 % / 290 US$, 25 % / 500 US$, 40 % / 1000 US$ y 70 % / 2500 US$ (en español, sin punto de miles);
 - la casilla «Código», **Aplicar** y el mensaje;
-- el subtotal tachado, el total, «Pagas X US$ con PayPal» y **Pagar**;
+- el subtotal tachado (solo con descuento), el total, «Pagas X US$ con PayPal» (solo en moneda local) y **Pagar**;
 - la fila de confianza.
 
 ![La franja de Pro con un pack, dos estrategias y un código](img/edgefolio_es_strip.png)
@@ -212,7 +211,7 @@ Después de **Pagar** viene PayPal, fuera de la tienda.
 1. ✓ «¡Gracias! El pago se ha completado.» y «Tus estrategias están listas para descargar.»
 2. El total pagado en USD, el logo de PayPal y «Pagado con PayPal · Pedido <id>».
 3. «Cada enlace vale 7 días y hasta 10 descargas. También están en Mis estrategias.» y **Descargar todo**.
-4. Una fila por estrategia: icono, nombre, **.pine**, **.zip**, **Ficha técnica ↗** y **Cómo decide ↗**. Si no eres quien compró, en su lugar salen «Tus enlaces están en Mis estrategias» (`linksHiddenTitle`), `linksHiddenText` y **Entrar para descargar** (`signInToDownload`).
+4. Una fila por estrategia: icono, «Nombre · TICKER» y «CLAVE · indicador · temporalidad», **.pine**, **.zip**, **Ficha técnica ↗** y **Cómo decide ↗**. Si no eres quien compró, en su lugar salen «Tus enlaces están en Mis estrategias» (`linksHiddenTitle`), `linksHiddenText` y **Entrar para descargar** (`signInToDownload`).
 5. «Añádela a TradingView», **Ver el tutorial** y 5 casillas, una por paso; solo si se ven los enlaces.
 6. **Ir a Mis estrategias**, **Volver a la tienda** y «¿Problemas? sales@tuisku.ai».
 
@@ -262,10 +261,3 @@ Cada paso lleva su imagen, título y texto. Debajo, los puntos (se pueden pulsar
 - los deslizadores de Cómo decide van encima del árbol;
 - las 5 casillas de Gracias van una debajo de otra;
 - los diálogos ocupan el ancho menos 16 px por lado, y su velo tapa la barra de abajo.
-</content>
-</invoke>
-<invoke name="Bash">
-<parameter name="command">cd /home/user/tuisku_strategy_store && grep -rn "Mira cómo decide\|howTeaserTitle" i18n/ui.json | head -3; python3 -I -c "
-import json;d=json.load(open('i18n/ui.json'))
-for k in ['howTeaserTitle','buyScriptTitle','scriptRest','formatsNote','tourOpen','tourClose','liveVsBacktest','instWatch','installTitle']:
-  v=d.get(k); print(k, v.get('es') if v else 'MISSING (core?)')"

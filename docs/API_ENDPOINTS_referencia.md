@@ -290,7 +290,7 @@ Any missing number is `null`.
   - `"applied"`: the code is valid;
   - `"invalid"`: the code is not valid. There is no discount, but this is not an error.
 - **`tier_rate` and `code_rate`:** what each part really takes off after the `MAX_DISCOUNT` cap, the tier first and the code what is left. Below the cap they add up to the configured rates (0.15 + 0.20). At the 70 % tier with a 20 % code, `code_rate` is `"0.00"`; when a lower tier plus the code passes 70 %, it is only the part left. Without a code, or with an invalid one, `"0"`. Their sum is always `discount_rate`.
-- **`next_tier`:** `null` when there is no higher tier.
+- **`next_tier`:** `null` when there is no higher tier, and with a flat-price code (no tier applies; `tier_index` is then 0).
 
 **How the server prices the cart:**
 1. Each strategy and each bundle counts once, however many times it is sent.
@@ -324,8 +324,8 @@ Any missing number is `null`.
 
 **How the page uses it:**
 - It asks 120 ms after any change to the cart, the bundles, the pack or the applied code, and uses only the newest answer.
-- It sends the pack only once all 5 strategies are chosen.
-- It sends the code only after the user presses «Aplicar» or Enter (not while an input method is composing).
+- It always sends `pack`: empty (`[]`) until the own pack, with its 5 strategies, is in the cart.
+- It always sends `code`: empty (`""`) until the user presses «Aplicar» or Enter (not while an input method is composing).
   - `applied` shows «Código de descuento aplicado».
   - `invalid` shows «Código no válido: sin descuento», and the code stops applying (its text stays in the box).
   - Pro's ladder adds «+ N % con el código» only when `code_rate` is above 0.
@@ -402,7 +402,7 @@ The server never checks whether a signed-in account already owns a strategy it q
 **Who sees the links:**
 - the browser that placed the order (its `edgefolio_buyer` cookie);
 - the account that placed it while signed in;
-- an account that has proven the order's email or the PayPal email.
+- for an order placed without an account, an account that has proven the order's email or the PayPal email.
 
 Anyone else gets `links_hidden: true`, `downloads: []` and `download_all: null`.
 
@@ -456,7 +456,7 @@ The page then shows the reason, and My strategies offers a new link.
 **Request:**
 
 ```json
-{"id": "NVDA_1Day_1S00_…", "email": "ana@example.com", "news": false}
+{"id": "PYPL_1Day_1MAC_2a2425c6", "email": "ana@example.com", "news": false}
 ```
 
 **What the server checks, in this order:**
@@ -512,8 +512,8 @@ The page then shows the reason, and My strategies offers a new link.
 
 ```json
 {"email": "ana@example.com", "emails": ["ana@example.com"], "proof_needed": false,
- "items": [{"id": "…", "kind": "paid", "date": "2026-09-21", "at": "2026-09-21T10:04:00+00:00",
-            "order": "5O190127TN364715T", "expires": "2026-10-15T09:00:00+00:00", "days_left": 3, "valid": true,
+ "items": [{"id": "…", "kind": "paid", "date": "2026-10-25", "at": "2026-10-25T10:04:00+00:00",
+            "order": "5O190127TN364715T", "expires": "2026-11-01T10:04:00+00:00", "days_left": 7, "valid": true,
             "url": "/api/download/<token>", "zip": "/api/download/<token>?format=zip",
             "version": 1, "update": null, "row": "ROW"}],
  "favourites": [{"id": "…", "alerts": {"nv": true, "pd": false, "bd": false}, "row": "ROW"}]}

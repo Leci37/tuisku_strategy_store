@@ -65,6 +65,7 @@ Un número que falta llega como `null`.
 | #2 `GET /api/strategies` (la cinta) | `paid=1&sort=hot&size=12` | Las 12 de la cinta |
 | #14 `GET /api/me` (solo si la página llegó con sesión) | — | `{"email": "…"}` o `{"email": null}` |
 | #21 `PUT /api/favourites/<id>` (con sesión; una llamada por favorita guardada en el navegador) | `{"alerts": {"nv", "pd", "bd"}}` | `{id, alerts, row}`. Si el servidor rechaza una, se queda en el navegador para la próxima vez; con 404 (ya no está en el catálogo), se borra |
+| #15 `GET /api/mine` (si la página llegó con sesión, después de las #21) | — | Mis estrategias y las favoritas de la cuenta, que sustituyen a las del navegador (ver pantalla 8). Si falla, un aviso; con `401`, lleva a entrar |
 | #3 `GET /api/strategies/<id>` (cada estrategia que la página nombra y no tiene: packs, carrito, pack propio, Comparar, favoritas) | — | La fila. Con un 404, la quita del carrito, del pack propio, de Comparar y de las favoritas, sin aviso |
 
 **Parámetros que llegan en la dirección** (se leen una vez y se borran):
@@ -140,7 +141,7 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 | Cuándo | Llamada | Manda | Recibe |
 |---|---|---|---|
 | Al abrir la pestaña | `GET /static/js/tree.js` (en otro intento, `tree.js?retry=N`), sus piezas `views/tree/*.js`, `/static/trees/features.json` y `/static/trees/ui.json` | — | El código del árbol, los indicadores y sus textos. Si el código no llega, sale `errShopNetwork`, y se pide otra vez al pulsar «Cómo decide» o al volver a la pestaña |
-| Visitante | `GET /static/assets/previews/<archivo>.pine` | — | La vista previa cortada, de la que sale el árbol |
+| Siempre (también el propietario) | `GET /static/assets/previews/<archivo>.pine` | — | La vista previa cortada, de la que sale el árbol del visitante; el propietario la ve mientras llega su script entero o si no llega |
 | Propietario (con sesión) | #17 `GET /api/mine/<id>/script` | — | El script entero, en texto; no gasta descargas. Errores: `404 errUnknownStrategy`, `errNotOwned` y `errFileMissing` (el recuadro de propietario lo dice en ámbar) |
 | **Comprar para desbloquear** | #7 | Ver pantalla 5 | Ver pantalla 5 |
 | **Conseguirla gratis** | — | Abre la pantalla 6 | — |
@@ -160,8 +161,8 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 {"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Hour_2MM0_bf5c384c"], "bundles": ["crypto"], "pack": ["id1", "id2", "id3", "id4", "id5"], "code": "demo20"}
 ```
 
-- `pack`, solo con las 5 elegidas;
-- `code`, solo después de pulsar **Aplicar** o Intro;
+- `pack`, siempre: vacío (`[]`) hasta que el pack propio, con sus 5 elegidas, está en el carrito;
+- `code`, siempre: vacío (`""`) hasta pulsar **Aplicar** o Intro;
 - hasta 500 ids, 50 packs y 50 ids de pack; el código, hasta 64 caracteres.
 
 **Recibe** (el pack «Inicio en cripto», de 119 US$, y dos estrategias de 59 US$, con un código del 20 %):
@@ -260,7 +261,7 @@ El servidor no mira si una estrategia ya es de la cuenta: la presupuesta y la co
 
 - Repetirla, por ejemplo al recargar, devuelve el mismo recibo y no cobra otra vez.
 - **`paid_now`:** `true` solo en el cobro que pasó el pedido a pagado (el que manda el recibo por correo); cualquier cobro después, de este navegador o de otro, da `false`. La página vacía el carrito solo con `true`.
-- **Quién ve los enlaces:** el navegador que compró, la cuenta que lo hizo o una cuenta que demostró el correo. A cualquier otro le llega `links_hidden: true`, con `downloads: []` y `download_all: null`, y la página no enseña el bloque de instalación.
+- **Quién ve los enlaces:** el navegador que compró, la cuenta que lo hizo o, en un pedido hecho sin cuenta, una cuenta que demostró su correo (el del pedido o el de PayPal). A cualquier otro le llega `links_hidden: true`, con `downloads: []` y `download_all: null`, y la página no enseña el bloque de instalación.
 - `payer` llega recortado, pero la página no lo enseña.
 - Con el primer cobro, el servidor manda el recibo por correo, a la cuenta o al correo de PayPal.
 - La primera vez, con los enlaces a la vista, la página abre el tutorial de instalación.
@@ -345,7 +346,7 @@ No tiene llamadas propias: manda y recibe lo mismo que las pantallas 1–8. La b
 | 12 | `POST /api/free` | no | 6 |
 | 13 | `GET /api/news/confirm` | no | El correo de novedades → 1 |
 | 14 | `GET /api/me` | no | Todas, si la página llegó con sesión |
-| 15 | `GET /api/mine` | sí | 8, y la 3 en silencio |
+| 15 | `GET /api/mine` | sí | Todas al cargar, si la página llegó con sesión; 8, y la 3 en silencio |
 | 16 | `POST /api/mine/renew` | sí | 8 |
 | 17 | `GET /api/mine/<id>/script` | sí | 4 (propietario) |
 | 18 | `POST /api/mine/proofs` | sí | 8 |
@@ -358,7 +359,7 @@ No tiene llamadas propias: manda y recibe lo mismo que las pantallas 1–8. La b
 
 - La lista de códigos de descuento, ni sus porcentajes. Solo llega el resultado del código que escribió el usuario.
 - El script completo, salvo al propietario (#17) y por un enlace de descarga.
-- El enlace de una descarga gratis, que solo va por correo.
+- El enlace de una descarga gratis en la respuesta de #12: va por correo; después, solo a la cuenta que la tiene (#15: Mis estrategias y «Ya es tuya · Descargar» en la ficha).
 - Las claves de PayPal.
 
 ## Puntos a revisar
@@ -376,5 +377,3 @@ Salieron al leer el código. Pueden ser intencionados; los dejo apuntados para q
 9. **Comprar dos veces (#7, #8):** el presupuesto y el pedido no miran si la estrategia ya es de la cuenta: se cobra otra vez. La ficha y el árbol dicen «Ya es tuya», pero desde las tarjetas de Lite o de Pro entra en el carrito.
 
 (El antiguo punto 7, el filtro de actividad que dividía las operaciones entre los meses, ya está arreglado: `act` es la columna `Trade Activity Per Candle` del catálogo.)
-</content>
-</invoke>

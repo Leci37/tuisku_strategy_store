@@ -38,7 +38,7 @@ Todo es de la herramienta salvo que se diga.
 | 2 | Esc cierra los desplegables de los filtros | hecho | `app.js` `onKey` (el menú de idioma es del núcleo y ya se cerraba) |
 | 2 | La vista Tabla usa la clave nueva `viewTableTab` | hecho | `vals.js`, `vals_shop.js`; `pviewTable` se quita de `i18n/ui.json` |
 | 3 | «Actualización disponible» sólo para quien tiene la v1 | hecho | `vals_pages.js` `detOwnOld`: una compra (no una gratis, que al renovarse ya da la versión nueva) con `update` en `/api/mine`; Mis estrategias se lee en silencio en la ficha |
-| 3 | La dirección sigue a la página: Atrás, Adelante y recargar; un id que no existe lleva a la tienda | ya estaba | rutas de verdad `/s/<id>` y `/s/<id>/tree` (`route.js`), con un aviso «no encontramos esa estrategia» |
+| 3 | La dirección sigue a la página: Atrás, Adelante y recargar; un id que no existe lleva a la tienda | ya estaba | rutas de verdad `/s/<id>` y `/s/<id>/tree` (`route.js`); un id que no existe, 302 a la tienda sin aviso; con un enlace antiguo `#s=<id>`, el aviso «No encontramos esa estrategia.» |
 | 4 | «Comprar para desbloquear» sólo añade; en una gratis, abre el diálogo de la gratis | ya estaba | `vals_pages.js` `treeBuy` |
 | 4 | La dirección mantiene `/tree` y Atrás vuelve a la ficha | ya estaba | — |
 | 4 | El árbol incrustado no carga sus letras ni sus iconos | ya estaba | la tienda carga `tree.js` como módulo, con la página |
@@ -50,7 +50,7 @@ Todo es de la herramienta salvo que se diga.
 | 6 | Intro envía, Esc cierra | hecho | Intro ya estaba (ahora no mientras se compone en zh/hi); Esc nuevo |
 | 6 | Pedir otra vez la misma gratis reinicia su enlace en Mis estrategias | ya estaba | `free.claim` da un enlace nuevo; Mis estrategias enseña el último |
 | 7 | Gracias: sin cambios | — | — |
-| 8 | «Conseguir un enlace nuevo» conserva la fecha, el pedido y la versión | en parte | fecha y pedido, sí; **versión, no**: hay un solo script por estrategia, así que el enlace nuevo da la versión de hoy (pregunta abierta de STATUS: ¿la actualización se paga?) |
+| 8 | «Pedir un enlace nuevo» conserva la fecha, el pedido y la versión | en parte | fecha y pedido, sí; **versión, no**: hay un solo script por estrategia, así que el enlace nuevo da la versión de hoy (pregunta abierta de STATUS: ¿la actualización se paga?) |
 | 8 | Cada fila: `.zip` y «Ficha técnica ↗» / «Cómo decide ↗» | hecho | `mine.js` (los `.pine` y `.zip` son los enlaces contados de la tienda) |
 | 9 | Móvil: el carrito flotante y la píldora, 76 px arriba, sobre la barra de abajo | hecho | el carrito ya estaba; la píldora va ahora dentro del dock |
 | 9 | «Buscar» enfoca el buscador de la tienda | ya estaba | ahora con el atributo del diseño, `data-search`; en Lite, la tienda arriba, como en el diseño; en Pro, el buscador justo bajo la barra (es fija y alta en el móvil) |
@@ -63,7 +63,7 @@ Todo es de la herramienta salvo que se diga.
   (tapaban «Pagar» en el móvil).
 - «Mis estrategias» sin sesión va a `/mine`, y el núcleo vuelve ahí después de entrar (antes volvía a la
   página de la que se venía).
-- La casilla de novedades del diálogo gratis y el interruptor «Sólo GRATIS» de Pro son botones: Tab y
+- La casilla de novedades del diálogo gratis y el interruptor «Solo GRATIS» de Pro son botones: Tab y
   Espacio llegan a ellos (`USER-FLOW-v7.md` §15).
 - Abrir otra vez la página de gracias de un pedido da el enlace más nuevo de cada estrategia, no el que
   caducó (`orders.issue_links`).
@@ -82,7 +82,7 @@ elemento por elemento, salvo lo de aquí abajo y lo de «a propósito»):
 - **Los avisos** se ponen también encima de la píldora de Comparar cuando flota.
 - **Un enlace de descarga que ya no vale** (gastado, caducado), abierto en la pestaña (un clic, el enlace
   del correo), vuelve a Mis estrategias (o a la tienda, sin sesión) con el porqué traducido, en vez de una
-  página con el JSON; Mis estrategias se lee otra vez y la fila ofrece «Conseguir un enlace nuevo».
+  página con el JSON; Mis estrategias se lee otra vez y la fila ofrece «Pedir un enlace nuevo».
 - **Mis estrategias:** lo último arriba, también el mismo día; la fecha y el pedido de una fila son los de
   su primera compra (antes, la fecha de una y el pedido de otra si se compró dos veces).
 - **Árabe:** los tickers de un lote van en un bloque de izquierda a derecha (se partían con «··»); el
@@ -258,8 +258,8 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **«Actividad por vela»** es la columna `Trade Activity Per Candle` del generador (operaciones por vela
   del backtest: 0,002–0,238); la maqueta, que no la tenía, ponía operaciones por mes de entrenamiento.
 - **Las barras «Backtest» y «Desde su publicación»** de la ficha miden contra el mejor backtest del
-  catálogo (`npp_max` de `/api/config`), no contra el 100 % de la maqueta, dibujado para backtests de
-  71–86 %: los de 0,03–0,44 % de 2026-10 dejaban la barra vacía.
+  catálogo (`npp_max` de `/api/config`), no contra el 100 % de la maqueta, dibujado para sus backtests, la
+  mayoría del 71–86 % (de 0,49 a 85,80 %): los de 0,03–0,44 % de 2026-10 dejaban la barra vacía.
 - **«¿Compraste sin cuenta?»** dice bajo el campo lo que falla en el correo, con el borde rojo y
   `aria-invalid`, como la gratis (`mine.js`, `proofErrOn`): vacío o mal escrito (`errEmailRequired`,
   `errEmailInvalid`, del núcleo) y el rechazo del servidor a la dirección. El campo se puede vaciar, Intro no
@@ -271,6 +271,13 @@ Se queda como está; el diseño no lo enseña o lo simula:
   `toastRoom`, el alto del aviso, que mide `app.measureDock` por `data-ef-toast` (`dialogs.js`). En un móvil,
   encima del carrito flotante, el aviso tapaba «Enviarme el enlace» de la gratis, y el selector del pack (90vh)
   no le dejaba sitio ni arriba ni abajo. Los avisos no están en el diseño.
+- **Si el código del árbol no llega** (`tree.js`, sin red), pulsar otra vez «Cómo decide» o volver a su pestaña
+  lo pide de nuevo, en otra dirección (`tree.js?retry=N`: Chromium recuerda el fallo), nunca solo; cuando
+  llega, el aviso de red que dejó el fallo se va (`app.loadTree`, `showHow`). El diseño no tiene ese estado.
+- **Las favoritas de Mis estrategias** esperan a API #15: hasta entonces no dice «Pulsa el corazón de una
+  estrategia para seguirla.» (`favEmpty`, `vals_pages.js`), como «Packs» espera a los lotes. Un ♥ o una alerta
+  cambian al momento y, si el servidor no lo guarda (un 401 tras salir en otra pestaña), vuelven a como los
+  tiene la cuenta, la favorita a su sitio, con el aviso (`app.setFav`). El diseño no habla con un servidor.
 
 ## Correcciones a la exportación
 
@@ -301,7 +308,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 | 10 | Los tramos en USD y los totales en moneda local | Igual; se paga en USD («Pagas X US$ con PayPal») |
 | 11 | Revisión nativa de zh, ar e hi | Pendiente, también para los textos nuevos de 2026-10: `tour1Pro`, los plurales de `shown` y `selectedN`, `ownedYours`, los cuatro de una gratis en la ficha, `proofProvenTitle` / `proofProvenText`, y en el árbol los 22 `pat`, `ownFull`, `ownFail`, `fOwnSignIn`, `fOwnNotYours`, `ownedRest`, `ownedLock`, `ownedBtn` y `whatIs` |
 
-Y la de la pantalla 8: **¿«Conseguir la actualización» se paga?** Hoy no hay versiones más allá de la v1;
+Y la de la pantalla 8: **¿«Obtener la actualización» se paga?** Hoy no hay versiones más allá de la v1;
 renovar un enlace da la versión de hoy. Si se paga, hace falta un script por versión y un pedido.
 
 **Y las del dueño, abiertas** (salieron del recorrido de 2026-10-25 y 2026-10-26; la tienda no las decide):
@@ -323,6 +330,9 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
   sale de otro color que su comentario. Publicar los niveles de cada script lo decide el dueño.
 - **Los cortes de la nota** (pregunta 1): con los de hoy y las 5–63 operaciones del catálogo, solo C y D.
 - **«Desde su publicación»** no tiene trabajo diario: sale siempre «—», y su barra, vacía.
+- **Un clic en el velo oscuro** de los diálogos de la tienda (el recorrido de bienvenida, el tutorial de
+  instalación, el selector del pack, Comparar y el diálogo de la gratis), ¿debería cerrarlos? Hoy no los
+  cierra: lo hacen Esc y la × (o «Hecho» en el selector del pack, que no tiene ×).
 - **Contenido y traducciones:** la explicación de cada indicador (`catalogue/indicators.csv`, solo en
   inglés) y las 44 descripciones del árbol (`static/trees/features.json`, solo en es y en); los nombres y
   descripciones de los 139 valores del árbol que salen con su código; la revisión nativa de zh, ar e hi
@@ -346,20 +356,23 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 4. **Prioridad baja:** un evento cancelable en el enlace de la marca de la barra (p. ej. `zt:home`), para
    que una herramienta con rutas en el navegador vuelva a su portada sin recargar y sin perder lo que
    tiene en memoria (la lista de Comparar, los filtros).
-5. **Documentar dos ganchos que la tienda usa sin contrato:** el alto de la barra fija (la tienda lee
-   `header.app-topbar` para dejar un elemento justo debajo; serviría una variable `--zt-topbar-height` o
-   un `scroll-padding-top` del núcleo) y un sitio para la barra fija de abajo de una herramienta (la
-   tienda pone `body.app-shell{padding-bottom:64px}`; `app-shell` no está en CONTRATO.md).
+5. **Hecho en el núcleo:** el alto de la barra fija es `--zt-bar-h` / `--zt-sticky-top` (0.24, con su
+   `scroll-padding-top`) y la barra de abajo de una herramienta lleva `data-zt-bottom` (0.28), que la tienda
+   ya usa (`views/phonebar.js`; su `body.app-shell{padding-bottom:64px}` se quitó con el núcleo 0.30). Queda
+   en la tienda: `app.scrollUnderHeader` aún lee `header.app-topbar` en vez de `--zt-sticky-top`.
 6. **La barra en dos filas con la sesión abierta.** Con una cuenta, el chip de la cuenta enseña el correo
-   entero (unos 210 px) y, con los chips de la herramienta, la barra no cabe en 1320 px: baja a dos filas
-   (88 px en vez de 59) a 1366, 1440 y 1600, y «Lite | Pro» pasa a la segunda. Como Mis estrategias pide
-   cuenta, esa pantalla nunca se ve como el diseño en un escritorio. Bastaría recortar el correo cuando
+   entero y, con los chips de la herramienta, la barra sólo cabe en 1320 px con un correo corto: hasta unos
+   136 px en español (unos 23 caracteres; «cuenta@example.com» cabe) y unos 145 px en inglés. Con uno más
+   largo baja a dos filas (88 px en vez de 59) a 1366, 1440 y 1600, y «Lite | Pro» pasa a la segunda: con él,
+   Mis estrategias, que pide cuenta, no se ve como el diseño en un escritorio. Bastaría recortar el correo cuando
    la barra lleva chips (`.app-topbar-actions-tools .app-account-email{max-width:140px;
    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}`) o enseñar sólo el avatar, con el correo
    en el menú.
-7. **Para las pruebas:** `zlecitool_core.testing` podría dar un servidor en marcha de la app y una página
-   de Playwright sobre el Chromium del núcleo (saltando sin Chromium), para que una herramienta pruebe su
-   página en un navegador con `pytest` sin montarlo ella. Hoy la tienda lo hace en `tools/screenshots.py`.
+7. **Hecho en el núcleo (0.28):** `zlecitool_core.testing.mobile` (`serve`, `browser`, `open_page`,
+   `sign_in`) da la app servida y una página de Playwright sobre su Chromium, y las pruebas de la tienda en
+   un navegador ya lo usan (`test_keyboard.py`, `test_lists_cart.py`, `test_mine_page.py`,
+   `test_phone_bar.py`…). Sólo `tools/screenshots.py`, el recorrido de las capturas, sigue sobre un servidor
+   en marcha.
 8. **Importes con el formato del idioma en el servidor**, para los correos (p. ej.
    `zlecitool_core.i18n.format_money(valor, moneda, idioma)`): el recibo de la tienda dice «47.45 USD» en
    español, donde la página dice «47,45 US$». Con él, `orders.money()` lo usaría con el idioma de

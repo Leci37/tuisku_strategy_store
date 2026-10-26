@@ -30,6 +30,7 @@ import re
 from zlecitool_core.testing import mobile
 
 from edgefolio.catalogue import Catalogue
+from edgefolio.search import Index
 from edgefolio.settings import ROOT
 from tests.conftest import outbox
 from tests.test_free import claim, free_file  # noqa: F401 (free_file es un fixture)
@@ -171,6 +172,48 @@ def test_an_untranslated_explanation_is_english_and_says_so(tmp_path):
         ("En español.", "es"), ("In English.", "en"), ("In English.", "en")]
     other = next(x for x in catalogue if x.key_techs != "1BOL")
     assert (catalogue.row(other, "ar")["ind_text"], catalogue.detail(other, "ar")["ind_lang"]) == ("", "ar")
+
+
+def test_the_indicator_is_named_like_its_explanation_and_link(tmp_path):
+    """El nombre que se enseña sale de indicators.csv, como la explicación y el enlace: la fila del catálogo trae el
+    del generador, que puede quedarse atrás (1ICH decía «Ichimoku Oscillator» y su código es la nube). Sin nombre en
+    indicators.csv, el de la fila. Y con él se busca y se filtra."""
+    folder = tmp_path / "catalogue"
+    folder.mkdir()
+    (folder / "catalogue.csv").write_text((ROOT / "catalogue" / "catalogue.csv").read_text(encoding="utf-8"), encoding="utf-8")
+    with open(folder / "indicators.csv", "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["Key", "Full Indicator Name", "Explanation"])
+        w.writeheader()
+        w.writerow({"Key": "1BOL", "Full Indicator Name": "Bollinger Bands and RSI", "Explanation": "In English."})
+        w.writerow({"Key": "1MAD", "Full Indicator Name": "", "Explanation": "In English."})
+    catalogue = Catalogue(folder / "catalogue.csv")
+    bol = next(x for x in catalogue if x.key_techs == "1BOL")
+    mad = next(x for x in catalogue if x.key_techs == "1MAD")
+    assert bol.row["Full Indicator Name"] == "Bollinger RSI Double Strategy"
+    assert catalogue.row(bol)["ind"] == catalogue.detail(bol)["ind"] == "Bollinger Bands and RSI"
+    assert catalogue.row(mad)["ind"] == mad.row["Full Indicator Name"] == "Madrid Moving Average Ribbon"
+    index = Index(catalogue)
+    assert index.labels["ind"]["1BOL"][0] == "1BOL – Bollinger Bands and RSI"
+    assert any("bollinger bands and rsi" in t for t in index.text)
+
+
+def test_each_indicator_links_to_what_its_code_computes():
+    """El enlace y el autor de cada indicador son los de su script en TradingView, el que lista el generador como
+    fuente (``TW_pines_script/pines_script/_links.txt``): 1MAC es el CM_MacD_Ult_MTF de ChrisMoody (llevaba a la
+    estrategia MACD + SMA 200 de ChartArt), 1SMA el de LuxAlgo (llevaba a la estrategia de Uncle Sam) y 1ICH, cuyo
+    código es la nube de Ichimoku de TradingView (``ichimoku_cloud.py``), la nube y no el oscilador. Un solo dominio
+    para todos los idiomas: es.tradingview.com enseña TradingView en español a todos. (Una combinada no tiene página:
+    «--», y lleva a la lista de scripts.)"""
+    by_key = {r["Key"]: r for r in INDICATORS}
+    assert (by_key["1MAC"]["Author"], by_key["1MAC"]["Traderview URL Indicator"]) == (
+        "ChrisMoody", "https://www.tradingview.com/script/OQx7vju0-MacD-Custom-Indicator-Multiple-Time-Frame-All-Available-Options/")
+    assert by_key["1SMA"]["Traderview URL Indicator"] == "https://www.tradingview.com/script/CnB3fSph-Smart-Money-Concepts-SMC-LuxAlgo/"
+    assert (by_key["1ICH"]["Full Indicator Name"], by_key["1ICH"]["Traderview URL Indicator"]) == (
+        "Ichimoku Cloud", "https://www.tradingview.com/scripts/ichimokuclouds/")
+    assert by_key["1KON"]["Author"] == "manboto"
+    pages = {r["Key"]: r["Traderview URL Indicator"] for r in INDICATORS if not r["Key"].startswith("2")}
+    assert all(u.startswith("https://www.tradingview.com/") for u in pages.values()), pages
+    assert {r["Traderview URL Indicator"] for r in INDICATORS if r["Key"].startswith("2")} == {"--"}
 
 
 # Lo que dice cada número de un enlace (días, descargas) y de un lote (estrategias), en cada idioma: en árabe, el
@@ -380,5 +423,34 @@ def test_arabic_links_and_packs_count_with_the_right_form_in_the_page(real_app):
                 tab.goto("/thanks?token=FAKE-AR&lang=ar")
                 page.get_by_text(note).wait_for()
                 assert tab.problems() == []
+            finally:
+                tab.close()
+
+
+def pack_of(size: int):
+    """API #4 (los lotes y el pack) con otro PACK_SIZE (el servidor sigue con el suyo: sólo cambia lo que la página
+    dice)."""
+    def config(route):
+        response = route.fetch()
+        cfg = response.json()
+        route.fulfill(response=response, json={**cfg, "pack": {**cfg["pack"], "size": size}})
+    return config
+
+
+def test_the_pack_says_its_size_and_counts_what_is_left_in_its_form(real_app):
+    """«Arma tu pack» dice su tamaño (PACK_SIZE, de API #1), no un 5 escrito en el texto, y cuántas faltan con la forma
+    que pide su número (en árabe, «اختر اثنتين أخريين» con 2)."""
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        for lang, size, said in (("ar", 2, "اختر اثنتين أخريين · 2 مقابل "), ("es", 7, "Elige 7 más · 7 por "),
+                                 ("ar", 1, "اختر واحدة أخرى · 1 مقابل ")):
+            tab = mobile.open_page(chromium, live, "laptop")
+            page = tab.page
+            try:
+                page.add_init_script(SEEN)
+
+                page.route(re.compile(r".*/api/bundles$"), pack_of(size))
+                tab.goto(f"/?lang={lang}")
+                page.get_by_text(re.compile("^" + re.escape(said))).wait_for()
+                assert tab.problems() == [], tab.problems()
             finally:
                 tab.close()

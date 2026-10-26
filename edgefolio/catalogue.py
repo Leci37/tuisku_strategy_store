@@ -110,6 +110,7 @@ class Strategy:
     new_days: int = 30
     grade_cutoffs: tuple = GRADE_CUTOFFS
     expiry: date = None       # la «Expiry date» de su script publicado (su vista previa); None si no la dice
+    ind_name: str = None      # el nombre de su indicador en indicators.csv; sin él, el de la fila del catálogo
 
     @property
     def id(self) -> str:
@@ -195,7 +196,7 @@ class Strategy:
         stems = {k: Path(r.get(col) or "").stem for k, col in (("profit", "path_stra"), ("candle", "path_candle"))}
         return {
             "id": self.id, "ticker": self.ticker, "interval": self.interval, "key": self.key_techs,
-            "hash": self.id_model, "name": r.get("Name") or self.ticker, "ind": r.get("Full Indicator Name") or "",
+            "hash": self.id_model, "name": r.get("Name") or self.ticker, "ind": self.ind_name or r.get("Full Indicator Name") or "",
             "index": r.get("Index") or "", "market": self.market, "price": number(self.price) or 0,
             **self.numbers, "release": self.release, "version": self.version,
             "profit": asset(r.get("path_stra")), "candle": asset(r.get("path_candle")),
@@ -248,6 +249,22 @@ class Catalogue:
             source = Settings(catalogue=path, indicators=path.parent / "indicators.csv",
                               bundles=path.parent / "bundles.json", since_release=path.parent / "since_release.csv",
                               levels=path.parent / "levels.json")
+        # indicators.csv es de la tienda: el nombre de cada indicador, su página y su autor y la explicación, revisados
+        # con el código del generador. Se lee antes que el catálogo para que el nombre que se enseña salga de él, el
+        # mismo de la explicación y del enlace (la fila del catálogo trae el del generador, que puede quedarse atrás)
+        self.indicators = {}
+        for r in read_table(source.indicators):
+            lower = {k.strip().lower(): v for k, v in r.items() if k}
+            if clean(lower.get("key")):
+                # la explicación, en inglés («Explanation») y en cada idioma con su columna («Explanation_es»…)
+                texts = {"en": clean(lower.get("explanation")),
+                         **{k.split("_", 1)[1]: clean(v) for k, v in lower.items() if k.startswith("explanation_")}}
+                self.indicators[clean(lower["key"])] = {
+                    "ind_name": clean(lower.get("full indicator name")),
+                    "ind_texts": {lang: text for lang, text in texts.items() if text},
+                    "ind_url": clean(lower.get("traderview url indicator")) or TV_SCRIPTS,
+                    "ind_author": clean(lower.get("author")),
+                }
         live = {r.get("id"): r for r in read_table(source.since_release)}
         self.items = {}   # por clave: lo que guardan los pedidos y los enlaces
         self.by_id = {}
@@ -255,7 +272,8 @@ class Catalogue:
             for row in csv.DictReader(f, delimiter="\t"):
                 s = Strategy(row["ticker"], row["interval"], row["key_techs"], row["id_model"],
                              Decimal(row["Price"]).quantize(Decimal("0.01")), row, new_days=source.new_days,
-                             grade_cutoffs=source.grade_cutoffs)
+                             grade_cutoffs=source.grade_cutoffs,
+                             ind_name=self.indicators.get(row["key_techs"], {}).get("ind_name") or None)
                 if s.id in live:
                     s = replace(s, live=number(live[s.id].get("pct")), live_as_of=live[s.id].get("as_of") or None)
                 preview = (row.get("pine_path_shadow") or "").strip()
@@ -270,18 +288,6 @@ class Catalogue:
         # eligieron, si el generador lo dijo; uno que no puede ser (menos que las que hay) no se cuenta
         tried = read_release(Path(source.catalogue).parent / "release.json").get("tried")
         self.tried = tried if type(tried) is int and tried >= len(self.items) > 0 else None
-        self.indicators = {}
-        for r in read_table(source.indicators):
-            lower = {k.strip().lower(): v for k, v in r.items() if k}
-            if clean(lower.get("key")):
-                # la explicación, en inglés («Explanation») y en cada idioma con su columna («Explanation_es»…)
-                texts = {"en": clean(lower.get("explanation")),
-                         **{k.split("_", 1)[1]: clean(v) for k, v in lower.items() if k.startswith("explanation_")}}
-                self.indicators[clean(lower["key"])] = {
-                    "ind_texts": {lang: text for lang, text in texts.items() if text},
-                    "ind_url": clean(lower.get("traderview url indicator")) or TV_SCRIPTS,
-                    "ind_author": clean(lower.get("author")),
-                }
         self.bundles = self._bundles(source.bundles)
         self.levels = load_levels(source.levels)
 

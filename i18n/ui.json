@@ -1724,24 +1724,31 @@
     "hi": "अपना बंडल बनाएँ"
   },
   "packHint": {
-    "es": "Elige {n} más · 5 por {price}",
-    "en": "Pick {n} more · 5 for {price}",
-    "pt": "Escolhe mais {n} · 5 por {price}",
-    "fr": "Encore {n} · 5 pour {price}",
-    "de": "Noch {n} · 5 für {price}",
-    "zh": "再选 {n} 个 · 5 个只需 {price}",
-    "ar": "اختر {n} أخرى · 5 مقابل {price}",
-    "hi": "{n} और चुनें · 5 सिर्फ़ {price} में"
+    "es": "Elige {n} más · {size} por {price}",
+    "en": "Pick {n} more · {size} for {price}",
+    "pt": "Escolhe mais {n} · {size} por {price}",
+    "fr": "Encore {n} · {size} pour {price}",
+    "de": "Noch {n} · {size} für {price}",
+    "zh": "再选 {n} 个 · {size} 个只需 {price}",
+    "ar": {
+      "zero": "اختر {n} أخرى · {size} مقابل {price}",
+      "one": "اختر واحدة أخرى · {size} مقابل {price}",
+      "two": "اختر اثنتين أخريين · {size} مقابل {price}",
+      "few": "اختر {n} أخرى · {size} مقابل {price}",
+      "many": "اختر {n} أخرى · {size} مقابل {price}",
+      "other": "اختر {n} أخرى · {size} مقابل {price}"
+    },
+    "hi": "{n} और चुनें · {size} सिर्फ़ {price} में"
   },
   "packReady": {
-    "es": "5 por {price}",
-    "en": "5 for {price}",
-    "pt": "5 por {price}",
-    "fr": "5 pour {price}",
-    "de": "5 für {price}",
-    "zh": "5 个只需 {price}",
-    "ar": "5 مقابل {price}",
-    "hi": "5 सिर्फ़ {price} में"
+    "es": "{size} por {price}",
+    "en": "{size} for {price}",
+    "pt": "{size} por {price}",
+    "fr": "{size} pour {price}",
+    "de": "{size} für {price}",
+    "zh": "{size} 个只需 {price}",
+    "ar": "{size} مقابل {price}",
+    "hi": "{size} सिर्फ़ {price} में"
   },
   "addPack": {
     "es": "Añadir pack",

@@ -445,7 +445,12 @@ propietario del árbol no recibe el script entero (API #17): `Strategy.serves`.
   generador (la de 1TMA, sus cuatro medias suavizadas, la de 2 velas frente a la de 200 y sus dos patrones de velas)
   y ninguna promete nada. El `indicator_tech_explanation.csv` del generador sigue con los textos de antes, «TMA Overlay
   (Triangular Moving Average)» y la `Key Combination` de 2MM0 y 2BB0 equivocada; de él saca `S_04` el «Full Indicator
-  Name» de `catalogue.csv`, así que una estrategia 1TMA publicada saldría con ese nombre.
+  Name» de `catalogue.csv`. Por eso, desde el mismo día, el nombre que se enseña de cada indicador sale de
+  `indicators.csv`, como su explicación, su enlace y su autor (el de la fila del catálogo, sólo si no lo tiene). Y
+  los enlaces van al script que el generador lista como fuente (`_links.txt`): 1MAC, al CM_MacD_Ult_MTF de
+  ChrisMoody (llevaba a la estrategia MACD + SMA 200 de ChartArt); 1SMA, al SMC de LuxAlgo (llevaba a otra
+  estrategia); 1ICH es «Ichimoku Cloud», la nube que calcula su código, y no «Ichimoku Oscillator»; 1KON, de
+  manboto; todos en www.tradingview.com (es.tradingview.com enseñaba TradingView en español a todos).
 
 ## Para el núcleo
 

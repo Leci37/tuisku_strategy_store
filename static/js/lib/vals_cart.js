@@ -104,7 +104,9 @@ export function cartVals(c) {
     }),
     packSlots: Array.from({ length: pack.size }, (_, i) => { const r = packRows[i]; return { filled: !!r, empty: !r, icon: iconOf(r), border: r ? '1px solid #e2e9f0' : '2px dashed #9fb8ef' }; }),
     packSave: saveP(packSave),
-    packHint: !full ? t('packHint', { n: f.int(pack.size - s.packIds.length), price: f.pmoney(pack.price) }) : t('packReady', { price: f.pmoney(pack.price) }),
+    // cuántas faltan elige la forma del plural (en árabe, «اختر اثنتين أخريين»); el tamaño es PACK_SIZE, del servidor
+    packHint: !full ? t('packHint', { n: f.int(pack.size - s.packIds.length), size: f.int(pack.size), price: f.pmoney(pack.price) }, pack.size - s.packIds.length)
+      : t('packReady', { size: f.int(pack.size), price: f.pmoney(pack.price) }),
     packBtnLabel: s.bundles.includes('custom') ? tx.inCartBtn : t('addPack'), packBtnBg: full ? '#0950e3' : '#9aa7b8',
     addPack: () => {
       if (!full) { app.setState({ packOpen: true }); return; }

@@ -1,6 +1,6 @@
 // The shop: Lite (ticker strip, tabs, cards, Load more) and Pro (filters with histograms, chips,
 // rows / cards / table, pager). Lists, counts, histograms and options come from /api/strategies.
-import { RANGES, TOP_RANGES, MORE_RANGES, SELECTS, track, val, snap, fracOf, isOn, parseNum } from './filters.js';
+import { RANGES, TOP_RANGES, MORE_RANGES, SELECTS, track, val, snap, fracOf, isOn, isOpenLo, isOpenHi, parseNum } from './filters.js';
 
 export const PRO_SIZE = 25;
 
@@ -33,7 +33,7 @@ function proVals(c, seg) {
   const { app, s, t, tx, f } = c;
   const fmt = {
     money0: f.money0, round: v => f.int(Math.round(v)), pct0: v => f.pct(v, 0), pct2: v => f.pct(v, 2),
-    pctAuto: v => f.pct(v, v < 10 ? 2 : 0), dec1: v => f.num(v, 1)
+    pctAuto: v => f.pct(v, v < 10 ? 2 : 0), dec3: v => f.num(v, 3), decAuto: v => f.num(v, v < 10 ? 2 : 0)
   };
   const rgOf = k => s.rg[k] || [0, 1];
   const slider = k => {
@@ -72,7 +72,9 @@ function proVals(c, seg) {
         if (e.preventDefault) e.preventDefault();
       },
       clear: () => app.setState(st => { const n = { ...st.rg }; delete n[k]; return { rg: n }; }),
-      loIn: dr[k + 0] != null ? dr[k + 0] : fm(val(dd, a)), hiIn: dr[k + 1] != null ? dr[k + 1] : fm(val(dd, b)),
+      // un extremo abierto, vacío hasta que llega la barra del catálogo: la del diseño diría 6.500.000 $
+      loIn: dr[k + 0] != null ? dr[k + 0] : s.ranges || !isOpenLo(a) ? fm(val(dd, a)) : '',
+      hiIn: dr[k + 1] != null ? dr[k + 1] : s.ranges || !isOpenHi(b) ? fm(val(dd, b)) : '',
       loOn: e => setD(0, e.target.value), hiOn: e => setD(1, e.target.value), loDone: () => commit(0), hiDone: () => commit(1),
       onInKey: e => { if (e.key === 'Enter' && e.target && e.target.blur) e.target.blur(); }
     };

@@ -8,7 +8,7 @@ import Storefront from './views/storefront.js';
 import { api, post } from './lib/api.js';
 import { read, write, readJSON, writeJSON } from './lib/saved.js';
 import { parseLocation, pathOf } from './lib/route.js';
-import { proQuery, Q_MAX } from './lib/filters.js';
+import { proQuery, Q_MAX, retrack } from './lib/filters.js';
 import { translator } from './lib/fmt.js';
 import { renderVals } from './lib/vals.js';
 import { PRO_SIZE } from './lib/vals_shop.js';
@@ -367,7 +367,8 @@ export class App extends Component {
       if (!append) patch.proFirst = page;
       if (d.hist) {
         this.facetsKey = key;
-        Object.assign(patch, { hist: d.hist, options: d.options || {}, ranges: d.ranges || null });
+        Object.assign(patch, { hist: d.hist, options: d.options || {}, ranges: d.ranges || null,
+          rg: retrack(this.state.rg, this.state.ranges, d.ranges || null) });
       }
       this.setState(patch);
     }).catch(e => this.fail(e));

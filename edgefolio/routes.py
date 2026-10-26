@@ -149,7 +149,7 @@ def config():
                     "pack": {"size": s.pack_size, "price": str(s.pack_price)},
                     "download_days": s.download_days, "max_downloads": s.max_downloads,
                     "new_days": s.new_days, "contact_email": s.contact_email,
-                    "strategies": len(shop().catalogue)})
+                    "strategies": len(shop().catalogue), "npp_max": shop().catalogue.best_npp})
 
 
 @bp.get("/api/strategies")

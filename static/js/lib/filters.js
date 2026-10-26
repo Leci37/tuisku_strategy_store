@@ -1,20 +1,24 @@
 // The Pro filters (§12 of the design guide): slider tracks, multi-selects and the query they make.
 // Handles keep a fraction of the track (0–1) as the design does; the server gets values. The server's
 // `ranges` replace these tracks when it sends them, so the two never drift.
+// Esas barras salen del catálogo (su mínimo y su máximo, redondeados hacia fuera): las de aquí, las del
+// diseño, sólo valen hasta que llegan (retrack). Las cifras de cada etiqueta (f) van con los valores del
+// catálogo: la actividad por vela va de 0,002 a 0,238 (dec3); el factor de beneficio y el beneficio medio
+// (%), casi siempre por debajo de 5 (dos decimales hasta 10).
 export const RANGES = {
   np: { key: 'fNetProfitUsd', min: 200, max: 6500000, log: true, f: 'money0' },
   price: { key: 'fPrice', min: 0, max: 140, f: 'money0' },
   npp: { key: 'fNetProfitPct', min: 0.1, max: 6500, log: true, f: 'pctAuto' },
   trades: { key: 'fClosedTrades', min: 0, max: 2000, f: 'round' },
   win: { key: 'fWinRate', min: 0, max: 100, f: 'pct0' },
-  pf: { key: 'fProfitFactor', min: 1, max: 35000, log: true, f: 'round' },
+  pf: { key: 'fProfitFactor', min: 1, max: 35000, log: true, f: 'decAuto' },
   months: { key: 'fTrainingMonths', min: 0, max: 400, f: 'round' },
   mlu: { key: 'fMaxLossUsd', min: 0, max: 40000, f: 'money0' },
   mlp: { key: 'fMaxLossPct', min: 0, max: 4, f: 'pct2' },
   avg: { key: 'fAvgProfitUsd', min: 1, max: 2100000, log: true, f: 'money0' },
-  avgp: { key: 'fAvgProfitPct', min: 0, max: 5000, f: 'pct0' },
+  avgp: { key: 'fAvgProfitPct', min: 0, max: 5000, f: 'pctAuto' },
   bars: { key: 'fAvgBars', min: 0, max: 8000, f: 'round' },
-  act: { key: 'fActivity', min: 0, max: 3, f: 'dec1' },
+  act: { key: 'fActivity', min: 0, max: 3, f: 'dec3' },
   candles: { key: 'fCandles', min: 0, max: 500000, f: 'round' },
   prec: { key: 'fPrecision', min: 40, max: 100, f: 'pct0' },
   tree: { key: 'fTreeDepth', min: 1, max: 10, f: 'round' }
@@ -45,6 +49,23 @@ export const isOpenLo = a => a <= 0.001;
 export const isOpenHi = b => b >= 0.999;
 export const isOn = r => !!r && (!isOpenLo(r[0]) || !isOpenHi(r[1]));
 
+// Las asas guardan una fracción de su barra: cuando llega otra barra (la del catálogo, que en la primera
+// respuesta sustituye a la del diseño, o la de un catálogo nuevo), cada asa puesta pasa a la fracción de su
+// mismo valor, y una abierta sigue abierta. Si no, «hasta 50 $» escrito antes de esa respuesta pasaba a
+// pedir «hasta 29 $». Sin cambios, el mismo objeto.
+export function retrack(rg, before, after) {
+  let moved = false;
+  const out = {};
+  Object.keys(rg).forEach(k => {
+    const r = rg[k], a = RANGES[k] && track(k, before), b = RANGES[k] && track(k, after);
+    if (!r || !a || (a.min === b.min && a.max === b.max && !!a.log === !!b.log)) { out[k] = r; return; }
+    const to = (fr, open) => (open ? fr : fracOf(b, snap(a, val(a, fr))));
+    out[k] = [to(r[0], isOpenLo(r[0])), to(r[1], isOpenHi(r[1]))];
+    moved = true;
+  });
+  return moved ? out : rg;
+}
+
 // Typed values accept the locale's decimal sign and $ or % around them.
 export function parseNum(str, decimal) {
   let x = String(str).replace(/−/g, '-').split('').filter(ch => /[0-9-]/.test(ch) || ch === decimal).join('');
@@ -55,7 +76,7 @@ export function parseNum(str, decimal) {
 
 // The decimals each label shows (fmt in vals_shop.js): the server gets the number the visitor reads
 // on the chip, the label and the min/max boxes, so "4 – 8" on Tree depth includes depth 8.
-const DECIMALS = { money0: () => 0, round: () => 0, pct0: () => 0, pct2: () => 2, dec1: () => 1, pctAuto: v => (v < 10 ? 2 : 0) };
+const DECIMALS = { money0: () => 0, round: () => 0, pct0: () => 0, pct2: () => 2, dec3: () => 3, pctAuto: v => (v < 10 ? 2 : 0), decAuto: v => (v < 10 ? 2 : 0) };
 
 export function snap(dd, v) {
   const m = Math.pow(10, (DECIMALS[dd.f] || (() => 6))(v));

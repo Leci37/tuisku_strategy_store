@@ -31,6 +31,9 @@ NUMBERS = {
     "Max Drawdown_per": ("mddp", float), "Avg Trade_usd": ("avg", float), "Avg Trade_per": ("avgp", float),
     "Avg # Bars in Trades": ("bars", float), "months_trained": ("m", int), "n_candles": ("cand", float),
     "Precision f1_per": ("prc", float), "Tree Deep": ("tdep", int),
+    # operaciones por vela del backtest, como la escribe el generador: la maqueta del diseño, sin esa columna,
+    # ponía operaciones por mes de entrenamiento, otra unidad bajo el mismo nombre
+    "Trade Activity Per Candle": ("actv", float),
 }
 
 
@@ -136,9 +139,7 @@ class Strategy:
 
     @cached_property
     def numbers(self) -> dict:
-        out = {name: number(self.row.get(col), kind) for col, (name, kind) in NUMBERS.items()}
-        out["actv"] = out["tr"] / out["m"] if out["tr"] is not None and out["m"] else None
-        return out
+        return {name: number(self.row.get(col), kind) for col, (name, kind) in NUMBERS.items()}
 
     @cached_property
     def summary(self) -> dict:
@@ -253,6 +254,12 @@ class Catalogue:
             return Decimal("0")
         mid = len(prices) // 2
         return prices[mid] if len(prices) % 2 else ((prices[mid - 1] + prices[mid]) / 2).quantize(Decimal("0.01"))
+
+    @cached_property
+    def best_npp(self):
+        """El mejor % de beneficio de los backtests del catálogo (None si ninguno lo tiene): la escala de las
+        barras «Backtest» y «Desde su publicación» de la página de la estrategia."""
+        return max((s.numbers["npp"] for s in self if s.numbers["npp"] is not None), default=None)
 
     def __len__(self):
         return len(self.items)

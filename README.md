@@ -20,7 +20,7 @@ entero y lo publica; lo que trae lo fija `catalogue/contract.json`, el contrato 
 [La aplicación gemela](#la-aplicación-gemela-el-generador-de-estrategias).
 
 <p align="center">
-  <img src="docs/img/edgefolio_lite.png" alt="Lite: la cinta de tickers, la búsqueda, las pestañas, el aviso de sobreajuste, tres lotes y Crea tu pack, y las fichas con su curva, su nota y su precio" width="900">
+  <img src="docs/img/edgefolio_lite.png" alt="Lite: la cinta de tickers, la búsqueda, las pestañas, el aviso de sobreajuste, tres lotes y Arma tu pack, y las fichas con su curva, su nota y su precio" width="900">
 </p>
 
 <table>
@@ -71,11 +71,11 @@ entero y lo publica; lo que trae lo fija `catalogue/contract.json`, el contrato 
 </tr>
 <tr>
 <td><img src="docs/img/edgefolio_compare.png" alt="Tres estrategias comparadas, con lo mejor de cada fila en verde"></td>
-<td><img src="docs/img/edgefolio_pack.png" alt="Crea tu pack: cinco estrategias elegidas de la lista"></td>
+<td><img src="docs/img/edgefolio_pack.png" alt="Arma tu pack: cinco estrategias elegidas de la lista"></td>
 </tr>
 <tr>
 <td><sub><b>Comparar</b> hasta 3; lo mejor de cada fila, en verde.</sub></td>
-<td><sub><b>Crea tu pack:</b> 5 estrategias por un precio, buscadas en todo el catálogo de pago.</sub></td>
+<td><sub><b>Arma tu pack:</b> 5 estrategias por un precio, buscadas en todo el catálogo de pago.</sub></td>
 </tr>
 <tr>
 <td><img src="docs/img/edgefolio_free.png" alt="Una estrategia gratis: el correo ha salido"></td>
@@ -300,7 +300,7 @@ de la tienda (sin la petición de nadie):
 
 ### Las gratis y las novedades
 
-Las 79 estrategias gratis se mandan por correo (`POST /api/free`): el enlace va en el correo, nunca en la
+Las 10 estrategias gratis se mandan por correo (`POST /api/free`): el enlace va en el correo, nunca en la
 respuesta. Como mucho 10 al día por dirección (contadas con la fila de la dirección bloqueada, así que
 diez peticiones a la vez no se cuelan) y 20 por IP a la hora. Las novedades son una casilla aparte, sin
 marcar: se apuntan sólo si se marca y sólo cuentan cuando se confirman desde el correo
@@ -385,7 +385,7 @@ los enlaces de los correos y la vuelta de PayPal se hacen con ella, nunca con la
 | `MAX_DISCOUNT` | `0.70` | el tope del escalón más el código, juntos |
 | `PACK_SIZE`, `PACK_PRICE` | `5`, `249` | «Arma tu pack»: cuántas estrategias y por cuánto; su tarjeta dice ese tamaño («Elige N más · 5 por …») |
 | `DOWNLOAD_DAYS`, `MAX_DOWNLOADS` | `7`, `10` | lo que vale un enlace de descarga |
-| `NEW_DAYS` | `30` | lo que una estrategia sale en «Nuevas» |
+| `NEW_DAYS` | `30` | lo que una estrategia sale en «Novedades» |
 | `GRADE_CUTOFFS` | `100,50,25` | las operaciones cerradas desde las que una estrategia lleva la nota A, B o C (con menos, D): cuánta prueba respalda su backtest. Su explicación en la página los dice |
 | `LIST_INTRADAY_STOCKS` | `0` | con `1`, `edgefolio import` publica también las estrategias intradía de acciones (de minutos u horas), que deja fuera: el plan gratis de TradingView enseña otros datos intradía de las acciones (sólo Cboe BZX), así que allí operan distinto que en su backtest |
 | `CONTACT_EMAIL` | `sales@tuisku.ai` | la dirección que la página da para los problemas |
@@ -413,12 +413,13 @@ cuentas, la sesión, el idioma elegido y lo demás de la familia los lleva el n�
 | `edgefolio_alert_state` | `item_key` (clave), `version`, `price`, `bundles` (JSON), `updated_at` | cómo era cada estrategia en la última vuelta de los avisos: un cambio se avisa una vez |
 | `edgefolio_email_proof` | `id`, `user_id` → `core_user`, `email` (únicos juntos), `token_hash`, `requested_at`, `expires_at`, `verified_at` | que una cuenta ha demostrado un correo (`verified_at`); hasta entonces, el hash del enlace mandado |
 | `edgefolio_mailbox` | `email` (clave), `first_seen_at`, `last_seen_at` | una fila por dirección a la que escribe la tienda: se bloquea para contar lo que va por dirección (las gratis del día) de una vez, en SQLite y en Postgres |
+| `edgefolio_task_done` | `run_key` (clave: `run.key`), `task`, `scheduled_for`, `result` (JSON, en cifras), `done_at` | cada vez del reloj del núcleo que una tarea de la tienda (`fx_update`, `send_alerts`) ya hizo, apuntada en la misma transacción que lo que cambia: una repetición la encuentra y no hace nada |
 
 Al borrar una cuenta («Tus datos», arriba), `edgefolio_order` se queda sin correo, sin `payer` y sin
 `buyer_hash`, y `edgefolio_download` con él; las filas de la cuenta de `edgefolio_free_claim`,
 `edgefolio_favourite` y `edgefolio_email_proof` se van, y las de sus correos demostrados en
-`edgefolio_free_claim`, `edgefolio_subscriber` y `edgefolio_mailbox`, también. `edgefolio_alert_state` no
-guarda nada de nadie.
+`edgefolio_free_claim`, `edgefolio_subscriber` y `edgefolio_mailbox`, también. `edgefolio_alert_state` y
+`edgefolio_task_done` no guardan nada de nadie.
 
 Los enlaces de un solo uso y la cookie de quien compra se guardan sólo como hash. Fuera de la base de
 datos, en `<ZLECITOOL_DATA_DIR>/edgefolio/`: `strategies/` (los scripts de pago), `thumbs/` (las

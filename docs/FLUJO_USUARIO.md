@@ -220,7 +220,14 @@ Solo cuenta la respuesta más nueva: una búsqueda vieja que llega tarde no pisa
 
 Las imágenes de las tarjetas son miniaturas WebP (API #6).
 
-<!-- foto: owned -->
+<table>
+<tr>
+<td><img src="img/edgefolio_es_owned.png" alt="Con la sesión abierta, la tarjeta de una estrategia ya comprada dice «Ya es tuya · Descargar», sin precio, y la de al lado sigue con su precio y «Comprar»"></td>
+</tr>
+<tr>
+<td><sub>Con la sesión abierta, la tarjeta de AMZN recién comprada dice «Ya es tuya · Descargar», sin precio, y la de al lado (NIO) sigue con su precio y «Comprar».</sub></td>
+</tr>
+</table>
 
 **El carrito flotante** se explica en la pantalla 5.
 
@@ -339,7 +346,7 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 - Las × dicen lo que quitan («Quitar Símbolo: ADAUSDT, AVAXUSDT»); en el diseño se llaman «×».
 - Lo que ya es de la cuenta dice «Ya es tuya» en Filas, Tarjetas y Tabla (E8); el diseño no tiene ese estado.
 - La explicación del indicador sale en el idioma de la página; la maqueta trae la inglesa de sus datos de ejemplo.
-- Hay 43 estrategias (de 94, con los 17 indicadores combinados: 2BB0, 2BT0, 2CS0…) que enlazan a la lista de scripts de TradingView, porque `indicators.csv` no les da página. Su nombre, el de `indicators.csv`, lleva los guiones bajos del generador («Bull_Bear_Power & Triple_EMA Combined»).
+- Hay 43 estrategias (de 94, con los 17 indicadores combinados: 2BB0, 2BT0, 2CS0…) que enlazan a la lista de scripts de TradingView, porque `indicators.csv` no les da página. Su nombre, el de `indicators.csv`, es el de sus partes como las nombra «Cómo decide» («Bull Bear Power + Triple EMA»); el generador las llama «Bull_Bear_Power & Triple_EMA Combined».
 - Los buscadores admiten 100 caracteres.
 
 ---

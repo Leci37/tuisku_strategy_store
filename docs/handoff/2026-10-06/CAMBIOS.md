@@ -85,7 +85,8 @@ elemento por elemento, salvo lo de aquí abajo y lo de «a propósito»):
   página con el JSON; Mis estrategias se lee otra vez y la fila ofrece «Pedir un enlace nuevo».
 - **Mis estrategias:** lo último arriba, también el mismo día; la fecha y el pedido de una fila son los de
   su primera compra (antes, la fecha de una y el pedido de otra si se compró dos veces).
-- **Árabe:** los tickers de un lote van en un bloque de izquierda a derecha (se partían con «··»); el
+- **Árabe:** los tickers de un lote van en un bloque de izquierda a derecha (se partían con «··»), con cada «·»
+  pegado al ticker que le sigue (si el bloque se parte, ninguna línea acaba en «·»); el
   nombre y la explicación del indicador, y el título y el texto del árbol, con `dir="auto"`.
 - **Teclado:** las filas de los filtros de Pro y los 14 tramos plegados son botones (`aria-expanded`), las
   cabeceras de la Tabla llevan un botón (`aria-sort`); el diálogo de la gratis pone el cursor en su campo

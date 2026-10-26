@@ -5,7 +5,7 @@
   - `docs/PANTALLAS.md`: qué contiene cada pantalla;
   - `docs/API_ENDPOINTS.md`: qué manda y qué recibe cada pantalla.
 - **Llamadas al servidor:** cada paso dice cuál hace. El número (API #7) es el de `docs/API_ENDPOINTS_referencia.md` y `docs/API_ENDPOINTS.md`.
-- **Repositorio:** `Leci37/tuisku_strategy_store` (antes `tuisku_Web_selling`), rama `_ztool_dev`, núcleo zlecitool-core 0.31.1.
+- **Repositorio:** `Leci37/tuisku_strategy_store` (antes `tuisku_Web_selling`), rama `_ztool_dev`, núcleo zlecitool-core 0.31.2.
 - **Catálogo:** el de 2026-10, 143 estrategias (133 de pago y 10 gratis) de 38 tickers, todas publicadas el 13 oct 2026.
 - **Del núcleo, desde la 0.23:** entrar con un enlace por correo (0.26) y con una llave de acceso (0.31), el menú de la cuenta, el sitio de la barra de abajo medido por el núcleo (0.28) y «Mis datos» (0.30).
 - **Sustituye** al `docs/FLUJO_USUARIO.md` del repositorio, que era el flujo del diseño (exportación del 6 oct; ahora en `docs/design/FLUJO_USUARIO.md`).

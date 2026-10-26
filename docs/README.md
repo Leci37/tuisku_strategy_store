@@ -7,7 +7,7 @@ aquí: está en `zlecitool-core` (CONTRATO.md, docs/PLAN.md, CHANGELOG.md).
 ## La tienda de hoy
 
 Sacado del código de `_ztool_dev` el 2026-10-12, recorrido en un navegador y corregido el 2026-10-25 y el
-2026-10-26 (núcleo 0.31.1, el catálogo de 143 estrategias). Los cuatro llevan la misma numeración: las
+2026-10-26 (núcleo 0.31.2, el catálogo de 143 estrategias). Los cuatro llevan la misma numeración: las
 pantallas 1–9 y las llamadas #1–#22.
 
 | Fichero | Qué |

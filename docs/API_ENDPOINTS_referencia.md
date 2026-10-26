@@ -2,7 +2,7 @@
 
 What the shop's server receives and answers, read from the code on branch `_ztool_dev` on 12 Oct 2026, and checked again on 26 Oct 2026, after the fixes of the browser walk of 25 and 26 Oct.
 
-- **Repository:** `Leci37/tuisku_strategy_store`. It was renamed from `tuisku_Web_selling`, and the old name still redirects. It runs on zlecitool-core 0.31.1, with the catalogue of 2026-10: 143 strategies (133 paid, 10 free), all released on 13 Oct 2026.
+- **Repository:** `Leci37/tuisku_strategy_store`. It was renamed from `tuisku_Web_selling`, and the old name still redirects. It runs on zlecitool-core 0.31.2, with the catalogue of 2026-10: 143 strategies (133 paid, 10 free), all released on 13 Oct 2026.
 - **Code:**
   - Routes: `edgefolio/routes.py`.
   - The work, in the modules next to it: `search`, `catalogue`, `pricing`, `orders`, `paypal`, `downloads`, `free`, `mine`, `proofs`, `media`, `alerts`.

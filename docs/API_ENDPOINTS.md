@@ -4,7 +4,7 @@
 - **Numeración:**
   - las pantallas 1–9 son las de `PANTALLAS.md` y `FLUJO_USUARIO.md`;
   - las llamadas #1–#22 son las de `API_ENDPOINTS_referencia.md`, que tiene el detalle completo en inglés: todas las reglas del servidor, los límites, la configuración y las tablas.
-- **Repositorio:** `Leci37/tuisku_strategy_store`, rama `_ztool_dev`, núcleo zlecitool-core 0.31.1.
+- **Repositorio:** `Leci37/tuisku_strategy_store`, rama `_ztool_dev`, núcleo zlecitool-core 0.31.2.
   - Las rutas están en `edgefolio/routes.py`.
   - Las llamadas de la página están en `static/js/app.js`, a través de `static/js/lib/api.js`.
 

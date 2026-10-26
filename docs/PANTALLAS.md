@@ -1,7 +1,7 @@
 # Edgefolio · Pantallas
 
 - **Qué es:** qué hay en cada pantalla de la tienda, tal como está programada en `_ztool_dev`: leída del código el 12 oct 2026, recorrida en un navegador y corregida el 25 y el 26 oct 2026, con el catálogo de 143 estrategias.
-- **Repositorio:** `Leci37/tuisku_strategy_store`, rama `_ztool_dev`, núcleo zlecitool-core 0.31.1.
+- **Repositorio:** `Leci37/tuisku_strategy_store`, rama `_ztool_dev`, núcleo zlecitool-core 0.31.2.
 - **Numeración:** las pantallas 1–9 son las mismas en los tres documentos:
   - `PANTALLAS.md` (este): qué contiene cada pantalla;
   - `API_ENDPOINTS.md`: qué manda y qué recibe cada pantalla;

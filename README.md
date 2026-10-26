@@ -509,7 +509,7 @@ Otras dos formas, sin Flask (sólo pandas):
 
 1. **El servidor**: Python 3.10 o más (3.11 recomendado), con HTTPS delante.
 2. **El núcleo** es privado: un token de GitHub con lectura de `Leci37/zlecitool-core` para que `pip` lo
-   instale en la etiqueta que fija `requirements.txt` (**v0.31.1**).
+   instale en la etiqueta que fija `requirements.txt` (**v0.31.2**).
 3. `pip install -r requirements.txt`
 4. **El entorno**: el común de la familia (`FLASK_SECRET_KEY` el mismo que las otras, `DATABASE_URL` a
    Postgres, `ZLECITOOL_PUBLIC_URL`, el SMTP, `ZLECITOOL_TRUSTED_PROXIES=1` detrás de nginx, los datos

@@ -692,3 +692,29 @@ def test_on_a_phone_a_tapped_question_keeps_its_explanation_while_the_page_moves
             assert tab.problems() == []
         finally:
             tab.close()
+
+
+def test_the_sentence_under_the_tree_counts_the_trees_of_its_forest(real_app):
+    """Debajo del árbol, cuántos árboles tiene el bosque, de la cabecera de su vista previa («RANDOM FOREST AI: N
+    tree(s)»): con uno solo (66 de las 94 de 2026-10), su señal es la de este árbol; antes, a todas «La estrategia
+    combina muchos árboles como este». Con varios, cuántos, en la forma de su número (en árabe, «5 أشجار»)."""
+    sizes = {}
+    for s in of(real_app).catalogue:
+        src = (ROOT / s.summary["preview"].lstrip("/")).read_text(encoding="utf-8")
+        size = int(re.search(r"^//\s*RANDOM FOREST AI:\s*(\d+)\s*tree", src, re.M).group(1))
+        sizes.setdefault(size, s.id)
+    assert {1, 5} <= set(sizes), sizes
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        tab = mobile.open_page(chromium, live, "laptop")
+        try:
+            for strategy, lang, said in ((sizes[1], "es", es("forest1")),
+                                         (sizes[5], "es", es("forestN").replace("{n}", "5")),
+                                         (sizes[5], "ar", text_of("ar", "forestN")["few"].replace("{n}", "5"))):
+                tab.goto(f"/s/{strategy}/tree?lang={lang}")
+                wait_tree(tab)
+                # la frase va bajo los tres pasos, fuera de la tarjeta del árbol
+                tab.page.get_by_text(said, exact=True).wait_for()
+                assert tab.page.get_by_text(es("forest"), exact=True).count() == 0
+            assert tab.problems() == [], tab.problems()
+        finally:
+            tab.close()

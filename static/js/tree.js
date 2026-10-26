@@ -18,6 +18,8 @@ const TEXT = {
     s2v: 'At or below the value (≤) the path goes left; above it (>) the path goes right.',
     s3: 'The path ends in a result: a score from −1 (sell) to +1 (buy).',
     forest: 'The strategy combines many trees like this one, so one tree alone does not decide its signal.',
+    forest1: 'The strategy has one tree, this one, so its signal is this tree’s result.',
+    forestN: 'The strategy combines {n} trees like this one, so one tree alone does not decide its signal.',
     loading: 'Loading the tree…', loadErr: 'Could not load the tree:', output: 'Tree output', sellEnd: 'Sell −1', buyEnd: 'Buy +1',
     buyEx: 'Buy example', sellEx: 'Sell example', exHelp: 'Sets the values that reach the strongest buy or sell result of this tree.',
     values: 'Indicator values', lg1: 'A value the tree checks (hover it)', lg2: 'Checked on the current path', lg3: 'Range where the result stays the same',
@@ -67,6 +69,8 @@ const TEXT = {
     s2v: 'Si es igual o menor (≤), el camino va a la izquierda; si es mayor (>), a la derecha.',
     s3: 'El camino termina en un resultado: una puntuación de −1 (venta) a +1 (compra).',
     forest: 'La estrategia combina muchos árboles como este, así que su señal no la decide un solo árbol.',
+    forest1: 'La estrategia tiene un solo árbol, este, así que su señal es el resultado de este árbol.',
+    forestN: 'La estrategia combina {n} árboles como este, así que su señal no la decide un solo árbol.',
     loading: 'Cargando el árbol…', loadErr: 'No se pudo cargar el árbol:', output: 'Resultado del árbol', sellEnd: 'Venta −1', buyEnd: 'Compra +1',
     buyEx: 'Ejemplo de compra', sellEx: 'Ejemplo de venta', exHelp: 'Pone los valores que llevan al resultado de compra o venta más fuerte de este árbol.',
     values: 'Valores de los indicadores', lg1: 'Un valor que el árbol comprueba (pasa el ratón)', lg2: 'Comprobado en el camino actual', lg3: 'Rango en el que el resultado no cambia',
@@ -238,7 +242,9 @@ export class StrategyTree extends Component {
     const meta = {
       ticker: row.ticker, key: row.key, hash: row.hash, interval: row.interval, icon: row.icon, bases,
       pattern: bases.map(b => b.replace(/^L_/, '').replace(/_/g, ' ')).join(' + ') || row.ind || row.key,
-      created: (src.match(/Date Creation: (\d{4})\/(\d{2})\/(\d{2})/) || []).slice(1).join('-')
+      created: (src.match(/Date Creation: (\d{4})\/(\d{2})\/(\d{2})/) || []).slice(1).join('-'),
+      // cuántos árboles tiene su bosque: lo dice la cabecera, también en la vista previa, que sólo trae el primero
+      size: +((src.match(/^\/\/\s*RANDOM FOREST AI:\s*(\d+)\s*tree/m) || [])[1]) || 0
     };
     const out = [];
     for (let at = 0, tr; (tr = this.parse(lines, at)); at = tr.next) out.push({ ...meta, ...tr });
@@ -399,6 +405,10 @@ export class StrategyTree extends Component {
     // pestaña dice por qué (noLevels)
     const lv = s.full && trees === s.full ? s.fullLv : published(P.strategy), scored = !lv;
     if (scored) Object.assign(L, { s3: L.s3Score, buyEx: L.hiEx, sellEx: L.loEx, exHelp: L.exHelpScore, sellEnd: '−1', buyEnd: '+1', optText: L.optTextScore, leafFoot: L.leafFootScore });
+    // la frase de debajo del árbol, por el tamaño de su bosque: con uno solo, su señal es la de este árbol (66 de las 94
+    // de 2026-10); con varios, cuántos. Sin la cabecera, la de siempre
+    const size = (trees && trees[0] && trees[0].size) || 0;
+    if (size === 1) L.forest = L.forest1; else if (size > 1) L.forest = cnt(L.forestN, size);
     // y sin sus colores: la escala y los dos ejemplos, en gris, sin el rojo de vender ni el verde de comprar
     const ex = scored ? ['#16263a', '#f4f8fb', '#cfd8e3', '#16263a', '#f4f8fb', '#cfd8e3'] : ['#15803d', '#e8f7ef', '#b7e4c7', '#c0392b', '#fdecea', '#f3c1bb'];
     const unlockLabel = P.owned ? L.ownedBtn : free ? L.fBtn : P.inCart ? L.added : L.unlockBtn;

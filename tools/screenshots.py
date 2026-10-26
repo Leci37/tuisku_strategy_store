@@ -647,9 +647,9 @@ def spanish(browser):
     page.locator("[role=dialog] input[type=email]").fill("visitante@example.com")
     button(page, es("sendLink")).click()
     # su enlace vale DOWNLOAD_DAYS (API #1), con la forma de su número: «el enlace vale 7 días»
-    days = cfg["download_days"]
-    page.get_by_text(es("freeSent").replace("{days}", es("linkDays")["one" if days == 1 else "other"]
-                                            .replace("{n}", str(days)))).first.wait_for()
+    days, forms = cfg["download_days"], UI["linkDays"]["es"]     # (es() da sólo la forma «other»)
+    page.get_by_text(es("freeSent").replace(
+        "{days}", forms["one" if days == 1 else "other"].replace("{n}", str(days)))).first.wait_for()
     crop(page, "free_sent", page.locator("[role=dialog]").first, pad=16, fixed=True)
     esc_closes(page, "the free download")
 

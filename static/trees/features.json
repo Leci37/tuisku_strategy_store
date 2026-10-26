@@ -51,16 +51,16 @@
   ],
   "ema12": [
    "Fast vs middle",
-   "Compares the fast and middle averages (exact formula in the paid script).",
+   "Fast average minus middle average (ema1 − ema2): above 0 when the fast one is higher.",
    "Rápida vs. intermedia",
-   "Compara la media rápida y la intermedia (fórmula exacta en el script de pago).",
+   "Media rápida menos media intermedia (ema1 − ema2): mayor que 0 cuando la rápida está por encima.",
    "L_Triple_EMA"
   ],
   "ema13": [
    "Fast vs slow",
-   "Compares the fast and slow averages (exact formula in the paid script).",
+   "Fast average minus slow average (ema1 − ema3): above 0 when the fast one is higher.",
    "Rápida vs. lenta",
-   "Compara la media rápida y la lenta (fórmula exacta en el script de pago).",
+   "Media rápida menos media lenta (ema1 − ema3): mayor que 0 cuando la rápida está por encima.",
    "L_Triple_EMA"
   ],
   "macd": [
@@ -190,10 +190,10 @@
    "L_Chaikin_Money_Flow"
   ],
   "ad_mf": [
-   "Money flow combined",
-   "Combines the two values above (exact formula in the paid script).",
-   "Flujo combinado",
-   "Combina los dos valores anteriores (fórmula exacta en el script de pago).",
+   "Money flow volume minus CMF",
+   "Money flow volume of the bar minus the Chaikin Money Flow, as the indicator's code writes it (a volume minus a ratio).",
+   "Volumen de flujo menos CMF",
+   "El volumen de flujo de dinero de la vela menos el Chaikin Money Flow, tal como lo escribe el código del indicador (un volumen menos una proporción).",
    "L_Chaikin_Money_Flow"
   ],
   "Typical_Price": [
@@ -253,17 +253,17 @@
    "L_Money_Flow_Index"
   ],
   "MFI_High": [
-   "MFI upper level",
-   "Upper reference level of the MFI, as used in training.",
-   "Nivel alto del MFI",
-   "Nivel de referencia superior del MFI, tal como se usó al entrenar.",
+   "MFI minus 80",
+   "The MFI minus 80: above 0 when the MFI is over 80, which is often read as overbought.",
+   "MFI menos 80",
+   "El MFI menos 80: mayor que 0 cuando el MFI pasa de 80, que se suele leer como sobrecompra.",
    "L_Money_Flow_Index"
   ],
   "MFI_Low": [
-   "MFI lower level",
-   "Lower reference level of the MFI, as used in training.",
-   "Nivel bajo del MFI",
-   "Nivel de referencia inferior del MFI, tal como se usó al entrenar.",
+   "MFI minus 20",
+   "The MFI minus 20: below 0 when the MFI is under 20, which is often read as oversold.",
+   "MFI menos 20",
+   "El MFI menos 20: menor que 0 cuando el MFI baja de 20, que se suele leer como sobreventa.",
    "L_Money_Flow_Index"
   ],
   "rsi1": [
@@ -289,24 +289,1291 @@
   ],
   "d_k": [
    "%D compared with %K",
-   "Compares the slow and fast lines (exact formula in the paid script).",
+   "%D minus %K: above 0 when the slow line is above the fast one.",
    "%D frente a %K",
-   "Compara la línea lenta y la rápida (fórmula exacta en el script de pago).",
+   "%D menos %K: mayor que 0 cuando la línea lenta está por encima de la rápida.",
    "L_Stochastic_RSI"
   ],
   "smoothK_k": [
-   "Smoothing of %K",
-   "Derived from the %K smoothing (exact formula in the paid script).",
-   "Suavizado de %K",
-   "Derivado del suavizado de %K (fórmula exacta en el script de pago).",
+   "%K minus 3",
+   "%K minus 3, the length of its smoothing, as the indicator's code writes it: the %K line shifted down by 3.",
+   "%K menos 3",
+   "%K menos 3, la longitud de su suavizado, tal como lo escribe el código del indicador: la línea %K desplazada 3 hacia abajo.",
    "L_Stochastic_RSI"
   ],
   "smoothD_d": [
-   "Smoothing of %D",
-   "Derived from the %D smoothing (exact formula in the paid script).",
-   "Suavizado de %D",
-   "Derivado del suavizado de %D (fórmula exacta en el script de pago).",
+   "%D minus 3",
+   "%D minus 3, the length of its smoothing, as the indicator's code writes it: the %D line shifted down by 3.",
+   "%D menos 3",
+   "%D menos 3, la longitud de su suavizado, tal como lo escribe el código del indicador: la línea %D desplazada 3 hacia abajo.",
    "L_Stochastic_RSI"
+  ],
+  "adx": [
+   "ADX",
+   "Average Directional Index: the 14-bar average of DX. It measures how strong the trend is, up or down; the indicator draws its threshold at 20.",
+   "ADX",
+   "Índice direccional medio: la media de 14 velas del DX. Mide la fuerza de la tendencia, al alza o a la baja; el indicador marca su umbral en 20.",
+   "ADX_and_DI"
+  ],
+  "diPlus": [
+   "DI+ (positive direction)",
+   "The smoothed up moves divided by the smoothed true range, × 100 (14 bars). Above DI− when the up moves dominate.",
+   "DI+ (dirección positiva)",
+   "Los movimientos al alza suavizados divididos por el rango verdadero suavizado, × 100 (14 velas). Por encima del DI− cuando dominan las subidas.",
+   "ADX_and_DI"
+  ],
+  "diMinus": [
+   "DI− (negative direction)",
+   "The smoothed down moves divided by the smoothed true range, × 100 (14 bars). Above DI+ when the down moves dominate.",
+   "DI− (dirección negativa)",
+   "Los movimientos a la baja suavizados divididos por el rango verdadero suavizado, × 100 (14 velas). Por encima del DI+ cuando dominan las bajadas.",
+   "ADX_and_DI"
+  ],
+  "dx": [
+   "DX",
+   "The gap between DI+ and DI− divided by their sum, × 100, from 0 to 100: how much one side dominates. The ADX is its average.",
+   "DX",
+   "La diferencia entre DI+ y DI− dividida por su suma, × 100, de 0 a 100: cuánto domina un lado. El ADX es su media.",
+   "ADX_and_DI"
+  ],
+  "trueRange": [
+   "True range",
+   "The bar's full range: the largest of high minus low and the gaps from the previous close to the high and to the low.",
+   "Rango verdadero",
+   "El recorrido completo de la vela: el mayor entre máximo menos mínimo y las distancias del cierre anterior al máximo y al mínimo.",
+   "ADX_and_DI"
+  ],
+  "directionalMovementPlus": [
+   "Up move (+DM)",
+   "How much the high rose above the previous high, when that rise is larger than the fall of the low; 0 otherwise.",
+   "Movimiento al alza (+DM)",
+   "Cuánto subió el máximo sobre el máximo anterior, si esa subida es mayor que la bajada del mínimo; si no, 0.",
+   "ADX_and_DI"
+  ],
+  "directionalMovementMinus": [
+   "Down move (−DM)",
+   "How much the low fell below the previous low, when that fall is larger than the rise of the high; 0 otherwise.",
+   "Movimiento a la baja (−DM)",
+   "Cuánto bajó el mínimo bajo el mínimo anterior, si esa bajada es mayor que la subida del máximo; si no, 0.",
+   "ADX_and_DI"
+  ],
+  "smoothedTrueRange": [
+   "Smoothed true range",
+   "Running sum of the true range with Wilder's smoothing over 14 bars: about 14 times its average.",
+   "Rango verdadero suavizado",
+   "Suma acumulada del rango verdadero con el suavizado de Wilder de 14 velas: unas 14 veces su media.",
+   "ADX_and_DI"
+  ],
+  "smoothedDirectionalMovementPlus": [
+   "Smoothed up move",
+   "Running sum of +DM with Wilder's smoothing over 14 bars.",
+   "Movimiento al alza suavizado",
+   "Suma acumulada del +DM con el suavizado de Wilder de 14 velas.",
+   "ADX_and_DI"
+  ],
+  "smoothedDirectionalMovementMinus": [
+   "Smoothed down move",
+   "Running sum of −DM with Wilder's smoothing over 14 bars.",
+   "Movimiento a la baja suavizado",
+   "Suma acumulada del −DM con el suavizado de Wilder de 14 velas.",
+   "ADX_and_DI"
+  ],
+  "tprice": [
+   "Average price (OHLC/4)",
+   "Average of the bar's open, high, low and close: the price the indicator works with.",
+   "Precio medio (OHLC/4)",
+   "Media de la apertura, el máximo, el mínimo y el cierre de la vela: el precio con que trabaja el indicador.",
+   "Blai5_Koncorde_v10"
+  ],
+  "source": [
+   "Typical price (HLC/3)",
+   "(High + low + close) / 3 of the bar: the price its money flow index uses.",
+   "Precio típico (HLC/3)",
+   "(Máximo + mínimo + cierre) / 3 de la vela: el precio que usa su índice de flujo de dinero.",
+   "Blai5_Koncorde_v10"
+  ],
+  "pvi": [
+   "Positive volume index",
+   "Running sum of the close's change, as a fraction of the previous close, on the bars with more volume than the bar before; it starts at 0.",
+   "Índice de volumen positivo",
+   "Suma acumulada de la variación del cierre, como fracción del cierre anterior, en las velas con más volumen que la anterior; empieza en 0.",
+   "Blai5_Koncorde_v10"
+  ],
+  "pvim": [
+   "PVI average",
+   "15-bar exponential average of the positive volume index.",
+   "Media del PVI",
+   "Media exponencial de 15 velas del índice de volumen positivo.",
+   "Blai5_Koncorde_v10"
+  ],
+  "pvi_ema": [
+   "PVI average (copy)",
+   "The same as pvim: the 15-bar exponential average of the positive volume index.",
+   "Media del PVI (copia)",
+   "Lo mismo que pvim: la media exponencial de 15 velas del índice de volumen positivo.",
+   "Blai5_Koncorde_v10"
+  ],
+  "pvimax": [
+   "Highest PVI average",
+   "Highest value of the PVI average over the last 90 bars.",
+   "Máximo de la media del PVI",
+   "El valor más alto de la media del PVI en las últimas 90 velas.",
+   "Blai5_Koncorde_v10"
+  ],
+  "pvimin": [
+   "Lowest PVI average",
+   "Lowest value of the PVI average over the last 90 bars.",
+   "Mínimo de la media del PVI",
+   "El valor más bajo de la media del PVI en las últimas 90 velas.",
+   "Blai5_Koncorde_v10"
+  ],
+  "oscp": [
+   "PVI oscillator (small investors)",
+   "Positive volume index minus its average, × 100, divided by the 90-bar range of that average. The indicator's code calls this part 'pececillos' (small fish): the small investors.",
+   "Oscilador del PVI (pequeños inversores)",
+   "El índice de volumen positivo menos su media, × 100, dividido por el rango de 90 velas de esa media. El código del indicador llama a esta parte «pececillos»: los pequeños inversores.",
+   "Blai5_Koncorde_v10"
+  ],
+  "azul": [
+   "Blue line: strong hands (NVI)",
+   "Negative volume index minus its 15-bar average, × 100, divided by the 90-bar range of that average. The indicator's code calls this part 'tiburones' (sharks): the strong hands.",
+   "Línea azul: manos fuertes (NVI)",
+   "El índice de volumen negativo menos su media de 15 velas, × 100, dividido por el rango de 90 velas de esa media. El código del indicador llama a esta parte «tiburones»: las manos fuertes.",
+   "Blai5_Koncorde_v10"
+  ],
+  "azul_mean": [
+   "Blue line average",
+   "5-bar simple average of the blue line.",
+   "Media de la línea azul",
+   "Media simple de 5 velas de la línea azul.",
+   "Blai5_Koncorde_v10"
+  ],
+  "xmf": [
+   "Money flow index (xmf)",
+   "Money Flow Index of the typical price over 14 bars, from 0 to 100: the money of the bars where it rose against that of the bars where it fell.",
+   "Índice de flujo de dinero (xmf)",
+   "Money Flow Index del precio típico en 14 velas, de 0 a 100: el dinero de las velas en que subió frente al de las velas en que bajó.",
+   "Blai5_Koncorde_v10"
+  ],
+  "BollOsc": [
+   "Bollinger oscillator",
+   "Where the average price sits between its 25-bar Bollinger bands (two standard deviations), × 100: 0 in the middle, +50 on the upper band, −50 on the lower one.",
+   "Oscilador de Bollinger",
+   "Dónde está el precio medio entre sus bandas de Bollinger de 25 velas (dos desviaciones típicas), × 100: 0 en el centro, +50 en la banda superior y −50 en la inferior.",
+   "Blai5_Koncorde_v10"
+  ],
+  "xrsi": [
+   "RSI of the average price",
+   "14-bar RSI of the average price (OHLC/4), from 0 to 100.",
+   "RSI del precio medio",
+   "RSI de 14 velas del precio medio (OHLC/4), de 0 a 100.",
+   "Blai5_Koncorde_v10"
+  ],
+  "stoc": [
+   "Stochastic",
+   "Where the average price sits within the high–low range of the last 21 bars, from 0 to 100, averaged over 3 bars.",
+   "Estocástico",
+   "Dónde está el precio medio dentro del rango máximo–mínimo de las últimas 21 velas, de 0 a 100, promediado en 3 velas.",
+   "Blai5_Koncorde_v10"
+  ],
+  "marron": [
+   "Brown line",
+   "(xrsi + xmf + BollOsc + stoc ÷ 3) ÷ 2: the indicator's mix of the RSI, the money flow, the Bollinger oscillator and the stochastic.",
+   "Línea marrón",
+   "(xrsi + xmf + BollOsc + stoc ÷ 3) ÷ 2: la mezcla del indicador del RSI, el flujo de dinero, el oscilador de Bollinger y el estocástico.",
+   "Blai5_Koncorde_v10"
+  ],
+  "marron_mean": [
+   "Brown line average",
+   "5-bar simple average of the brown line.",
+   "Media de la línea marrón",
+   "Media simple de 5 velas de la línea marrón.",
+   "Blai5_Koncorde_v10"
+  ],
+  "media": [
+   "Average line (media)",
+   "15-bar exponential average of the brown line.",
+   "Línea media",
+   "Media exponencial de 15 velas de la línea marrón.",
+   "Blai5_Koncorde_v10"
+  ],
+  "verde": [
+   "Green line",
+   "The brown line plus the small investors' oscillator (oscp).",
+   "Línea verde",
+   "La línea marrón más el oscilador de los pequeños inversores (oscp).",
+   "Blai5_Koncorde_v10"
+  ],
+  "verde_mean": [
+   "Green line average",
+   "5-bar simple average of the green line.",
+   "Media de la línea verde",
+   "Media simple de 5 velas de la línea verde.",
+   "Blai5_Koncorde_v10"
+  ],
+  "verde_azul": [
+   "Green minus blue",
+   "The green line minus the blue line: above 0 when the green one is higher.",
+   "Verde menos azul",
+   "La línea verde menos la azul: mayor que 0 cuando la verde está más alta.",
+   "Blai5_Koncorde_v10"
+  ],
+  "verde_media": [
+   "Green minus average",
+   "The green line minus the average line (media).",
+   "Verde menos media",
+   "La línea verde menos la línea media.",
+   "Blai5_Koncorde_v10"
+  ],
+  "media_azul": [
+   "Average minus blue",
+   "The average line (media) minus the blue line.",
+   "Media menos azul",
+   "La línea media menos la línea azul.",
+   "Blai5_Koncorde_v10"
+  ],
+  "basis@Fibonacci_Bollinger": [
+   "Middle line (VWMA 200)",
+   "200-bar volume-weighted average of the typical price, (high + low + close) / 3.",
+   "Línea central (VWMA 200)",
+   "Media de 200 velas del precio típico, (máximo + mínimo + cierre) / 3, ponderada por el volumen.",
+   "Fibonacci_Bollinger"
+  ],
+  "upper_1": [
+   "Upper band 0.236",
+   "Middle line plus 0.236 times three standard deviations of the typical price (200 bars).",
+   "Banda superior 0,236",
+   "Línea central más 0,236 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "lower_1": [
+   "Lower band 0.236",
+   "Middle line minus 0.236 times three standard deviations of the typical price (200 bars).",
+   "Banda inferior 0,236",
+   "Línea central menos 0,236 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "upper_2": [
+   "Upper band 0.382",
+   "Middle line plus 0.382 times three standard deviations of the typical price (200 bars).",
+   "Banda superior 0,382",
+   "Línea central más 0,382 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "lower_2": [
+   "Lower band 0.382",
+   "Middle line minus 0.382 times three standard deviations of the typical price (200 bars).",
+   "Banda inferior 0,382",
+   "Línea central menos 0,382 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "upper_3": [
+   "Upper band 0.5",
+   "Middle line plus 0.5 times three standard deviations of the typical price (200 bars).",
+   "Banda superior 0,5",
+   "Línea central más 0,5 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "lower_3": [
+   "Lower band 0.5",
+   "Middle line minus 0.5 times three standard deviations of the typical price (200 bars).",
+   "Banda inferior 0,5",
+   "Línea central menos 0,5 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "upper_4": [
+   "Upper band 0.618",
+   "Middle line plus 0.618 times three standard deviations of the typical price (200 bars).",
+   "Banda superior 0,618",
+   "Línea central más 0,618 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "lower_4": [
+   "Lower band 0.618",
+   "Middle line minus 0.618 times three standard deviations of the typical price (200 bars).",
+   "Banda inferior 0,618",
+   "Línea central menos 0,618 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "upper_5": [
+   "Upper band 0.764",
+   "Middle line plus 0.764 times three standard deviations of the typical price (200 bars).",
+   "Banda superior 0,764",
+   "Línea central más 0,764 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "lower_5": [
+   "Lower band 0.764",
+   "Middle line minus 0.764 times three standard deviations of the typical price (200 bars).",
+   "Banda inferior 0,764",
+   "Línea central menos 0,764 veces tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "upper_6": [
+   "Upper band 1",
+   "Middle line plus three standard deviations of the typical price (200 bars): the outer upper band.",
+   "Banda superior 1",
+   "Línea central más tres desviaciones típicas del precio típico (200 velas): la banda superior exterior.",
+   "Fibonacci_Bollinger"
+  ],
+  "lower_6": [
+   "Lower band 1",
+   "Middle line minus three standard deviations of the typical price (200 bars): the outer lower band.",
+   "Banda inferior 1",
+   "Línea central menos tres desviaciones típicas del precio típico (200 velas): la banda inferior exterior.",
+   "Fibonacci_Bollinger"
+  ],
+  "basis_minus@Fibonacci_Bollinger": [
+   "Band half-width",
+   "Middle line minus the outer lower band: three standard deviations of the typical price (200 bars).",
+   "Semiancho de las bandas",
+   "Línea central menos la banda inferior exterior: tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "basis_max@Fibonacci_Bollinger": [
+   "Band half-width, negative",
+   "Middle line minus the outer upper band: minus three standard deviations of the typical price (200 bars).",
+   "Semiancho de las bandas, en negativo",
+   "Línea central menos la banda superior exterior: menos tres desviaciones típicas del precio típico (200 velas).",
+   "Fibonacci_Bollinger"
+  ],
+  "tenkan_sen": [
+   "Conversion line (Tenkan-sen)",
+   "Midpoint of the highest high and the lowest low of the last 9 bars.",
+   "Línea de conversión (Tenkan-sen)",
+   "Punto medio entre el máximo más alto y el mínimo más bajo de las últimas 9 velas.",
+   "Ichimoku_Cloud"
+  ],
+  "kinjun_sen": [
+   "Base line (Kijun-sen)",
+   "Midpoint of the highest high and the lowest low of the last 26 bars.",
+   "Línea base (Kijun-sen)",
+   "Punto medio entre el máximo más alto y el mínimo más bajo de las últimas 26 velas.",
+   "Ichimoku_Cloud"
+  ],
+  "senkou_span_a": [
+   "Leading span A",
+   "Average of the conversion and base lines of this bar: the cloud edge the chart shows 26 bars ahead.",
+   "Línea adelantada A",
+   "Media de las líneas de conversión y base de esta vela: el borde de la nube que el gráfico enseña 26 velas más adelante.",
+   "Ichimoku_Cloud"
+  ],
+  "senkou_span_b": [
+   "Leading span B",
+   "Midpoint of the highest high and the lowest low of the last 52 bars: the other cloud edge, shown 26 bars ahead.",
+   "Línea adelantada B",
+   "Punto medio entre el máximo más alto y el mínimo más bajo de las últimas 52 velas: el otro borde de la nube, 26 velas más adelante.",
+   "Ichimoku_Cloud"
+  ],
+  "senkou_span_a_displaced": [
+   "Cloud edge A (now)",
+   "Leading span A of 26 bars ago: the cloud edge drawn under the current bar.",
+   "Borde A de la nube (ahora)",
+   "La línea adelantada A de hace 26 velas: el borde de la nube que se dibuja en la vela actual.",
+   "Ichimoku_Cloud"
+  ],
+  "senkou_span_b_displaced": [
+   "Cloud edge B (now)",
+   "Leading span B of 26 bars ago: the cloud edge drawn under the current bar.",
+   "Borde B de la nube (ahora)",
+   "La línea adelantada B de hace 26 velas: el borde de la nube que se dibuja en la vela actual.",
+   "Ichimoku_Cloud"
+  ],
+  "chinkou_span": [
+   "Lagging span (Chikou)",
+   "The close of 26 bars ago.",
+   "Línea retrasada (Chikou)",
+   "El cierre de hace 26 velas.",
+   "Ichimoku_Cloud"
+  ],
+  "basis_minus@Ichimoku_Cloud": [
+   "Span A minus span B",
+   "Leading span A minus leading span B, both of this bar: above 0 when span A is higher.",
+   "A menos B",
+   "La línea adelantada A menos la B, las dos de esta vela: mayor que 0 cuando la A está más alta.",
+   "Ichimoku_Cloud"
+  ],
+  "basis_max@Ichimoku_Cloud": [
+   "Span A minus conversion line",
+   "Leading span A minus the conversion line (Tenkan-sen), both of this bar.",
+   "A menos línea de conversión",
+   "La línea adelantada A menos la línea de conversión (Tenkan-sen), las dos de esta vela.",
+   "Ichimoku_Cloud"
+  ],
+  "cross_up_tenkan_kinjunInt": [
+   "Conversion line crosses above base",
+   "Yes on the bar where the conversion line (9) crosses above the base line (26).",
+   "Conversión cruza al alza la base",
+   "Sí en la vela en que la línea de conversión (9) cruza por encima de la línea base (26).",
+   "Ichimoku_Cloud"
+  ],
+  "cross_dn_tenkan_kinjunInt": [
+   "Conversion line crosses below base",
+   "Yes on the bar where the conversion line (9) crosses below the base line (26).",
+   "Conversión cruza a la baja la base",
+   "Sí en la vela en que la línea de conversión (9) cruza por debajo de la línea base (26).",
+   "Ichimoku_Cloud"
+  ],
+  "basis@L_Bollinger_Bands": [
+   "Middle band (SMA 20)",
+   "20-bar simple moving average of the close.",
+   "Banda central (media 20)",
+   "Media móvil simple de 20 velas del cierre.",
+   "L_Bollinger_Bands"
+  ],
+  "Upper_Band": [
+   "Upper band (20)",
+   "Middle band plus two standard deviations of the close (20 bars).",
+   "Banda superior (20)",
+   "Banda central más dos desviaciones típicas del cierre (20 velas).",
+   "L_Bollinger_Bands"
+  ],
+  "Lower_Band": [
+   "Lower band (20)",
+   "Middle band minus two standard deviations of the close (20 bars).",
+   "Banda inferior (20)",
+   "Banda central menos dos desviaciones típicas del cierre (20 velas).",
+   "L_Bollinger_Bands"
+  ],
+  "bullPower": [
+   "Bull power",
+   "The bar's high minus the 13-bar exponential average of the close.",
+   "Fuerza compradora (bull power)",
+   "El máximo de la vela menos la media exponencial de 13 velas del cierre.",
+   "L_Bull_Bear_Power"
+  ],
+  "bearPower": [
+   "Bear power",
+   "The bar's low minus the 13-bar exponential average of the close.",
+   "Fuerza vendedora (bear power)",
+   "El mínimo de la vela menos la media exponencial de 13 velas del cierre.",
+   "L_Bull_Bear_Power"
+  ],
+  "bbp": [
+   "Bull + bear power",
+   "Bull power plus bear power, the indicator's line: above 0, buyers dominate.",
+   "Fuerza compradora + vendedora",
+   "La suma de las dos fuerzas, la línea del indicador: por encima de 0 dominan los compradores.",
+   "L_Bull_Bear_Power"
+  ],
+  "bbm": [
+   "Bull − bear power",
+   "Bull power minus bear power, which is the bar's high minus its low: its range.",
+   "Fuerza compradora − vendedora",
+   "La fuerza compradora menos la vendedora, que es el máximo menos el mínimo de la vela: su rango.",
+   "L_Bull_Bear_Power"
+  ],
+  "BBPower_Color": [
+   "Bull + bear power at 0 or above",
+   "1 when bull power plus bear power is 0 or more (the indicator paints the bar green), 0 when it is negative.",
+   "Fuerza compradora + vendedora de 0 o más",
+   "1 cuando la suma de las dos fuerzas es 0 o más (el indicador pinta la barra de verde) y 0 cuando es negativa.",
+   "L_Bull_Bear_Power"
+  ],
+  "Short_MA": [
+   "Short average (SMA 9)",
+   "9-bar simple moving average of the close.",
+   "Media corta (9)",
+   "Media móvil simple de 9 velas del cierre.",
+   "L_MA_Cross_SMA"
+  ],
+  "Long_MA": [
+   "Long average (SMA 21)",
+   "21-bar simple moving average of the close.",
+   "Media larga (21)",
+   "Media móvil simple de 21 velas del cierre.",
+   "L_MA_Cross_SMA"
+  ],
+  "Short_Long_Diff": [
+   "Short minus long average",
+   "The 9-bar average minus the 21-bar one: above 0 when the short one is higher.",
+   "Media corta menos larga",
+   "La media de 9 velas menos la de 21: mayor que 0 cuando la corta está por encima.",
+   "L_MA_Cross_SMA"
+  ],
+  "MA_Cross": [
+   "Short average at the last cross",
+   "The 9-bar average on the last bar where it crossed above the 21-bar one; it stays until the next such cross.",
+   "Media corta en el último cruce",
+   "El valor de la media de 9 velas en la última vela en que cruzó al alza la de 21; se mantiene hasta el siguiente cruce así.",
+   "L_MA_Cross_SMA"
+  ],
+  "ma05": [
+   "5-bar average",
+   "Exponential moving average of the close over 5 bars: one line of the ribbon.",
+   "Media de 5 velas",
+   "Media móvil exponencial de 5 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma05_colorInt": [
+   "Colour of the 5-bar line",
+   "Colour of the 5-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 5 velas",
+   "El color de la línea de 5 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma10": [
+   "10-bar average",
+   "Exponential moving average of the close over 10 bars: one line of the ribbon.",
+   "Media de 10 velas",
+   "Media móvil exponencial de 10 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma10_colorInt": [
+   "Colour of the 10-bar line",
+   "Colour of the 10-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 10 velas",
+   "El color de la línea de 10 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma15": [
+   "15-bar average",
+   "Exponential moving average of the close over 15 bars: one line of the ribbon.",
+   "Media de 15 velas",
+   "Media móvil exponencial de 15 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma15_colorInt": [
+   "Colour of the 15-bar line",
+   "Colour of the 15-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 15 velas",
+   "El color de la línea de 15 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma20": [
+   "20-bar average",
+   "Exponential moving average of the close over 20 bars: one line of the ribbon.",
+   "Media de 20 velas",
+   "Media móvil exponencial de 20 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma20_colorInt": [
+   "Colour of the 20-bar line",
+   "Colour of the 20-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 20 velas",
+   "El color de la línea de 20 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma25": [
+   "25-bar average",
+   "Exponential moving average of the close over 25 bars: one line of the ribbon.",
+   "Media de 25 velas",
+   "Media móvil exponencial de 25 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma25_colorInt": [
+   "Colour of the 25-bar line",
+   "Colour of the 25-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 25 velas",
+   "El color de la línea de 25 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma30": [
+   "30-bar average",
+   "Exponential moving average of the close over 30 bars: one line of the ribbon.",
+   "Media de 30 velas",
+   "Media móvil exponencial de 30 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma30_colorInt": [
+   "Colour of the 30-bar line",
+   "Colour of the 30-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 30 velas",
+   "El color de la línea de 30 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma35": [
+   "35-bar average",
+   "Exponential moving average of the close over 35 bars: one line of the ribbon.",
+   "Media de 35 velas",
+   "Media móvil exponencial de 35 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma35_colorInt": [
+   "Colour of the 35-bar line",
+   "Colour of the 35-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 35 velas",
+   "El color de la línea de 35 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma40": [
+   "40-bar average",
+   "Exponential moving average of the close over 40 bars: one line of the ribbon.",
+   "Media de 40 velas",
+   "Media móvil exponencial de 40 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma40_colorInt": [
+   "Colour of the 40-bar line",
+   "Colour of the 40-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 40 velas",
+   "El color de la línea de 40 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma45": [
+   "45-bar average",
+   "Exponential moving average of the close over 45 bars: one line of the ribbon.",
+   "Media de 45 velas",
+   "Media móvil exponencial de 45 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma45_colorInt": [
+   "Colour of the 45-bar line",
+   "Colour of the 45-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 45 velas",
+   "El color de la línea de 45 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma50": [
+   "50-bar average",
+   "Exponential moving average of the close over 50 bars: one line of the ribbon.",
+   "Media de 50 velas",
+   "Media móvil exponencial de 50 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma50_colorInt": [
+   "Colour of the 50-bar line",
+   "Colour of the 50-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 50 velas",
+   "El color de la línea de 50 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma55": [
+   "55-bar average",
+   "Exponential moving average of the close over 55 bars: one line of the ribbon.",
+   "Media de 55 velas",
+   "Media móvil exponencial de 55 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma55_colorInt": [
+   "Colour of the 55-bar line",
+   "Colour of the 55-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 55 velas",
+   "El color de la línea de 55 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma60": [
+   "60-bar average",
+   "Exponential moving average of the close over 60 bars: one line of the ribbon.",
+   "Media de 60 velas",
+   "Media móvil exponencial de 60 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma60_colorInt": [
+   "Colour of the 60-bar line",
+   "Colour of the 60-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 60 velas",
+   "El color de la línea de 60 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma65": [
+   "65-bar average",
+   "Exponential moving average of the close over 65 bars: one line of the ribbon.",
+   "Media de 65 velas",
+   "Media móvil exponencial de 65 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma65_colorInt": [
+   "Colour of the 65-bar line",
+   "Colour of the 65-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 65 velas",
+   "El color de la línea de 65 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma70": [
+   "70-bar average",
+   "Exponential moving average of the close over 70 bars: one line of the ribbon.",
+   "Media de 70 velas",
+   "Media móvil exponencial de 70 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma70_colorInt": [
+   "Colour of the 70-bar line",
+   "Colour of the 70-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 70 velas",
+   "El color de la línea de 70 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma75": [
+   "75-bar average",
+   "Exponential moving average of the close over 75 bars: one line of the ribbon.",
+   "Media de 75 velas",
+   "Media móvil exponencial de 75 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma75_colorInt": [
+   "Colour of the 75-bar line",
+   "Colour of the 75-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 75 velas",
+   "El color de la línea de 75 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma80": [
+   "80-bar average",
+   "Exponential moving average of the close over 80 bars: one line of the ribbon.",
+   "Media de 80 velas",
+   "Media móvil exponencial de 80 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma80_colorInt": [
+   "Colour of the 80-bar line",
+   "Colour of the 80-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 80 velas",
+   "El color de la línea de 80 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma85": [
+   "85-bar average",
+   "Exponential moving average of the close over 85 bars: one line of the ribbon.",
+   "Media de 85 velas",
+   "Media móvil exponencial de 85 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma85_colorInt": [
+   "Colour of the 85-bar line",
+   "Colour of the 85-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 85 velas",
+   "El color de la línea de 85 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma90": [
+   "90-bar average",
+   "Exponential moving average of the close over 90 bars: one line of the ribbon.",
+   "Media de 90 velas",
+   "Media móvil exponencial de 90 velas del cierre: una línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma90_colorInt": [
+   "Colour of the 90-bar line",
+   "Colour of the 90-bar line in the ribbon, as a number: 1 rising (or flat) above the 100-bar average, 2 falling above it, 3 falling (or flat) below it, 4 rising below it, 5 otherwise.",
+   "Color de la línea de 90 velas",
+   "El color de la línea de 90 velas en la cinta, como número: 1 sube (o se queda igual) por encima de la media de 100, 2 baja por encima, 3 baja (o se queda igual) por debajo, 4 sube por debajo, 5 en otro caso.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "ma100": [
+   "100-bar average (reference)",
+   "Exponential moving average of the close over 100 bars: the line every line of the ribbon is compared with.",
+   "Media de 100 velas (referencia)",
+   "Media móvil exponencial de 100 velas del cierre: la línea con la que se compara cada línea de la cinta.",
+   "Madrid_Moving_Average_Ribbon"
+  ],
+  "atr@Smart_Money_Concepts": [
+   "Average true range (200)",
+   "Simple 200-bar average of the true range: the indicator's yardstick for the size of an order block.",
+   "Rango verdadero medio (200)",
+   "Media simple de 200 velas del rango verdadero: con ella el indicador mide el tamaño de un bloque de órdenes.",
+   "Smart_Money_Concepts"
+  ],
+  "Swing_High": [
+   "Swing high (50 bars)",
+   "On a bar whose high is the highest of the last 50 bars, that high; on the other bars it has no value.",
+   "Máximo de swing (50 velas)",
+   "En una vela cuyo máximo es el más alto de las últimas 50, ese máximo; en las demás no tiene valor.",
+   "Smart_Money_Concepts"
+  ],
+  "Swing_Low": [
+   "Swing low (50 bars)",
+   "On a bar whose low is the lowest of the last 50 bars, that low; on the other bars it has no value.",
+   "Mínimo de swing (50 velas)",
+   "En una vela cuyo mínimo es el más bajo de las últimas 50, ese mínimo; en las demás no tiene valor.",
+   "Smart_Money_Concepts"
+  ],
+  "Internal_Swing_High": [
+   "Internal swing high (5 bars)",
+   "On a bar whose high is the highest of the last 5 bars, that high; on the other bars it has no value.",
+   "Máximo de swing interno (5 velas)",
+   "En una vela cuyo máximo es el más alto de las últimas 5, ese máximo; en las demás no tiene valor.",
+   "Smart_Money_Concepts"
+  ],
+  "Internal_Swing_Low": [
+   "Internal swing low (5 bars)",
+   "On a bar whose low is the lowest of the last 5 bars, that low; on the other bars it has no value.",
+   "Mínimo de swing interno (5 velas)",
+   "En una vela cuyo mínimo es el más bajo de las últimas 5, ese mínimo; en las demás no tiene valor.",
+   "Smart_Money_Concepts"
+  ],
+  "Bullish_BOSInt": [
+   "Break of structure up",
+   "Yes when the close is above the swing high before the latest one, right after a bar that made a new 50-bar high.",
+   "Ruptura de estructura al alza",
+   "Sí cuando el cierre supera el máximo de swing anterior al último, justo después de una vela que marcó un nuevo máximo de 50 velas.",
+   "Smart_Money_Concepts"
+  ],
+  "Bearish_BOSInt": [
+   "Break of structure down",
+   "Yes when the close is below the swing low before the latest one, right after a bar that made a new 50-bar low.",
+   "Ruptura de estructura a la baja",
+   "Sí cuando el cierre queda por debajo del mínimo de swing anterior al último, justo después de una vela que marcó un nuevo mínimo de 50 velas.",
+   "Smart_Money_Concepts"
+  ],
+  "Bullish_CHoCHInt": [
+   "Change of character up",
+   "Yes when the close is above the swing high before the latest one while the previous close was below the swing low before the latest one.",
+   "Cambio de carácter al alza",
+   "Sí cuando el cierre supera el máximo de swing anterior al último y el cierre anterior estaba por debajo del mínimo de swing anterior al último.",
+   "Smart_Money_Concepts"
+  ],
+  "Bearish_CHoCHInt": [
+   "Change of character down",
+   "Yes when the close is below the swing low before the latest one while the previous close was above the swing high before the latest one.",
+   "Cambio de carácter a la baja",
+   "Sí cuando el cierre queda por debajo del mínimo de swing anterior al último y el cierre anterior estaba por encima del máximo de swing anterior al último.",
+   "Smart_Money_Concepts"
+  ],
+  "Order_Block_High": [
+   "Order block high",
+   "High of the bar of the last break of structure, kept on the next bars until another break, or until the block is taller than the 200-bar ATR, which clears it.",
+   "Máximo del bloque de órdenes",
+   "El máximo de la vela de la última ruptura de estructura, que se mantiene en las velas siguientes hasta otra ruptura o hasta que el bloque mide más que el ATR de 200 velas, que lo borra.",
+   "Smart_Money_Concepts"
+  ],
+  "Order_Block_Low": [
+   "Order block low",
+   "Low of the bar of the last break of structure, kept and cleared like the order block high.",
+   "Mínimo del bloque de órdenes",
+   "El mínimo de la vela de la última ruptura de estructura, que se mantiene y se borra como el máximo del bloque.",
+   "Smart_Money_Concepts"
+  ],
+  "FVG_UpInt": [
+   "Fair value gap up",
+   "Yes when the bar's low and close are above the high of two bars before and its gain from the open, in %, is greater than the 200-bar ATR (a price, compared as a number).",
+   "Hueco de valor razonable al alza",
+   "Sí cuando el mínimo y el cierre de la vela quedan por encima del máximo de dos velas antes y su subida desde la apertura, en %, es mayor que el ATR de 200 velas (un precio, comparado como número).",
+   "Smart_Money_Concepts"
+  ],
+  "FVG_DownInt": [
+   "Fair value gap down",
+   "Yes when the bar's high and close are below the low of two bars before and its fall from the open, in %, is greater than the 200-bar ATR (a price, compared as a number).",
+   "Hueco de valor razonable a la baja",
+   "Sí cuando el máximo y el cierre de la vela quedan por debajo del mínimo de dos velas antes y su bajada desde la apertura, en %, es mayor que el ATR de 200 velas (un precio, comparado como número).",
+   "Smart_Money_Concepts"
+  ],
+  "Premium_Zone": [
+   "Premium zone (no value)",
+   "The indicator sets it only once, on the first bar, before there is any data: it never has a value.",
+   "Zona premium (sin valor)",
+   "El indicador la fija una sola vez, en la primera vela, antes de tener datos: nunca tiene valor.",
+   "Smart_Money_Concepts"
+  ],
+  "Discount_Zone": [
+   "Discount zone (no value)",
+   "The indicator sets it only once, on the first bar, before there is any data: it never has a value.",
+   "Zona de descuento (sin valor)",
+   "El indicador la fija una sola vez, en la primera vela, antes de tener datos: nunca tiene valor.",
+   "Smart_Money_Concepts"
+  ],
+  "Equilibrium_Zone": [
+   "Equilibrium zone (no value)",
+   "The indicator sets it only once, on the first bar, before there is any data: it never has a value.",
+   "Zona de equilibrio (sin valor)",
+   "El indicador la fija una sola vez, en la primera vela, antes de tener datos: nunca tiene valor.",
+   "Smart_Money_Concepts"
+  ],
+  "basis@Squeeze_Momentum_Indicator": [
+   "Bollinger middle (SMA 20)",
+   "20-bar simple moving average of the close: the middle of the Bollinger bands.",
+   "Centro de Bollinger (media 20)",
+   "Media móvil simple de 20 velas del cierre: el centro de las bandas de Bollinger.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "dev": [
+   "Band distance (1.5 deviations)",
+   "1.5 times the standard deviation of the close over 20 bars: from the middle to each Bollinger band.",
+   "Distancia de banda (1,5 desviaciones)",
+   "1,5 veces la desviación típica del cierre en 20 velas: del centro a cada banda de Bollinger.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "upperBB": [
+   "Upper Bollinger band",
+   "Bollinger middle plus 1.5 standard deviations of the close (20 bars).",
+   "Banda de Bollinger superior",
+   "Centro de Bollinger más 1,5 desviaciones típicas del cierre (20 velas).",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "lowerBB": [
+   "Lower Bollinger band",
+   "Bollinger middle minus 1.5 standard deviations of the close (20 bars).",
+   "Banda de Bollinger inferior",
+   "Centro de Bollinger menos 1,5 desviaciones típicas del cierre (20 velas).",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "ma": [
+   "Keltner middle (SMA 20)",
+   "20-bar simple moving average of the close: the middle of the Keltner channel (the same value as the Bollinger middle).",
+   "Centro de Keltner (media 20)",
+   "Media móvil simple de 20 velas del cierre: el centro del canal de Keltner (el mismo valor que el centro de Bollinger).",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "priceRange": [
+   "True range",
+   "The bar's true range: the largest of high minus low and the gaps from the previous close to the high and to the low.",
+   "Rango verdadero",
+   "El rango verdadero de la vela: el mayor entre máximo menos mínimo y las distancias del cierre anterior al máximo y al mínimo.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "rangema": [
+   "Average true range (SMA 20)",
+   "20-bar simple average of the true range: the width unit of the Keltner channel.",
+   "Rango verdadero medio (media 20)",
+   "Media simple de 20 velas del rango verdadero: la unidad de ancho del canal de Keltner.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "upperKC": [
+   "Upper Keltner line",
+   "Keltner middle plus 1.5 times the average true range.",
+   "Línea superior de Keltner",
+   "Centro de Keltner más 1,5 veces el rango verdadero medio.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "lowerKC": [
+   "Lower Keltner line",
+   "Keltner middle minus 1.5 times the average true range.",
+   "Línea inferior de Keltner",
+   "Centro de Keltner menos 1,5 veces el rango verdadero medio.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "avgHighLow": [
+   "20-bar midpoint",
+   "Midpoint of the highest high and the lowest low of the last 20 bars.",
+   "Punto medio de 20 velas",
+   "Punto medio entre el máximo más alto y el mínimo más bajo de las últimas 20 velas.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "val": [
+   "Momentum (val)",
+   "The indicator's histogram: the close minus the mean of the 20-bar midpoint and the 20-bar average, smoothed with a 20-bar linear regression. Above 0, upward momentum.",
+   "Impulso (val)",
+   "El histograma del indicador: el cierre menos la media entre el punto medio de 20 velas y la media de 20, suavizado con una regresión lineal de 20 velas. Por encima de 0, impulso al alza.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "sqzOnInt": [
+   "Squeeze on",
+   "Yes when both Bollinger bands are inside the Keltner channel: a quiet market, often before a strong move.",
+   "Compresión activa",
+   "Sí cuando las dos bandas de Bollinger están dentro del canal de Keltner: un mercado tranquilo, a menudo antes de un movimiento fuerte.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "sqzOffInt": [
+   "Squeeze released",
+   "Yes when both Bollinger bands are outside the Keltner channel.",
+   "Compresión liberada",
+   "Sí cuando las dos bandas de Bollinger están fuera del canal de Keltner.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "noSqzInt": [
+   "No squeeze",
+   "Yes when the bands are neither both inside nor both outside the channel.",
+   "Sin compresión",
+   "Sí cuando las bandas no están ni las dos dentro ni las dos fuera del canal.",
+   "Squeeze_Momentum_Indicator"
+  ],
+  "atr@SuperTrend": [
+   "ATR (10, Wilder)",
+   "Average true range of the last 10 bars with Wilder's smoothing: the one the SuperTrend uses.",
+   "ATR (10, Wilder)",
+   "Rango verdadero medio de las últimas 10 velas con el suavizado de Wilder: el que usa el SuperTrend.",
+   "SuperTrend"
+  ],
+  "atr2": [
+   "ATR (10, simple)",
+   "Simple average of the true range over 10 bars: the indicator's other ATR, which it does not use by default.",
+   "ATR (10, simple)",
+   "Media simple del rango verdadero de 10 velas: el otro ATR del indicador, que no usa por defecto.",
+   "SuperTrend"
+  ],
+  "up": [
+   "Lower SuperTrend line",
+   "Midpoint of high and low minus 3 ATR; while the previous close stays above it, it only moves up.",
+   "Línea inferior del SuperTrend",
+   "Punto medio entre máximo y mínimo menos 3 ATR; mientras el cierre anterior queda por encima, solo sube.",
+   "SuperTrend"
+  ],
+  "up1": [
+   "Previous lower line",
+   "The lower SuperTrend line of the previous bar.",
+   "Línea inferior anterior",
+   "La línea inferior del SuperTrend de la vela anterior.",
+   "SuperTrend"
+  ],
+  "dn": [
+   "Upper SuperTrend line",
+   "Midpoint of high and low plus 3 ATR; while the previous close stays below it, it only moves down.",
+   "Línea superior del SuperTrend",
+   "Punto medio entre máximo y mínimo más 3 ATR; mientras el cierre anterior queda por debajo, solo baja.",
+   "SuperTrend"
+  ],
+  "dn1": [
+   "Previous upper line",
+   "The upper SuperTrend line of the previous bar.",
+   "Línea superior anterior",
+   "La línea superior del SuperTrend de la vela anterior.",
+   "SuperTrend"
+  ],
+  "trend": [
+   "Trend (1 or −1)",
+   "1 in an uptrend, −1 in a downtrend: it turns up when the close goes above the previous upper line and down when it goes below the previous lower line.",
+   "Tendencia (1 o −1)",
+   "1 en tendencia alcista y −1 en bajista: pasa a alcista cuando el cierre supera la línea superior anterior y a bajista cuando cae bajo la inferior anterior.",
+   "SuperTrend"
+  ],
+  "buySignalInt": [
+   "Uptrend begins",
+   "Yes on the bar where the trend turns from −1 to 1 (the indicator's buy signal).",
+   "Empieza la tendencia alcista",
+   "Sí en la vela en que la tendencia pasa de −1 a 1 (la señal de compra del indicador).",
+   "SuperTrend"
+  ],
+  "sellSignalInt": [
+   "Downtrend begins",
+   "Yes on the bar where the trend turns from 1 to −1 (the indicator's sell signal).",
+   "Empieza la tendencia bajista",
+   "Sí en la vela en que la tendencia pasa de 1 a −1 (la señal de venta del indicador).",
+   "SuperTrend"
+  ],
+  "smma1": [
+   "Smoothed average 21",
+   "Smoothed moving average (SMMA) of the close over 21 bars.",
+   "Media suavizada de 21",
+   "Media móvil suavizada (SMMA) de 21 velas del cierre.",
+   "TMA_Overlay"
+  ],
+  "smma2": [
+   "Smoothed average 50",
+   "Smoothed moving average (SMMA) of the close over 50 bars.",
+   "Media suavizada de 50",
+   "Media móvil suavizada (SMMA) de 50 velas del cierre.",
+   "TMA_Overlay"
+  ],
+  "smma3": [
+   "Smoothed average 100",
+   "Smoothed moving average (SMMA) of the close over 100 bars.",
+   "Media suavizada de 100",
+   "Media móvil suavizada (SMMA) de 100 velas del cierre.",
+   "TMA_Overlay"
+  ],
+  "smma4": [
+   "Smoothed average 200",
+   "Smoothed moving average (SMMA) of the close over 200 bars: the line the 2-bar average is compared with to colour the trend.",
+   "Media suavizada de 200",
+   "Media móvil suavizada (SMMA) de 200 velas del cierre: con ella se compara la media de 2 velas para colorear la tendencia.",
+   "TMA_Overlay"
+  ],
+  "ema2@TMA_Overlay": [
+   "2-bar average",
+   "Exponential moving average of the close over 2 bars: the indicator paints the trend green above the 200-bar line and red below it.",
+   "Media de 2 velas",
+   "Media móvil exponencial de 2 velas del cierre: el indicador pinta la tendencia de verde por encima de la línea de 200 y de rojo por debajo.",
+   "TMA_Overlay"
+  ],
+  "bullSigInt": [
+   "Bullish 3 line strike",
+   "Yes when three bars in a row closed below their open and this bar closes above the previous bar's open.",
+   "Tres líneas alcista (3 line strike)",
+   "Sí cuando tres velas seguidas cerraron por debajo de su apertura y esta cierra por encima de la apertura de la anterior.",
+   "TMA_Overlay"
+  ],
+  "bearSigInt": [
+   "Bearish 3 line strike",
+   "Yes when three bars in a row closed above their open and this bar closes below the previous bar's open.",
+   "Tres líneas bajista (3 line strike)",
+   "Sí cuando tres velas seguidas cerraron por encima de su apertura y esta cierra por debajo de la apertura de la anterior.",
+   "TMA_Overlay"
+  ],
+  "bullishEngulfingInt": [
+   "Bullish engulfing",
+   "Yes when the bar opens at or below the previous close and below the previous open, and closes above the previous open.",
+   "Envolvente alcista",
+   "Sí cuando la vela abre en o por debajo del cierre anterior y por debajo de la apertura anterior, y cierra por encima de la apertura anterior.",
+   "TMA_Overlay"
+  ],
+  "bearishEngulfingInt": [
+   "Bearish engulfing",
+   "Yes when the bar opens at or above the previous close and above the previous open, and closes below the previous open.",
+   "Envolvente bajista",
+   "Sí cuando la vela abre en o por encima del cierre anterior y por encima de la apertura anterior, y cierra por debajo de la apertura anterior.",
+   "TMA_Overlay"
+  ],
+  "avg": [
+   "Average 20 (SMA)",
+   "20-bar simple moving average of the close: the indicator's line.",
+   "Media de 20 (simple)",
+   "Media móvil simple de 20 velas del cierre: la línea del indicador.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "avg2": [
+   "Average 50 (SMA)",
+   "50-bar simple moving average of the close: the indicator's optional second line.",
+   "Media de 50 (simple)",
+   "Media móvil simple de 50 velas del cierre: la segunda línea, opcional, del indicador.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "cr_upInt": [
+   "Bar crosses above the 20 average",
+   "Yes when the bar opens below the 20-bar average and closes above it.",
+   "La vela cruza al alza la media de 20",
+   "Sí cuando la vela abre por debajo de la media de 20 velas y cierra por encima.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "cr_downInt": [
+   "Bar crosses below the 20 average",
+   "Yes when the bar opens above the 20-bar average and closes below it.",
+   "La vela cruza a la baja la media de 20",
+   "Sí cuando la vela abre por encima de la media de 20 velas y cierra por debajo.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "cr_up2Int": [
+   "Bar crosses above the 50 average",
+   "Yes when the bar opens below the 50-bar average and closes above it.",
+   "La vela cruza al alza la media de 50",
+   "Sí cuando la vela abre por debajo de la media de 50 velas y cierra por encima.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "cr_down2Int": [
+   "Bar crosses below the 50 average",
+   "Yes when the bar opens above the 50-bar average and closes below it.",
+   "La vela cruza a la baja la media de 50",
+   "Sí cuando la vela abre por encima de la media de 50 velas y cierra por debajo.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "ma_upInt": [
+   "Average rising (indicator colour)",
+   "Yes when the indicator paints its 20-bar average as rising (lime): the average is at or above an earlier value of itself, the one from two bars before the second-to-last time it stopped rising.",
+   "Media subiendo (color del indicador)",
+   "Sí cuando el indicador pinta su media de 20 velas como subiendo (verde lima): la media está en o por encima de un valor anterior de sí misma, el de dos velas antes de la penúltima vez que dejó de subir.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "ma_downInt": [
+   "Average falling (indicator colour)",
+   "Yes when the indicator paints its 20-bar average as falling (red): the average is below an earlier value of itself, the one from two bars before the second-to-last time it was rising.",
+   "Media bajando (color del indicador)",
+   "Sí cuando el indicador pinta su media de 20 velas como bajando (rojo): la media está por debajo de un valor anterior de sí misma, el de dos velas antes de la penúltima vez que subía.",
+   "Ultimate_MA_MTF_V2"
+  ],
+  "ap": [
+   "Typical price",
+   "(High + low + close) / 3 of the bar.",
+   "Precio típico",
+   "(Máximo + mínimo + cierre) / 3 de la vela.",
+   "Wave_Trend_Calculation"
+  ],
+  "esa": [
+   "Typical price average (10)",
+   "10-bar exponential average of the typical price.",
+   "Media del precio típico (10)",
+   "Media exponencial de 10 velas del precio típico.",
+   "Wave_Trend_Calculation"
+  ],
+  "d@Wave_Trend_Calculation": [
+   "Average distance (d)",
+   "10-bar exponential average of how far the typical price is from its average (esa), in price.",
+   "Distancia media (d)",
+   "Media exponencial de 10 velas de cuánto se aleja el precio típico de su media (esa), en precio.",
+   "Wave_Trend_Calculation"
+  ],
+  "ci": [
+   "Channel index (ci)",
+   "The typical price minus its average, divided by 0.015 times the average distance: how far the price is from its average, measured against its usual distance.",
+   "Índice de canal (ci)",
+   "El precio típico menos su media, dividido por 0,015 veces la distancia media: cuánto se aleja el precio de su media, medido frente a su distancia habitual.",
+   "Wave_Trend_Calculation"
+  ],
+  "tci": [
+   "WT1 (WaveTrend line)",
+   "21-bar exponential average of the channel index: the main WaveTrend line. Above 60 is often read as overbought, below −60 as oversold.",
+   "WT1 (línea WaveTrend)",
+   "Media exponencial de 21 velas del índice de canal: la línea principal del WaveTrend. Por encima de 60 se suele leer como sobrecompra y por debajo de −60 como sobreventa.",
+   "Wave_Trend_Calculation"
+  ],
+  "wt2": [
+   "WT2 (signal line)",
+   "4-bar simple average of WT1: the slower WaveTrend line.",
+   "WT2 (línea de señal)",
+   "Media simple de 4 velas de WT1: la línea lenta del WaveTrend.",
+   "Wave_Trend_Calculation"
+  ],
+  "ci_wt2": [
+   "Channel index minus WT2",
+   "The channel index minus the WT2 line.",
+   "Índice de canal menos WT2",
+   "El índice de canal menos la línea WT2.",
+   "Wave_Trend_Calculation"
+  ],
+  "d_tci": [
+   "Distance minus WT1",
+   "The average distance d (in price) minus the WT1 line (an oscillator), as the indicator's code writes it: units that do not usually go together.",
+   "Distancia menos WT1",
+   "La distancia media d (en precio) menos la línea WT1 (un oscilador), tal como lo escribe el código del indicador: unidades que no suelen ir juntas.",
+   "Wave_Trend_Calculation"
+  ],
+  "wvf": [
+   "Williams Vix Fix",
+   "How far the low is below the highest close of the last 22 bars, in % of that close. It spikes on sharp drops.",
+   "Williams Vix Fix",
+   "Cuánto queda el mínimo por debajo del cierre más alto de las últimas 22 velas, en % de ese cierre. Se dispara en las caídas bruscas.",
+   "Williams_Vix_Fix"
+  ],
+  "midLine": [
+   "WVF average (20)",
+   "20-bar simple average of the Williams Vix Fix: the middle of its Bollinger bands.",
+   "Media del WVF (20)",
+   "Media simple de 20 velas del Williams Vix Fix: el centro de sus bandas de Bollinger.",
+   "Williams_Vix_Fix"
+  ],
+  "sDev": [
+   "WVF band distance",
+   "Two standard deviations of the Williams Vix Fix over 20 bars.",
+   "Distancia de banda del WVF",
+   "Dos desviaciones típicas del Williams Vix Fix en 20 velas.",
+   "Williams_Vix_Fix"
+  ],
+  "upperBand": [
+   "WVF upper band",
+   "WVF average plus two standard deviations: at or above it, the indicator paints the bar lime.",
+   "Banda superior del WVF",
+   "Media del WVF más dos desviaciones típicas: en ella o por encima, el indicador pinta la barra de verde lima.",
+   "Williams_Vix_Fix"
+  ],
+  "lowerBand": [
+   "WVF lower band",
+   "WVF average minus two standard deviations.",
+   "Banda inferior del WVF",
+   "Media del WVF menos dos desviaciones típicas.",
+   "Williams_Vix_Fix"
+  ],
+  "rangeHigh": [
+   "WVF high range",
+   "85% of the highest Williams Vix Fix of the last 50 bars.",
+   "Rango alto del WVF",
+   "El 85 % del Williams Vix Fix más alto de las últimas 50 velas.",
+   "Williams_Vix_Fix"
+  ],
+  "rangeLow": [
+   "WVF low range",
+   "101% of the lowest Williams Vix Fix of the last 50 bars.",
+   "Rango bajo del WVF",
+   "El 101 % del Williams Vix Fix más bajo de las últimas 50 velas.",
+   "Williams_Vix_Fix"
+  ],
+  "Color_con1": [
+   "WVF minus upper band",
+   "The Williams Vix Fix minus its upper band: at 0 or more the bar is painted lime.",
+   "WVF menos banda superior",
+   "El Williams Vix Fix menos su banda superior: con 0 o más, la barra sale verde lima.",
+   "Williams_Vix_Fix"
+  ],
+  "Color_con2": [
+   "WVF minus high range",
+   "The Williams Vix Fix minus its high range (85% of the 50-bar high): at 0 or more the bar is painted lime.",
+   "WVF menos rango alto",
+   "El Williams Vix Fix menos su rango alto (el 85 % del máximo de 50 velas): con 0 o más, la barra sale verde lima.",
+   "Williams_Vix_Fix"
+  ],
+  "colInt": [
+   "Lime bar (possible bottom)",
+   "Yes when the Williams Vix Fix reaches its upper band or its high range: the indicator paints the bar lime, its sign of a possible market bottom.",
+   "Barra verde lima (posible suelo)",
+   "Sí cuando el Williams Vix Fix llega a su banda superior o a su rango alto: el indicador pinta la barra de verde lima, su señal de un posible suelo del mercado.",
+   "Williams_Vix_Fix"
   ]
  },
  "patterns": {

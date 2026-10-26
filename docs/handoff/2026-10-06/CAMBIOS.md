@@ -125,10 +125,19 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **El árbol** colorea sus resultados con los niveles con que opera el script, no con los comentarios
   `// buy|sell` de la vista previa: el del propietario, con los de su script completo (`buyThreshold` y
   `sellThreshold`, que el generador elige para cada modelo: de 0,4 a 1,0 para comprar, de −1,0 a −0,5 para
-  cerrar; `tree.js` los lee como `edgefolio/formats.py`); el del visitante, con 0,55 y −0,9 (los de todos
-  los scripts de 2024), porque la vista previa se corta antes de esas líneas. Algunos salen distintos que en
-  la maqueta (AMZN 1BOL: −0,78 y −0,90 «Esperar», +0,60 «Comprar»). Para hablarlo con el diseño; publicar
-  los niveles de cada script, para que el visitante los vea, es decisión del dueño.
+  cerrar; `tree.js` los lee como `edgefolio/formats.py`); el del visitante, con los que publica la tienda
+  (`catalogue/levels.json`, leídos de cada script completo; API #3 los manda como `buy_at` y `close_at`),
+  porque la vista previa se corta antes de esas líneas. Algunos salen distintos que en la maqueta (AMZN 1BOL:
+  −0,78 y −0,90 «Esperar», +0,60 «Comprar»). Para hablarlo con el diseño.
+- **Sin los niveles del script** (el visitante, mientras la tienda no los publica para esa estrategia), ningún
+  resultado dice Comprar, Vender ni Esperar (`scored` en `tree.js`): cada uno enseña su puntuación («Puntuación
+  +0,88», en gris oscuro y con el icono de un medidor, en el árbol, en Bloques, en «Resultado del árbol» y en
+  su explicación); la leyenda dice «Puntuación» en vez de Comprar | Vender | Esperar y, debajo, por qué
+  (`noLevels`, `data-tree-scored` en `tree_main.js`); los deslizadores no pintan sus zonas de colores ni su
+  leyenda (dirían qué haría la estrategia); el tercer paso, los dos ejemplos y su ayuda hablan de la puntuación
+  (`s3Score`, `hiEx`, `loEx`, `exHelpScore`), y «Ver todas las reglas» las junta en un grupo, de la puntuación
+  más alta a la más baja (`results`, `leadScore1`, `leadScoreN`). El diseño no tiene ese estado: siempre dice
+  comprar, vender o esperar.
 - **En una gratis, el árbol** dice «Script completo» y «Conseguirla gratis», no «Parte de pago» y «Comprar
   para desbloquear»; el clic abre el diálogo de la gratis, como en el diseño. Su vista de propietario dice
   con qué correo se pidió y que se pide gratis (`fOwnSignIn`, `fOwnNotYours`), no «compraste» ni «Cómprala».
@@ -152,14 +161,19 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Los valores divididos por el cierre** que usa el generador de 2026 (`macd__close`, `BBlower__close`…)
   llevan el nombre del valor sin `__close`, con una nota en su explicación, y un nombre sólo vale en su
   patrón (el quinto campo de cada valor en `static/trees/features.json`), también el traducido (`feat`):
-  la `d` de WaveTrend no es la %D del RSI estocástico. Los que `features.json` no nombra (139 de los 182
-  que preguntan las vistas previas) salen con su código, como antes: escribir sus nombres y descripciones es
-  contenido del dueño.
+  la `d` de WaveTrend no es la %D del RSI estocástico. Cada valor que toman los árboles del catálogo tiene su
+  nombre y su descripción, escritos de lo que calcula el código del generador (`TW_pines_script/`): eran 44, y
+  181 salían con su código (entre ellos, 140 de los 182 que preguntan las vistas previas). Un nombre que usan dos
+  patrones lleva el suyo en la clave (`d@Wave_Trend_Calculation`, `basis@Squeeze_Momentum_Indicator`), que
+  `tree.js` mira antes (`keyOf`). Ocho de los 44 no decían lo que calcula el código y se corrigieron
+  (`ema12`, `ema13`, `ad_mf`, `MFI_High`, `MFI_Low`, `d_k`, `smoothK_k`, `smoothD_d`).
 - **Los idiomas del árbol:** la explicación de los 22 patrones de 2026-10 (15 no tenían), en los 8 idiomas
-  (`patterns` de `features.json` en en y es; `pat` de `static/trees/ui.json` en los otros seis). La
-  descripción de cada valor sigue sólo en en y es: en los otros idiomas sale la inglesa, con `lang="en"` y
-  `dir="ltr"` (`tree_tip.js`; en árabe, sin él, su punto final saltaba al principio), como la de un patrón sin
-  traducir (`tree_main.js`). La línea del patrón ya no lleva `dir="auto"`, que la tienda le puso cuando era
+  (`patterns` de `features.json` en en y es; `pat` de `static/trees/ui.json` en los otros seis). El nombre de
+  cada valor, también en los 8 (`feat`); su descripción, en los 8 la de los 44 valores de los siete patrones de
+  2024 (`featDesc` de `ui.json`, con la nota de los divididos por el cierre en el idioma de la página), y en en y
+  es la de los 181 de 2026-10: en los otros idiomas, ésas salen en inglés, con `lang="en"` y `dir="ltr"`
+  (`tree_tip.js`; en árabe, sin él, su punto final saltaba al principio), como la de un patrón sin traducir
+  (`tree_main.js`). La línea del patrón ya no lleva `dir="auto"`, que la tienda le puso cuando era
   inglesa: va en la dirección de la página, y en árabe «WaveTrend…», «SuperTrend…» y «CM Ultimate MA…» salían de
   izquierda a derecha.
 - **Árbol | Bloques** llevan `aria-selected`, como Ficha técnica | Cómo decide.
@@ -325,19 +339,23 @@ renovar un enlace da la versión de hoy. Si se paga, hace falta un script por ve
 - **Una estrategia que ya es de la cuenta se vuelve a vender.** La ficha y el árbol dicen «Ya es tuya», pero
   el presupuesto y el pedido no lo miran: desde las tarjetas de Lite o de Pro se cobra otra vez. Negarlo
   (p. ej. `errAlreadyOwned`) es una regla de negocio.
-- **El árbol del visitante** se colorea con 0,55 y −0,9 (los niveles de los scripts de 2024), porque la
-  vista previa se corta antes de los de cada script: en 131 de los 143 árboles visibles algún resultado
-  sale de otro color que su comentario. Publicar los niveles de cada script lo decide el dueño.
+- **El árbol del visitante** (decidido el 2026-10-26): se colorea con los niveles de cada script que publica la
+  tienda, `catalogue/levels.json` (lo escriben `flask --app app edgefolio import … --scripts` y, para el catálogo
+  ya publicado, `flask --app app edgefolio levels` desde `STRATEGIES_DIR`; API #3 los manda como `buy_at` y
+  `close_at`). Sin ellos, ningún resultado dice Comprar, Vender ni Esperar: enseña su puntuación y la pestaña
+  dice por qué. Nunca 0,55 y −0,9. Sólo vale el script que lleva el nombre de su estrategia: los de esta
+  máquina son copias de prueba, así que el catálogo de hoy no tiene niveles hasta que se ejecute el comando
+  donde están los de verdad (y se suba el `levels.json` que deja).
 - **Los cortes de la nota** (pregunta 1): con los de hoy y las 5–63 operaciones del catálogo, solo C y D.
 - **«Desde su publicación»** no tiene trabajo diario: sale siempre «—», y su barra, vacía.
 - **Un clic en el velo oscuro** de los diálogos de la tienda (el recorrido de bienvenida, el tutorial de
   instalación, el selector del pack, Comparar y el diálogo de la gratis), ¿debería cerrarlos? Hoy no los
   cierra: lo hacen Esc y la × (o «Hecho» en el selector del pack, que no tiene ×).
 - **Contenido y traducciones:** la explicación de cada indicador (`catalogue/indicators.csv`, solo en
-  inglés) y las 44 descripciones del árbol (`static/trees/features.json`, solo en es y en); los nombres y
-  descripciones de los 139 valores del árbol que salen con su código; la revisión nativa de zh, ar e hi
-  (pregunta 11); «Tree Deep» en inglés (para el diseño); si el precio sigue encima de «Ya es tuya» en la
-  ficha; y si una actualización se paga (la pregunta de arriba).
+  inglés); la revisión nativa de zh, ar e hi (pregunta 11); «Tree Deep» en inglés (para el diseño); si el
+  precio sigue encima de «Ya es tuya» en la ficha; y si una actualización se paga (la pregunta de arriba). Los
+  valores del árbol (decidido el 2026-10-26): los 225 tienen nombre en los 8 idiomas; su descripción, en los 8
+  la de los 44 de antes y en es y en la de los 181 nuevos (en los otros seis, en inglés y dicho).
 
 ## Para el núcleo
 

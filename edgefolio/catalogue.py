@@ -2,7 +2,8 @@
 """Las estrategias a la venta, leídas de catalogue/catalogue.csv: el único sitio de donde salen los precios.
 
 A su lado: indicators.csv (qué es cada indicador, para la página de la estrategia), bundles.json (los
-lotes y sus precios) y, si existe, since_release.csv, que escribe el trabajo diario.
+lotes y sus precios) y, si existen, since_release.csv, que escribe el trabajo diario, y levels.json, los niveles
+de cada script (levels.py).
 """
 from __future__ import annotations
 
@@ -18,6 +19,7 @@ from decimal import Decimal
 from functools import cached_property
 from pathlib import Path
 
+from .levels import load as load_levels
 from .settings import Settings
 
 log = logging.getLogger(__name__)
@@ -199,7 +201,8 @@ class Catalogue:
         if not isinstance(source, Settings):
             path = Path(source)
             source = Settings(catalogue=path, indicators=path.parent / "indicators.csv",
-                              bundles=path.parent / "bundles.json", since_release=path.parent / "since_release.csv")
+                              bundles=path.parent / "bundles.json", since_release=path.parent / "since_release.csv",
+                              levels=path.parent / "levels.json")
         live = {r.get("id"): r for r in read_table(source.since_release)}
         self.items = {}   # por clave: lo que guardan los pedidos y los enlaces
         self.by_id = {}
@@ -222,6 +225,7 @@ class Catalogue:
                     "ind_author": clean(lower.get("author")),
                 }
         self.bundles = self._bundles(source.bundles)
+        self.levels = load_levels(source.levels)
 
     def _bundles(self, path: Path) -> dict:
         """Los lotes de bundles.json que siguen siendo lo que prometen. Uno que perdió una estrategia, o que ya
@@ -285,7 +289,11 @@ class Catalogue:
         return {**s.as_row(), "ind_text": ind.get("ind_text", ""), "ind_url": ind.get("ind_url", TV_SCRIPTS)}
 
     def detail(self, s: Strategy) -> dict:
+        """La de una estrategia (API #3): la fila, el autor del indicador, sus versiones y los niveles de su script,
+        con los que el árbol del visitante dice comprar, vender o esperar (null si la tienda no los tiene)."""
         ind = self.indicators.get(s.key_techs, {})
         versions = [{"v": v, "date": s.release if v == s.version else None, "note": ""}
                     for v in range(s.version, 0, -1)]
-        return {**self.row(s), "ind_author": ind.get("ind_author", ""), "versions": versions}
+        levels = self.levels.get(s.id, {})
+        return {**self.row(s), "ind_author": ind.get("ind_author", ""), "versions": versions,
+                "buy_at": levels.get("buy_at"), "close_at": levels.get("close_at")}

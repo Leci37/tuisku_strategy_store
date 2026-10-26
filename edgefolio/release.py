@@ -9,9 +9,10 @@ d_result/pine_TW_b/). Importarlo es, por este orden:
 1. comprobar el paquete entero (``read_package`` de catalogue/publish.py), una vez, y los scripts: con
    ``scripts``, que cada uno de la lista esté en esa carpeta con su sha256; sin ella, que ya estén en
    STRATEGIES_DIR. Si algo falla no se escribe nada: ni el catálogo, ni un gráfico, ni un script;
-2. copiar los scripts de la lista (sólo esos, nunca otro fichero de la carpeta), publicar el catálogo y sus
-   ficheros (``publish_package``, que apunta en catalogue/release.json de qué ejecución del generador es)
-   y vaciar las miniaturas, que pueden ser de gráficos de antes.
+2. copiar los scripts de la lista (sólo esos, nunca otro fichero de la carpeta), escribir catalogue/levels.json
+   con los niveles de cada uno (levels.py: con qué puntuación compra y cierra, para el árbol del visitante),
+   publicar el catálogo y sus ficheros (``publish_package``, que apunta en catalogue/release.json de qué
+   ejecución del generador es) y vaciar las miniaturas, que pueden ser de gráficos de antes.
 
 Lo que se publica es lo que se comprobó en el paso 1, no una segunda lectura del paquete: el paso 7 puede
 volver a escribirlo mientras tanto (y sus ficheros son enlaces a d_result/, que cambia en su sitio), así que
@@ -31,6 +32,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from . import levels
 from .settings import CATALOGUE
 
 SHOWN = 10   # los nombres que se enseñan en un problema; los demás se cuentan
@@ -122,6 +124,19 @@ def stage_scripts(copy: dict, wanted: dict, target: Path, stage) -> int:
     return len(copy)
 
 
+def scripts_of(rows, wanted: dict, copy: dict, target: Path, have: set):
+    """(id, texto) del script completo de cada fila del paquete: de donde se copia (``copy``) o de STRATEGIES_DIR si
+    ya estaba con su sha256 (``have``), comprobado otra vez al leerlo; None si no hay uno comprobado (con
+    --skip-scripts, uno que falta o es de antes: sus niveles serían los de otra versión)."""
+    pub = publisher()
+    for key in rows[pub.KEY].astype(str).itertuples(index=False):
+        name = pub.private_name(*key)
+        path = copy.get(name) or (target / name if name in have else None)
+        data = path.read_bytes() if path is not None and regular(path) else None
+        good = data is not None and sha256_of(data) == str(wanted.get(name, "")).lower()
+        yield "_".join(key), data.decode("utf-8", errors="replace") if good else None
+
+
 def clear_thumbs(folder: Path) -> int:
     """Las miniaturas WebP se hacen de los gráficos la primera vez que se piden: tras publicar pueden ser de
     gráficos que ya han cambiado."""
@@ -178,17 +193,22 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
                        f"contenido): {listed(absent + outdated)}. Con --scripts <generador>/d_result/pine_TW_b se "
                        "copian (o --skip-scripts para publicar sin ellos)"])
 
+    found, counted = levels.collect(scripts_of(checked[1], wanted, copy, target, have))
+
     stage = pub.Staged()
     try:
         copied_scripts = stage_scripts(copy, wanted, target, stage)
+        # los niveles son de los scripts de este catálogo: se escriben siempre, también vacíos (los de antes eran de
+        # otras estrategias)
+        stage.write(Path(settings.levels), levels.dumps(found))
         catalogue = pub.publish_package(package, prune=prune, out=Path(settings.catalogue), assets=assets,
                                         checked=checked, stage=stage)
     except Exception as e:
         problems = e.problems if isinstance(e, (Refused, pub.ContractError)) else [f"{type(e).__name__}: {e}"]
         if stage.done:
-            problems.append(f"falló a medias: {stage.done} ficheros (los scripts primero, luego static/assets, el "
-                            "catálogo y release.json, por ese orden) ya estaban en su sitio; los demás no se han "
-                            "tocado. Vuelve a importar el paquete")
+            problems.append(f"falló a medias: {stage.done} ficheros (los scripts y los niveles primero, luego "
+                            "static/assets, el catálogo y release.json, por ese orden) ya estaban en su sitio; los "
+                            "demás no se han tocado. Vuelve a importar el paquete")
         else:
             problems.append("no se ha escrito nada: ni un script, ni static/assets, ni el catálogo")
         raise Refused(problems) from e
@@ -200,7 +220,7 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
     return {
         "rows": done["rows"], "files": done["copied"], "cut": done["cut"], "pruned": done["pruned"],
         "kept": done["kept"], "scripts": copied_scripts, "scripts_missing": len(absent) if skip_scripts else 0,
-        "scripts_outdated": len(outdated) if skip_scripts else 0, "thumbs": thumbs,
+        "scripts_outdated": len(outdated) if skip_scripts else 0, "thumbs": thumbs, "levels": counted,
         "bundles_out": bundles_left_out(settings.bundles, catalogue),
         "contract": manifest["contract"], "created": manifest["created"],
         "commit": str(manifest["generator"].get("commit") or ""),

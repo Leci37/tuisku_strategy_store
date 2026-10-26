@@ -48,6 +48,7 @@ export class App extends Component {
     this.timers = {};
     this.seq = {};
     this.modal = null; // el diálogo abierto de arriba: { el, opener, marked } (syncModal)
+    this.favSaved = new Map(); // lo que la cuenta tiene guardado de una favorita con un cambio sin contestar (setFav)
     this.state = {
       dict: null, cfg: null, bundleDefs: null, fx: null,
       lang: pageLang(), dir: pageDir(), mode: read('tuisku-sf-mode') === 'pro' ? 'pro' : 'lite',
@@ -62,8 +63,9 @@ export class App extends Component {
       code: cart.code || '', applied: cart.applied || '', codeState: '', codeOpen: !!cart.applied, quote: null,
       favs: list(favs.favs), alerts: favs.alerts && typeof favs.alerts === 'object' ? favs.alerts : {},
       compare: [], cmpOpen: false, packOpen: false, packQ: '', packFound: [],
-      freeFor: '', freeEmail: '', freeNews: false, freeSent: false, freeErr: '', dockH: 0,
-      me: props.signedIn ? null : { email: null }, mine: null, proofEmail: '', proofSent: false, proofExpired: false,
+      freeFor: '', freeEmail: '', freeNews: false, freeSent: false, freeErr: '', dockH: 0, toastH: 0,
+      // proofEmail: lo escrito en el campo; null hasta que se escribe algo (sale el de la cuenta), '' si se vació
+      me: props.signedIn ? null : { email: null }, mine: null, proofEmail: null, proofErr: '', proofSent: false, proofExpired: false,
       proofToken: '', proofAs: '',
       receipt: null, instStep: -1, instFor: '',
       tourStep: route.page === 'shop' && !read('edgefolio-tour-v1') ? 0 : -1,
@@ -169,10 +171,13 @@ export class App extends Component {
 
   // The height of Lite's floating cart (the Compare pill and the cart box): toasts sit above it. It
   // changes with what the page paints (the pill, the code box, the width), so it is read after each paint.
+  // También el del aviso que se ve (data-ef-toast): con un diálogo abierto, el diálogo le deja ese sitio arriba.
   measureDock() {
     const s = this.state, el = s.page === 'shop' && s.mode !== 'pro' ? document.querySelector('[data-sf-cart]') : null;
     const h = el ? el.offsetHeight : 0;
     if (h && h !== s.dockH) this.setState({ dockH: h });
+    const toast = document.querySelector('[data-ef-toast]'), th = toast ? toast.offsetHeight : 0;
+    if (th && th !== s.toastH) this.setState({ toastH: th });
   }
 
   // Brings the server's data in line with what the state shows: lists, missing rows, the quote.
@@ -469,13 +474,25 @@ export class App extends Component {
     post('/logout').catch(() => null).then(() => window.location.assign('/'));
   }
 
-  // Demostrar que un correo es de la cuenta: se manda un enlace a esa dirección.
+  // Demostrar que un correo es de la cuenta: se manda un enlace a esa dirección. Lo que falla en la dirección
+  // sale bajo el campo (los textos del núcleo), como en la gratis: vacía (el campo se puede vaciar) o mal
+  // escrita; el rechazo del servidor a la dirección, también; los demás, en un aviso. Una que la cuenta ya
+  // demostró (API #15, emails) no se pide: el servidor contestaría lo de siempre sin mandar nada, y lo dice un
+  // aviso (quita el de un fallo de antes, que parecería la respuesta).
   askProof() {
-    const s = this.state, email = (s.proofEmail || (s.me && s.me.email) || '').trim();
-    if (!/.+@.+\..+/.test(email) || this.proofBusy) return;
+    const s = this.state, email = (s.proofEmail ?? ((s.me && s.me.email) || '')).trim();
+    if (this.proofBusy) return;
+    const err = !email ? 'errEmailRequired' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'errEmailInvalid' : '';
+    if (err) { this.setState({ proofErr: err }); return; }
+    if (((s.mine && s.mine.emails) || []).includes(email.toLowerCase())) { this.setState({ proofErr: '', error: '', notice: 'proofProven' }); return; }
     this.proofBusy = true;
-    post('/api/mine/proofs', { email }).then(() => this.setState({ proofSent: true, proofExpired: false }))
-      .catch(e => this.fail(e)).then(() => { this.proofBusy = false; });
+    post('/api/mine/proofs', { email }).then(() => this.setState({ proofSent: true, proofExpired: false, proofErr: '' }))
+      .catch(e => {
+        const d = e.detail || {};
+        if (e.status === 400 && d.field === 'email' && e.key && this.state.dict && this.state.dict[e.key]) this.setState({ proofErr: e.key });
+        else this.fail(e);
+      })
+      .then(() => { this.proofBusy = false; });
   }
 
   // El enlace del correo abre /mine?proof=<token>. Abrirlo sólo enseña de qué correo es (los lectores de
@@ -546,22 +563,42 @@ export class App extends Component {
     }))).catch(e => this.fail(e));
   }
 
-  saveFav(id, alerts) {
-    if (!this.signedIn()) return;
-    const url = '/api/favourites/' + encodeURIComponent(id);
-    (alerts ? api(url, { method: 'PUT', body: { alerts } }) : api(url, { method: 'DELETE' })).catch(e => this.fail(e));
+  // Una favorita y sus alertas cambian en la página al pulsarlas, y después en la cuenta (API #21 y #22). Si el
+  // servidor no lo guarda (la sesión se cerró en otra pestaña: 401), vuelven a como las tiene la cuenta, la
+  // favorita a su sitio de la lista, y el aviso dice por qué: antes la campana se quedaba encendida y la
+  // favorita fuera, sin guardar. De varios cambios seguidos de la misma decide la respuesta del último; lo que
+  // tiene la cuenta (favSaved) es lo de antes del primero, o lo último que aceptó el servidor.
+  setFav(id, on, alerts) {
+    const s = this.state, saved = this.favSaved, signedIn = this.signedIn();
+    if (signedIn && !saved.has(id)) saved.set(id, { on: s.favs.includes(id), alerts: s.alerts[id], at: s.favs.indexOf(id) });
+    this.setState(st => ({ favs: st.favs.includes(id) === on ? st.favs : on ? [...st.favs, id] : st.favs.filter(x => x !== id),
+      alerts: st.alerts[id] === alerts ? st.alerts : { ...st.alerts, [id]: alerts } }));
+    if (!signedIn) return;
+    const last = this.ticket('fav:' + id), url = '/api/favourites/' + encodeURIComponent(id);
+    (on ? api(url, { method: 'PUT', body: { alerts: alerts || {} } }) : api(url, { method: 'DELETE' })).then(() => {
+      if (last()) saved.delete(id);
+      else if (saved.has(id)) saved.set(id, { ...saved.get(id), on, alerts });
+    }, e => {
+      const was = last() && saved.get(id);
+      if (was) {
+        saved.delete(id);
+        this.setState(st => {
+          const rest = st.favs.filter(x => x !== id), at = was.at < 0 ? rest.length : Math.min(was.at, rest.length);
+          return { favs: !was.on ? rest : st.favs.includes(id) ? st.favs : [...rest.slice(0, at), id, ...rest.slice(at)],
+            alerts: { ...st.alerts, [id]: was.alerts } };
+        });
+      }
+      this.fail(e);
+    });
   }
 
   toggleFav(id) {
-    const on = this.state.favs.includes(id);
-    this.setState(st => ({ favs: on ? st.favs.filter(x => x !== id) : [...st.favs, id] }));
-    this.saveFav(id, on ? null : this.state.alerts[id] || {});
+    this.setFav(id, !this.state.favs.includes(id), this.state.alerts[id]);
   }
 
   toggleAlert(id, k) {
-    const cur = this.state.alerts[id] || {}, next = { ...cur, [k]: !cur[k] };
-    this.setState(st => ({ alerts: { ...st.alerts, [id]: next } }));
-    this.saveFav(id, next);
+    const cur = this.state.alerts[id] || {};
+    this.setFav(id, true, { ...cur, [k]: !cur[k] });
   }
 
   // Every way into the free-download dialog starts with news unticked (GDPR: consent is asked each time).

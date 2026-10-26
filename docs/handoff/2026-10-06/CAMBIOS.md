@@ -206,6 +206,17 @@ Se queda como está; el diseño no lo enseña o lo simula:
   «Cómo decide» delante de «Edgefolio» en su pestaña): lo pone el servidor, también para la vista previa de
   un enlace (`og:title`), y la página al moverse por la tienda o cambiar de idioma (`app.tabTitle`). En la
   maqueta no cambia.
+- **«¿Compraste sin cuenta?»** dice bajo el campo lo que falla en el correo, con el borde rojo y
+  `aria-invalid`, como la gratis (`mine.js`, `proofErrOn`): vacío o mal escrito (`errEmailRequired`,
+  `errEmailInvalid`, del núcleo) y el rechazo del servidor a la dirección. El campo se puede vaciar, Intro no
+  manda mientras se compone en zh/hi, «Hecho» se queda también cuando el bloque salió por un enlace usado, y
+  un correo que la cuenta ya demostró lo dice el aviso `proofProven`, sin pedir nada. El diseño no tiene el
+  bloque.
+- **Un aviso nunca tapa un diálogo abierto:** con uno abierto, el aviso va arriba (`errTop`, `noticeTop`) y el
+  velo le deja su sitio: su `padding-top` y los `max-height` de Comparar, el pack y el tutorial descuentan
+  `toastRoom`, el alto del aviso, que mide `app.measureDock` por `data-ef-toast` (`dialogs.js`). En un móvil,
+  encima del carrito flotante, el aviso tapaba «Enviarme el enlace» de la gratis, y el selector del pack (90vh)
+  no le dejaba sitio ni arriba ni abajo. Los avisos no están en el diseño.
 
 ## Correcciones a la exportación
 

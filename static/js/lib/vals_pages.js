@@ -17,19 +17,27 @@ export function pageVals(c) {
   // floating Compare pill (38 px), when it shows
   const pillFloats = s.compare.length > 0 && !liteDock;
   const errBottom = base + (liteDock ? (s.dockH || 84) + 8 : pillFloats ? 38 + 8 : 0);
+  // con un diálogo abierto, su velo tapa el carrito flotante y la barra de abajo: el aviso va arriba, y el diálogo
+  // le deja su sitio (toastRoom: lo que mide el aviso, app.measureDock, y 8 px), para que no se tapen nunca. En
+  // un móvil, encima del carrito, el aviso tapaba «Enviarme el enlace» de la gratis; y el selector del pack
+  // (90vh) no deja sitio ni arriba ni abajo
+  const dialogOpen = !!(s.freeFor && app.row(s.freeFor)) || s.cmpOpen || s.packOpen || TS >= 0 || s.instStep >= 0;
+  const toastOn = !!s.error || !!NOTICES[s.notice];
+  const at = { top: dialogOpen ? '16px' : 'auto', bottom: dialogOpen ? 'auto' : errBottom + 'px' };
   return {
     ...detailVals(c), ...compareVals(c, liteDock), ...mineVals(c), ...thanksVals(c), ...installVals(c), ...freeVals(c),
     ...LEGAL, legalOn: true, contactOn: !!c.contact, contactUrl: c.contact ? 'mailto:' + c.contact : '', contactEmail: c.contact,
     errOpen: !!s.error, errTitle: tx.errServer, closeErr: () => app.setState({ error: '' }),
     // the server's vars, or the contact address (a link that expired says where to write)
     errText: t(s.error, s.errorVars || { e: c.contact }) + ((s.error === 'errPayment' || s.error === 'errLater' || s.error === 'errPayPal') && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
-    errBottom: errBottom + 'px',
+    errTop: at.top, errBottom: at.bottom,
+    toastRoom: dialogOpen && toastOn ? (s.toastH || 58) + 8 + 'px' : '0px',
     cmpBottom: base + 'px',
     // on a phone the bottom bar takes the last 60px: the floating cart sits above it, as the compare pill does
     dockBottom: base + 'px',
-    // a short notice (the news opt-in confirmed or its link expired): the toast's look, not an error;
-    // it waits while an error toast shows, in the same place
-    ...noticeVals(c, errBottom),
+    // a short notice (the news opt-in confirmed or its link expired, an address the account already proved):
+    // the toast's look, not an error; it waits while an error toast shows, in the same place
+    ...noticeVals(c, at),
     navItems: [
       ['shop', t('navShop'), 'fa-solid fa-house', () => app.go({ page: 'shop' })],
       ['search', t('searchSmall'), 'fa-solid fa-magnifying-glass', () => app.focusSearch()],
@@ -55,18 +63,21 @@ export function pageVals(c) {
   };
 }
 
+// cada aviso, con sus textos <aviso>Title y <aviso>Text; proofProven: se pidió la prueba de un correo que la
+// cuenta ya demostró (app.askProof)
 const NOTICES = {
   newsConfirmed: ['fa-solid fa-circle-check', '#12b76a'],
-  newsExpired: ['fa-solid fa-circle-info', '#9fb8ef']
+  newsExpired: ['fa-solid fa-circle-info', '#9fb8ef'],
+  proofProven: ['fa-solid fa-circle-check', '#12b76a']
 };
 
-function noticeVals(c, bottom) {
+function noticeVals(c, at) {
   const { app, s, t } = c;
   const n = NOTICES[s.notice];
   if (!n || s.error) return { noticeOpen: false };
   return {
     noticeOpen: true, noticeIcon: n[0], noticeColor: n[1],
-    noticeTitle: t(s.notice + 'Title'), noticeText: t(s.notice + 'Text'), noticeBottom: bottom + 'px',
+    noticeTitle: t(s.notice + 'Title'), noticeText: t(s.notice + 'Text'), noticeTop: at.top, noticeBottom: at.bottom,
     closeNotice: () => app.setState({ notice: '' })
   };
 }
@@ -188,11 +199,19 @@ function mineVals(c) {
     isMine: s.page === 'mine', signedIn: !!email,
     proofConfirm: confirm, confirmProof: () => app.confirmProof(),
     proofAsBefore: asText[0], proofAsEmail: s.proofAs, proofAsAfter: asText.slice(1).join(''),
-    // ¿compró sin cuenta? Hasta que la cuenta confirma su correo, lo que se hizo con él sin sesión no sale
-    proofOffer: !confirm && !!email && (s.proofExpired || !!(s.mine && s.mine.proof_needed)),
+    // ¿compró sin cuenta? Hasta que la cuenta confirma su correo, lo que se hizo con él sin sesión no sale. Mandado,
+    // «Hecho» se queda, también si el bloque salió por un enlace usado o caducado (antes, se iba sin decirlo)
+    proofOffer: !confirm && !!email && (s.proofSent || s.proofExpired || !!(s.mine && s.mine.proof_needed)),
     signedAs: t('signedAs', { e: email }), avatar: email.slice(0, 1).toUpperCase(),
-    proofEmail: s.proofEmail || email, onProofEmail: e => app.setState({ proofEmail: e.target.value }),
-    askProof: () => app.askProof(), proofKey: e => { if (e.key === 'Enter') app.askProof(); },
+    // el de la cuenta hasta que se escribe otro; vaciado, se queda vacío (antes volvía el de la cuenta). Al
+    // escribir otro, el aviso «Ya está confirmado» del anterior se va: no es de este
+    proofEmail: s.proofEmail ?? email,
+    onProofEmail: e => app.setState({ proofEmail: e.target.value, proofErr: '', ...(s.notice === 'proofProven' ? { notice: '' } : {}) }),
+    // Intro manda; no mientras se compone (zh, hi), donde Intro elige los caracteres
+    askProof: () => app.askProof(), proofKey: e => { if (e.key === 'Enter' && !e.isComposing) app.askProof(); },
+    // lo que falla en la dirección, bajo el campo (errEmailRequired / errEmailInvalid del núcleo, o el rechazo
+    // del servidor): la clave, no el texto, para que siga al idioma
+    proofErrOn: !!s.proofErr, proofErr: s.proofErr ? t(s.proofErr) : '', proofBd: s.proofErr ? '#c0392b' : '#e2e9f0',
     proofSent: s.proofSent, proofNotSent: !s.proofSent, proofExpired: s.proofExpired && !s.proofSent,
     signOut: () => app.signOut(),
     mineHas: items.length > 0,
@@ -203,7 +222,8 @@ function mineVals(c) {
       status: it.valid ? t('linkValid', { n: f.int(it.days_left) }, it.days_left) : t('linkExpired'),
       stBg: it.valid ? '#e8f7ef' : '#f1f4f8', stColor: it.valid ? '#15603c' : '#5a6b80',
       renew: () => app.renew(it.id) })),
-    favEmpty: s.favs.length === 0,
+    // las favoritas de la cuenta llegan con API #15: hasta entonces no se sabe si no hay ninguna
+    favEmpty: !!s.mine && s.favs.length === 0,
     favRows: s.favs.map(id => app.row(id)).filter(Boolean).map(r => {
       const al = s.alerts[r.id] || {};
       return { ...c.mk(r),

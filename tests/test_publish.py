@@ -658,6 +658,11 @@ def test_a_package_brings_its_results_since_release(publish, tmp_path, shop):
      "since_release.csv: 2 lines without a number in pct and a date (YYYY-MM-DD) in as_of: 2, 3"),
     ("id\tpct\tas_of\nAAPL_1Day_1ADX_aaaa1111\t2.5\t2026-10-20\nAAPL_1Day_1ADX_aaaa1111\tnan\t2026-10-21\n",
      "since_release.csv: 1 ids repeated: AAPL_1Day_1ADX_aaaa1111"),
+    # un campo de más o de menos: la comprobación, con pandas, tomaba el id por el índice y se rompía
+    ("id,pct,as_of\nAAPL_1Day_1ADX_aaaa1111,2.5,2026-10-20,x\nTSLA_1Day_1C00_dddd4444,1\n",
+     "since_release.csv: 2 lines with more or fewer fields than its header: 2, 3"),
+    # con la marca BOM, la tienda (csv) no vería la columna id: ninguna cifra, sin decir por qué
+    ("\ufeffid,pct,as_of\nAAPL_1Day_1ADX_aaaa1111,2.5,2026-10-20\n", "since_release.csv: no column id"),
 ])
 def test_a_wrong_since_release_is_refused(publish, tmp_path, shop, text, says):
     d_result, rows = factory(tmp_path)

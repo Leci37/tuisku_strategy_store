@@ -63,6 +63,7 @@ and in the factory) point them at temporary folders; release.json always goes be
 """
 import argparse
 import base64
+import csv
 import hashlib
 import io
 import json
@@ -255,35 +256,46 @@ def path_problem(key, folders) -> str:
 
 
 def since_release_problems(data: bytes, ids: set) -> list:
-    """What is wrong with a package's since_release.csv (comma or tab separated, as the shop reads it): its
-    columns, an id that is no row of the package, a repeated id, a pct that is not a number, an as_of that is
-    not a date."""
+    """What is wrong with a package's since_release.csv, read as the shop reads it (edgefolio/catalogue.py's
+    read_table: csv, tab separated when its first line has a tab, else comma): its columns, a line with more or
+    fewer fields than its header, an id that is no row of the package, a repeated id, a pct that is not a number,
+    an as_of that is not a date. (pandas, given a line with one field more than its header, took its first field
+    for the table's index: the columns slid and the line numbers broke the check.)"""
     try:
         text = data.decode("utf-8")
         sep = "\t" if "\t" in text.split("\n", 1)[0] else ","
-        df = pd.read_csv(io.StringIO(text), sep=sep, dtype=str, keep_default_na=False)
-    except ValueError as e:  # a UnicodeDecodeError is one too
+        reader = csv.DictReader(io.StringIO(text, newline=""), delimiter=sep)
+        rows = [(reader.line_num, row) for row in reader]
+    except (UnicodeDecodeError, csv.Error) as e:
         return [f"{SINCE_RELEASE}: not a table ({e})"]
-    missing = [c for c in SINCE_COLUMNS if c not in df.columns]
+    missing = [c for c in SINCE_COLUMNS if c not in (reader.fieldnames or [])]
     if missing:
         return [f"{SINCE_RELEASE}: no column {', '.join(missing)} (its columns are {', '.join(SINCE_COLUMNS)})"]
     problems = []
-    stray = sorted(set(df["id"]) - ids)
+    uneven = [line for line, row in rows if None in row or None in row.values()]
+    if uneven:
+        problems.append(f"{SINCE_RELEASE}: {len(uneven)} lines with more or fewer fields than its header: "
+                        f"{listed(uneven)}")
+    seen = [row["id"] for _, row in rows if row["id"] is not None]
+    stray = sorted(set(seen) - ids)
     if stray:
         problems.append(f"{SINCE_RELEASE}: {len(stray)} ids of no row of {PACKAGE_CATALOGUE}: {listed(stray)}")
-    repeated = sorted(set(df.loc[df["id"].duplicated(), "id"]))
+    counts = {}
+    for i in seen:
+        counts[i] = counts.get(i, 0) + 1
+    repeated = sorted(i for i, n in counts.items() if n > 1)
     if repeated:
         problems.append(f"{SINCE_RELEASE}: {len(repeated)} ids repeated: {listed(repeated)}")
 
     def good(row) -> bool:
-        as_of = row["as_of"].strip()
+        as_of = (row["as_of"] or "").strip()
         try:
-            finite = math.isfinite(float(row["pct"]))
+            finite = math.isfinite(float(row["pct"] or ""))
             date.fromisoformat(as_of)
         except ValueError:
             return False
         return finite and re.fullmatch(r"\d{4}-\d{2}-\d{2}", as_of) is not None
-    wrong = [i + 2 for i, row in df.iterrows() if not good(row)]
+    wrong = [line for line, row in rows if line not in uneven and not good(row)]
     if wrong:
         problems.append(f"{SINCE_RELEASE}: {len(wrong)} lines without a number in pct and a date (YYYY-MM-DD) in "
                         f"as_of: {listed(wrong)}")

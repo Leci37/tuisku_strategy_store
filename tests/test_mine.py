@@ -184,6 +184,36 @@ def test_a_new_version_is_offered_and_delivered(app, settings, paypal):
     assert got["version"] == 2 and got["update"] is None and got["url"] != item["url"]
 
 
+def test_a_bought_strategy_that_left_the_catalogue(app, settings, paypal):
+    """Las 49 horarias de acciones salieron del catálogo (E2, 2026-10-26), y alguien pudo comprar una antes. La regla
+    de la tienda no cambia: lo que ya no está en el catálogo no se enseña ni se entrega. Mis estrategias sigue con lo
+    demás, sin romperse; el enlace de la que salió dice errStrategyGone (abierto en el navegador, vuelve a Mis
+    estrategias con el aviso); el zip y la página de gracias del pedido dan lo que queda; renovarla, 404."""
+    ana = signed(app, "ana@example.com")
+    receipt = buy(ana, [AAPL, MSFT])
+    links = {d["id"]: d["url"] for d in receipt["downloads"]}
+    assert ana.put(f"/api/favourites/{MSFT}", json={}).status_code == 200
+    with open(settings.catalogue, newline="") as f:
+        rows = [r for r in csv.DictReader(f, delimiter="\t") if r["ticker"] != "MSFT"]
+    with open(settings.catalogue, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter="\t")
+        w.writeheader()
+        w.writerows(rows)
+    install(app, settings, paypal)   # la tienda, arrancada otra vez sin MSFT
+    body = my(ana)
+    assert [i["id"] for i in body["items"]] == [AAPL] and body["favourites"] == []
+    gone = ana.get(links[MSFT])
+    assert gone.status_code == 404 and gone.json == {"error": "errStrategyGone"}
+    opened = ana.get(links[MSFT], headers={"Sec-Fetch-Dest": "document"})
+    assert opened.status_code == 303 and opened.headers["location"] == "/mine?link=errStrategyGone"
+    assert zipfile.ZipFile(io.BytesIO(ana.get(receipt["download_all"]).data)).namelist() == [f"Tuisku_{AAPL}.pine"]
+    again = ana.post(f"/api/orders/{receipt['order_id']}/capture")
+    assert again.status_code == 200 and [d["id"] for d in again.json["downloads"]] == [AAPL]
+    renewed = ana.post("/api/mine/renew", json={"id": MSFT})
+    assert renewed.status_code == 404 and renewed.json == {"error": "errUnknownStrategy"}
+    assert ana.get(links[AAPL]).status_code == 200
+
+
 def test_the_owner_reads_the_full_script(app, client, free_file):  # noqa: F811
     claim(client, "ana@example.com")
     ana = signed(app, "ana@example.com")

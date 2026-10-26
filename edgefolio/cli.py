@@ -88,7 +88,8 @@ def register(bp):
                   help="La carpeta de los scripts completos (el d_result/pine_TW_b del generador): se copian los "
                        "del manifiesto, comprobado su sha256.")
     @click.option("--skip-scripts", is_flag=True, help="Publicar aunque falten scripts en STRATEGIES_DIR (dice cuántos).")
-    @click.option("--prune", is_flag=True, help="Borrar los gráficos y vistas previas que ya no usa ninguna fila.")
+    @click.option("--prune", is_flag=True, help="Borrar los gráficos y vistas previas que ya no usa ninguna fila, y un "
+                                                "catalogue/since_release.csv de antes si el paquete no trae uno.")
     def import_package(package, scripts, skip_scripts, prune):
         """Publica un paquete del generador (su d_result/package/), comprobado entero antes de escribir nada."""
         from . import release

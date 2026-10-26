@@ -250,7 +250,7 @@ Se queda como está; el diseño no lo enseña o lo simula:
 - **Las escalas de los rangos de Pro salen del catálogo:** cada barra va del mínimo al máximo de sus
   estrategias, redondeados hacia fuera (con el catálogo de 2026-10, las operaciones 0–70 y el beneficio
   neto 0–0,5 %), y es logarítmica sólo si sus valores abarcan más de dos órdenes de magnitud (hoy, el
-  factor de beneficio: 1–200). Las del diseño (§12) eran las del catálogo de 2024, y las 143 estrategias
+  factor de beneficio: 1–200). Las del diseño (§12) eran las del catálogo de 2024, y las 94 estrategias
   caían en un rincón de cada barra. Por debajo de 10, el factor de beneficio va con hasta dos decimales y el
   beneficio medio (%) con dos; la actividad por vela, con hasta tres. Hasta la primera respuesta del
   servidor, las cajas de mínimo y máximo salen vacías (no con las cifras del diseño), y lo que se escribe
@@ -411,7 +411,7 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
 
 ## Pruebas
 
-- `pytest`, hoy (2026-10-26): 284 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
+- `pytest`, hoy (2026-10-26): 287 pruebas en verde y 1 saltada (`test_formats.py`: los scripts de pago no
   están en la máquina), con Chromium; sin él, las pruebas en un navegador se saltan y no prueban nada. Las
   de los arreglos del recorrido de 2026-10-25: `tests/test_keyboard.py` (los diálogos y el teclado),
   `tests/test_lists_cart.py` (Lite, el carrito, el recorrido y Gracias), `tests/test_scales.py` (las escalas
@@ -419,7 +419,8 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
   `tests/test_mine_page.py` y lo nuevo de `tests/test_phone_bar.py`, `test_pricing.py`, `test_orders.py` y
   `test_search.py`. Las de las decisiones del dueño del 2026-10-26 sobre el catálogo (E1, E2, E10, E11):
   `tests/test_listing_page.py` (el aviso de sobreajuste, la explicación de la nota y «Desde su publicación», sin
-  cifras y con una) y lo nuevo de `test_publish.py`, `test_release.py`, `test_search.py` y `test_bundles.py`.
+  cifras y con una) y lo nuevo de `test_publish.py`, `test_release.py`, `test_search.py`, `test_bundles.py` y
+  `test_mine.py` (lo comprado de una estrategia que salió del catálogo: no se enseña ni se entrega, sin romper nada).
 - Con esta exportación eran 228 pruebas en verde (antes 210). Nuevas: `tests/test_page_code.py` (sin marcas de conflicto;
   cada valor, campo y texto que leen las vistas lo da `static/js`; los textos en los 8 idiomas con las
   mismas variables y sin claves del núcleo; los ganchos `data-search` y `data-sf-cart`); en
@@ -432,4 +433,4 @@ Nada de esto se parchea en la tienda; si se quiere, entra en una versión del n�
   entero, sobre una base de datos nueva, sin un error en la consola. Las 17 capturas del README, otra vez,
   y tres nuevas: `edgefolio_free_error.png`, `edgefolio_pro_es.png` y `edgefolio_phone_cart.png`.
 - La «insignia Nuevo» no se veía en el catálogo de entonces (nada publicado en los últimos 30 días): se probó
-  con datos de prueba. Con el de 2026-10 la llevan las 143, hasta el 12 nov 2026.
+  con datos de prueba. Con el de 2026-10 la llevan las 94, hasta el 12 nov 2026.

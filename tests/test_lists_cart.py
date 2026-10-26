@@ -195,7 +195,7 @@ def test_pro_tour_texts_and_the_open_table_row(real_app):
             page.keyboard.press("Escape")
 
             # B21: un desplegable con una sola opción dice «1 seleccionado» (en el catálogo de 2026-10, la fecha
-            # de publicación: las 143 salieron el mismo día); con una estrategia, «estrategia mostrada»
+            # de publicación: las 94 salieron el mismo día); con una estrategia, «estrategia mostrada»
             api = real_app.test_client()
             dates = len(api.get("/api/strategies?facets=1&size=1").json["options"]["rel"])
             release = page.locator("aside button[aria-expanded]").filter(has_text="Fecha de publicación").inner_text()

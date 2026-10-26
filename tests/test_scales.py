@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Las escalas que pone el catálogo, en un Chromium de verdad (``testing.mobile`` del núcleo) sobre el catálogo
 de verdad (``real_app``). Los rangos de Pro van del mínimo al máximo del catálogo (con las barras del diseño,
-las del catálogo de 2024, las 143 estrategias de 2026-10 caían en un rincón), y la actividad por vela se
+las del catálogo de 2024, las 94 estrategias de 2026-10 caían en un rincón), y la actividad por vela se
 filtra con sus tres decimales. Hasta que llega la primera respuesta con esas barras, las cajas no escriben los
 extremos del diseño, y lo que se escribe entonces se queda en su valor. Las dos barras de la página de la
 estrategia («Backtest» y «Desde su publicación») miden contra el mejor backtest del catálogo, el ``npp_max`` de

@@ -217,8 +217,8 @@ def test_histograms_count_every_other_filter(real_client, rows):
 
 def test_each_track_is_the_catalogues_own(real_client, rows):
     """Cada barra va del mínimo al máximo del catálogo, redondeados hacia fuera: las estrategias la llenan.
-    Con las del diseño (las del catálogo de 2024), las 143 de 2026-10 caían en un rincón: 5–63 operaciones en
-    la primera de 32 barras de 0–2000, y 29 por debajo del mínimo de «Beneficio neto (%)»."""
+    Con las del diseño (las del catálogo de 2024), las 94 de 2026-10 caían en un rincón: 5–63 operaciones en
+    la primera de 32 barras de 0–2000, y 23 por debajo del mínimo de «Beneficio neto (%)»."""
     body = get(real_client, "facets=1")
     for key, (field, *_) in RANGES.items():
         values = [r[field] for r in rows if r[field] is not None]

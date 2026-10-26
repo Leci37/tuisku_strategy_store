@@ -6,10 +6,13 @@ de verdad con el kit del núcleo (``testing.mobile``, 0.28) sobre el catálogo d
   seis en ``pat`` de ui.json (sólo 7 de los 22 de 2026-10 tenían explicación). Cada nombre de features.json dice
   de qué patrón es.
 - Árbol | Bloques dicen cuál está puesta (aria-selected). La línea del patrón y el texto de cada explicación dicen
-  su idioma (lang): la descripción de un indicador, fuera de es y en, es la inglesa.
+  su idioma (lang): la descripción de un indicador, fuera de es y en, es la inglesa, y en árabe va de izquierda a
+  derecha (dir; si no, su punto final salta al principio). La línea del patrón va en la dirección de la página: en
+  árabe, de derecha a izquierda aunque empiece por un nombre latino («WaveTrend…»).
 - Un valor que el generador divide por el cierre (``macd__close``, sus entradas de 2026) lleva el nombre del suyo,
   con una nota, si es de un patrón de la estrategia: ``d`` es la %D del RSI estocástico y una distancia de precio
-  en WaveTrend, y ``ema2`` es la media intermedia de la Triple EMA y una de 2 velas en TMA Overlay.
+  en WaveTrend, y ``ema2`` es la media intermedia de la Triple EMA y una de 2 velas en TMA Overlay. Lo mismo en
+  los ocho idiomas: el nombre traducido (``feat``) tampoco vale fuera de su patrón.
 - «Comprar para desbloquear» sigue al carrito (la propiedad ``inCart`` de la página; sin ella, como fuera) y
   añade la estrategia una sola vez.
 - El propietario: su script completo colorea los resultados con sus niveles (``buyThreshold``,
@@ -34,6 +37,8 @@ FX = json.loads((ROOT / "static" / "trees" / "features.json").read_text(encoding
 UI = json.loads((ROOT / "static" / "trees" / "ui.json").read_text(encoding="utf-8"))
 TREE_JS = (ROOT / "static" / "js" / "tree.js").read_text(encoding="utf-8")
 OTHERS = ("pt", "fr", "de", "zh", "ar", "hi")
+# «primer(o)» en los otros seis, como lo decía ownFull antes
+FIRST = {"pt": "primeira", "fr": "premier", "de": "erste", "zh": "第一", "ar": "الأولى", "hi": "पहला"}
 # Árbol | Bloques y los verbos de los resultados, en español: los de la vista (renderVals), no los de TEXT.
 BLOCKS, BUY, SELL, WAIT = "Bloques", "Comprar", "Vender", "Esperar"
 
@@ -77,6 +82,18 @@ decision_tree_0_TEST_1Day_00000000(d__close, ema2__close, macd__close)=>
 \t\t\t\tret := 0.3
 \t\tif( ema2__close > 0.95 )
 """
+# Los nombres de otros patrones, tal cual: ``d`` (del RSI estocástico) y ``macd`` (del MACD) en una de WaveTrend.
+FOREIGN_PREVIEW = """// Technical base pattern: Wave_Trend_Calculation
+decision_tree_0_TEST_1Day_00000000(d, macd)=>
+\tfloat ret = na  // # DecisionTreeRegressor(max_depth=2)
+\tif( d <= 0.5 )
+\t\tret := 1.0
+\tif( d > 0.5 )
+\t\tif( macd <= 0.1 )
+\t\t\tret := -1.0
+\t\tif( macd > 0.1 )
+\t\t\tret := 0.2
+"""
 # Un script completo de la plantilla de 2026 (niveles 0,8 y −0,5) con dos árboles; su vista previa, el primero.
 OWNED_TREES = """// Technical base pattern: Bollinger_RSI_Double_Strategy
 // ID_model: TEST_1Day_1BOL_11111111 Date Creation: 2026/10/13 Expiry date: 2027/06/13
@@ -118,8 +135,8 @@ if( op_operation <= -0.7 )
 \tstrategy.close("x")
 """
 
-# Lo que se ve de la pestaña: las dos pestañas de dentro, la línea del patrón (idioma y texto), cada caja (su
-# código y lo que dice) y todo su texto.
+# Lo que se ve de la pestaña: las dos pestañas de dentro, la línea del patrón (idioma, texto y dirección), cada caja
+# (su código y lo que dice) y todo su texto.
 SEEN = """() => {
   const sec = document.querySelector('[data-tree-sec]');
   if (!sec || !sec.querySelector('[data-tree-scroll] button, [data-blk-scroll] button')) return null;
@@ -127,7 +144,7 @@ SEEN = """() => {
   sec.querySelectorAll('[data-tree-scroll] button[aria-label]').forEach(b => { boxes[b.getAttribute('aria-label')] = b.textContent.trim(); });
   return {
     tabs: [...sec.querySelectorAll('[role=tab]')].map(b => [b.textContent.trim(), b.getAttribute('aria-selected')]),
-    about: [...sec.querySelectorAll('span[dir=auto] > span')].map(s => [s.getAttribute('lang'), s.textContent]),
+    about: [...sec.querySelectorAll('span[lang]')].map(s => [s.getAttribute('lang'), s.textContent, getComputedStyle(s).direction]),
     boxes, text: sec.textContent
   };
 }"""
@@ -140,20 +157,20 @@ OWNER_BOX = """text => {
 }"""
 TIP = """() => { const t = document.querySelector('[role=tooltip]'); if (!t) return null;
   const p = t.querySelector('p'); return { title: t.querySelector('strong').textContent, lang: p.getAttribute('lang'), text: p.textContent,
-  cta: [...t.querySelectorAll('button')].map(b => b.textContent.trim()) }; }"""
+  dir: p.getAttribute('dir'), direction: getComputedStyle(p).direction, cta: [...t.querySelectorAll('button')].map(b => b.textContent.trim()) }; }"""
 CART = "() => { try { return (JSON.parse(localStorage.getItem('edgefolio-cart-v1')) || {}).cart || []; } catch (e) { return []; } }"
 # Lo que tree.js hace con lo que le pasa la página, sin pintar: la etiqueta y dos clics de «Comprar para
 # desbloquear» según inCart (lo que la página dice del carrito), la línea del patrón en francés (y sin su
-# traducción: la inglesa, dicha) y los niveles de un script completo.
-UNIT = """async ([scripts, preview]) => {
+# traducción: la inglesa, dicha), los nombres de otros patrones en tres idiomas y los niveles de un script completo.
+UNIT = """async ([scripts, preview, foreign]) => {
   const { StrategyTree, levelsOf } = await import('/static/js/tree.js');
   const [fx, ui] = await Promise.all(['features', 'ui'].map(f => fetch('/static/trees/' + f + '.json').then(r => r.json())));
   const paid = { id: 'TEST_1Day_1WAV_00000000', ticker: 'TEST', price: 69 }, free = { ...paid, price: 0 };
-  const shown = (props, texts = ui) => {
+  const shown = (props, texts = ui, src = preview) => {
     const tree = new StrategyTree({});
     tree.props = { embedded: true, lang: 'es', strategy: paid, ...props };
     Object.assign(tree, { _fx: fx, _ui: texts, setState: () => {}, follow: () => {} });
-    tree.state = { ...tree.state, trees: tree.forest(preview, tree.props.strategy, levelsOf('')) };
+    tree.state = { ...tree.state, trees: tree.forest(src, tree.props.strategy, levelsOf('')) };
     return tree.renderVals();
   };
   const unlockWith = props => {
@@ -166,6 +183,7 @@ UNIT = """async ([scripts, preview]) => {
     none: unlockWith({}), out: unlockWith({ inCart: false }), in: unlockWith({ inCart: true }),
     free: unlockWith({ strategy: free, inCart: true }),
     fr: shown({ lang: 'fr' }).abouts, untranslated: shown({ lang: 'fr' }, { ...ui, fr: { ...ui.fr, pat: {} } }).abouts,
+    foreign: ['es', 'fr', 'ar'].map(lang => shown({ lang }, ui, foreign).nodes.filter(n => n.isDec).map(n => n.name)),
     levels: scripts.map(levelsOf)
   };
 }"""
@@ -266,6 +284,8 @@ def test_every_published_pattern_is_explained_and_every_name_says_its_pattern():
         assert set(UI[lg]["pat"]) == set(FX["patterns"]), lg
         for key in ("ownFull", "ownFail", "fOwnSignIn", "fOwnNotYours"):
             assert UI[lg].get(key), (lg, key)
+        # el propietario elige cualquier árbol del bosque: «el árbol completo», no «el primero»
+        assert FIRST[lg] not in UI[lg]["ownFull"], (lg, UI[lg]["ownFull"])
     # el quinto campo: sin él, el d__close de WaveTrend saldría como la %D del RSI estocástico
     wrong = {f: e[4:] for f, e in FX["features"].items() if len(e) != 5 or e[4] not in FX["patterns"]}
     assert not wrong, wrong
@@ -294,7 +314,7 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             tab.goto(f"/s/{real}/tree")
             seen = wait_tree(tab)
             assert [s for _, s in seen["tabs"][-2:]] == ["true", "false"], seen["tabs"]
-            assert seen["about"] == [["es", FX["patterns"]["MACD_ULT_MTF"][1]]], seen["about"]
+            assert seen["about"] == [["es", FX["patterns"]["MACD_ULT_MTF"][1], "ltr"]], seen["about"]
             assert box(seen, "if( signal__close <=").startswith(FX["features"]["signal"][2]), seen["boxes"]
             assert box(seen, "if( macd__close <=").startswith(FX["features"]["macd"][2]), seen["boxes"]
             text = says(tab, es("ownFail"))["text"]
@@ -307,15 +327,25 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             until(tab, "seen => seen.tabs.slice(-2).map(t => t[1]).join() === 'false,true'")
             tab.page.get_by_role("tab", name=es("treeTab"), exact=True).click()
 
-            # en francés: su explicación del patrón; la descripción de un indicador, en inglés y dicho
-            tab.goto(f"/s/{real}/tree?lang=fr")
+            # en árabe: su explicación del patrón; la descripción de un indicador, en inglés, dicho y de izquierda
+            # a derecha (en una página de derecha a izquierda, su punto final saltaba al principio)
+            tab.goto(f"/s/{real}/tree?lang=ar")
             seen = wait_tree(tab)
-            assert seen["about"] == [["fr", UI["fr"]["pat"]["MACD_ULT_MTF"]]], seen["about"]
-            assert box(seen, "if( signal__close <=").startswith(UI["fr"]["feat"]["signal"]), seen["boxes"]
+            assert seen["about"] == [["ar", UI["ar"]["pat"]["MACD_ULT_MTF"], "rtl"]], seen["about"]
+            assert box(seen, "if( signal__close <=").startswith(UI["ar"]["feat"]["signal"]), seen["boxes"]
             tip = pinned(tab, tab.page.locator('button[aria-label="What is signal__close?"]'))
-            assert tip and tip["lang"] == "en" and tip["title"] == UI["fr"]["feat"]["signal"], tip
+            assert tip and tip["lang"] == "en" and tip["title"] == UI["ar"]["feat"]["signal"], tip
+            assert tip["dir"] == "ltr" and tip["direction"] == "ltr", tip
             assert tip["text"] == FX["features"]["signal"][1] + " " + text_of("en", "relNote"), tip
             close_tip(tab)
+            # la línea de WaveTrend en árabe empieza por un nombre latino: va de derecha a izquierda, como la página
+            # (con dir="auto" salía de izquierda a derecha); y los nombres, también en árabe, sólo los de su patrón
+            both = ("Wave_Trend_Calculation", "L_Triple_EMA")
+            tab.goto(f"/s/{crafted}/tree?lang=ar")
+            seen = wait_tree(tab)
+            assert seen["about"] == [["ar", UI["ar"]["pat"][b], "rtl"] for b in both], seen["about"]
+            assert box(seen, "if( d__close <=").startswith("d__close"), seen["boxes"]
+            assert box(seen, "if( ema2__close <=").startswith(UI["ar"]["feat"]["ema2"]), seen["boxes"]
 
             # un nombre, sólo el de un patrón de la estrategia; «Comprar para desbloquear», una vez
             tab.goto(f"/s/{crafted}/tree?lang=es")
@@ -323,7 +353,7 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             assert box(seen, "if( d__close <=").startswith("d__close"), "la %D del RSI estocástico no es la d de WaveTrend"
             assert box(seen, "if( macd__close <=").startswith("macd__close"), seen["boxes"]
             assert box(seen, "if( ema2__close <=").startswith(FX["features"]["ema2"][2]), seen["boxes"]
-            assert [lang for lang, _ in seen["about"]] == ["es", "es"], seen["about"]
+            assert [lang for lang, _, _ in seen["about"]] == ["es", "es"], seen["about"]
             tip = pinned(tab, tab.page.locator('button[aria-label="What is ema2__close?"]'))
             assert tip and tip["lang"] == "es" and tip["text"] == FX["features"]["ema2"][3] + " " + es("relNote"), tip
             close_tip(tab)
@@ -333,13 +363,14 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
                 "^(" + re.escape(es("unlockBtn")) + "|" + re.escape(es("added")) + ")$")).click()
             tab.page.wait_for_timeout(300)
             assert tab.page.evaluate(CART).count(crafted) == 1, "un segundo clic no la quita"
-            unit = tab.page.evaluate(UNIT, [[OWNED_SCRIPT, OLD_SCRIPT, CRAFTED_PREVIEW], CRAFTED_PREVIEW])
+            unit = tab.page.evaluate(UNIT, [[OWNED_SCRIPT, OLD_SCRIPT, CRAFTED_PREVIEW], CRAFTED_PREVIEW, FOREIGN_PREVIEW])
             assert unit["none"] == [es("unlockBtn"), 2] and unit["out"] == [es("unlockBtn"), 2], unit
             assert unit["in"] == [es("added"), 0], unit
             assert unit["free"] == [es("fBtn"), 2], "una gratis abre su diálogo cada vez"
-            both = ("Wave_Trend_Calculation", "L_Triple_EMA")
-            assert unit["fr"] == [{"text": UI["fr"]["pat"][b], "lang": "fr"} for b in both], unit["fr"]
-            assert unit["untranslated"] == [{"text": FX["patterns"][b][0], "lang": "en"} for b in both]
+            assert unit["fr"] == [{"text": UI["fr"]["pat"][b], "lang": "fr", "dir": None} for b in both], unit["fr"]
+            assert unit["untranslated"] == [{"text": FX["patterns"][b][0], "lang": "en", "dir": "ltr"} for b in both]
+            assert unit["foreign"] == [["d", "macd"]] * 3, \
+                ("un nombre traducido tampoco vale fuera de su patrón", unit["foreign"])
             assert unit["levels"] == [{"buy": 0.8, "close": -0.5}, {"buy": 0.6, "close": -0.7},
                                       {"buy": 0.55, "close": -0.9}], unit["levels"]
 

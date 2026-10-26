@@ -393,8 +393,9 @@ export class StrategyTree extends Component {
     const own = x => (x && (!x[4] || !bases.length || bases.includes(x[4])) ? x : null);
     const fdesc = f => {
       const k = own(FX.features[f]) ? f : /__close$/.test(f) && own(FX.features[f.replace(/__close$/, '')]) ? f.replace(/__close$/, '') : '';
-      const x = k ? FX.features[k] : null, ul = (L.feat || {})[k || f], note = k && k !== f ? ' ' + L.relNote : '';
-      return x ? (es ? [x[2], x[3] + note, 'es'] : [ul || x[0], x[1] + note, 'en']) : [ul || nice(f), L.defDesc, lg];
+      // el nombre traducido (feat) también es el de su patrón: sin k, el código, como en es y en
+      const x = k ? FX.features[k] : null, ul = k ? (L.feat || {})[k] : '', note = k && k !== f ? ' ' + L.relNote : '';
+      return x ? (es ? [x[2], x[3] + note, 'es'] : [ul || x[0], x[1] + note, 'en']) : [nice(f), L.defDesc, lg];
     };
     const SIG = {
       buy: [L.buy, '#15803d', '#e8f7ef', '#b7e4c7', 'rgba(21,128,61,.22)'],
@@ -563,7 +564,7 @@ export class StrategyTree extends Component {
       if (P.onBuy && (free || !P.inCart)) P.onBuy({ stopPropagation() {}, preventDefault() {} });
       else if (!P.embedded) window.location.href = '/s/' + encodeURIComponent(rowId(P));
     };
-    const tipOut = tip ? { tipOn: true, tipTitle: tip.title, tipCode: tip.code, tipHasCode: !!tip.code, tipText: tip.text, tipLang: tip.lang || lg, tipRows: tip.rows.map(r => ({ k: r[0], v: r[1] })), tipBars: tip.bars || [], tipHasBars: !!(tip.bars && tip.bars.length), tipFoot: tip.foot || '', tipHasFoot: !!tip.foot, tipPinned: !!TP.pin, tipHasCta: !!tip.cta, tipCtaLabel: tip.cta || '', tipCta: tip.act || unlock, tipX: TP.x + 'px', tipY: TP.y + 'px', tipTf: TP.up ? 'translateY(-100%)' : 'none' } : { tipOn: false, tipRows: [], tipBars: [] };
+    const tipOut = tip ? { tipOn: true, tipTitle: tip.title, tipCode: tip.code, tipHasCode: !!tip.code, tipText: tip.text, tipLang: tip.lang || lg, tipDir: (tip.lang || lg) !== lg ? 'ltr' : null, tipRows: tip.rows.map(r => ({ k: r[0], v: r[1] })), tipBars: tip.bars || [], tipHasBars: !!(tip.bars && tip.bars.length), tipFoot: tip.foot || '', tipHasFoot: !!tip.foot, tipPinned: !!TP.pin, tipHasCta: !!tip.cta, tipCtaLabel: tip.cta || '', tipCta: tip.act || unlock, tipX: TP.x + 'px', tipY: TP.y + 'px', tipTf: TP.up ? 'translateY(-100%)' : 'none' } : { tipOn: false, tipRows: [], tipBars: [] };
 
     const params = tr.params.split(',').map(x => x.trim()).filter(x => x && !/^random_state/.test(x)).join(' · ');
     const created = tr.created ? new Intl.DateTimeFormat(L.locale, { dateStyle: 'medium' }).format(new Date(tr.created + 'T12:00:00')) : '';
@@ -578,8 +579,9 @@ export class StrategyTree extends Component {
       summary: (tr.locked ? rpl(L.visible, { n: tr.leaves }) + ' · ' + rpl(tr.locked === 1 ? L.paid1 : L.paidN, { n: tr.locked }) : rpl(L.complete, { n: tr.leaves })) + (created ? ' · ' + rpl(L.created, { d: created }) : ''),
       params: `${tr.ticker}_${tr.interval}_${tr.key}_${tr.hash} · ${params}`,
       // qué es cada patrón: en y es, de features.json; los otros idiomas, de `pat` en ui.json; uno sin
-      // traducir todavía, en inglés y dicho (lang), para un lector de pantalla
-      abouts: tr.bases.map(b => { const x = FX.patterns[b] || [], t = lg === 'en' ? x[0] : es ? x[1] : (L.pat || {})[b]; return t ? { text: t, lang: lg } : x[0] ? { text: x[0], lang: 'en' } : null; }).filter(Boolean),
+      // traducir todavía, en inglés y dicho (lang), para un lector de pantalla, y de izquierda a derecha
+      // (dir): en árabe, su punto final saltaba al principio
+      abouts: tr.bases.map(b => { const x = FX.patterns[b] || [], t = lg === 'en' ? x[0] : es ? x[1] : (L.pat || {})[b]; return t ? { text: t, lang: lg, dir: null } : x[0] ? { text: x[0], lang: 'en', dir: 'ltr' } : null; }).filter(Boolean),
       sigLabel: LS ? LS[0] : L.paid, sigValue: LS ? fmtV(LF.v) : '', sigColor: LS ? LS[1] : '#8d9cae',
       hasMarker: !!LS, markerLeft: LS ? ((LF.v + 1) / 2 * 100).toFixed(2) + '%' : '0%',
       hasUnused: unusedList.length > 0, unused: unusedList.join(', '),

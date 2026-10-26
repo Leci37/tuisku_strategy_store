@@ -145,13 +145,17 @@ Se queda como está; el diseño no lo enseña o lo simula:
   la caja en su sitio cuando cambian los deslizadores de encima. En el diseño se cerraba en el acto.
 - **Los valores divididos por el cierre** que usa el generador de 2026 (`macd__close`, `BBlower__close`…)
   llevan el nombre del valor sin `__close`, con una nota en su explicación, y un nombre sólo vale en su
-  patrón (el quinto campo de cada valor en `static/trees/features.json`): la `d` de WaveTrend no es la %D
-  del RSI estocástico. Los que `features.json` no nombra (139 de los 182 que preguntan las vistas previas)
-  salen con su código, como antes: escribir sus nombres y descripciones es contenido del dueño.
+  patrón (el quinto campo de cada valor en `static/trees/features.json`), también el traducido (`feat`):
+  la `d` de WaveTrend no es la %D del RSI estocástico. Los que `features.json` no nombra (139 de los 182
+  que preguntan las vistas previas) salen con su código, como antes: escribir sus nombres y descripciones es
+  contenido del dueño.
 - **Los idiomas del árbol:** la explicación de los 22 patrones de 2026-10 (15 no tenían), en los 8 idiomas
   (`patterns` de `features.json` en en y es; `pat` de `static/trees/ui.json` en los otros seis). La
-  descripción de cada valor sigue sólo en en y es: en los otros idiomas sale la inglesa, con `lang="en"`
-  (`tree_tip.js`), como la de un patrón sin traducir (`tree_main.js`).
+  descripción de cada valor sigue sólo en en y es: en los otros idiomas sale la inglesa, con `lang="en"` y
+  `dir="ltr"` (`tree_tip.js`; en árabe, sin él, su punto final saltaba al principio), como la de un patrón sin
+  traducir (`tree_main.js`). La línea del patrón ya no lleva `dir="auto"`, que la tienda le puso cuando era
+  inglesa: va en la dirección de la página, y en árabe «WaveTrend…», «SuperTrend…» y «CM Ultimate MA…» salían de
+  izquierda a derecha.
 - **Árbol | Bloques** llevan `aria-selected`, como Ficha técnica | Cómo decide.
 - **«CLAVE · indicador»** de 1.402 estrategias (los 17 indicadores combinados: 2BB0, 2BT0…) lleva a la
   lista de scripts de TradingView, la salida del propio diseño para lo que no tiene página:

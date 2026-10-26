@@ -4,7 +4,8 @@
 // left-to-right in Arabic, as the coloured zones above them are drawn from the left.
 // Y de la tienda (CAMBIOS.md): si el script del propietario no llega, dónde bajarlo (ownerFail), no
 // «Comprar»; Árbol | Bloques dicen cuál está puesta (aria-selected); la explicación de cada patrón dice su
-// idioma (lang), porque una sin traducir todavía sale en inglés.
+// idioma (lang) y su dirección (dir), porque una sin traducir todavía sale en inglés, y la línea va en la de la
+// página, sin dir="auto": en árabe, la que empieza por un nombre latino («WaveTrend…») salía de izquierda a derecha.
 import { html } from '../../lib/html.js';
 import { s, T } from '../../lib/tpl.js';
 
@@ -86,7 +87,7 @@ export default function TreeMain(v) {
             <div style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:2px">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong dir="auto" style="font-size:18px">${v.title}</strong>${v.hasForest ? (v.forestPicks || []).map(fp => html`<button onClick=${fp?.pick} style="font-family:inherit;border:none;cursor:pointer;font-size:11.5px;font-weight:700;color:${s(fp?.color)};background:${s(fp?.bg)};border-radius:999px;padding:2px 9px">${fp?.text}</button>`) : html`<span style="font-size:11.5px;font-weight:700;color:#0950e3;background:#e9f0fd;border-radius:999px;padding:2px 9px">${v.treeBadge}</span>`}</div>
               <span style="font-size:12.5px;color:#5a6b80">${v.summary}</span>
-              <span dir="auto" style="font-size:13px;color:#16263a;text-wrap:pretty;margin-top:4px;max-width:640px">${(v.abouts || []).map((a, $index) => html`${$index ? ' ' : null}<span lang=${a?.lang}>${a?.text}</span>`)}</span>
+              <span style="font-size:13px;color:#16263a;text-wrap:pretty;margin-top:4px;max-width:640px">${(v.abouts || []).map((a, $index) => html`${$index ? ' ' : null}<span lang=${a?.lang} dir=${a?.dir}>${a?.text}</span>`)}</span>
               <span style="font-size:11px;color:#8d9cae;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere">${v.params}</span>
               </div>
             <div role="tablist" style="display:flex;background:#e9eef4;border-radius:10px;padding:3px">

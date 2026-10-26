@@ -1,8 +1,8 @@
 # Edgefolio · API
 
-What the shop's server receives and answers, read from the code on branch `_ztool_dev` on 12 Oct 2026.
+What the shop's server receives and answers, read from the code on branch `_ztool_dev` on 12 Oct 2026, and checked again on 26 Oct 2026, after the fixes of the browser walk of 25 and 26 Oct.
 
-- **Repository:** `Leci37/tuisku_strategy_store`. It was renamed from `tuisku_Web_selling`, and the old name still redirects. It runs on zlecitool-core 0.23.0.
+- **Repository:** `Leci37/tuisku_strategy_store`. It was renamed from `tuisku_Web_selling`, and the old name still redirects. It runs on zlecitool-core 0.31.2, with the catalogue of 2026-10: 143 strategies (133 paid, 10 free), all released on 13 Oct 2026.
 - **Code:**
   - Routes: `edgefolio/routes.py`.
   - The work, in the modules next to it: `search`, `catalogue`, `pricing`, `orders`, `paypal`, `downloads`, `free`, `mine`, `proofs`, `media`, `alerts`.
@@ -31,7 +31,7 @@ What the shop's server receives and answers, read from the code on branch `_ztoo
     | 5xx | `errLater` |
     | any other | `errRequest` |
 - **Ids:**
-  - A strategy id is `TICKER_INTERVAL_KEY_HASH`, for example `AAPL_1Day_1C00_ac87f0dc`.
+  - A strategy id is `TICKER_INTERVAL_KEY_HASH`, for example `SNOW_1Day_1BOL_7abec5de`.
   - Orders and download links store the strategy's key instead: `TICKER - INTERVAL - KEY - HASH`.
   - Every endpoint that takes an id also accepts that key, and the base64 alias the old shop used.
 - **Money:**
@@ -48,8 +48,8 @@ Every page uses the same template: `templates/edgefolio/shop.html`, inside the c
 | Path | Access | What the server does |
 |---|---|---|
 | `/` | public | The shop |
-| `/s/<id>` | public | Strategy page. An unknown id → `302` to `/`. An alias or a key → `301` to `/s/<id>`. |
-| `/s/<id>/tree` | public | The same, on the "How it decides" tab |
+| `/s/<id>` | public | Strategy page. An unknown id → `302` to `/`. An alias or a key → `301` to `/s/<id>`. The tab title names the strategy («Snowflake · SNOW · 1BOL · 1Day · Edgefolio»), also in `og:title` for link previews. |
+| `/s/<id>/tree` | public | The same, on the "How it decides" tab; the title adds «Cómo decide» (in the page's language) before «Edgefolio» |
 | `/thanks` | public | Thank-you page. PayPal returns here with `?token=<order id>`. |
 | `/mine` | session | My strategies. Without a session, the core sends the browser to `/login?next=/mine`. |
 
@@ -62,14 +62,14 @@ The page reads these query parameters, then removes them from the address bar:
 | `/?news=confirmed` or `/?news=expired` | The news confirmation link (#13) | A notice |
 | `/mine?proof=<token>` | The link that proves an email (#18), signed in only | The confirm step |
 
-The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page.
+The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page. Any other path, and a trailing slash (`/mine/`, `/s/<id>/`), gets the core's 404 page.
 
 ## Endpoints
 
 | # | Method and path | Access | What for | Called by the page |
 |---|---|---|---|---|
 | 1 | `GET /api/config` | public | Settings for prices and limits | On load |
-| 2 | `GET /api/strategies` | public | Filtered, sorted, paged list, with optional histograms and counts | Ticker tape, Lite, Pro, pack picker |
+| 2 | `GET /api/strategies` | public | Filtered, sorted, paged list, with optional histograms and counts | Ticker tape (every page), Lite, Pro, pack picker |
 | 3 | `GET /api/strategies/<id>` | public | One strategy, full record | Strategy page; any strategy the page names but hasn't loaded |
 | 4 | `GET /api/bundles` | public | Bundles and the custom pack offer | On load |
 | 5 | `GET /api/fx` | public | Exchange rates for the «≈» prices | On load |
@@ -100,11 +100,12 @@ The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page.
  "tiers": [{"over": "2500", "rate": "0.70"}, {"over": "1000", "rate": "0.40"}, {"over": "500", "rate": "0.25"},
            {"over": "290", "rate": "0.20"}, {"over": "160", "rate": "0.15"}],
  "pack": {"size": 5, "price": "249"}, "download_days": 7, "max_downloads": 10,
- "new_days": 30, "contact_email": "sales@tuisku.eu", "strategies": 1234}
+ "new_days": 30, "contact_email": "sales@tuisku.ai", "strategies": 143, "npp_max": 0.44}
 ```
 
 - `mode` is `fake`, `sandbox` or `live`.
-- `strategies` is the number of strategies in the catalogue (the value above is only an example).
+- `strategies` is the number of strategies in the catalogue.
+- `npp_max` is the catalogue's best backtest net profit % (`null` if no strategy has one). The strategy page measures its two bars, «Backtest» and «Desde su publicación», against it (capped at 100 %), not against the design's 100 %: the 2026-10 backtests are 0.03–0.44 %. Without it, the page uses 100.
 - The response never contains a secret or a discount code.
 
 ### 2 · GET /api/strategies
@@ -113,12 +114,12 @@ The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page.
 
 | Parameter | Values | Meaning |
 |---|---|---|
-| `q` | Text, up to 100 characters | Searches the name, ticker, indicator name and key. Case doesn't matter; a partial match counts. |
-| `tab` | `hot`, `win`, `stocks`, `crypto`, `new`, `free` | The Lite tabs. `new` means released in the last `NEW_DAYS` days. |
+| `q` | Text, up to 100 characters | Searches the name, ticker, indicator name and key. Case and outer spaces don't matter; a partial match counts. The page's search boxes take 100 characters, and every query cuts at 100. |
+| `tab` | `hot`, `win`, `stocks`, `crypto`, `new`, `free` | The Lite tabs. `new` means released in the last `NEW_DAYS` days: today all 143 (released 13 Oct 2026), until 12 Nov 2026. |
 | `sort` | `np`, `npp`, `win`, `price`, `trades`, `avg`, `months`, `hot` | Always highest first. `hot` sorts by net profit %, with tickers taking turns (each ticker's best first). |
 | `free`, `paid` | `1`, `true`, `yes` or `on` (`0`, `false`, `no`, `off` or empty for no) | Only free, or only paid, strategies |
 | `<range>_min`, `<range>_max` | A number | A range filter; either end can be left out. The range keys are in the next table. |
-| `sym`, `tf`, `ind`, `idx`, `rel` | Repeated, for example `sym=AAPL&sym=NVDA` | Symbol, timeframe, indicator key, index and release date |
+| `sym`, `tf`, `ind`, `idx`, `rel` | Repeated, for example `sym=ADBE&sym=AMD` | Symbol, timeframe, indicator key, index and release date |
 | `facets` | Flag | Also return the histograms, the bar scales and the option counts |
 | `page` | 1 or more (default 1) | — |
 | `size` | 1 to 100 (default 25) | — |
@@ -131,32 +132,36 @@ The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page.
 
 **Range keys:**
 
-| Key | Field | Bar from – to | Scale | Bars |
-|---|---|---|---|---|
-| `np` | Net profit ($) | 200 – 6,500,000 | log | 36 |
-| `price` | Price ($) | 0 – 140 | linear | 36 |
-| `npp` | Net profit (%) | 0.1 – 6,500 | log | 32 |
-| `trades` | Closed trades | 0 – 2,000 | linear | 32 |
-| `win` | Win rate (%) | 0 – 100 | linear | 32 |
-| `pf` | Profit factor | 1 – 35,000 | log | 32 |
-| `months` | Training (months) | 0 – 400 | linear | 32 |
-| `mlu` | Max loss ($) | 0 – 40,000 | linear | 32 |
-| `mlp` | Max loss (%) | 0 – 4 | linear | 32 |
-| `avg` | Average profit ($) | 1 – 2,100,000 | log | 32 |
-| `avgp` | Average profit (%) | 0 – 5,000 | linear | 32 |
-| `bars` | Average bars per trade | 0 – 8,000 | linear | 32 |
-| `act` | Activity (closed trades ÷ months trained) | 0 – 3 | linear | 32 |
-| `candles` | Number of candles | 0 – 500,000 | linear | 32 |
-| `prec` | Precision f1 (%) | 40 – 100 | linear | 32 |
-| `tree` | Tree depth | 1 – 10 | linear | 10 |
+Each bar runs from its column's minimum to its maximum in the loaded catalogue, rounded outward to a round number (`edgefolio/search.py`, `track()`): on a linear bar, to the power of ten just below the spread; on a log bar, to 1-2-5 values. A bar is logarithmic only where the design asks for log (the «Log» column) and all its values are positive and span more than 100×. The design's bars (§12, made for the 2024 catalogue) are kept only for a column with no values at all, and in `static/js/lib/filters.js` until the page's first answer. The histograms are counted on the served bars.
+
+| Key | Field | Log | Bars | Design's bar (fallback) | Bar with the 2026-10 catalogue |
+|---|---|---|---|---|---|
+| `np` | Net profit ($) | yes | 36 | 200 – 6,500,000 | 0 – 5,000, linear |
+| `price` | Price ($) | no | 36 | 0 – 140 | 0 – 80 |
+| `npp` | Net profit (%) | yes | 32 | 0.1 – 6,500 | 0 – 0.5, linear |
+| `trades` | Closed trades | no | 32 | 0 – 2,000 | 0 – 70 |
+| `win` | Win rate (%) | no | 32 | 0 – 100 | 30 – 100 |
+| `pf` | Profit factor | yes | 32 | 1 – 35,000 | 1 – 200, log |
+| `months` | Training (months) | no | 32 | 0 – 400 | 10 – 80 |
+| `mlu` | Max loss ($) | no | 32 | 0 – 40,000 | 0 – 5,000 |
+| `mlp` | Max loss (%) | no | 32 | 0 – 4 | 0 – 0.5 |
+| `avg` | Average profit ($) | yes | 32 | 1 – 2,100,000 | 0 – 500, linear |
+| `avgp` | Average profit (%) | no | 32 | 0 – 5,000 | 0 – 5 |
+| `bars` | Average bars per trade | no | 32 | 0 – 8,000 | 0 – 30 |
+| `act` | Trades per candle of the backtest (`Trade Activity Per Candle`) | no | 32 | 0 – 3 | 0 – 0.3 |
+| `candles` | Number of candles | no | 32 | 0 – 500,000 | 0 – 50,000 |
+| `prec` | Precision f1 (%) | no | 32 | 40 – 100 | 40 – 90 |
+| `tree` | Tree depth | no | 10 | 1 – 10 | 5 – 6 |
+
+A strategy with no value in a column (SPOT 1Day 1FIB has no profit factor) never passes an active range on it. The page sends each bound with the decimals its label shows: up to two for the profit factor and average profit (%) under 10, up to three for the activity.
 
 **Response:**
 
 ```json
-{"total": 120, "page": 1, "size": 25, "rows": [ROW, "…"], "counts": {"all": 1234, "new": 0},
- "hist": {"np": [0, 3, 12, "…"]},
- "ranges": {"np": {"min": 200, "max": 6500000, "log": true, "bins": 36}},
- "options": {"sym": [{"v": "AAPL", "label": "Apple Inc. (AAPL)", "count": 12, "icon": "/static/assets/icons/AAPL_big.svg"}]}}
+{"total": 143, "page": 1, "size": 25, "rows": [ROW, "…"], "counts": {"all": 143, "new": 143},
+ "hist": {"np": [0, 1, 0, 3, "…"]},
+ "ranges": {"np": {"min": 0, "max": 5000, "log": false, "bins": 36}},
+ "options": {"sym": [{"v": "SNOW", "label": "Snowflake (SNOW)", "count": 2, "icon": "/static/assets/icons/SNOW_big.svg"}]}}
 ```
 
 - `ROW` is a strategy row (described below).
@@ -168,11 +173,13 @@ The old `#s=<id>` and `#s=<id>/tree` addresses still open the strategy page.
 **How the page calls it:**
 - **Ticker tape:** `paid=1&sort=hot&size=12`.
 - **Lite:** `tab=<tab>&q=<search>&size=24&page=<n>`. "Load more" asks for the next page.
-- **Pro:** every active filter, plus `size=25&page=<n>`. It adds `facets=1` whenever the filters change.
+- **Pro:** every active filter, plus `size=25&page=<n>`. It adds `facets=1` whenever the filters, the sort or the search change; another page of the same query goes without it.
+  - Until the first facets answer, the min/max boxes of open ends are empty; a value typed or dragged before it keeps its value when the served bar arrives.
   - In the Table view, each page replaces the list.
   - In the Rows and Cards views, "Load more" adds the next page.
 - **Pack picker:** `paid=1&sort=hot&size=40&q=<search>`.
 - The page waits 150 ms after the last change before asking, and uses only the newest answer.
+- Pressing the Lite tab that is already marked asks for its first page again (a retry after a failure).
 
 ### The strategy row
 
@@ -191,27 +198,27 @@ Lists, the strategy record, receipts and My strategies all use the same row:
 | `bars` | Average bars per trade |
 | `m`, `cand` | Months trained; number of candles |
 | `prc`, `tdep` | Precision f1 (%); tree depth |
-| `actv` | Closed trades ÷ months trained |
+| `actv` | Trades per candle of the backtest: the catalogue's `Trade Activity Per Candle` column (0.002–0.238 in 2026-10); `null` when empty |
 | `release` | Release date, `YYYY-MM-DD` |
 | `version` | 1 if the catalogue gives none |
 | `is_new` | Released in the last `NEW_DAYS` days |
-| `grade` | A with 300 trades or more, B with 100 or more, C with 30 or more, otherwise D |
+| `grade` | A with 300 trades or more, B with 100 or more, C with 30 or more, otherwise D. With the 2026-10 catalogue (5–63 trades), 35 are C and 108 D; the cut-offs are the owner's to settle |
 | `live`, `live_as_of` | Result in % since release, and its date. Both are `null` until a daily file exists. |
 | `profit`, `candle` | Chart images (PNG), under `/static/assets/charts/` |
 | `icon` | Icon image, under `/static/assets/icons/` |
 | `preview` | The cut Pine preview, under `/static/assets/previews/` |
 | `thumb_profit`, `thumb_candle` | Thumbnails of the two charts: `/thumbs/<stem>.webp` |
-| `tv_symbol` | The TradingView symbol: `NASDAQ:AAPL`, or `BINANCE:ETHUSDT` for crypto |
+| `tv_symbol` | The TradingView symbol: `NYSE:SNOW`, or `BINANCE:BTCUSDT` for crypto |
 | `file` | `Tuisku_<id>`, the script's name in TradingView |
-| `ind_text`, `ind_url` | The indicator's explanation and its TradingView page. Only in lists and the full record. |
+| `ind_text`, `ind_url` | The indicator's explanation (English only, from `catalogue/indicators.csv`; the page marks it `lang="en"`) and its TradingView page. Only in lists and the full record. The 68 strategies with a combined indicator (keys starting with 2) link to `https://www.tradingview.com/scripts/`. |
 
 Any missing number is `null`.
 
 ### 3 · GET /api/strategies/<id>
 
 - **Answers:** the row, plus:
-  - `ind_author`;
-  - `versions`: `[{"v": 1, "date": "2024-09-27", "note": ""}]`, from the current version down to 1. Only the current version has a date, and no version has a note.
+  - `ind_author` (the page doesn't show it);
+  - `versions`: `[{"v": 1, "date": "2026-10-13", "note": ""}]`, from the current version down to 1. Only the current version has a date, and no version has a note. All 143 strategies are at version 1 today.
 - **Errors:** `404 errUnknownStrategy`.
 - **When the page asks:**
   - for the strategy page;
@@ -258,16 +265,17 @@ Any missing number is `null`.
 **Request:**
 
 ```json
-{"items": ["AAPL_1Day_1C00_ac87f0dc", "…"], "bundles": ["top5"], "pack": ["id1", "id2", "id3", "id4", "id5"], "code": "spring20"}
+{"items": ["UPST_1Day_1ULT_aae26f99", "UBER_1Hour_2MM0_bf5c384c"], "bundles": ["crypto"], "pack": ["id1", "id2", "id3", "id4", "id5"], "code": "demo20"}
 ```
 
 - **Limits:** up to 500 items, 50 bundles and 50 pack ids; each id up to 200 characters; the code up to 64.
 - Every field is optional, but at least one of `items`, `bundles` or `pack` must have something in it.
 
-**Response** (3 strategies at $79, a 20 % code):
+**Response** (the «Inicio en cripto» bundle at $119 and two strategies at $59, a 20 % code):
 
 ```json
-{"items": [{"id": "…", "price": "51.35"}, "…"], "bundles": [], "pack": null,
+{"items": [{"id": "UPST_1Day_1ULT_aae26f99", "price": "38.35"}, {"id": "UBER_1Hour_2MM0_bf5c384c", "price": "38.35"}],
+ "bundles": [{"key": "crypto", "price": "77.35"}], "pack": null,
  "subtotal": "237.00", "tier_rate": "0.15", "code_rate": "0.20", "discount_rate": "0.35",
  "discount": "82.95", "total": "154.05", "code_status": "applied",
  "tier_index": 1, "next_tier": {"over": "290", "rate": "0.20", "missing": "53.01"}}
@@ -281,7 +289,8 @@ Any missing number is `null`.
   - `""`: no code was sent;
   - `"applied"`: the code is valid;
   - `"invalid"`: the code is not valid. There is no discount, but this is not an error.
-- **`next_tier`:** `null` when there is no higher tier.
+- **`tier_rate` and `code_rate`:** what each part really takes off after the `MAX_DISCOUNT` cap, the tier first and the code what is left. Below the cap they add up to the configured rates (0.15 + 0.20). At the 70 % tier with a 20 % code, `code_rate` is `"0.00"`; when a lower tier plus the code passes 70 %, it is only the part left. Without a code, or with an invalid one, `"0"`. Their sum is always `discount_rate`.
+- **`next_tier`:** `null` when there is no higher tier, and with a flat-price code (no tier applies; `tier_index` is then 0).
 
 **How the server prices the cart:**
 1. Each strategy and each bundle counts once, however many times it is sent.
@@ -297,7 +306,7 @@ Any missing number is `null`.
    - Bundles and the pack keep their price, and there is no tier discount.
 7. **Any other code** adds to the tier discount:
    - The tier is the highest one the subtotal is strictly above. A subtotal of exactly $160 still gets 0 %.
-   - The code's rate (`DISCOUNT_CODES`) is added, and the sum is capped at `MAX_DISCOUNT` (70 %).
+   - The code's rate (`DISCOUNT_CODES`) is added, and the sum is capped at `MAX_DISCOUNT` (70 %). The quote reports each part after the cap (`tier_rate`, `code_rate`).
    - Every line and the total are multiplied by (1 − rate) and rounded half up to the cent, so the total never reaches 0.
 8. `next_tier.missing` is what the cart still needs to pass the next tier: the difference plus one cent.
 9. Codes are trimmed and compared in lower case.
@@ -315,10 +324,11 @@ Any missing number is `null`.
 
 **How the page uses it:**
 - It asks 120 ms after any change to the cart, the bundles, the pack or the applied code, and uses only the newest answer.
-- It sends the pack only once all 5 strategies are chosen.
-- It sends the code only after the user presses «Aplicar».
+- It always sends `pack`: empty (`[]`) until the own pack, with its 5 strategies, is in the cart.
+- It always sends `code`: empty (`""`) until the user presses «Aplicar» or Enter (not while an input method is composing).
   - `applied` shows «Código de descuento aplicado».
-  - `invalid` shows «Código no válido», and the code is dropped.
+  - `invalid` shows «Código no válido: sin descuento», and the code stops applying (its text stays in the box).
+  - Pro's ladder adds «+ N % con el código» only when `code_rate` is above 0.
 - On `errUnknownItems` or `errUnknownBundles`, it quietly removes those from the cart; an old cart can have them. Any other refusal is a toast.
 
 ### 8 · POST /api/orders
@@ -350,7 +360,9 @@ Any missing number is `null`.
 - It sends one order at a time, so «Pagar» stays busy and a double click doesn't make two orders.
 - It then goes to `approve_url`. Coming back with the browser's Back button frees the button.
 
-**With `PAYPAL_MODE=fake`** (local work and tests), `approve_url` is `/thanks?token=FAKE-…&PayerID=FAKE`, and the capture always succeeds.
+**With `PAYPAL_MODE=fake`** (local work and tests), `approve_url` is `<public URL>/thanks?token=FAKE-…&PayerID=FAKE`, and the capture always succeeds.
+
+The server never checks whether a signed-in account already owns a strategy it quotes or orders: it is charged again. The strategy page and the tree say «Ya es tuya» instead of selling it, but Lite's and Pro's cards still add it to the cart (see «Points to check»).
 
 ### 9 · POST /api/orders/<paypal_id>/capture
 
@@ -359,39 +371,45 @@ Any missing number is `null`.
 **What the server does:**
 1. An unknown order → `404 errUnknownOrder`.
 2. An order that is already paid → the same receipt again. Nothing is charged twice.
-3. Takes the payment in PayPal. If PayPal fails → `502 errPayPal`.
-4. If PayPal's status isn't `COMPLETED`, or the amount or currency differ from the order, the order becomes `FAILED` → `402 errPayment`. `paid` says what PayPal reported.
-5. Marks the order `PAID`, only once, even if two captures arrive at the same time.
+3. An order placed by an account that has since been deleted (core 0.30, «Mis datos») → `409 errAccountClosed`. Nothing is charged; PayPal lets the approval lapse.
+4. Takes the payment in PayPal. If PayPal fails → `502 errPayPal`.
+5. If PayPal's status isn't `COMPLETED`, or the amount or currency differ from the order, the order becomes `FAILED` → `402 errPayment`. `paid` says what PayPal reported.
+6. Marks the order `PAID`, only once, even if two captures arrive at the same time.
    - For a buyer without an account, it also stores the PayPal payer's email on the order. An account can prove that address later (#18–#20).
-6. On that first change to `PAID`, it emails a receipt, in the page's language, to the account's email or the PayPal email. The receipt has:
+7. On that first change to `PAID`, it emails a receipt, in the page's language, to the account's email or the PayPal email. The receipt has:
    - each line with its price;
    - the total;
    - the link to My strategies;
    - the link limits;
    - the contact address.
 
-   Without `ZLECITOOL_PUBLIC_URL`, the email is skipped and logged; the payment still stands.
-7. Gives every strategy one download link (7 days, 10 downloads) if the order doesn't have one yet. Asking again returns the newest link of each.
+   Amounts are written `47.45 USD` in every language: the core has no server-side money formatter yet (`CAMBIOS.md`, «Para el núcleo» 8). Without `ZLECITOOL_PUBLIC_URL`, the email is skipped and logged; the payment still stands.
+8. Gives every strategy one download link (7 days, 10 downloads) if the order doesn't have one yet. Asking again returns the newest link of each.
 
 **Response:**
 
 ```json
 {"order_id": "5O190127TN364715T", "status": "PAID", "total": "154.05", "currency": "USD",
  "payer": "a•••@example.com", "valid_days": 7, "max_downloads": 10, "links_hidden": false,
- "download_all": "/api/download/all?t=…&t=…",
+ "download_all": "/api/download/all?t=…&t=…", "paid_now": true,
  "downloads": [{"id": "…", "…": "the rest of ROW", "url": "/api/download/<token>", "zip": "/api/download/<token>?format=zip"}]}
 ```
+
+- **`paid_now`:** `true` only on the capture that changed the order to `PAID` (the one that emails the receipt). Any later capture, from this browser or another, gives `false`.
+- `payer` is the PayPal payer's address, masked; the page doesn't show it.
+- `downloads` holds one entry per strategy, the strategies of a bundle or the pack included.
 
 **Who sees the links:**
 - the browser that placed the order (its `edgefolio_buyer` cookie);
 - the account that placed it while signed in;
-- an account that has proven the order's email or the PayPal email.
+- for an order placed without an account, an account that has proven the order's email or the PayPal email.
 
 Anyone else gets `links_hidden: true`, `downloads: []` and `download_all: null`.
 
 **How the page uses it:**
 - It takes `token` from `/thanks?token=…`. Without a token, it goes to the shop.
-- On success, it empties the cart. The first time, it also opens the install tutorial, if there is a script to install.
+- It empties this browser's cart (strategies, bundles, own pack; the applied code stays) only when `paid_now` is true, so reopening an old thank-you page, or someone else's, leaves the cart alone.
+- With the links shown, it opens the install tutorial until it has been closed once (`edgefolio-install-v1`). With the links hidden, there is no install block and no tutorial.
 - On an error, it shows a toast and goes back to the shop.
 
 ### 10 · GET /api/download/<token>[?format=zip]
@@ -401,7 +419,8 @@ Anyone else gets `links_hidden: true`, `downloads: []` and `download_all: null`.
 - With `format=zip`: `Tuisku_<id>.zip`, which holds:
   - the `.pine`;
   - the rules, as `.md`;
-  - the `.py` and `.js` beta versions.
+  - the `.py` and `.js` beta versions;
+  - a `README.txt`.
 - Both are sent with `Content-Disposition: attachment` and `Cache-Control: private, no-store`.
 
 **How downloads are counted:**
@@ -430,14 +449,14 @@ The page then shows the reason, and My strategies offers a new link.
 - Takes up to 100 tokens; duplicates are ignored.
 - Sends the `.pine` of every valid link in `edgefolio-strategies.zip`. Each file sent uses one download of its link.
 - If two links lead to the same script, it is sent, and counted, once.
-- Invalid links are skipped. If none is valid, the answer is the first refusal, as in #10, with the same redirect when opened in a tab.
+- Invalid links are skipped, with no notice. If none is valid, the answer is the first refusal, as in #10, with the same redirect when opened in a tab.
 
 ### 12 · POST /api/free
 
 **Request:**
 
 ```json
-{"id": "NVDA_1Day_1S00_…", "email": "ana@example.com", "news": false}
+{"id": "PYPL_1Day_1MAC_2a2425c6", "email": "ana@example.com", "news": false}
 ```
 
 **What the server checks, in this order:**
@@ -471,7 +490,8 @@ The page then shows the reason, and My strategies offers a new link.
 - It checks the email first, with the core's texts: `errEmailRequired` (empty) and `errEmailInvalid`.
 - A server refusal about the email goes under the field; any other refusal is a toast.
 - The news box starts unticked every time the dialog opens.
-- A signed-in user sees the strategy in My strategies straight away. Otherwise it shows there only once the account proves that address (#18–#20).
+- A refusal about the email goes under the field; the others (`errFreeDaily`, `errTooMany`, `errFileMissing`, `errNotFree`, `errUnknownStrategy`, `errLater`) are toasts over the open dialog.
+- A signed-in user sees the strategy in My strategies straight away, and the tree switches to the owner view. Otherwise it shows there only once the account proves that address (#18–#20).
 
 ### 13 · GET /api/news/confirm?token=…
 
@@ -486,14 +506,14 @@ The page then shows the reason, and My strategies offers a new link.
 **How the page uses it:**
 - It asks only when the page was served with a session.
 - Once signed in, it moves the favourites kept in this browser to the account (one #21 each), then loads #15.
-- Any favourite the server refuses stays in the browser for the next sign-in.
+- A favourite the catalogue no longer has (404) is dropped from the browser, with no toast. Any other the server refuses stays in the browser for the next sign-in, with one toast.
 
 ### 15 · GET /api/mine
 
 ```json
 {"email": "ana@example.com", "emails": ["ana@example.com"], "proof_needed": false,
- "items": [{"id": "…", "kind": "paid", "date": "2026-09-21", "at": "2026-09-21T10:04:00+00:00",
-            "order": "5O190127TN364715T", "expires": "2026-10-15T09:00:00+00:00", "days_left": 3, "valid": true,
+ "items": [{"id": "…", "kind": "paid", "date": "2026-10-25", "at": "2026-10-25T10:04:00+00:00",
+            "order": "5O190127TN364715T", "expires": "2026-11-01T10:04:00+00:00", "days_left": 7, "valid": true,
             "url": "/api/download/<token>", "zip": "/api/download/<token>?format=zip",
             "version": 1, "update": null, "row": "ROW"}],
  "favourites": [{"id": "…", "alerts": {"nv": true, "pd": false, "bd": false}, "row": "ROW"}]}
@@ -518,7 +538,8 @@ Nothing is included just because it matches the account's sign-up email, which t
 
 **How the page uses it:**
 - It asks on `/mine`.
-- It also asks once, quietly (no toast), on a strategy page, to know whether to show «Actualización disponible».
+- It also asks once, quietly (no toast), on a strategy page: an item for that strategy turns its buy button into «Ya es tuya · Descargar» (its `url`) or «Ya es tuya · Mis estrategias» (no valid link, or an `update`), opens the tree in the owner view, and, on a paid item with `update`, shows «Actualización disponible».
+- With no items, My strategies shows no list and no «Añádela a TradingView».
 - A `401` sends the user to sign in.
 
 ### 16 · POST /api/mine/renew
@@ -559,6 +580,8 @@ Nothing is included just because it matches the account's sign-up email, which t
 - a link went to it less than 60 seconds ago;
 - the account already has 5 addresses waiting for confirmation.
 
+**How the page uses it:** it checks the field first, with the core's texts under it (`errEmailRequired`, `errEmailInvalid`), and a server refusal of the address goes there too; other refusals are toasts. It doesn't call #18 for an address already in #15's `emails`: it shows the notice «Ya está confirmado» (`proofProvenTitle`, `proofProvenText`) instead. Enter sends, except while an input method is composing.
+
 ### 19 · POST /api/mine/proofs/peek
 
 **Request:** `{"token": "…"}`. **Response:** `{"email": "ana@old-address.com"}`, or `{"email": null}`.
@@ -584,6 +607,7 @@ Nothing is included just because it matches the account's sign-up email, which t
 **Response:** `{"id": "…", "alerts": {"…": "as sent"}, "row": "ROW"}`.
 
 - It stores the account's email and the page's language, which is where, and in what language, the alerts go.
+- The page changes a heart or an alert at once; if the server doesn't save it (a `401` after signing out in another tab, or any failure), it goes back to what the account has and shows the toast.
 - **Errors:** `400 errRequest`, with `field` = `alerts` or `alerts.nv` (and so on); `404 errUnknownStrategy`.
 
 ### 22 · DELETE /api/favourites/<id>
@@ -596,7 +620,9 @@ While signed out, the page keeps favourites and alerts in this browser (`edgefol
 
 ## What the core provides
 
-- Sign-in (`/login?next=…`), sign-out (`POST /logout`) and the account menu.
+- Sign-in (`/login?next=…`): password, a link by email (0.26) and a passkey (0.31, with `ZLECITOOL_PUBLIC_URL` over https or on localhost). Sign-out (`POST /logout`) and the account menu (Mi cuenta, Créditos, Historial de créditos, Contacto, Salir).
+- «Mis datos» (0.30): export and delete the account. The shop's part is `edgefolio/your_data.py`; orders are kept for tax law, without the email, the PayPal email or the buyer cookie's hash.
+- The room under the page for the shop's phone bar, measured from its `data-zt-bottom` (0.28).
 - The dictionary: `zt.i18nReady`, with the shop's texts and the core's.
 - The language menu. A change fires `zt:language` and the page repaints; `<html lang dir>` gives the language and the direction.
 - `csrf.js`, for every POST, PUT and DELETE.
@@ -629,14 +655,16 @@ Each command runs as `flask --app app edgefolio <command>`.
 
 | Command | When | What it does |
 |---|---|---|
-| `send-alerts` | Daily (cron) | Compares each strategy's version, price and bundles with the last run. Each person gets one email listing the changes to the favourites where they have that alert on. Details below the table. |
-| `fx-update` | Daily, after the ECB publishes (about 17:00 CET) | Fetches rates from frankfurter.app. SAR is fixed at 3.75. |
+| `send-alerts` | Daily (still a cron job) | Compares each strategy's version, price and bundles with the last run. Each person gets one email listing the changes to the favourites where they have that alert on. Details below the table. |
+| `fx-update` | Daily (still a cron job), after the ECB publishes (about 17:00 CET) | Fetches rates from frankfurter.app. SAR is fixed at 3.75. |
 | `import <package> --scripts <dir> [--prune]` | Each catalogue release | Checks the whole package from the generator before writing anything, then copies the paid scripts to `STRATEGIES_DIR` |
 | `restore-scripts` | Setup | Gets the paid scripts back from the repository's history |
 | `subscribers` | As needed | Lists the confirmed news addresses |
 
+Moving `send-alerts` and `fx-update` to the core's clock (`"schedule"` in `tool.json`) is pending, and is done when their cron goes.
+
 **`send-alerts` details:**
-- Alerts go only to addresses the account has proven.
+- Alerts go only to addresses the account has proven in the shop (#18–#20); signing in with the core's link is not enough. Never to a deleted account (`privacy.closed`).
 - The first run only takes a snapshot; it sends nothing.
 - Each change is announced once.
 
@@ -654,7 +682,7 @@ Each command runs as `flask --app app edgefolio <command>`.
 | `DOWNLOAD_DAYS`, `MAX_DOWNLOADS` | `7`, `10` | Per link |
 | `PACK_SIZE`, `PACK_PRICE` | `5`, `249` | The custom pack |
 | `NEW_DAYS` | `30` | How long a strategy counts as new |
-| `CONTACT_EMAIL` | `sales@tuisku.eu` | The address shown for problems |
+| `CONTACT_EMAIL` | `sales@tuisku.ai` | The address shown for problems |
 
 The tiers are set in the code (`DEFAULT_TIERS` in `edgefolio/settings.py`):
 
@@ -697,7 +725,7 @@ The buyer cookie and the confirmation links are stored only as SHA-256 hashes. D
 
 ## Points to check
 
-These came up while reading the code. Each one may be intended; they are listed for you to decide.
+These came up while reading the code. Each one may be intended; they are listed for you to decide. The owner's open decisions are listed in «Las preguntas abiertas» of `docs/handoff/2026-10-06/CAMBIOS.md`.
 
 1. **Free previews.** The shop cuts every public preview, the free ones too (`CAMBIOS.md`). The brief for the last export said free previews are whole.
 2. **Owner's script.** #17 sends the full script to any owner without using up a download, even after their link has expired.
@@ -705,6 +733,8 @@ These came up while reading the code. Each one may be intended; they are listed 
 4. **Versions.** #3 lists versions with no notes, and with a date only for the current one. The generator doesn't send data per version yet.
 5. **Since release.** `live` stays `null`, and the page shows `liveUnknown`, until something writes `catalogue/since_release.csv`. No command in this repository writes it.
 6. **Invoice.** The trust row says «Factura por correo», but the server emails a receipt (lines, total and links) with no invoice number and no VAT.
-7. **Activity filter.** `act` filters on closed trades ÷ months trained, while its label says per candle. The catalogue's "Trade Activity Per Candle" column isn't used. The design worked it out the same way.
-8. **Limits per process.** The per-IP limits are kept in memory by each worker, and start again from zero on restart.
-9. **Repository name.** The repository is now `tuisku_strategy_store`, but the export documents still say `tuisku_Web_selling`.
+7. **Limits per process.** The per-IP limits are kept in memory by each worker, and start again from zero on restart.
+8. **Repository name.** The repository is now `tuisku_strategy_store`, but the export documents still say `tuisku_Web_selling`.
+9. **Buying twice.** #7 and #8 don't check whether the signed-in account already owns a strategy, so it can be paid for again. Refusing it (for example with an `errAlreadyOwned`) is a business rule for the owner.
+
+The former point 7, the activity filter computed as closed trades ÷ months trained, is fixed: `act` reads the catalogue's `Trade Activity Per Candle` column.

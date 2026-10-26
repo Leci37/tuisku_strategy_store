@@ -202,7 +202,7 @@ It is shown only when the cart has something in it, and sticks to the bottom of 
 | **Have a code?** | Shows a code box and **Apply**. The result appears next to it: "Discount code applied" in green or "Invalid code, no discount applied" in red (fixed: Lite gave no feedback). [Mock] `DEMO20`, any case, gives 20 %. |
 | Totals | The subtotal crossed out (only when there is a discount; fixed), then the total. In local currency, the prices start with "≈" and "You pay $154.05 with PayPal" appears underneath. |
 | **Checkout** (PayPal icon) | §8 |
-| Trust row | "PayPal: we never see your card" · "Links: 7 days, 10 downloads" · "Invoice by email" · **sales@tuisku.eu** (opens the mail program, and stays left-to-right in Arabic) |
+| Trust row | "PayPal: we never see your card" · "Links: 7 days, 10 downloads" · "Invoice by email" · **sales@tuisku.ai** (opens the mail program, and stays left-to-right in Arabic) |
 
 When strategies are being compared, the **Compare · N** pill sits directly above the floating cart instead of on top of it (fixed: it used to cover the cart's left side on screens narrower than about 1100px).
 
@@ -408,7 +408,7 @@ On phones, the sliders stack above the tree, and the tree scrolls inside its fra
 | "Add it to TradingView" card + **Watch the tutorial** | Opens the install tutorial at step 1 |
 | 5 step tiles | Open the tutorial at that step. Five columns at 900px or more, stacked below that. |
 | **Go to My strategies** / **Back to the shop** | Navigate |
-| "Problems? sales@tuisku.eu" | |
+| "Problems? sales@tuisku.ai" | |
 
 ---
 

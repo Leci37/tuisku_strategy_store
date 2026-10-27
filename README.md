@@ -178,7 +178,7 @@ comprueba que no queda nada fuera de los pedidos). Las de los scripts de pago (`
 un clon sin ella, se saltan. La que entiende el script de cada estrategia del catálogo se salta también con
 ella: los de la historia son del catálogo de antes (es la saltada de cada vuelta), y sólo corre con
 `STRATEGIES_DIR` en los de verdad. Las de la página en un navegador (las de `test_phone_bar.py`,
-`test_keyboard.py`, `test_listing_page.py`, `test_buying_page.py`, `test_mine_page.py` y `test_scales.py`, y
+`test_keyboard.py`, `test_listing_page.py`, `test_buying_page.py`, `test_mine_page.py`, `test_walkthrough.py` y `test_scales.py`, y
 parte de las de `test_lists_cart.py`, `test_strategy_page.py`, `test_tree.py` y `test_texts.py`) abren un
 Chromium (el kit del núcleo, `testing.mobile`); sin él, se saltan y no prueban nada.
 
@@ -208,6 +208,7 @@ Chromium (el kit del núcleo, `testing.mobile`); sin él, se saltan y no prueban
 | `test_lists_cart.py` | en un Chromium, las listas, el carrito y el recorrido: los packs esperan a los lotes; los buscadores no pasan de 100; Intro aplica el código; el árabe; el singular de Pro; la fila desplegada de la Tabla; al llegar, el diccionario, las favoritas y la página de gracias |
 | `test_listing_page.py` | en un Chromium, lo que la tienda dice de su catálogo: entre cuántas probadas en el aviso de sobreajuste, los cortes de la nota y «Desde su publicación» sólo con cifras |
 | `test_buying_page.py` | en un Chromium, «Ya es tuya» en Lite, Pro y la ficha (sin precio) y el carrito que la pierde con su aviso; la página de gracias, que no rechaza lo que se acaba de pagar; la actualización sólo hasta la caducidad; la gratis en un móvil tumbado; «Hecho» anunciado; el buscador de Pro bajo la barra |
+| `test_walkthrough.py` | en un Chromium, el camino de compra de punta a punta, a clics: «Comprar» en Lite, el buscador, la ficha y «Añadir al carrito», «Pagar» con el PayPal de prueba, Gracias con lo pagado; después, con una cuenta, «¿Compraste sin cuenta?», el enlace del correo, «Sí, … es mío» y Mis estrategias con lo comprado (medio minuto) |
 | `test_strategy_page.py`, `test_scales.py` | en un Chromium, la ficha: la temporalidad de TradingView, la explicación del indicador en el idioma de la página, una gratis, «Ya es tuya», el título de la pestaña, «Cómo decide» que se pide otra vez y sigue al carrito; las escalas de Pro y las barras de la ficha, del catálogo |
 | `test_tree.py`, `test_mine_page.py` | «Cómo decide»: cada patrón y cada valor de las vistas previas publicadas con su nombre, en los 8 idiomas; en un Chromium, la pestaña como visitante (con los niveles publicados o, sin ellos, con la puntuación de cada resultado; la escala y los signos en árabe; la frase de cuántos árboles tiene el bosque) y como propietario, y el móvil. Mis estrategias en un Chromium: la prueba de un correo, las favoritas, el tutorial y una respuesta cortada |
 | `test_design_update.py` | aplicar una exportación del diseño: una igual a la anterior no cambia nada; un cambio del diseño llega a la vista adaptada; la forma de las de octubre (`vendor/`, las notas nuevas, `versions/` y `offline/` fuera); `docs/design/serve.py` encuentra el núcleo |

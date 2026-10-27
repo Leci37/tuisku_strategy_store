@@ -20,8 +20,9 @@ const PACK_FIND = 40;
 const CART_KEY = 'edgefolio-cart-v1';
 const FAVS_KEY = 'edgefolio-favs-v1';
 const list = x => (Array.isArray(x) ? x.filter(v => typeof v === 'string') : []);
-// what a download link opened in the tab can answer: the server sends the person back here with the key
-const LINK_ERRORS = ['errLinkNotFound', 'errLinkExpired', 'errDownloadLimit', 'errStrategyGone', 'errFileMissing'];
+// lo que contesta un enlace de descarga abierto en la pestaña: el servidor devuelve aquí a la persona con la clave
+// (errUpdateExpired: el de una versión de antes, con la estrategia caducada, daría la nueva)
+const LINK_ERRORS = ['errLinkNotFound', 'errLinkExpired', 'errDownloadLimit', 'errStrategyGone', 'errFileMissing', 'errUpdateExpired'];
 
 // Quita de la barra de direcciones lo que sólo vale una vez (un enlace de confirmación, un aviso).
 function dropParams(...keys) {
@@ -100,7 +101,7 @@ export class App extends Component {
     api('/api/config').then(cfg => this.setState({ cfg })).catch(e => this.fail(e));
     api('/api/bundles').then(bundleDefs => this.setState(st => ({ bundleDefs, ...withoutOverlap(st, bundleDefs) }))).catch(e => this.fail(e));
     api('/api/fx').then(fx => this.setState({ fx })).catch(() => { /* prices then stay in USD */ });
-    api('/api/strategies?paid=1&sort=hot&size=12').then(d => { this.keep(d.rows); this.setState({ tape: d.rows }); }).catch(e => this.fail(e));
+    api(this.inLang('/api/strategies?paid=1&sort=hot&size=12')).then(d => { this.keep(d.rows); this.setState({ tape: d.rows }); }).catch(e => this.fail(e));
     if (this.props.signedIn) api('/api/me').then(me => { this.setState({ me }); if (me.email) this.afterSignIn(); }).catch(() => this.setState({ me: { email: null } }));
 
     const qs = new URLSearchParams(location.search);
@@ -211,6 +212,7 @@ export class App extends Component {
       }
     }
 
+    if (prev && prev.lang !== s.lang) this.relang();
     const bundleIds = s.bundleDefs ? s.bundleDefs.bundles.flatMap(b => b.ids) : [];
     this.fetchRows([...s.cart, ...s.packIds, ...s.compare, ...s.favs, ...bundleIds, s.freeFor, s.instFor]);
     if (s.page === 'detail' && s.detail) this.fetchFull(s.detail);
@@ -221,15 +223,20 @@ export class App extends Component {
     if (s.page === 'detail' && s.detTab === 'tree' && !s.Tree && (!this.treeAsked || (this.treeFailed && changed('page', 'detail', 'detTab')))) this.loadTree();
 
     const body = this.cartBody(), quoteKey = JSON.stringify(body);
-    if (quoteKey !== this.quoteKey) {
+    // de vuelta de PayPal, el carrito espera al cobro: el que paga lo vacía (paid_now), y presupuestar antes lo que se
+    // acaba de comprar daría errAlreadyOwned (E8) y su aviso en la página de gracias
+    const capturing = s.page === 'thanks' && !s.receipt;
+    if (!capturing && quoteKey !== this.quoteKey) {
       this.quoteKey = quoteKey;
       if (body.items.length || body.bundles.length || body.pack.length) this.later('quote', () => this.loadQuote(body, quoteKey), 120);
       else if (s.quote) this.setState({ quote: null });
     }
 
-    // My strategies, on its page; on a strategy page too (what the account owns says whether «Update
-    // available» is for it), but quietly and once: there a failure is not worth a toast
-    const mineWanted = s.page === 'mine' || (s.page === 'detail' && !this.mineQuietTried);
+    // Mis estrategias, en su página; en la de una estrategia («Actualización disponible» es sólo para quien la tiene) y en
+    // la tienda (sus fichas dicen «Ya es tuya», E8), en silencio y una vez: ahí un fallo no merece un aviso. Después de un
+    // cobro, una gratis o un correo demostrado (mineChanged), otra vez: antes, al volver de Gracias o al mandar la
+    // gratis, todo lo de la cuenta decía «Comprar» en la tienda hasta recargar
+    const mineWanted = s.page === 'mine' || ((s.page === 'detail' || s.page === 'shop') && !this.mineQuietTried);
     if (s.me && s.me.email && mineWanted && !s.mine && !this.mineLoading && !this.uploading) this.loadMine(s.page !== 'mine');
     if (s.packOpen && s.packQ.trim().slice(0, Q_MAX) !== this.packKey) {
       const first = this.packKey == null;
@@ -292,7 +299,7 @@ export class App extends Component {
 
   fetchOne(id) {
     this.asked.add(id);
-    api('/api/strategies/' + encodeURIComponent(id)).then(r => {
+    api(this.inLang('/api/strategies/' + encodeURIComponent(id))).then(r => {
       this.keep([r], true);
       // an old address or a cart saved by the first shop names the strategy by its alias (the base64 of
       // its key), which the server resolves: from now on, by its id
@@ -314,6 +321,37 @@ export class App extends Component {
         this.go({ page: 'shop' }, { replace: true });
       }
     });
+  }
+
+  // Lo que se pide del catálogo, en el idioma de la página: la explicación del indicador de cada fila llega en él
+  // (API #2 y #3). Manda sobre la cookie y la cuenta: una página abierta con ?lang=fr y una cuenta en español no la
+  // recibe en español. ?ind_lang= y no ?lang=, que el núcleo guarda en la cookie del idioma: una pestaña en otro idioma
+  // cambiaba con cada lista el de la próxima visita.
+  inLang(path) {
+    return path + (path.includes('?') ? '&' : '?') + 'ind_lang=' + encodeURIComponent(this.state.lang);
+  }
+
+  // Otro idioma: lo que enseña la explicación se pide otra vez, sin moverse de donde está: la ficha a la vista
+  // (fetchFull, en este mismo sync) y las páginas de Pro que se ven; Pro, si no se ve, al volver a él. Mientras
+  // tanto, la de antes dice su idioma (exLang).
+  relang() {
+    this.full.clear();
+    [...this.asked].forEach(k => { if (k.startsWith('full:')) this.asked.delete(k); });
+    const s = this.state;
+    if (s.page === 'shop' && s.mode === 'pro' && this.proKey != null && s.proPage > 0) this.reloadPro();
+    else this.proKey = null;
+  }
+
+  reloadPro() {
+    const s = this.state, fresh = this.ticket('pro'), pages = [];
+    for (let p = s.proFirst; p <= s.proPage; p++) pages.push(p);
+    Promise.all(pages.map(p => api(this.inLang('/api/strategies?' + this.proKey + '&size=' + PRO_SIZE + '&page=' + p))))
+      .then(ds => {
+        if (!fresh()) return;
+        const rows = ds.flatMap(d => d.rows);
+        this.keep(rows);
+        this.setState({ pro: rows });
+      }).catch(e => this.fail(e));
   }
 
   fetchPreview(url) {
@@ -358,7 +396,7 @@ export class App extends Component {
 
   loadLite(page) {
     const fresh = this.ticket('lite');
-    api('/api/strategies?' + this.liteKey + '&size=' + LITE_SIZE + '&page=' + page).then(d => {
+    api(this.inLang('/api/strategies?' + this.liteKey + '&size=' + LITE_SIZE + '&page=' + page)).then(d => {
       if (!fresh()) return;
       this.keep(d.rows);
       this.setState(st => ({ lite: page === 1 ? d.rows : [...(st.lite || []), ...d.rows], liteTotal: d.total, litePage: page, counts: d.counts || st.counts }));
@@ -368,7 +406,7 @@ export class App extends Component {
   // Table pages replace the list; "Load more" (rows, cards) appends the next page.
   loadPro(page, append) {
     const fresh = this.ticket('pro'), key = this.proKey, facets = this.facetsKey !== key;
-    api('/api/strategies?' + key + '&size=' + PRO_SIZE + '&page=' + page + (facets ? '&facets=1' : '')).then(d => {
+    api(this.inLang('/api/strategies?' + key + '&size=' + PRO_SIZE + '&page=' + page + (facets ? '&facets=1' : ''))).then(d => {
       if (!fresh()) return;
       this.keep(d.rows);
       const patch = { pro: append ? [...this.state.pro, ...d.rows] : d.rows, proTotal: d.total, proPage: page, proLoaded: true, counts: d.counts || this.state.counts };
@@ -384,7 +422,7 @@ export class App extends Component {
 
   loadPack() {
     const fresh = this.ticket('pack'), q = this.packKey;
-    api('/api/strategies?paid=1&sort=hot&size=' + PACK_FIND + (q ? '&q=' + encodeURIComponent(q) : '')).then(d => {
+    api(this.inLang('/api/strategies?paid=1&sort=hot&size=' + PACK_FIND + (q ? '&q=' + encodeURIComponent(q) : ''))).then(d => {
       if (!fresh()) return;
       this.keep(d.rows);
       this.setState({ packFound: d.rows });
@@ -413,8 +451,21 @@ export class App extends Component {
       const d = e.detail || {}, gone = d.error === 'errUnknownItems' || d.error === 'errUnknownBundles' ? d.items || d.bundles || [] : [];
       if (e.status === 400 && gone.length) {
         this.setState(st => ({ cart: st.cart.filter(x => !gone.includes(x)), bundles: st.bundles.filter(x => !gone.includes(x)), packIds: st.packIds.filter(x => !gone.includes(x)) }));
-      } else this.fail(e);
+      } else if (!this.dropOwned(e)) this.fail(e);
     });
+  }
+
+  // Lo que ya es de la cuenta no se vende otra vez suelto (E8): el servidor lo rechaza (409 errAlreadyOwned, con los
+  // ids como se mandaron), la página lo quita del carrito y lo dice el aviso (su texto es el del rechazo). Un carrito
+  // de antes de entrar, o de otra pestaña, lo puede llevar. Lotes y pack, no: el servidor no los rechaza.
+  dropOwned(e) {
+    const d = (e && e.detail) || {}, own = Array.isArray(d.items) ? d.items : [];
+    if (e.status !== 409 || d.error !== 'errAlreadyOwned' || !own.length) return false;
+    this.setState(st => ({ cart: st.cart.filter(x => !own.includes(x)), error: '', notice: 'cartUpdated' }));
+    // lo que la página sabía de la cuenta era de antes (una compra en otra pestaña): otra vez, para que sus fichas digan
+    // «Ya es tuya»
+    if (this.signedIn() && !this.mineLoading) this.loadMine(true);
+    return true;
   }
 
   // The code is checked by the server's quote (never here). An empty box takes the code off; applying
@@ -437,7 +488,7 @@ export class App extends Component {
     this.paying = true;
     this.setState({ paying: true });
     post('/api/orders', body).then(o => window.location.assign(o.approve_url))
-      .catch(e => { this.paying = false; this.setState({ paying: false }); this.fail(e); });
+      .catch(e => { this.paying = false; this.setState({ paying: false }); if (!this.dropOwned(e)) this.fail(e); });
   }
 
   // Back from PayPal at /thanks?token=<order>: capturing again is harmless (the server makes it idempotent).
@@ -451,7 +502,7 @@ export class App extends Component {
       const first = (rc.downloads || [])[0];
       // another browser than the one that paid gets no links (they are in My strategies): the
       // tutorial waits until there is a script to install
-      this.mineQuietTried = false;
+      this.mineChanged();
       this.setState({ receipt: rc, ...(rc.paid_now ? { cart: [], bundles: [], packIds: [] } : {}), instFor: first ? first.id : '', mine: null,
         instStep: !first || read('edgefolio-install-v1') ? -1 : 0 });
     }).catch(e => { this.fail(e); this.go({ page: 'shop' }, { replace: true }); });
@@ -514,7 +565,7 @@ export class App extends Component {
     this.proofBusy = true;
     post('/api/mine/proofs/confirm', { token }).then(() => {
       dropParams('proof');
-      this.mineQuietTried = false;
+      this.mineChanged();
       this.setState({ proofToken: '', proofAs: '', proofSent: false, proofExpired: false, mine: null });
     }).catch(e => {
       if (e.status === 400) { this.setState({ proofExpired: true, proofToken: '', proofAs: '' }); dropParams('proof'); } else this.fail(e);
@@ -545,10 +596,22 @@ export class App extends Component {
       });
   }
 
+  // Lo que tiene la cuenta acaba de cambiar (un cobro, una gratis pedida con la sesión abierta, un correo demostrado):
+  // quien la tenga (mine: null) la pide otra vez, también en silencio, y una respuesta que estaba en camino es de antes
+  mineChanged() {
+    this.mineEpoch = (this.mineEpoch || 0) + 1;
+    this.mineQuietTried = false;
+  }
+
   loadMine(quiet = false) {
     this.mineLoading = true;
     if (quiet) this.mineQuietTried = true;
+    const epoch = this.mineEpoch;
+    let again = false;
     api('/api/mine').then(m => {
+      // pedida antes del cambio (la de entrar, mientras se cobraba): sin lo que se acaba de comprar; se pide otra vez
+      if (epoch !== this.mineEpoch) { again = true; return; }
+      if (!m) return; // por si un día contesta «null» (un cuerpo cortado ya es un fallo de red: api())
       this.keep(m.items.map(x => x.row));
       this.keep(m.favourites.map(x => x.row));
       const alerts = {};
@@ -558,7 +621,7 @@ export class App extends Component {
       if (quiet) return;
       if (e.status === 401) toLogin();
       else this.fail(e);
-    }).then(() => { this.mineLoading = false; });
+    }).then(() => { this.mineLoading = false; if (again) this.loadMine(quiet); });
   }
 
   renew(id) {
@@ -626,7 +689,7 @@ export class App extends Component {
     if (err) { this.setState({ freeErr: err }); return; }
     this.freeBusy = true;
     post('/api/free', { id: s.freeFor, email, news: s.freeNews })
-      .then(() => { this.mineQuietTried = false; this.setState({ freeSent: true, freeErr: '', mine: null }); })
+      .then(() => { this.mineChanged(); this.setState({ freeSent: true, freeErr: '', mine: null }); })
       .catch(e => {
         const d = e.detail || {};
         if (e.status === 400 && d.field === 'email' && e.key && this.state.dict && this.state.dict[e.key]) this.setState({ freeErr: e.key });
@@ -669,10 +732,13 @@ export class App extends Component {
 
   // ---- phone bar ---------------------------------------------------------------------------------
 
-  // Pone un elemento justo debajo de la barra fija (tapa lo de arriba de la página).
+  // Pone un elemento justo debajo de lo fijo de arriba: lo que mide la barra del núcleo mientras se queda fija
+  // (--zt-sticky-top: 0px en una pantalla baja, de 500 px o menos, donde se suelta) y lo fijo de la tienda debajo
+  // (--zt-sticky-h; hoy, nada). Antes medía header.app-topbar, también suelta: en una pantalla baja, el buscador de
+  // Pro quedaba el alto de la barra más abajo.
   scrollUnderHeader(el) {
-    const header = document.querySelector('header.app-topbar');
-    const top = el.getBoundingClientRect().top + window.scrollY - (header ? header.offsetHeight : 0) - 12;
+    const css = getComputedStyle(document.documentElement), px = name => parseFloat(css.getPropertyValue(name)) || 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - px('--zt-sticky-top') - px('--zt-sticky-h') - 12;
     try { window.scrollTo(0, Math.max(0, top)); } catch (e) { /* not scrollable */ }
   }
 

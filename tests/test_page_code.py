@@ -131,13 +131,29 @@ def test_the_dialogs_name_their_crosses_and_mark_where_the_focus_goes():
 def test_a_toast_keeps_clear_of_an_open_dialog():
     """C13: con un diálogo abierto, el aviso va arriba (``errTop``, ``noticeTop``) y cada velo le deja su sitio
     (``toastRoom``: el alto del aviso, que app.measureDock mide por ``data-ef-toast``), también los diálogos que
-    miden 90vh o la ventana entera (Comparar, el pack, el tutorial). Es de la tienda, no del diseño: que no se
-    pierda al mezclar una exportación (tests/test_phone_bar.py lo mira en un navegador)."""
+    miden 90vh o la ventana entera (Comparar, el pack, el tutorial y la gratis, que en un móvil tumbado se desliza
+    por dentro: dos ``max-height``, en vh y, donde se entiende, en dvh, lo que se ve con la barra del navegador). Es
+    de la tienda, no del diseño: que no se pierda al mezclar una exportación (tests/test_phone_bar.py y
+    tests/test_buying_page.py lo miran en un navegador)."""
     dialogs = (ROOT / "static" / "js" / "views" / "dialogs.js").read_text(encoding="utf-8")
     veils = re.findall(r'<div style="(position:fixed;inset:0;z-index:\d+;[^"]*)">\s*<div role="dialog"', dialogs)
     assert len(veils) == 5 and all(v.endswith("padding:16px;padding-top:calc(16px + ${s(v.toastRoom)})") for v in veils), veils
     heights = re.findall(r"max-height:([^;\"]*vh[^;\"]*)", dialogs)       # lo que mide la ventana, no una imagen
-    assert len(heights) == 3 and all(h.endswith(" - ${s(v.toastRoom)})") for h in heights), heights
+    assert len(heights) == 5 and all(h.endswith(" - ${s(v.toastRoom)})") for h in heights), heights
+    free = re.search(r'<div role="dialog" aria-modal="true" aria-label=\$\{v\.tx\?\.freeTitle\} style="([^"]*)"', dialogs)
+    assert "max-height:calc(100dvh - 32px - ${s(v.toastRoom)});overflow:auto" in free.group(1), free.group(1)
     toasts = re.findall(r'<div role="(alert|status)" data-ef-toast style="([^"]*)"', dialogs)
     assert [(role, "top:${s(v.%sTop)};bottom:${s(v.%sBottom)}" % ((p,) * 2) in style)
             for (role, style), p in zip(toasts, ("err", "notice"))] == [("alert", True), ("status", True)], toasts
+
+
+def test_the_page_explains_every_refusal_of_a_download_link():
+    """Un enlace de descarga abierto en la pestaña que ya no vale vuelve a la tienda con su rechazo (``?link=errAlgo``,
+    routes._download), y la página sólo lo dice si lo conoce (``LINK_ERRORS`` de app.js): cada rechazo de
+    edgefolio/downloads.py tiene que estar ahí, también ``errUpdateExpired`` (el enlace de una versión de antes, con la
+    estrategia caducada). Sin él, la persona volvía a la tienda sin saber por qué."""
+    refusals = set(re.findall(r'Refusal\("(err\w+)"', (ROOT / "edgefolio" / "downloads.py").read_text(encoding="utf-8")))
+    app = (ROOT / "static" / "js" / "app.js").read_text(encoding="utf-8")
+    known = set(re.findall(r"'(err\w+)'", re.search(r"const LINK_ERRORS = \[([^\]]*)\]", app).group(1)))
+    assert "errUpdateExpired" in refusals and refusals <= known, sorted(refusals - known)
+    assert all(key in TEXTS or key in CORE for key in known), sorted(k for k in known if k not in TEXTS and k not in CORE)

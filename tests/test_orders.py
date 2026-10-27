@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 """Pagar y descargar: un fichero sólo sale del servidor por un enlace de un pedido pagado, y los enlaces del
-recibo sólo van al navegador que hizo el pedido, a la cuenta que lo hizo o a la que demostró su correo."""
+recibo sólo van al navegador que hizo el pedido, a la cuenta que lo hizo o a la que demostró su correo. Y lo que la
+cuenta ya tiene no se le vende otra vez suelto (E8)."""
+import csv
 import time
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 
 from edgefolio import downloads, orders
 from edgefolio.paypal import Capture
+from edgefolio.shop import install
 from edgefolio.web import digest
 from tests.conftest import prove, signed, visitor
+from tests.test_free import FREE_ID, claim, free_file  # noqa: F401 (free_file es un fixture)
 
 BUYER = "edgefolio_buyer"
 
@@ -233,3 +237,56 @@ def test_an_order_made_signed_in_belongs_to_that_account(app, ids):
     other = signed(app, "other@example.com")
     prove(other, "buyer@example.com")                   # el correo de PayPal no hace suyo un pedido con cuenta
     assert receipt_for(other, order_id)["links_hidden"] is True
+
+
+# ── lo que la cuenta ya tiene (E8, decisión del dueño del 2026-10-26) ─────────
+
+AAPL_ID = "AAPL_1Day_1ADX_aaaa1111"
+
+
+def test_a_single_strategy_the_account_has_is_not_sold_again(app, ids, settings, paypal):
+    """Con la sesión abierta, el presupuesto y el pedido no venden otra vez, suelta, una estrategia que la cuenta ya
+    tiene (lo de Mis estrategias): 409 errAlreadyOwned con sus ids, como los mandó el navegador (aquí, el alias del
+    carrito de antes y el id), que las quita del carrito. Ningún pedido de PayPal. Lo demás del carrito se vende; un
+    lote o el pack que la llevan, también (son otra oferta), y una suelta que va además en el lote no se cobra suelta.
+    Sin sesión no se sabe de quién es: se presupuesta."""
+    ana = signed(app, "ana@example.com")
+    assert buy(ana, [ids[0]]).status_code == 200                       # AAPL
+    made = len(paypal.orders)
+    for path in ("/api/quote", "/api/orders"):
+        r = ana.post(path, json={"items": [ids[0], ids[1], AAPL_ID]})
+        assert r.status_code == 409 and r.json == {"error": "errAlreadyOwned", "items": [ids[0], AAPL_ID]}, path
+    assert len(paypal.orders) == made, "ningún pedido en PayPal"
+    assert ana.post("/api/quote", json={"items": [ids[1]]}).json["total"] == "93.00"
+    assert ana.post("/api/quote", json={"bundles": ["duo"]}).json["total"] == "150.00"
+    both = ana.post("/api/quote", json={"items": [ids[0]], "bundles": ["duo"]})
+    assert both.status_code == 200 and both.json["items"] == [] and both.json["total"] == "150.00"
+    settings.pack_size = 2
+    assert ana.post("/api/quote", json={"pack": [AAPL_ID, "TSLA_1Day_1C00_dddd4444"]}).json["total"] == "129.00"
+    assert visitor(app).post("/api/quote", json={"items": [ids[0]]}).status_code == 200, "sin sesión, de nadie"
+
+
+def test_what_the_account_has_includes_its_proven_emails_and_free_downloads(app, client, ids, settings, paypal,
+                                                                           free_file):  # noqa: F811
+    """Lo que tiene la cuenta es lo de Mis estrategias: también lo comprado sin cuenta con un correo que la cuenta
+    demostró (no con el mismo correo sin demostrar) y sus descargas gratis (una gratis que pasa a ser de pago). Nunca
+    lo que otra cuenta compró con la sesión abierta, aunque se pagara con el correo demostrado."""
+    assert buy(client, [ids[3]]).status_code == 200                    # TSLA, sin cuenta: lo pagó buyer@example.com
+    ana = signed(app, "ana@example.com")
+    assert buy(ana, [ids[1]]).status_code == 200                       # MSFT, otra cuenta (PayPal: buyer@example.com)
+    bo = signed(app, "buyer@example.com")
+    assert bo.post("/api/quote", json={"items": [ids[3]]}).status_code == 200, "sin demostrar el correo, no es suya"
+    prove(bo)
+    r = bo.post("/api/quote", json={"items": [ids[3], ids[1]]})
+    assert r.status_code == 409 and r.json["items"] == [ids[3]], "la de otra cuenta no es suya"
+    assert bo.post("/api/quote", json={"items": [ids[1]]}).json["total"] == "93.00"
+    assert claim(bo, "buyer@example.com").json == {"sent": True}      # la gratis, con la sesión abierta
+    with open(settings.catalogue, newline="") as f:
+        rows = [dict(r, Price="30" if r["ticker"] == "NVDA" else r["Price"]) for r in csv.DictReader(f, delimiter="\t")]
+    with open(settings.catalogue, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter="\t")
+        w.writeheader()
+        w.writerows(rows)
+    install(app, settings, paypal)                                     # NVDA, ahora de pago
+    r = bo.post("/api/orders", json={"items": [FREE_ID]})
+    assert r.status_code == 409 and r.json == {"error": "errAlreadyOwned", "items": [FREE_ID]}

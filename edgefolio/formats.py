@@ -36,6 +36,7 @@ RE_COMBINE = re.compile(r"\bop_operation\s*=\s*(.+)")
 RE_BUY = re.compile(r"^if\s*\(\s*op_operation\s*>=\s*" + NUM + r"\s*\)")
 RE_LOW = re.compile(r"^if\s*\(\s*op_operation\s*<=\s*" + NUM + r"\s*\)")
 RE_NAME = re.compile(r'^strategy\(\s*"([^"]+)"')
+RE_BASES = re.compile(r"^// Technical base pattern:(.*)$", re.M)
 RE_PYRAMIDING = re.compile(r"^strategy\(.*\bpyramiding\s*=\s*(\d+)")
 RE_INPUT = re.compile(r"^(sl|tp1|tp2|tp3)\s*=\s*percent2points\(\s*input(?:\.float)?\(\s*" + NUM +
                       r'(?:.*?title\s*=\s*"([^"]*)")?')
@@ -118,6 +119,7 @@ class Script:
     entry_stop: Optional[str] = None  # el stop de la orden de entrada = close * esto (un precio de entrada, no un stop loss)
     exits_always: bool = False     # las salidas van con la entrada y se mueven en cada vela con posición (plantilla de 2026)
     dated: bool = False            # sólo abre posiciones desde su fecha "trade from" y hasta que caduca
+    bases: list = field(default_factory=list)  # «// Technical base pattern: A, B»: de qué patrón es cada nombre
 
 
 def _lines(src: str) -> list:
@@ -223,6 +225,8 @@ def parse(src: str) -> Script:
     lines = _lines(src)
     name = next((m.group(1) for _, t in lines if (m := RE_NAME.match(t))), "")
     script = Script(name, [_tree(lines, n) for n, (_, t) in enumerate(lines) if RE_TREE.match(t)])
+    bases = RE_BASES.search(src.replace("\r", ""))
+    script.bases = [b.strip() for b in bases.group(1).split(",") if b.strip()] if bases else []
     arm_block = []
     thresholds = {m.group(1): m.group(2) for _, t in lines if (m := RE_THRESHOLD.match(t))}
     for n, (ind, text) in enumerate(lines):
@@ -262,12 +266,32 @@ def parse(src: str) -> Script:
 
 @functools.lru_cache(maxsize=1)
 def feature_names() -> dict:
-    """El nombre y la descripción en inglés de cada valor de indicador que usa la fábrica (static/trees/)."""
+    """El nombre y la descripción en inglés de cada valor de indicador que usa la fábrica, y su patrón
+    (static/trees/features.json; la clave de un nombre que usan dos patrones lleva el suyo:
+    d@Wave_Trend_Calculation)."""
     try:
         data = json.loads((STATIC / "trees" / "features.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
-    return {k: (v[0], v[1]) for k, v in data.get("features", {}).items() if len(v) >= 2}
+    return {k: (v[0], v[1], v[4] if len(v) > 4 else "") for k, v in data.get("features", {}).items() if len(v) >= 2}
+
+
+# La nota de un valor que el generador divide por el cierre (BBlower__close), la del árbol (tree.js, relNote).
+REL_NOTE = "As the model sees it: divided by the close of the candle."
+
+
+def feature_label(feat: str, bases: list) -> tuple:
+    """(nombre, descripción) en inglés del valor ``feat`` en un script de esos patrones, buscados como los busca
+    el árbol (static/js/tree.js, keyOf): la clave de su patrón (``d@Wave_Trend_Calculation``) y luego la suya, sólo
+    si es de uno de ellos; uno dividido por el cierre (``macd__close``), también sin ``__close``, con la nota.
+    Sin nombre, ("", "")."""
+    names = feature_names()
+    for g in ([feat, feat[:-len("__close")]] if feat.endswith("__close") else [feat]):
+        for key in [f"{g}@{b}" for b in bases] + [g]:
+            e = names.get(key)
+            if e and (not e[2] or not bases or e[2] in bases):
+                return e[0], e[1] + (" " + REL_NOTE if g != feat else "")
+    return "", ""
 
 
 def is_flag(feat: str, raw: str) -> bool:
@@ -433,12 +457,11 @@ def to_markdown(script: Script, title: str) -> str:
                if len(script.trees) == 1 and script.buy else
                "Buy and Sell mark the leaves the factory labelled as strong signals; Wait is any other leaf."), ""]
     out += exits_section(script)
-    names = feature_names()
     used = features(script)
     if used:
         out += ["## Values used", ""]
         for f in used:
-            label, text = names.get(f, ("", ""))
+            label, text = feature_label(f, script.bases)
             out.append(f"- `{f}`" + (f": {label}. {text}" if label else ""))
         out.append("")
     if not script.trees:

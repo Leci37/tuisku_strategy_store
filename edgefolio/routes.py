@@ -142,26 +142,37 @@ def mine_page():
 @bp.get("/api/config")
 @public
 def config():
-    """Lo que la página necesita para pintar precios y enlaces: nunca un secreto ni un código."""
-    s = shop().settings
+    """Lo que la página necesita para pintar precios y enlaces: nunca un secreto ni un código. Y lo que dice del
+    catálogo: entre cuántas probadas se eligieron sus estrategias (``tried``, null si no se sabe), cuántas tienen
+    cifra desde su publicación (``since_release``: con 0 la página no habla de ello) y los cortes de la nota."""
+    s, catalogue = shop().settings, shop().catalogue
     return jsonify({"mode": s.paypal_mode, "currency": s.currency, "max_discount": str(s.max_discount),
                     "tiers": [{"over": str(o), "rate": str(r)} for o, r in s.tiers],
                     "pack": {"size": s.pack_size, "price": str(s.pack_price)},
                     "download_days": s.download_days, "max_downloads": s.max_downloads,
                     "new_days": s.new_days, "contact_email": s.contact_email,
-                    "strategies": len(shop().catalogue), "npp_max": shop().catalogue.best_npp})
+                    "strategies": len(catalogue), "npp_max": catalogue.best_npp, "tried": catalogue.tried,
+                    "since_release": catalogue.since_release, "grade_cutoffs": list(s.grade_cutoffs)})
+
+
+def text_language() -> str:
+    """El idioma de la explicación del indicador de cada fila (API #2 y #3): el que pide la página (?ind_lang=, el
+    suyo) o, sin él, el de la petición. No ?lang=: el núcleo lo toma por la dirección de una página en un idioma y lo
+    guarda en la cookie zt_lang, y cada lista que pedía una pestaña en otro idioma cambiaba el de la próxima visita."""
+    asked = request.args.get("ind_lang", "")
+    return asked if asked in shop().texts.data.get("_languages", ()) else request_language()
 
 
 @bp.get("/api/strategies")
 @public
 def strategies():
-    return jsonify(search.strategies(shop().catalogue, shop().settings, request.args))
+    return jsonify(search.strategies(shop().catalogue, shop().settings, request.args, text_language()))
 
 
 @bp.get("/api/strategies/<strategy_id>")
 @public
 def strategy(strategy_id):
-    return jsonify(search.strategy(shop().catalogue, strategy_id))
+    return jsonify(search.strategy(shop().catalogue, strategy_id, text_language()))
 
 
 @bp.get("/api/bundles")
@@ -192,10 +203,17 @@ def thumb(stem):
 
 # ── comprar ──────────────────────────────────────────────────────────────────
 
+def owned_now() -> set:
+    """Las claves de lo que ya tiene la cuenta con la sesión abierta, lo de Mis estrategias (sus compras y sus
+    gratis, y las de sus correos demostrados): suelta, no se vende otra vez. Sin sesión, nada."""
+    uid = user_id()
+    return set(mine.owned(uid, proofs.proven(uid))) if uid is not None else set()
+
+
 @bp.post("/api/quote")
 @public
 def quote():
-    return jsonify(orders.priced(shop(), orders.cart_of(request.get_json(silent=True))).as_dict())
+    return jsonify(orders.priced(shop(), orders.cart_of(request.get_json(silent=True)), owned_now()).as_dict())
 
 
 @bp.post("/api/orders")
@@ -208,7 +226,7 @@ def create_order():
     user = signed_in()
     created = orders.create(shop(), cart, buyer, return_url=link("edgefolio.thanks"),
                             cancel_url=link("edgefolio.index", checkout="cancel"),
-                            user_id=user.id if user else None, email=user.email if user else "")
+                            user_id=user.id if user else None, email=user.email if user else "", owned=owned_now())
     response = jsonify(created)
     response.set_cookie(BUYER_COOKIE, buyer, max_age=orders.BUYER_DAYS * 86400, path="/", httponly=True,
                         samesite="Lax", secure=bool(current_app.config.get("SESSION_COOKIE_SECURE", True)))

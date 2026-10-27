@@ -21,7 +21,7 @@ export default function Detail(v) {
               </div>
             </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:200px">
-            <span style="font-size:28px;font-weight:700;letter-spacing:-.4px;text-align:end">${v.det?.priceLabel}</span>
+            ${v.detOwned ? null : html`<span style="font-size:28px;font-weight:700;letter-spacing:-.4px;text-align:end">${v.det?.priceLabel}</span>`}
             ${v.det?.isPaid && !v.detOwned ? html`<button onClick=${v.det?.onCart} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid ${s(v.det?.cartBorder)};background:${s(v.det?.cartBg)};color:${s(v.det?.cartColor)}"><i class=${v.det?.cartIcon}></i>${T(v.det?.cartLabel)}</button>` : null}
             ${v.det?.isFree && !v.detOwned ? html`<button onClick=${v.det?.onFree} style="font-family:inherit;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #bfe0e8;background:#eef8fa;color:#0e7c98"><i class="fa-solid fa-file-arrow-down"></i>${T(v.tx?.download)}</button>` : null}
             ${v.detOwned ? html`<a href=${v.ownedHref} onClick=${v.ownedGo} data-ef-owned style="font-family:inherit;line-height:normal;text-decoration:none;border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px;border:1px solid #b7e4c7;background:#e8f7ef;color:#15803d"><i class="fa-solid fa-circle-check"></i>${T(v.ownedLabel)}</a>` : null}
@@ -40,11 +40,11 @@ export default function Detail(v) {
         <div role="note" style="display:flex;gap:12px;align-items:flex-start;border-radius:14px;padding:14px 16px;background:#fff7ec;border:1px solid #f6d9ae"><i class="fa-solid fa-triangle-exclamation" style="color:#f79009;font-size:18px;margin-top:1px"></i><div style="display:flex;flex-direction:column;gap:2px;font-size:13.5px"><strong style="font-size:14.5px">${v.tx?.riskTitle}</strong><span style="text-wrap:pretty">${v.tx?.riskText}</span></div></div>
         <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
           <div style="flex:1 1 360px;background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
-            <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80;flex:1">${v.tx?.liveVsBacktest}</span><span title=${v.det?.gradeTip} style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#5a6b80">${T(v.tx?.grade)}<span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:700;color:#fff;background:${s(v.det?.gradeBg)}">${v.det?.grade}</span></span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px"><span>${v.tx?.colBacktest}</span><strong style="color:#15803d">${v.det?.nppSigned}</strong></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80;flex:1">${v.liveHead}</span><span title=${v.det?.gradeTip} style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#5a6b80">${T(v.tx?.grade)}<span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:700;color:#fff;background:${s(v.det?.gradeBg)}">${v.det?.grade}</span></span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px"><span>${v.btLabel}</span><strong style="color:#15803d">${v.det?.nppSigned}</strong></div>
             <div style="height:8px;border-radius:999px;background:#e2e9f0;overflow:hidden"><div style="width:${s(v.det?.barBt)};height:100%;background:linear-gradient(${s(v.g90)},#47f9e5,#0950e3)"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px"><span>${v.tx?.sinceRelease}</span><strong style="color:${s(v.det?.liveColor)}">${v.det?.live}</strong></div>
-            <div style="height:8px;border-radius:999px;background:#e2e9f0;overflow:hidden"><div style="width:${s(v.det?.barLive)};height:100%;background:${s(v.det?.liveColor)}"></div></div>
+            ${v.liveOn ? html`<div style="display:flex;justify-content:space-between;font-size:13px"><span>${v.tx?.sinceRelease}</span><strong style="color:${s(v.det?.liveColor)}">${v.det?.live}</strong></div>
+            <div style="height:8px;border-radius:999px;background:#e2e9f0;overflow:hidden"><div style="width:${s(v.det?.barLive)};height:100%;background:${s(v.det?.liveColor)}"></div></div>` : null}
             ${v.liveNote ? html`<span style="font-size:11.5px;color:#8d9cae">${v.liveNote}</span>` : null}
             </div>
           <div style="flex:1 1 300px;background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
@@ -65,7 +65,7 @@ export default function Detail(v) {
         <div style="background:#fff;border:1px solid #e2e9f0;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:6px">
           <span style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#5a6b80">${v.tx?.aboutInd}</span>
           <strong dir="auto" style="font-size:15px">${T(v.det?.key)} · ${T(v.det?.ind)}</strong>
-          <p dir="auto" lang="en" style="margin:0;color:#5a6b80;font-size:13.5px;text-wrap:pretty">${v.det?.ex}</p>
+          <p dir=${v.det?.exDir} lang=${v.det?.exLang} style="margin:0;color:#5a6b80;font-size:13.5px;text-wrap:pretty">${v.det?.ex}</p>
           <a href=${v.det?.indUrl} target="_blank" rel="noopener" style="font-size:13px;font-weight:600;display:inline-flex;gap:6px;align-items:center"><img src="/static/assets/icons/TW_ICO.svg" alt="" style="width:14px;height:14px" />${T(v.tx?.seeInd)}</a>
           </div>
         <div style="border-radius:18px;overflow:hidden;border:1px solid #16263a;box-shadow:0 14px 36px rgba(15,27,45,.18)">

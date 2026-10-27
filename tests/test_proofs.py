@@ -130,11 +130,25 @@ def test_every_email_text_is_in_every_language():
     assert {"mailProofSubject", "mailProofBody", "mailFreeSubject", "mailFreeBody", "mailNewsConfirm",
             "mailAlertSubject", "mailAlertBody"} <= set(keys)
     for key in keys:
-        names = sorted(re.findall(r"\{(\w+)\}", data[key]["en"]))
+        english = data[key]["en"]
+        if isinstance(english, dict):
+            # un texto que cuenta (mailAlertBundle): una forma por número, cada una con los nombres del inglés; {n}
+            # puede faltar en la que dice el número con palabras (en árabe, «استراتيجية واحدة», «استراتيجيتين»). Un
+            # idioma sin plurales (el chino) lleva una sola, que vale para todos
+            names = set(re.findall(r"\{(\w+)\}", english["other"]))
+            for lang in data["_languages"]:
+                forms = data[key][lang] if isinstance(data[key][lang], dict) else {"other": data[key][lang]}
+                assert forms.get("other"), (key, lang)
+                assert set(re.findall(r"\{(\w+)\}", forms["other"])) == names, (key, lang)
+                assert all(form.strip() and set(re.findall(r"\{(\w+)\}", form)) in (names, names - {"n"})
+                           for form in forms.values()), (key, lang)
+                assert forms != english or lang == "en", (key, lang)
+            continue
+        names = sorted(re.findall(r"\{(\w+)\}", english))
         for lang in data["_languages"]:
             text = data[key][lang]
             assert text.strip() and sorted(re.findall(r"\{(\w+)\}", text)) == names, (key, lang)
-            assert text != data[key]["en"] or lang == "en" or "{" == text[0], (key, lang)
+            assert text != english or lang == "en" or "{" == text[0], (key, lang)
 
 
 def test_signing_out_is_the_cores(app):

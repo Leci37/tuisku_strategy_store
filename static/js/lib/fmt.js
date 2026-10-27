@@ -21,6 +21,12 @@ export function translator(dict, common, lang) {
   };
 }
 
+// Los días y las descargas de un enlace (ajustes del servidor: DOWNLOAD_DAYS, MAX_DOWNLOADS), cada cuenta con su
+// clave y su forma de plural (linkDays, linkDownloads): un texto con dos cuentas no puede elegir una sola forma.
+export const linkCounts = (t, f, days, downloads) => ({
+  days: t('linkDays', { n: f.int(days) }, days), downloads: t('linkDownloads', { n: f.int(downloads) }, downloads)
+});
+
 export function formatters(lang, { local, rate }) {
   const LOC = LOCALES[lang] || 'en-US';
   const nf = opts => new Intl.NumberFormat(LOC, opts);

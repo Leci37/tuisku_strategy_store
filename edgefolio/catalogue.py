@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """Las estrategias a la venta, leídas de catalogue/catalogue.csv: el único sitio de donde salen los precios.
 
-A su lado: indicators.csv (qué es cada indicador, para la página de la estrategia), bundles.json (los
-lotes y sus precios) y, si existe, since_release.csv, que escribe el trabajo diario.
+A su lado: indicators.csv (qué es cada indicador, en los idiomas de la tienda, para la página de la estrategia),
+bundles.json (los lotes y sus precios), release.json (de qué ejecución del generador es: entre cuántas estrategias
+probadas se eligieron) y, si existen, since_release.csv: cuánto lleva cada una desde su publicación (id, pct,
+as_of), y levels.json, los niveles de cada script (levels.py). Y de la vista previa publicada de cada una
+(static/assets/previews/), la «Expiry date» de la cabecera de su script.
 """
 from __future__ import annotations
 
@@ -12,17 +15,20 @@ import csv
 import json
 import logging
 import math
+import re
 from dataclasses import dataclass, field, replace
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from functools import cached_property
 from pathlib import Path
 
-from .settings import Settings
+from .levels import load as load_levels
+from .settings import GRADE_CUTOFFS, Settings
 
 log = logging.getLogger(__name__)
 
 TV_SCRIPTS = "https://www.tradingview.com/scripts/"
+EXPIRY = re.compile(r"Expiry date:\s*(\d{4})/(\d{2})/(\d{2})")
 
 # Columna del CSV -> (campo de la fila, tipo). Cualquiera puede faltar o estar vacía: la fila dice null.
 NUMBERS = {
@@ -60,10 +66,35 @@ def asset(path: str) -> str:
     return "/static/" + path.lstrip("/") if path else ""
 
 
-def grade(trades) -> str:
-    """Cuánta prueba tiene el backtest: los cortes del diseño (aún por acordar)."""
-    t = trades or 0
-    return "A" if t >= 300 else "B" if t >= 100 else "C" if t >= 30 else "D"
+def grade(trades, cutoffs: tuple = GRADE_CUTOFFS) -> str:
+    """Cuánta prueba tiene el backtest: sus operaciones cerradas contra los cortes de A, B y C (GRADE_CUTOFFS)."""
+    t, (a, b, c) = trades or 0, cutoffs
+    return "A" if t >= a else "B" if t >= b else "C" if t >= c else "D"
+
+
+def script_expiry(path: Path):
+    """La «Expiry date» de la cabecera de un script (``// ID_model: … Date Creation: … Expiry date: 2027/06/13``, la
+    misma en su vista previa pública), o None sin ella. Desde ese día, a las 00:00 UTC, el script no abre operaciones
+    (``isExpired = time >= expiryTime``)."""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            head = f.read(4096)   # la cabecera son las primeras líneas
+    except OSError:
+        return None
+    m = EXPIRY.search(head)
+    try:
+        return date(int(m[1]), int(m[2]), int(m[3])) if m else None
+    except ValueError:
+        return None
+
+
+def read_release(path: Path) -> dict:
+    """release.json, o {} sin él (un catálogo publicado con la forma de antes de los paquetes) o roto."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 @dataclass(frozen=True)
@@ -74,9 +105,12 @@ class Strategy:
     id_model: str
     price: Decimal
     row: dict = field(repr=False, compare=False)  # la fila entera del catálogo
-    live: float = None        # % desde la publicación, del trabajo diario; None hasta que corra
+    live: float = None        # % desde la publicación, de since_release.csv; None hasta que haya cifra
     live_as_of: str = None
     new_days: int = 30
+    grade_cutoffs: tuple = GRADE_CUTOFFS
+    expiry: date = None       # la «Expiry date» de su script publicado (su vista previa); None si no la dice
+    ind_name: str = None      # el nombre de su indicador en indicators.csv; sin él, el de la fila del catálogo
 
     @property
     def id(self) -> str:
@@ -115,7 +149,7 @@ class Strategy:
 
     @property
     def grade(self) -> str:
-        return grade(self.numbers["tr"])
+        return grade(self.numbers["tr"], self.grade_cutoffs)
 
     @property
     def version(self) -> int:
@@ -137,6 +171,20 @@ class Strategy:
         d = self.release_date
         return bool(d) and date.today() - timedelta(days=self.new_days) <= d <= date.today()
 
+    @property
+    def expired(self) -> bool:
+        """Si su script ya caducó (desde su «Expiry date», a las 00:00 UTC, no abre operaciones): su versión nueva
+        deja de darse gratis a quien tiene una de antes (decisión del dueño, 2026-10-26)."""
+        return self.expiry is not None and datetime.now(timezone.utc).date() >= self.expiry
+
+    def serves(self, version: int, paid: bool = True) -> bool:
+        """Si un enlace de la versión ``version`` (de pago; con ``paid=False``, de una gratis) da el script de hoy, el único
+        que guarda la tienda. El de su versión, siempre; el de una de antes, mientras la estrategia no ha caducado (la
+        versión nueva es gratis hasta su «Expiry date»; decisión del dueño, 2026-10-26); el de una gratis, siempre. Lo
+        miran Mis estrategias, renovar (API #16) y la descarga (API #10): si no, el enlace de antes, aún válido, daría la
+        versión nueva."""
+        return not paid or version >= self.version or not self.expired
+
     @cached_property
     def numbers(self) -> dict:
         return {name: number(self.row.get(col), kind) for col, (name, kind) in NUMBERS.items()}
@@ -148,7 +196,7 @@ class Strategy:
         stems = {k: Path(r.get(col) or "").stem for k, col in (("profit", "path_stra"), ("candle", "path_candle"))}
         return {
             "id": self.id, "ticker": self.ticker, "interval": self.interval, "key": self.key_techs,
-            "hash": self.id_model, "name": r.get("Name") or self.ticker, "ind": r.get("Full Indicator Name") or "",
+            "hash": self.id_model, "name": r.get("Name") or self.ticker, "ind": self.ind_name or r.get("Full Indicator Name") or "",
             "index": r.get("Index") or "", "market": self.market, "price": number(self.price) or 0,
             **self.numbers, "release": self.release, "version": self.version,
             "profit": asset(r.get("path_stra")), "candle": asset(r.get("path_candle")),
@@ -199,29 +247,49 @@ class Catalogue:
         if not isinstance(source, Settings):
             path = Path(source)
             source = Settings(catalogue=path, indicators=path.parent / "indicators.csv",
-                              bundles=path.parent / "bundles.json", since_release=path.parent / "since_release.csv")
+                              bundles=path.parent / "bundles.json", since_release=path.parent / "since_release.csv",
+                              levels=path.parent / "levels.json")
+        # indicators.csv es de la tienda: el nombre de cada indicador, su página y su autor y la explicación, revisados
+        # con el código del generador. Se lee antes que el catálogo para que el nombre que se enseña salga de él, el
+        # mismo de la explicación y del enlace (la fila del catálogo trae el del generador, que puede quedarse atrás)
+        self.indicators = {}
+        for r in read_table(source.indicators):
+            lower = {k.strip().lower(): v for k, v in r.items() if k}
+            if clean(lower.get("key")):
+                # la explicación, en inglés («Explanation») y en cada idioma con su columna («Explanation_es»…)
+                texts = {"en": clean(lower.get("explanation")),
+                         **{k.split("_", 1)[1]: clean(v) for k, v in lower.items() if k.startswith("explanation_")}}
+                self.indicators[clean(lower["key"])] = {
+                    "ind_name": clean(lower.get("full indicator name")),
+                    "ind_texts": {lang: text for lang, text in texts.items() if text},
+                    "ind_url": clean(lower.get("traderview url indicator")) or TV_SCRIPTS,
+                    "ind_author": clean(lower.get("author")),
+                }
         live = {r.get("id"): r for r in read_table(source.since_release)}
         self.items = {}   # por clave: lo que guardan los pedidos y los enlaces
         self.by_id = {}
         with open(source.catalogue, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f, delimiter="\t"):
                 s = Strategy(row["ticker"], row["interval"], row["key_techs"], row["id_model"],
-                             Decimal(row["Price"]).quantize(Decimal("0.01")), row, new_days=source.new_days)
+                             Decimal(row["Price"]).quantize(Decimal("0.01")), row, new_days=source.new_days,
+                             grade_cutoffs=source.grade_cutoffs,
+                             ind_name=self.indicators.get(row["key_techs"], {}).get("ind_name") or None)
                 if s.id in live:
                     s = replace(s, live=number(live[s.id].get("pct")), live_as_of=live[s.id].get("as_of") or None)
+                preview = (row.get("pine_path_shadow") or "").strip()
+                if preview:
+                    s = replace(s, expiry=script_expiry(Path(source.static) / preview))
                 if s.key not in self.items:
                     self.items[s.key] = s
                     self.by_id[s.id] = s
-        self.indicators = {}
-        for r in read_table(source.indicators):
-            lower = {k.strip().lower(): v for k, v in r.items() if k}
-            if clean(lower.get("key")):
-                self.indicators[clean(lower["key"])] = {
-                    "ind_text": clean(lower.get("explanation")),
-                    "ind_url": clean(lower.get("traderview url indicator")) or TV_SCRIPTS,
-                    "ind_author": clean(lower.get("author")),
-                }
+        # cuántas tienen cifra desde su publicación: sin ninguna, la página no habla de ello
+        self.since_release = sum(1 for s in self.items.values() if s.live is not None)
+        # release.json va siempre al lado de catalogue.csv (publish.py). Entre cuántas estrategias probadas se
+        # eligieron, si el generador lo dijo; uno que no puede ser (menos que las que hay) no se cuenta
+        tried = read_release(Path(source.catalogue).parent / "release.json").get("tried")
+        self.tried = tried if type(tried) is int and tried >= len(self.items) > 0 else None
         self.bundles = self._bundles(source.bundles)
+        self.levels = load_levels(source.levels)
 
     def _bundles(self, path: Path) -> dict:
         """Los lotes de bundles.json que siguen siendo lo que prometen. Uno que perdió una estrategia, o que ya
@@ -278,14 +346,28 @@ class Catalogue:
         except (binascii.Error, UnicodeDecodeError, ValueError):
             return None
 
-    def row(self, s: Strategy) -> dict:
-        """La fila de una lista: la de la estrategia y su indicador (la página de TradingView a la que lleva
-        «CLAVE · indicador» en las fichas de Pro, y su explicación al pasar por encima)."""
-        ind = self.indicators.get(s.key_techs, {})
-        return {**s.as_row(), "ind_text": ind.get("ind_text", ""), "ind_url": ind.get("ind_url", TV_SCRIPTS)}
+    def explanation(self, s: Strategy, lang: str) -> tuple:
+        """(texto, idioma) de la explicación del indicador de ``s`` en ``lang``; sin ella, la inglesa, y su idioma lo
+        dice (la página la marca con lang="en" sólo entonces)."""
+        texts = self.indicators.get(s.key_techs, {}).get("ind_texts", {})
+        if texts.get(lang):
+            return texts[lang], lang
+        return (texts["en"], "en") if texts.get("en") else ("", lang)
 
-    def detail(self, s: Strategy) -> dict:
+    def row(self, s: Strategy, lang: str = "en") -> dict:
+        """La fila de una lista: la de la estrategia y su indicador (la página de TradingView a la que lleva
+        «CLAVE · indicador» en las fichas de Pro, y su explicación al pasar por encima, en ``lang``: el idioma de
+        la petición; ``ind_lang``, el de la explicación)."""
+        text, text_lang = self.explanation(s, lang)
+        return {**s.as_row(), "ind_text": text, "ind_lang": text_lang,
+                "ind_url": self.indicators.get(s.key_techs, {}).get("ind_url", TV_SCRIPTS)}
+
+    def detail(self, s: Strategy, lang: str = "en") -> dict:
+        """La de una estrategia (API #3): la fila, el autor del indicador, sus versiones y los niveles de su script,
+        con los que el árbol del visitante dice comprar, vender o esperar (null si la tienda no los tiene)."""
         ind = self.indicators.get(s.key_techs, {})
         versions = [{"v": v, "date": s.release if v == s.version else None, "note": ""}
                     for v in range(s.version, 0, -1)]
-        return {**self.row(s), "ind_author": ind.get("ind_author", ""), "versions": versions}
+        levels = self.levels.get(s.id, {})
+        return {**self.row(s, lang), "ind_author": ind.get("ind_author", ""), "versions": versions,
+                "buy_at": levels.get("buy_at"), "close_at": levels.get("close_at")}

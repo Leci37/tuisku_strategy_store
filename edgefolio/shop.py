@@ -14,6 +14,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+from zlecitool_core.i18n import in_language
+from zlecitool_core.i18n import t as core_text
+
 from . import search
 from .catalogue import Catalogue
 from .paypal import FakePayPal, PayPalREST
@@ -30,9 +33,10 @@ FREE_LIMIT, FREE_WINDOW = 20, 3600
 
 
 class Texts:
-    """Los textos de los correos en un idioma dado, leídos del diccionario de la herramienta
-    (i18n/ui.json, las claves mail*): el trabajo diario de los avisos no tiene petición, así que no
-    puede preguntar al núcleo el idioma. Un idioma que falta va al inglés; {nombre} se rellena aquí."""
+    """Los textos de los correos en un idioma dado, el de quien los recibe, leídos del diccionario de la
+    herramienta (i18n/ui.json, las claves mail*): el trabajo diario de los avisos no tiene petición. Un
+    idioma que falta va al inglés; {nombre} se rellena aquí, y la forma de un texto que cuenta (n) la elige
+    el núcleo."""
 
     PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
@@ -42,8 +46,15 @@ class Texts:
     def get(self, key: str, lang: str, **values) -> str:
         entry = self.data[key]
         text = entry.get(lang) or entry["en"]
-        if isinstance(text, dict):  # una forma de plural, como la lee t() en el navegador
-            text = text.get("other", "")
+        if isinstance(text, dict):
+            # un texto que cuenta: la forma la elige el núcleo con n, con las reglas de cada idioma (CONTRATO, «Un
+            # texto que cuenta algo»; en árabe, 2 lleva el dual, de 3 a 10 el plural y de 11 a 99 el singular), en
+            # el idioma de quien lo recibe (in_language, también sin petición: el trabajo de los avisos). Sólo con
+            # n: lo demás se rellena aquí, porque el núcleo no admite un nombre como {code} (el de los avisos), que
+            # es también el del idioma en su Dictionary.text
+            counted = {"n": values["n"]} if "n" in values else {}
+            with in_language(lang if lang in entry else "en"):
+                text = core_text(key, **counted)
         return self.PLACEHOLDER.sub(lambda m: str(values[m[1]]) if m[1] in values else m[0], text)
 
 
@@ -53,9 +64,11 @@ _catalogues = {}
 def load_catalogue(settings: Settings) -> Catalogue:
     """El catálogo de esos ficheros, leído una vez por proceso mientras no cambien (varias apps en el
     mismo proceso, como las pruebas, no lo leen y lo indexan cada una)."""
-    paths = (settings.catalogue, settings.indicators, settings.bundles, settings.since_release)
+    paths = (settings.catalogue, settings.indicators, settings.bundles, settings.since_release, settings.levels,
+             Path(settings.catalogue).parent / "release.json")
     stamp = tuple((str(p), hashlib.sha1(p.read_bytes()).hexdigest() if p.is_file() else None) for p in map(Path, paths))
-    key = (stamp, settings.new_days)
+    # la carpeta static: de sus vistas previas sale la caducidad de cada script
+    key = (stamp, settings.new_days, tuple(settings.grade_cutoffs), str(settings.static))
     if key not in _catalogues:
         if len(_catalogues) > 8:
             _catalogues.clear()

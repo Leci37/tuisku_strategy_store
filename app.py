@@ -20,19 +20,24 @@ from zlecitool_core.config import load_env_file
 from zlecitool_core.db import create_tables
 from zlecitool_core.privacy import add_privacy
 from zlecitool_core.security import MissingSecretError
+from zlecitool_core.tasks import add_task
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
     init_tool(app)  # lee tool.json, aquí al lado
 
-    from edgefolio import models, your_data  # noqa: F401  (models: registra las tablas antes de crearlas)
+    from edgefolio import models, tasks, your_data  # noqa: F401  (models: registra las tablas antes de crearlas)
     from edgefolio.routes import bp
 
     app.register_blueprint(bp)
     # «Tus datos» (núcleo 0.30): cómo sale lo de una cuenta en «Descargar mis datos» y cómo se va con
     # «Borrar mi cuenta». keep: los pedidos, que pide la ley fiscal, se quedan sin correo.
     add_privacy(app, export=your_data.export, erase=your_data.erase, keep=your_data.KEEP)
+    # Lo que corre solo una vez al día, entre todos los procesos ("schedule" de tool.json; núcleo 0.25): los
+    # cambios del BCE y los avisos de las favoritas. Antes, cron
+    add_task(app, "fx_update", tasks.fx_update)
+    add_task(app, "send_alerts", tasks.send_alerts)
     create_tables(app)
     return app
 

@@ -4,7 +4,7 @@ catálogo pequeño de cuatro estrategias, con PayPal de prueba y sin un solo cor
 
 ``app`` es la tienda con ese catálogo; ``client``, alguien sin cuenta (con su token CSRF, como lo pone
 csrf.js en el navegador); ``signed(app, email)``, una cuenta del núcleo con la sesión abierta; y
-``real_client``, la tienda con el catálogo de verdad (``catalogue/``: 143 estrategias en el de 2026-10),
+``real_client``, la tienda con el catálogo de verdad (``catalogue/``: 94 estrategias en el de 2026-10),
 sus lotes y sus gráficos.
 """
 import csv
@@ -113,6 +113,7 @@ def settings(tmp_path):
             (private / s.private_file).write_text(f"//@version=5\nstrategy(\"{s.key}\")\n")
     return Settings(catalogue=cat / "catalogue.csv", indicators=cat / "indicators.csv", bundles=cat / "bundles.json",
                     fx=cat / "fx.json", fx_today=tmp_path / "fx-today.json", since_release=cat / "since_release.csv",
+                    levels=cat / "levels.json",
                     strategies_dir=private, thumbs_dir=tmp_path / "thumbs",
                     discount_codes={"spring20": Decimal("0.20"), "big60": Decimal("0.60")},
                     flat_price_codes={"launch": Decimal("0.99")})

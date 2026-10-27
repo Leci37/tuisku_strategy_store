@@ -96,7 +96,9 @@ export function cartVals(c) {
     bundles: defs.bundles.map(b => {
       const on = s.bundles.includes(b.key), rowsB = b.ids.map(row).filter(Boolean);
       const tick = [...new Set(rowsB.map(r => r.ticker))];
-      return { name: t(b.name_key), count: t('nStrategies', { n: f.int(b.ids.length) }, b.ids.length), tickers: tick.join(' · '),
+      // el punto va pegado al ticker que le sigue (espacio duro): si la lista se parte, la línea no acaba en «·»
+      // (en árabe, ese punto quedaba junto al que la separa del recuento: «AMD · · 5 استراتيجيات»)
+      return { name: t(b.name_key), count: t('nStrategies', { n: f.int(b.ids.length) }, b.ids.length), tickers: tick.join(' ·\u00a0'),
         icons: tick.map(tk => ({ src: iconOf(rowsB.find(r => r.ticker === tk)) })),
         was: f.pmoney(b.was), price: f.pmoney(b.price), save: saveP(ratio(b.price, b.was)),
         label: on ? tx.inCartBtn : t('addBundle'), btnIcon: on ? 'fa-solid fa-check' : 'fa-solid fa-cart-plus',
@@ -104,7 +106,9 @@ export function cartVals(c) {
     }),
     packSlots: Array.from({ length: pack.size }, (_, i) => { const r = packRows[i]; return { filled: !!r, empty: !r, icon: iconOf(r), border: r ? '1px solid #e2e9f0' : '2px dashed #9fb8ef' }; }),
     packSave: saveP(packSave),
-    packHint: !full ? t('packHint', { n: f.int(pack.size - s.packIds.length), price: f.pmoney(pack.price) }) : t('packReady', { price: f.pmoney(pack.price) }),
+    // cuántas faltan elige la forma del plural (en árabe, «اختر اثنتين أخريين»); el tamaño es PACK_SIZE, del servidor
+    packHint: !full ? t('packHint', { n: f.int(pack.size - s.packIds.length), size: f.int(pack.size), price: f.pmoney(pack.price) }, pack.size - s.packIds.length)
+      : t('packReady', { size: f.int(pack.size), price: f.pmoney(pack.price) }),
     packBtnLabel: s.bundles.includes('custom') ? tx.inCartBtn : t('addPack'), packBtnBg: full ? '#0950e3' : '#9aa7b8',
     addPack: () => {
       if (!full) { app.setState({ packOpen: true }); return; }

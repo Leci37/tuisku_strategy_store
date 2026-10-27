@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Mis estrategias: lo que tiene una cuenta, sus enlaces, renovar y las versiones nuevas, el script del
-propietario, las favoritas; y el zip de un pedido entero."""
+"""Mis estrategias: lo que tiene una cuenta, sus enlaces, renovar y las versiones nuevas (gratis mientras la estrategia
+no ha caducado), el script del propietario, las favoritas; y el zip de un pedido entero."""
 import csv
 import io
 import time
@@ -126,15 +126,16 @@ def test_a_spent_link_opened_in_the_browser_goes_back_to_the_shop(app, client, s
 
 
 def test_the_newest_purchase_comes_first_and_a_row_is_its_first_purchase(app):
-    """Lo último arriba, también el mismo día; y una estrategia comprada dos veces dice la fecha y el pedido
-    de la primera compra, no la fecha de una y el pedido de otra."""
+    """Lo último arriba, también el mismo día; y una estrategia comprada dos veces (suelta y después en un lote: suelta
+    no se vende otra vez, E8) dice la fecha y el pedido de la primera compra, no la fecha de una y el pedido de otra."""
     ana = signed(app, "ana@example.com")
     first = buy(ana, [AAPL])["order_id"]
     time.sleep(1.1)  # los segundos de la hora de cada pedido
     buy(ana, [MSFT])
     assert [x["id"] for x in my(ana)["items"]] == [MSFT, AAPL]
     time.sleep(1.1)
-    buy(ana, [AAPL])
+    order = ana.post("/api/orders", json={"bundles": ["duo"]})        # AAPL y MSFT otra vez, en el lote
+    assert order.status_code == 200 and ana.post(f"/api/orders/{order.json['id']}/capture").status_code == 200
     aapl = next(x for x in my(ana)["items"] if x["id"] == AAPL)
     assert aapl["order"] == first
 
@@ -182,6 +183,36 @@ def test_a_new_version_is_offered_and_delivered(app, settings, paypal):
     assert item["valid"] and item["version"] == 1 and item["update"] == 2
     got = ana.post("/api/mine/renew", json={"id": AAPL}).json
     assert got["version"] == 2 and got["update"] is None and got["url"] != item["url"]
+
+
+def test_a_bought_strategy_that_left_the_catalogue(app, settings, paypal):
+    """Las 49 horarias de acciones salieron del catálogo (E2, 2026-10-26), y alguien pudo comprar una antes. La regla
+    de la tienda no cambia: lo que ya no está en el catálogo no se enseña ni se entrega. Mis estrategias sigue con lo
+    demás, sin romperse; el enlace de la que salió dice errStrategyGone (abierto en el navegador, vuelve a Mis
+    estrategias con el aviso); el zip y la página de gracias del pedido dan lo que queda; renovarla, 404."""
+    ana = signed(app, "ana@example.com")
+    receipt = buy(ana, [AAPL, MSFT])
+    links = {d["id"]: d["url"] for d in receipt["downloads"]}
+    assert ana.put(f"/api/favourites/{MSFT}", json={}).status_code == 200
+    with open(settings.catalogue, newline="") as f:
+        rows = [r for r in csv.DictReader(f, delimiter="\t") if r["ticker"] != "MSFT"]
+    with open(settings.catalogue, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter="\t")
+        w.writeheader()
+        w.writerows(rows)
+    install(app, settings, paypal)   # la tienda, arrancada otra vez sin MSFT
+    body = my(ana)
+    assert [i["id"] for i in body["items"]] == [AAPL] and body["favourites"] == []
+    gone = ana.get(links[MSFT])
+    assert gone.status_code == 404 and gone.json == {"error": "errStrategyGone"}
+    opened = ana.get(links[MSFT], headers={"Sec-Fetch-Dest": "document"})
+    assert opened.status_code == 303 and opened.headers["location"] == "/mine?link=errStrategyGone"
+    assert zipfile.ZipFile(io.BytesIO(ana.get(receipt["download_all"]).data)).namelist() == [f"Tuisku_{AAPL}.pine"]
+    again = ana.post(f"/api/orders/{receipt['order_id']}/capture")
+    assert again.status_code == 200 and [d["id"] for d in again.json["downloads"]] == [AAPL]
+    renewed = ana.post("/api/mine/renew", json={"id": MSFT})
+    assert renewed.status_code == 404 and renewed.json == {"error": "errUnknownStrategy"}
+    assert ana.get(links[AAPL]).status_code == 200
 
 
 def test_the_owner_reads_the_full_script(app, client, free_file):  # noqa: F811
@@ -264,3 +295,124 @@ def test_one_script_through_two_links_is_sent_and_counted_once(app, settings):
     assert zipfile.ZipFile(io.BytesIO(r.data)).namelist() == [f"Tuisku_{AAPL}.pine"]
     with app.app_context():
         assert (downloads.find_link(new).count, downloads.find_link("third-link-token").count) == (1, 0)
+
+
+def published_again(app, settings, paypal, versions: dict, expiries: dict):
+    """El catálogo publicado otra vez: ``versions`` (ticker → versión) y la «Expiry date» de la cabecera de la vista
+    previa de cada una (``expiries``, ticker → 'AAAA/MM/DD'), en una carpeta static de la prueba. Y la tienda,
+    arrancada otra vez con él."""
+    with open(settings.catalogue, newline="") as f:
+        rows = list(csv.DictReader(f, delimiter="\t"))
+    settings.static = settings.catalogue.parent.parent / "static"
+    previews = settings.static / "assets" / "previews"
+    previews.mkdir(parents=True, exist_ok=True)
+    for r in rows:
+        r["version"] = str(versions.get(r["ticker"], 1))
+        r["pine_path_shadow"] = f"assets/previews/{r['ticker']}.pine"
+        if r["ticker"] in expiries:
+            sid = f"{r['ticker']}_{r['interval']}_{r['key_techs']}_{r['id_model']}"
+            (previews / f"{r['ticker']}.pine").write_text(
+                f"//Welcome to © Tuisku Trading Strategy\n\n// ID_model: {sid} Date Creation: 2026/10/13 Expiry date: "
+                f"{expiries[r['ticker']]} (no new trades after it; download the updated version)\n//@version=5\n")
+    with open(settings.catalogue, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), delimiter="\t")
+        w.writeheader()
+        w.writerows(rows)
+    install(app, settings, paypal)
+
+
+def test_an_update_is_free_until_the_strategy_expires(app, client, settings, paypal, free_file):  # noqa: F811
+    """Decisión del dueño (2026-10-26): «Obtener la actualización» es gratis mientras la estrategia no ha caducado,
+    según la «Expiry date» de la cabecera de su script (la línea de su vista previa pública). Después, Mis estrategias
+    no la ofrece (``update`` es null) y #16 no da la versión nueva (403 errUpdateExpired), tampoco con el enlace de la
+    de antes caducado: la tienda guarda sólo el script de hoy, y el enlace nuevo lo daría. Renovar el enlace de la
+    versión comprada, cuando es la de hoy, sigue valiendo aunque haya caducado. Una gratis se actualiza siempre: se
+    pide otra vez sin pagar. Hoy ninguna pasa de la v1: con una v2 inventada."""
+    TSLA, NVDA = "TSLA_1Day_1C00_dddd4444", FREE_ID
+    ana = signed(app, "ana@example.com")
+    buy(ana, [AAPL, MSFT])
+    settings.download_days = -1                       # nacido caducado: el de TSLA se renueva
+    buy(ana, [TSLA])
+    assert claim(ana, "ana@example.com").json == {"sent": True}
+    settings.download_days = 7
+    published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2, "NVDA": 2},
+                    {"AAPL": "2099/01/01", "MSFT": "2020/01/01", "TSLA": "2020/01/01", "NVDA": "2020/01/01"})
+    with app.app_context():
+        from edgefolio.shop import of
+        cat = of(app).catalogue
+        assert [cat.resolve(i).expired for i in (AAPL, MSFT, TSLA)] == [False, True, True]
+        assert cat.resolve(AAPL).expiry.isoformat() == "2099-01-01"
+    items = {i["id"]: i for i in my(ana)["items"]}
+    assert (items[AAPL]["update"], items[MSFT]["update"], items[TSLA]["update"], items[NVDA]["update"]) == (2, None, None, 2)
+    got = ana.post("/api/mine/renew", json={"id": AAPL}).json
+    assert got["version"] == 2 and got["update"] is None, "sin caducar: la versión nueva, gratis"
+    refused = ana.post("/api/mine/renew", json={"id": MSFT})
+    assert refused.status_code == 403 and refused.json == {"error": "errUpdateExpired"}
+    assert next(i for i in my(ana)["items"] if i["id"] == MSFT)["version"] == 1, "la de antes, como estaba"
+    renewed = ana.post("/api/mine/renew", json={"id": TSLA}).json
+    assert renewed["valid"] and renewed["version"] == 1, "el enlace de la versión comprada, aunque haya caducado"
+    free = ana.post("/api/mine/renew", json={"id": NVDA}).json
+    assert free["version"] == 2 and free["kind"] == "free", "una gratis, siempre"
+
+
+def test_an_old_link_does_not_give_the_new_version_once_the_strategy_has_expired(app, settings, paypal):
+    """La tienda guarda un script por estrategia, el de hoy: un enlace aún válido de la versión de antes da la nueva.
+    Sin caducar, vale (la actualización es gratis); caducada, ni Mis estrategias lo da por válido (sin .pine: «Ya es
+    tuya» lleva a Mis estrategias) ni descarga nada (API #10: 403 errUpdateExpired; abierto en el navegador, a Mis
+    estrategias con el aviso), como al renovarlo, ni la vista de propietario del árbol lo enseña entero (API #17). El de
+    la versión comprada, cuando es la de hoy, sí, aunque caducara."""
+    ana = signed(app, "ana@example.com")
+    links = {d["id"]: d["url"] for d in buy(ana, [AAPL, MSFT])["downloads"]}
+    published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2}, {"AAPL": "2099/01/01", "MSFT": "2020/01/01"})
+    items = {i["id"]: i for i in my(ana)["items"]}
+    assert (items[AAPL]["valid"], items[AAPL]["url"], items[AAPL]["update"]) == (True, links[AAPL], 2)
+    assert (items[MSFT]["valid"], items[MSFT]["url"], items[MSFT]["update"]) == (False, None, None)
+    assert ana.get(links[AAPL]).status_code == 200, "sin caducar: la versión nueva, gratis"
+    refused = ana.get(links[MSFT])
+    assert refused.status_code == 403 and refused.json == {"error": "errUpdateExpired"}
+    opened = ana.get(links[MSFT], headers={"Sec-Fetch-Dest": "document"})
+    assert opened.status_code == 303 and opened.headers["location"] == "/mine?link=errUpdateExpired"
+    assert ana.post("/api/mine/renew", json={"id": MSFT}).json == {"error": "errUpdateExpired"}
+    # el script entero de la vista de propietario del árbol (API #17) es también el de hoy
+    assert ana.get(f"/api/mine/{AAPL}/script").status_code == 200
+    whole = ana.get(f"/api/mine/{MSFT}/script")
+    assert whole.status_code == 403 and whole.json == {"error": "errUpdateExpired"}
+    published_again(app, settings, paypal, {"AAPL": 2}, {"AAPL": "2099/01/01", "MSFT": "2020/01/01"})
+    assert ana.get(links[MSFT]).status_code == 200, "la versión que compró, aunque haya caducado"
+    assert next(i for i in my(ana)["items"] if i["id"] == MSFT)["valid"]
+    assert ana.get(f"/api/mine/{MSFT}/script").status_code == 200
+
+
+def test_a_strategy_expires_at_midnight_utc_as_its_script(monkeypatch):
+    """Como el script (``isExpired = time >= expiryTime``, ``expiryTime`` a las 00:00 UTC de su «Expiry date»): el día
+    de antes a las 23:59:59 UTC aún no ha caducado; a las 00:00 UTC del día, sí. En UTC y no en la hora de la máquina:
+    con un reloj de UTC+14, el mediodía UTC del día de antes ya sería el día de la caducidad."""
+    from datetime import date, datetime, timedelta, timezone
+    from decimal import Decimal
+
+    from edgefolio import catalogue
+    from edgefolio.catalogue import Strategy
+
+    class At(datetime):
+        moment = None
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.moment.astimezone(tz) if tz else (cls.moment + timedelta(hours=14)).replace(tzinfo=None)
+
+    monkeypatch.setattr(catalogue, "datetime", At)
+    s = Strategy("AAPL", "1Day", "1ADX", "aaaa1111", Decimal("79"), {"version": "2"}, expiry=date(2027, 6, 13))
+    for moment, expired in (((2027, 6, 12, 12, 0, 0), False), ((2027, 6, 12, 23, 59, 59), False),
+                            ((2027, 6, 13, 0, 0, 0), True)):
+        At.moment = datetime(*moment, tzinfo=timezone.utc)
+        assert (s.expired, s.serves(1), s.serves(2), s.serves(1, paid=False)) == (expired, not expired, True, True), moment
+
+
+def test_every_published_strategy_says_when_it_expires(real_app):
+    """La caducidad de cada estrategia del catálogo publicado sale de la cabecera de su vista previa (el generador la
+    escribe en cada script): todas la dicen, y es después de su publicación."""
+    from edgefolio.shop import of
+    catalogue = of(real_app).catalogue
+    assert len(catalogue) > 0
+    for s in catalogue:
+        assert s.expiry and s.release_date and s.expiry > s.release_date, s.id

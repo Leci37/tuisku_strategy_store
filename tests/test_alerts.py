@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Los avisos de las favoritas: un correo por persona, en su idioma, con lo que cambió desde la vuelta
-anterior; sólo a un correo que la cuenta ha demostrado que es suyo."""
+anterior; sólo a un correo que la cuenta ha demostrado que es suyo. Aquí, con el comando (``send-alerts``, a mano);
+la tarea del reloj del núcleo, que hace lo mismo cada día, en tests/test_tasks.py."""
 import csv
 import json
 
@@ -50,7 +51,8 @@ def test_the_first_run_only_takes_the_picture(app):
     assert "0 estrategias cambiaron; 0 correos" in run(app)
 
 
-def test_changes_are_emailed_once_in_the_persons_language(app, settings, paypal):
+def test_changes_are_emailed_once_in_the_persons_language(app, settings, paypal, monkeypatch):
+    monkeypatch.setenv("PORT", "5105")      # en desarrollo, sin ZLECITOOL_PUBLIC_URL: los enlaces, a localhost
     ana = account(app)
     follow(ana, TSLA, pd=True, bd=True)
     follow(ana, AAPL, nv=True)
@@ -100,3 +102,20 @@ def test_in_the_language_of_the_page_and_only_to_a_proven_email(app, settings, p
     assert mail["subject"] == "Edgefolio: news about your favourite strategies"
     assert "Tesla (TSLA · 1C00): now $45.00, was $50.00. https://shop.example/s/" in mail["body"]
     assert mails("victim@example.com") == [], "sin demostrar el correo, ningún aviso"
+
+
+def test_without_the_public_address_the_command_sends_nothing(app, settings, paypal, monkeypatch):
+    """En producción, sin ZLECITOOL_PUBLIC_URL, los enlaces irían a ninguna parte (antes, a localhost:5105): el
+    comando lo dice y no manda nada ni guarda la foto, para que el cambio salga cuando esté puesta."""
+    ana = account(app)
+    follow(ana, TSLA, pd=True)
+    run(app)
+    rows = [dict(r) for r in ROWS]
+    rows[3]["Price"] = "45"
+    republish(app, settings, paypal, rows, BUNDLES)
+    monkeypatch.delenv("ZLECITOOL_INSECURE_COOKIES")
+    result = app.test_cli_runner().invoke(args=["edgefolio", "send-alerts"])
+    assert result.exit_code != 0 and "ZLECITOOL_PUBLIC_URL" in result.output and mails() == []
+    monkeypatch.setenv("ZLECITOOL_PUBLIC_URL", "https://shop.example")
+    assert "1 estrategias cambiaron; 1 correos" in run(app)
+    assert "https://shop.example/s/" in mails()[0]["body"]

@@ -20,7 +20,10 @@ export default function Mine(v) {
         ` : null}
       ${v.proofOffer ? html`
         <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:20px 22px;display:flex;flex-direction:column;gap:14px;max-width:460px">
-          <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px">${v.tx?.proofTitle}</h2>
+          <div aria-live="polite" style="display:flex;flex-direction:column;gap:14px">
+            <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px">${v.tx?.proofTitle}</h2>
+            ${v.proofSent ? html`<div style="display:flex;gap:10px;align-items:flex-start;background:#e8f7ef;color:#15603c;border-radius:12px;padding:12px 14px;font-size:13.5px;font-weight:600"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i>${T(v.tx?.proofSent)}</div>` : null}
+            </div>
           ${v.proofNotSent ? html`
             ${v.proofExpired ? html`<div role="note" style="display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:12px 14px;background:#fff7ec;border:1px solid #f6d9ae;font-size:13.5px"><i class="fa-solid fa-triangle-exclamation" style="color:#f79009;margin-top:2px"></i>${T(v.tx?.errProofExpired)}</div>` : null}
             <p style="margin:0;color:#5a6b80;font-size:14px">${v.tx?.proofText}</p>
@@ -28,7 +31,6 @@ export default function Mine(v) {
             <button onClick=${v.askProof} style="font-family:inherit;background:linear-gradient(135deg,#0950e3,#0e7c98);border:none;color:#fff;font-weight:700;border-radius:12px;padding:12px 22px;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(9,80,227,.22)">${v.tx?.sendLink}</button>
             ${v.legalOn ? html`<a href=${v.legalPrivacyUrl} target="_blank" rel="noopener" style="font-size:12px;color:#5a6b80;cursor:pointer">${v.tx?.legalPrivacy}</a>` : null}
             ` : null}
-          ${v.proofSent ? html`<div style="display:flex;gap:10px;align-items:flex-start;background:#e8f7ef;color:#15603c;border-radius:12px;padding:12px 14px;font-size:13.5px;font-weight:600"><i class="fa-solid fa-circle-check" style="margin-top:2px"></i>${T(v.tx?.proofSent)}</div>` : null}
           </div>
         ` : null}
       ${v.mineHas ? html`<div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;overflow:hidden">${' '}

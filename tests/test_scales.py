@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Las escalas que pone el catálogo, en un Chromium de verdad (``testing.mobile`` del núcleo) sobre el catálogo
 de verdad (``real_app``). Los rangos de Pro van del mínimo al máximo del catálogo (con las barras del diseño,
-las del catálogo de 2024, las 143 estrategias de 2026-10 caían en un rincón), y la actividad por vela se
+las del catálogo de 2024, las 94 estrategias de 2026-10 caían en un rincón), y la actividad por vela se
 filtra con sus tres decimales. Hasta que llega la primera respuesta con esas barras, las cajas no escriben los
 extremos del diseño, y lo que se escribe entonces se queda en su valor. Las dos barras de la página de la
 estrategia («Backtest» y «Desde su publicación») miden contra el mejor backtest del catálogo, el ``npp_max`` de
@@ -110,16 +110,19 @@ def test_the_pro_ranges_and_the_strategy_bars_follow_the_catalogue(real_app, rea
                 box.press("Enter")                    # con un decimal, se mandaba 0
             tab.page.wait_for_function(f"() => ({COUNT})() === '{expected}'")
 
-            # la peor y la mejor del catálogo; a la peor, una cifra desde su publicación de −0,22 %
+            # la peor y la mejor del catálogo; a la peor, una cifra desde su publicación de −0,22 % (y la
+            # configuración dice que hay una: sin ninguna, la barra no sale, E11)
             def with_live(route):
                 response = route.fetch()
                 body = response.json()
+                if route.request.url.endswith("/api/config"):
+                    body["since_release"] = 1
                 for row in body.get("rows", [body]):
                     if row.get("id") == low.id:
                         row["live"] = -0.22
                 route.fulfill(response=response, json=body)
 
-            tab.page.route(re.compile(r".*/api/strategies.*"), with_live)
+            tab.page.route(re.compile(r".*/api/(strategies.*|config)$"), with_live)
             tab.goto(f"/s/{best.id}")
             tab.page.wait_for_function(f"() => ({BARS})().length === 2 && ({BARS})()[0] > 0.5")
             bt, since = tab.page.evaluate(BARS)

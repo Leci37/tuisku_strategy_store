@@ -3,9 +3,10 @@
 
     import PAQUETE [--scripts DIR | --skip-scripts] [--prune]
                                 publica un paquete del generador: catálogo, ficheros y scripts (release.py)
+    levels                      los niveles de cada script de STRATEGIES_DIR a catalogue/levels.json (levels.py)
     restore-scripts [--force]   copia los scripts de pago a la carpeta privada desde la historia del repo
-    fx-update                   los cambios de moneda del día (del BCE)
-    send-alerts                 los avisos de las favoritas (una vez al día)
+    fx-update                   los cambios de moneda del día (del BCE), a mano: el reloj del núcleo los trae solo
+    send-alerts                 los avisos de las favoritas, a mano: el reloj del núcleo los manda cada día
     subscribers                 quién ha confirmado las novedades (CSV)
 
 Los scripts de pago no están en el repo, sólo en su historia (``git checkout c3fa796 --
@@ -30,6 +31,18 @@ from .settings import ROOT
 
 SCRIPTS_COMMIT = "c3fa796"
 SCRIPTS_PATH = "d_result/pine_TW_b"
+# Lo que dice el import de las filas que no publica, por regla (las de catalogue/publish.py, LEFT_OUT)
+LEFT_OUT_SAYS = {
+    "intraday_stocks": "{n} estrategias intradía de acciones fuera (LIST_INTRADAY_STOCKS=1 las publica): el plan "
+                       "gratis de TradingView enseña otros datos intradía de las acciones (sólo Cboe BZX), así que "
+                       "allí operan distinto que en su backtest. catalogue/release.json dice cuáles",
+}
+SINCE_RELEASE_SAYS = {
+    "copied": "catalogue/since_release.csv: el resultado de cada estrategia desde su publicación, del paquete",
+    "removed": "catalogue/since_release.csv borrado: era de un catálogo de antes y el paquete no trae uno",
+    "stale": "catalogue/since_release.csv es de un catálogo de antes y el paquete no trae uno: se queda (--prune lo "
+             "borra)",
+}
 
 
 def restore(target: Path, commit: str = SCRIPTS_COMMIT, path: str = SCRIPTS_PATH, repo: Path = ROOT,
@@ -76,10 +89,11 @@ def register(bp):
                   help="La carpeta de los scripts completos (el d_result/pine_TW_b del generador): se copian los "
                        "del manifiesto, comprobado su sha256.")
     @click.option("--skip-scripts", is_flag=True, help="Publicar aunque falten scripts en STRATEGIES_DIR (dice cuántos).")
-    @click.option("--prune", is_flag=True, help="Borrar los gráficos y vistas previas que ya no usa ninguna fila.")
+    @click.option("--prune", is_flag=True, help="Borrar los gráficos y vistas previas que ya no usa ninguna fila, y un "
+                                                "catalogue/since_release.csv de antes si el paquete no trae uno.")
     def import_package(package, scripts, skip_scripts, prune):
         """Publica un paquete del generador (su d_result/package/), comprobado entero antes de escribir nada."""
-        from . import release
+        from . import levels, release
         if scripts and skip_scripts:
             raise click.UsageError("--scripts o --skip-scripts, no los dos")
         try:
@@ -97,9 +111,17 @@ def register(bp):
                                        "despliega lo que deja") from e
         click.echo(f"{done['rows']} estrategias del contrato {done['contract']}, de la ejecución del generador del "
                    f"{done['created']} (commit {done['commit'][:12] or 'desconocido'})")
+        for rule, n in done["left_out"].items():
+            click.echo(LEFT_OUT_SAYS[rule].format(n=n))
+        click.echo(f"elegidas entre {done['tried']} estrategias probadas (la tienda lo dice en el aviso de sobreajuste)"
+                   if done["tried"] else "el paquete no dice entre cuántas estrategias probadas se eligieron: la tienda "
+                                         "no lo dice")
+        if done["since_release"]:
+            click.echo(SINCE_RELEASE_SAYS[done["since_release"]])
         click.echo(f"{done['files']} ficheros copiados a static/assets ({done['cut']} vistas previas cortadas, "
                    f"{done['pruned']} sin usar borrados); {done['scripts']} scripts copiados; "
                    f"{done['thumbs']} miniaturas borradas")
+        click.echo(levels.summary(done["levels"], done["rows"]))
         if done["kept"]:
             click.echo(f"{len(done['kept'])} logos del paquete son distintos de los de la tienda y se han dejado los de "
                        "la tienda (para tomar el del generador, bórralo de static/assets/icons y vuelve a importar): "
@@ -118,6 +140,28 @@ def register(bp):
         # la tienda lee el catálogo al arrancar (shop.load_catalogue): la que está en marcha sigue con el de antes
         click.echo("reinicia la tienda para que sirva este catálogo")
 
+    @bp.cli.command("levels")
+    def publish_levels():
+        """Los niveles de cada script del catálogo publicado (de STRATEGIES_DIR) a catalogue/levels.json, para que el
+        árbol del visitante diga comprar, vender o esperar: lo que hace la importación con --scripts."""
+        from . import levels
+        s = shop()
+        folder = Path(s.settings.strategies_dir)
+
+        def script(strategy):
+            path = folder / strategy.private_file
+            return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else None
+
+        found, counted = levels.collect((strategy.id, script(strategy)) for strategy in s.catalogue)
+        if not found:
+            # p. ej. con las copias de prueba de otra máquina: un fichero vacío borraría los niveles de verdad
+            raise click.ClickException(levels.summary(counted, len(s.catalogue)) + f". Ningún script de {folder} es el "
+                                       f"de su estrategia: {levels.FILE} no se toca")
+        levels.write(s.settings.levels, found)
+        click.echo(levels.summary(counted, len(s.catalogue)))
+        # la tienda lee el catálogo, y con él los niveles, al arrancar (shop.load_catalogue)
+        click.echo("reinicia la tienda para que sirva estos niveles")
+
     @bp.cli.command("restore-scripts")
     @click.option("--force", is_flag=True, help="Copiarlos aunque la carpeta ya tenga scripts.")
     @click.option("--commit", default=SCRIPTS_COMMIT, show_default=True, help="El commit que los tiene.")
@@ -134,28 +178,34 @@ def register(bp):
 
     @bp.cli.command("fx-update")
     def fx_update():
-        """Los cambios del día del BCE, para los precios «≈» en la moneda de quien mira."""
-        import httpx
-
+        """Los cambios del día del BCE, para los precios «≈» en la moneda de quien mira (el reloj del núcleo los trae
+        cada día laborable: la tarea fx_update)."""
         from . import fx
         out = shop().settings.fx_today
         try:
             data = fx.fetch()
-        except (httpx.HTTPError, KeyError, ValueError) as e:
+        except fx.FAILURES as e:
             raise click.ClickException(f"sin cambios nuevos ({out.name} sigue como estaba): {e}") from e
-        out.parent.mkdir(parents=True, exist_ok=True)
         fx.write(data, out)
         click.echo(f"{out}: {len(data['rates'])} cambios del {data['date']}")
 
     @bp.cli.command("send-alerts")
     def send_alerts():
-        """Los avisos de las favoritas: una vez al día (la primera vez sólo apunta cómo está el catálogo)."""
-        from zlecitool_core.http import public_base
+        """Los avisos de las favoritas (el reloj del núcleo los manda cada día: la tarea send_alerts; la primera vez
+        sólo apunta cómo está el catálogo)."""
         from zlecitool_core.mail import send
 
         from . import alerts
-        base = public_base() or f"http://localhost:{os.environ.get('PORT', '5105')}"
-        result = alerts.run(shop(), base, send)
+        from .tasks import public_link
+
+        def link(endpoint, **values):
+            try:
+                return public_link(endpoint, **values)
+            except RuntimeError as e:
+                raise click.ClickException(f"{e} (en desarrollo, ZLECITOOL_INSECURE_COOKIES=1 da los de "
+                                           "http://localhost:<PORT>)") from e
+
+        result = alerts.run(shop(), link, send)
         if result["first_run"]:
             click.echo("primera vez: apuntado cómo está el catálogo; los avisos salen desde la próxima")
         else:

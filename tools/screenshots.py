@@ -16,12 +16,15 @@ en el núcleo, confirmar el correo con el que se pagó (el enlace, del correo qu
 debajo del campo; la casilla de novedades, con el teclado) → la píldora de Comparar, dentro del carrito
 de Lite y flotando en Pro, y «Solo GRATIS» con el teclado → Pro en español → árabe y español → la
 tienda en un móvil (el carrito a 76 px del borde, Carrito no mueve la página, Buscar enfoca la búsqueda) →
-las capturas en español de docs/FLUJO_USUARIO.md (edgefolio_es_*.png, cada una recortada a lo que enseña).
+las capturas en español de docs/FLUJO_USUARIO.md (edgefolio_es_*.png, cada una recortada a lo que enseña),
+la última con la cuenta, después de comprar: la tarjeta dice «Ya es tuya» y no «Comprar».
 Es también la prueba de punta a punta: para en el primer paso que falla e informa de los errores de la
 consola del navegador (también de la CSP). Las descargas necesitan los scripts de pago
 (flask --app app edgefolio restore-scripts).
 
 SHOP_URL (por defecto http://localhost:5105), CHROMIUM_PATH (un navegador) y OUT (por defecto docs/img).
+SHOP_URL con localhost, no con 127.0.0.1: sin ZLECITOOL_PUBLIC_URL el núcleo sólo ofrece las llaves de
+acceso en localhost, y la captura de entrar (edgefolio_es_login.png) enseña el botón, como en producción.
 Todas salen con una base de datos nueva; en otra vuelta, la cuenta ya ha confirmado el correo y la de esa
 confirmación (edgefolio_mine_proof.png) no se repite.
 """
@@ -84,6 +87,22 @@ def core_texts(page, *keys, lang="en"):
     """Textos del núcleo, del mismo diccionario que lee la página (/zt/i18n.json)."""
     return page.evaluate("([keys, lang]) => fetch('/zt/i18n.json').then(r => r.json()).then(d => keys.map(k => d[k][lang]))",
                          [list(keys), lang])
+
+
+def two_symbols(page):
+    """Los dos símbolos del filtro de Pro, del catálogo de hoy (API #2, contados con un 60 % de aciertos o más):
+    los dos primeros de la lista que guardan dos estrategias o más cada uno. Así la lista y la tabla tienen
+    filas, y en el desplegable se ven marcados sin bajarlo. Sus nombres, como los pinta el desplegable, y
+    cuántas estrategias quedan con los dos filtros."""
+    options = page.request.get(BASE + "/api/strategies?win_min=60&facets=1&size=1").json()["options"]["sym"]
+    picked = [o for o in options if o["count"] >= 2][:2]
+    expect(len(picked) == 2, f"no two symbols with two strategies or more at a 60% win rate: {options}")
+    return [o["label"] for o in picked], sum(o["count"] for o in picked)
+
+
+def all_of(n, lang="en"):
+    """El pie de la lista de Pro con las ``n`` en una página («1–4 of 4»): la lista filtrada ya ha llegado."""
+    return ui("rangeOf", lang).replace("{from}", "1").replace("{to}", str(n)).replace("{total}", str(n))
 
 
 def esc_closes(page, what):
@@ -212,11 +231,12 @@ def main():
         shot(page, "pro", height=1480)
 
         step("Pro with filters: two symbols and a win rate of 60% or more")
+        symbols, kept = two_symbols(page)
         panel = page.locator("aside").first
         # dispatched clicks: the sticky cart strip covers the panel's rows once the page has scrolled
         panel.get_by_text("Symbol", exact=True).dispatch_event("click")
         button(page, "Deselect all").dispatch_event("click")
-        for name in ("Adobe (ADBE)", "Advanced Micro Devices (AMD)"):
+        for name in symbols:
             panel.get_by_text(name, exact=True).dispatch_event("click")
         panel.get_by_text("Symbol", exact=True).dispatch_event("click")
         panel.get_by_text("Win Rate (%)", exact=True).dispatch_event("click")
@@ -224,7 +244,9 @@ def main():
         low.fill("60")
         low.press("Enter")
         page.get_by_text("Clear all").first.wait_for()
+        page.get_by_text(all_of(kept), exact=True).wait_for()
         page.wait_for_timeout(1200)
+        print(f"  {' and '.join(symbols)}, win rate 60% or more: {kept} strategies")
         shot(page, "pro_filters", height=1300)
         panel.get_by_text("Symbol", exact=True).dispatch_event("click")   # un desplegable abierto: Esc lo cierra
         button(page, "Deselect all").wait_for()
@@ -543,8 +565,8 @@ def spanish(browser):
     page.goto(BASE + "/", wait_until="networkidle")
     page.get_by_text(showing).wait_for()
 
-    # lo que se busca, del catálogo de hoy (por la API): una gratis, dos de pago de 59 US$ fuera de los packs
-    # y el pack «Inicio en cripto»
+    # lo que se busca, del catálogo de hoy (por la API): una gratis, dos de pago de 59 US$ fuera de los packs,
+    # el pack «Inicio en cripto» y los dos símbolos del filtro de Pro
     cfg = get(page, "/api/config")
     bundles = get(page, "/api/bundles")["bundles"]
     crypto = next(b for b in bundles if b["name_key"] == "bundleCrypto")
@@ -554,6 +576,7 @@ def spanish(browser):
              if r["id"] not in in_bundles][:2]
     tape = get(page, "/api/strategies?paid=1&sort=hot&size=12")["rows"]
     expect(len(cheap) == 2 and tape, f"the catalogue has no two strategies of 59 US$ outside the bundles: {cheap}")
+    symbols, kept = two_symbols(page)
 
     step("Spanish: the top bar and Lite")
     band = page.locator("[data-screen-label] > div").first           # la cinta, bajo la barra del núcleo
@@ -623,7 +646,10 @@ def spanish(browser):
     button(page, es("download")).first.click()
     page.locator("[role=dialog] input[type=email]").fill("visitante@example.com")
     button(page, es("sendLink")).click()
-    page.get_by_text(es("freeSent")).first.wait_for()
+    # su enlace vale DOWNLOAD_DAYS (API #1), con la forma de su número: «el enlace vale 7 días»
+    days, forms = cfg["download_days"], UI["linkDays"]["es"]     # (es() da sólo la forma «other»)
+    page.get_by_text(es("freeSent").replace(
+        "{days}", forms["one" if days == 1 else "other"].replace("{n}", str(days)))).first.wait_for()
     crop(page, "free_sent", page.locator("[role=dialog]").first, pad=16, fixed=True)
     esc_closes(page, "the free download")
 
@@ -653,8 +679,9 @@ def spanish(browser):
     pro.get_by_text(es("clearAll")).first.wait_for()
     panel.get_by_text(es("fSymbol"), exact=True).dispatch_event("click")
     button(pro, es("selNone")).dispatch_event("click")
-    for name in ("Adobe (ADBE)", "Advanced Micro Devices (AMD)"):
+    for name in symbols:
         panel.get_by_text(name, exact=True).dispatch_event("click")
+    pro.get_by_text(all_of(kept, "es"), exact=True).wait_for()
     pro.wait_for_timeout(1200)
     crop(pro, "pro_filters", panel.locator(":scope > *").first, low, pro.locator("input[data-search]").first)
 
@@ -697,6 +724,41 @@ def spanish(browser):
     phone.get_by_text(es("signedAs").replace("{e}", ACCOUNT)).first.wait_for()
     phone.wait_for_timeout(1000)
     crop(phone, "phone_mine")
+
+    step("Spanish: Lite signed in, a strategy just bought says «Ya es tuya»")
+    # la última: su pedido no sale en ninguna captura de arriba (Mis estrategias, en el móvil, ya está hecha)
+    own = new_page(browser, 1366, 900, lang="es")
+    sign_in(own, then="/")
+    own.goto(BASE + "/?lang=es", wait_until="networkidle")      # la cuenta habla inglés (arriba)
+    own.get_by_text(showing).wait_for()
+    own.locator("a[data-ef-owned]").first.wait_for()             # Mis estrategias ya ha llegado: lo que compró arriba
+    own.wait_for_timeout(600)
+    buy = core_texts(own, "buy", lang="es")[0]                  # «Comprar», del diccionario del núcleo
+    cards = own.locator("div.sf-hover2")
+    # dos tarjetas de pago seguidas, en la misma fila, que la cuenta aún no tiene: se compra la primera
+    seen = own.evaluate("""(buy) => [...document.querySelectorAll('div.sf-hover2')].map(c => ({
+        top: Math.round(c.getBoundingClientRect().top), first: c.innerText.trim().split('\\n')[0],
+        buy: [...c.querySelectorAll('button')].some(b => b.textContent.trim() === buy) }))""", buy)
+    i = next((i for i in range(len(seen) - 1) if seen[i]["buy"] and seen[i + 1]["buy"]
+              and seen[i]["top"] == seen[i + 1]["top"]), None)
+    expect(i is not None, f"no two cards side by side that say «{buy}»: {seen}")
+    card, neighbour = cards.nth(i), cards.nth(i + 1)
+    button(card, buy).click()
+    button(own, es("checkout")).first.click()                     # el PayPal de prueba: directo a Gracias
+    own.wait_for_url("**/thanks**", timeout=20000)
+    own.get_by_role("link", name=".pine").first.wait_for(timeout=20000)   # pagado, con la sesión: sus enlaces
+    own.goto(BASE + "/?lang=es", wait_until="networkidle")
+    own.get_by_text(showing).wait_for()
+    owned = card.locator("a[data-ef-owned]")
+    owned.wait_for()
+    label = owned.inner_text().strip()
+    expect(card.evaluate("c => c.innerText.trim().split('\\n')[0]") == seen[i]["first"],
+           f"the cards moved: {seen[i]['first']!r} is not card {i} any more")
+    expect(label.startswith(es("ownedYours") + " · ") and button(card, buy).count() == 0,
+           f"the strategy just bought: {label!r}, «{buy}» {button(card, buy).count()}")
+    expect(button(neighbour, buy).count() == 1, f"its neighbour does not say «{buy}»")
+    print(f"  {seen[i]['first']}: {label!r}; {seen[i + 1]['first']}: {buy!r}")
+    crop(own, "owned", card, neighbour)
 
 
 def report():

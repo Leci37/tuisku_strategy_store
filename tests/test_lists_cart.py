@@ -166,7 +166,8 @@ def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
             assert "US$\u200e" in note, repr(note)
             chip_off = next(t for t in page.evaluate(spans) if "\u2212" in t and "%" in t)
             assert chip_off.startswith("\u2066\u2212") and chip_off.endswith("\u2069"), repr(chip_off)
-            assert tab.problems() == ["500 GET /api/strategies?tab=crypto&q=&size=24&page=1"], tab.problems()
+            # (la página pide el catálogo en su idioma, ?ind_lang=: la explicación de cada indicador va en él)
+            assert tab.problems() == ["500 GET /api/strategies?tab=crypto&q=&size=24&page=1&ind_lang=es"], tab.problems()
         finally:
             tab.close()
 
@@ -195,7 +196,7 @@ def test_pro_tour_texts_and_the_open_table_row(real_app):
             page.keyboard.press("Escape")
 
             # B21: un desplegable con una sola opción dice «1 seleccionado» (en el catálogo de 2026-10, la fecha
-            # de publicación: las 143 salieron el mismo día); con una estrategia, «estrategia mostrada»
+            # de publicación: las 94 salieron el mismo día); con una estrategia, «estrategia mostrada»
             api = real_app.test_client()
             dates = len(api.get("/api/strategies?facets=1&size=1").json["options"]["rel"])
             release = page.locator("aside button[aria-expanded]").filter(has_text="Fecha de publicación").inner_text()
@@ -276,7 +277,7 @@ def test_on_arrival_dictionary_favourites_and_thanks(real_app):
             page.add_init_script(TOUR_SEEN + "localStorage.setItem('edgefolio-favs-v1', %s);"
                                  % json.dumps(json.dumps({"favs": [DEAD, alive], "alerts": {}})))
             stub = {"id": DEAD, "ticker": "AAPL", "name": "Apple", "price": 79, "interval": "1Day", "key": "1S00"}
-            page.route(f"**/api/strategies/{DEAD}",
+            page.route(re.compile(".*/api/strategies/" + re.escape(DEAD) + r"(\?.*)?$"),
                        lambda route: route.fulfill(status=200, content_type="application/json", body=json.dumps(stub)))
             with page.expect_response("**/api/mine") as mine:
                 tab.goto("/")

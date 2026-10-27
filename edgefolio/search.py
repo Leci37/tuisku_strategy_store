@@ -2,7 +2,7 @@
 """El catálogo filtrado en el servidor: GET /api/strategies, /api/strategies/<id> y /api/bundles.
 
 El panel Pro pide cada histograma y cada recuento de opciones en cada cambio, cada uno contado contra
-«todos los demás filtros». Con unos miles de filas como mucho (2.834 el catálogo de 2024; 143 el de 2026-10)
+«todos los demás filtros». Con unos miles de filas como mucho (2.834 el catálogo de 2024; 94 el de 2026-10)
 basta Python a secas si cada filtro es una máscara de bits (un bit por fila): los recuentos son AND y
 popcount, nunca una vuelta por las filas.
 """
@@ -214,9 +214,10 @@ def number_param(params, name: str) -> Optional[float]:
     return v
 
 
-def strategies(catalogue, settings, params) -> dict:
+def strategies(catalogue, settings, params, lang: str = "en") -> dict:
     """Una página de estrategias; con facets=1, además cada histograma y cada recuento del panel Pro.
-    ``params`` son los de la consulta (``get`` y ``getlist``, como los de Flask)."""
+    ``params`` son los de la consulta (``get`` y ``getlist``, como los de Flask); ``lang``, el idioma de la
+    explicación del indicador de cada fila (el de la petición)."""
     ix = index_of(catalogue)
     q = params.get("q", "")
     if len(q) > 100:
@@ -280,7 +281,7 @@ def strategies(catalogue, settings, params) -> dict:
         hits = [i for i in ix.order[order] if bits[i] == "1"]
     start = (page - 1) * size
     body = {"total": len(hits), "page": page, "size": size,
-            "rows": [catalogue.row(ix.strategies[i]) for i in hits[start:start + size]],
+            "rows": [catalogue.row(ix.strategies[i], lang) for i in hits[start:start + size]],
             "counts": {"all": ix.n, "new": ix.new_mask(settings.new_days).bit_count()}}
 
     if facets:
@@ -297,11 +298,11 @@ def strategies(catalogue, settings, params) -> dict:
     return body
 
 
-def strategy(catalogue, strategy_id: str) -> dict:
+def strategy(catalogue, strategy_id: str, lang: str = "en") -> dict:
     s = catalogue.resolve(strategy_id)
     if not s:
         raise Refusal("errUnknownStrategy", 404)
-    return catalogue.detail(s)
+    return catalogue.detail(s, lang)
 
 
 def bundles(catalogue, settings) -> dict:

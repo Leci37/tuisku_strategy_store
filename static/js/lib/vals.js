@@ -1,7 +1,7 @@
 // renderVals(): the values object the views read, with the names of the prototype's renderVals()
 // (Storefront v7.dc.html), computed from the server's data. Split by area: shop (Lite, Pro, filters),
 // cart (bundles, pack, quote), pages (strategy page, compare, My strategies, thanks, dialogs).
-import { translator, formatters, tvSymbolUrl, LOCAL_CURRENCY } from './fmt.js';
+import { translator, formatters, tvSymbolUrl, LOCAL_CURRENCY, linkCounts } from './fmt.js';
 import { strategyPath } from './route.js';
 import { shopVals } from './vals_shop.js';
 import { cartVals } from './vals_cart.js';
@@ -29,13 +29,27 @@ export function renderVals(app) {
   TX_KEYS.forEach(k => { tx[k] = t(k); });
   const contact = (s.cfg && s.cfg.contact_email) || '';
   tx.contactProblems = t('contactProblems', { e: contact });
-  // the trust row says what the server's settings say, not the design's example figures
-  tx.trustLinks = t('trustLinks', { n: f.int((s.cfg && s.cfg.download_days) || 7), m: f.int((s.cfg && s.cfg.max_downloads) || 10) });
+  // la fila de confianza dice lo que dicen los ajustes del servidor, no las cifras de ejemplo del diseño; cada cuenta,
+  // con la forma que pide su número (en árabe, 2 lleva el dual, de 3 a 10 el plural y de 11 a 99 el singular)
+  const links = linkCounts(t, f, (s.cfg && s.cfg.download_days) || 7, (s.cfg && s.cfg.max_downloads) || 10);
+  tx.trustLinks = t('trustLinks', links);
+  // el «Hecho» de la gratis: su enlace vale DOWNLOAD_DAYS (decía 7, escrito en el texto)
+  tx.freeSent = t('freeSent', { days: links.days });
 
   // la escala de las barras de la página de la estrategia: el mejor backtest del catálogo (del servidor).
   // Con la del diseño (100 %, para backtests de 71–86 %), los de 0,03–0,44 % del catálogo de 2026-10 no se veían
   const nppTop = s.cfg && s.cfg.npp_max > 0 ? s.cfg.npp_max : 100;
-  const c = { app, s, t, tx, f, lang, rtl, contact, nppTop };
+  const cfg = s.cfg || {};
+  // «Desde su publicación» sólo cuando alguna estrategia tiene cifra (since_release, API #1): sin ninguna, cada
+  // ficha decía «—» y su barra salía vacía. Vuelve sola cuando las hay
+  const liveOn = cfg.since_release > 0;
+  // la explicación de la nota dice desde cuántas operaciones es cada letra (GRADE_CUTOFFS, del servidor); el número de
+  // la A elige la forma del plural (en árabe, «10 صفقات» pero «100 صفقة»)
+  const cuts = Array.isArray(cfg.grade_cutoffs) && cfg.grade_cutoffs.length === 3 ? cfg.grade_cutoffs : null;
+  const gradeCuts = cuts ? ' ' + t('gradeCuts', { a: f.int(cuts[0]), b: f.int(cuts[1]), c: f.int(cuts[2]) }, cuts[0]) : '';
+  // lo que ya es de la cuenta (API #15, Mis estrategias; sin sesión, nada), por id
+  const mine = new Map(((s.mine && s.mine.items) || []).map(x => [x.id, x]));
+  const c = { app, s, t, tx, f, lang, rtl, contact, nppTop, liveOn, gradeCuts, ownedOf: id => mine.get(id) || null };
   c.mk = r => rowVals(c, r);
   const cart = cartVals(c); // also gives c.inCart and c.toggleCart, which every row uses
   const shop = shopVals(c);
@@ -43,7 +57,11 @@ export function renderVals(app) {
 
   return {
     lang, dir: rtl ? 'rtl' : 'ltr', g90: rtl ? '270deg' : '90deg', tickShift: rtl ? 'translateX(100%)' : 'translateX(-100%)',
-    tx, barStart: app.props.barStart, barEnd: app.props.barEnd,
+    tx, barStart: app.props.barStart, barEnd: app.props.barEnd, liveOn,
+    // el aviso de sobreajuste (Lite y Pro), cuando se sabe: entre cuántas estrategias probadas se eligieron
+    // estas, y que sus cifras son de datos que los modelos no vieron
+    // (las probadas eligen la forma del plural: en árabe, «1503 استراتيجيات» pero «1531 استراتيجية»)
+    riskTried: cfg.tried ? ' ' + t('riskTried', { n: f.int(cfg.strategies), m: f.int(cfg.tried) }, cfg.tried) : '',
     tv: s.tv, tvOff: !s.tv, toggleTv: () => app.toggleTv(), tvTitle: s.tv ? tx.tvDisconnect : tx.tvConnect,
     isLocal: f.isLocal, curLabel: f.curLabel, curFixed: !canLocal, curCursor: canLocal ? 'pointer' : 'default',
     toggleCur: () => { if (canLocal) app.setState(st => ({ cur: st.cur === 'local' ? 'usd' : 'local' })); },
@@ -70,20 +88,31 @@ export function renderVals(app) {
   };
 }
 
+// el lang y el dir de la explicación del indicador: los de la página, salvo si llega en otro idioma (sin traducir: en
+// inglés). Nunca null: Preact lo pondría como lang="" («idioma desconocido»), no como «el de la página»
+const exMarks = (r, c) => (r.ind_lang && r.ind_lang !== c.lang ? { exLang: r.ind_lang, exDir: 'auto' }
+  : { exLang: c.lang, exDir: c.rtl ? 'rtl' : 'ltr' });
+
 // One strategy as every list, card and page shows it (the prototype's mk()).
 function rowVals(c, r) {
   const { app, s, t, tx, f } = c;
   const id = r.id, inCart = c.inCart(id), open = s.expanded === id;
   const fav = s.favs.includes(id), cmp = s.compare.includes(id);
+  // ya es de la cuenta: «Ya es tuya», nunca «Comprar» (el servidor tampoco la vende suelta: errAlreadyOwned, E8); su
+  // .pine si el enlace vale y es la versión de hoy, si no Mis estrategias (que da otro enlace o la actualización)
+  const own = c.ownedOf(id), ownedPine = own && own.url && !own.update ? own.url : '';
   const live = r.live;
   const tipFor = m => () => app.setState(st => ({ tip: st.tip === id + ':' + m ? '' : id + ':' + m }));
   const openAt = tab => e => { stop(e); app.go({ page: 'detail', detail: id, detTab: tab }); };
   const toggleRow = () => app.setState(st => ({ expanded: st.expanded === id ? '' : id }));
   return {
-    id, ticker: r.ticker, name: r.name, key: r.key, ind: r.ind, ex: r.ind_text || '',
+    // la explicación del indicador llega en el idioma de la página (API #2 y #3); la que no está traducida, en
+    // inglés, lo dice (ind_lang): sólo entonces lleva lang="en" y dir="auto"
+    id, ticker: r.ticker, name: r.name, key: r.key, ind: r.ind, ex: r.ind_text || '', ...exMarks(r, c),
     icon: r.icon, interval: r.interval, index: r.index,
     priceLabel: r.price === 0 ? t('landingFree') : f.pmoney(r.price),
-    grade: r.grade, gradeBg: GRADE_BG[r.grade] || '#5a6b80', gradeTip: t('gradeTip', { n: f.int(r.tr) }),
+    // cuántas operaciones, con la forma del plural que pide el número (en árabe, «9 صفقات» pero «36 صفقة»)
+    grade: r.grade, gradeBg: GRADE_BG[r.grade] || '#5a6b80', gradeTip: t('gradeTip', { n: f.int(r.tr) }, r.tr) + c.gradeCuts,
     // since release is measured by a daily job; until it has run there is nothing to show
     live: live == null ? '—' : f.pctS(live), liveColor: live == null ? '#8d9cae' : live >= 0 ? '#15803d' : '#c0392b',
     barBt: Math.max(0, Math.min(100, (r.npp || 0) / c.nppTop * 100)) + '%',
@@ -96,7 +125,7 @@ function rowVals(c, r) {
     cmpBg: cmp ? '#16263a' : '#ffffff', cmpColor: cmp ? '#ffffff' : '#5a6b80',
     onCompare: e => { stop(e); app.toggleCompare(id); },
     isFree: r.price === 0, isPaid: r.price > 0,
-    np: f.money(r.np), npp: f.pct(r.npp), nppSigned: f.pctS(r.npp), trades: f.int(r.tr), win: f.pct(r.w), avg: f.money(r.avg), months: f.int(r.m),
+    np: f.money(r.np), npp: f.pct(r.npp), nppSigned: f.pctS(r.npp), trades: f.int(r.tr), tradesWord: t('tradesWord', null, r.tr), win: f.pct(r.w), avg: f.money(r.avg), months: f.int(r.m),
     // lists load the 640px WebP; the strategy page swaps in the full PNG
     profit: r.thumb_profit || r.profit, candle: r.thumb_candle || r.candle,
     tvUrl: tvSymbolUrl(r.tv_symbol),
@@ -114,6 +143,11 @@ function rowVals(c, r) {
     tabHref: strategyPath(id), treeHref: strategyPath(id, true),
     indUrl: r.ind_url || 'https://www.tradingview.com/scripts/',
     onFree: e => { stop(e); app.openFree(id); },
+    isOwned: !!own, canBuy: r.price > 0 && !own, canClaim: r.price === 0 && !own,
+    ownedLabel: t('ownedYours') + ' · ' + (ownedPine ? tx.download : tx.myStrategies), ownedHref: ownedPine || '/mine',
+    // Mis estrategias sin recargar la página, salvo que se pida en otra pestaña o ventana (Ctrl, Cmd, Mayús); el clic
+    // no abre ni pliega la fila de la Tabla
+    ownedGo: e => { stop(e); if (ownedPine || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; e.preventDefault(); app.goMine(); },
     tipOpen: s.tip.startsWith(id + ':'),
     tipText: s.tip === id + ':npp' ? t('expNpp') : s.tip === id + ':win' ? t('expWin') : t('expTrades'),
     tipNpp: tipFor('npp'), tipWin: tipFor('win'), tipTrades: tipFor('trades'), tipClose: () => app.setState({ tip: '' })

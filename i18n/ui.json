@@ -437,6 +437,23 @@
     "ar": "هذه النتائج اختبارات رجعية في TradingView على أسعار سابقة. قد تكون الاستراتيجية المضبوطة على الماضي مفرطة التخصيص فيسوء أداؤها مع بيانات جديدة. النتائج السابقة لا تضمن العوائد المستقبلية.",
     "hi": "ये परिणाम पिछली कीमतों पर TradingView के बैकटेस्ट हैं। अतीत के हिसाब से ढाली गई रणनीति ओवरफ़िट हो सकती है और नए डेटा पर कमज़ोर चल सकती है। पिछले परिणाम भविष्य के रिटर्न की गारंटी नहीं हैं।"
   },
+  "riskTried": {
+    "es": "Estas {n} estrategias se eligieron entre {m} probadas; sus cifras salen de datos que los modelos nunca vieron.",
+    "en": "These {n} strategies were chosen among {m} tried, and their figures come from data the models never saw.",
+    "pt": "Estas {n} estratégias foram escolhidas entre {m} testadas, e os seus números vêm de dados que os modelos nunca viram.",
+    "fr": "Ces {n} stratégies ont été choisies parmi {m} testées, et leurs chiffres viennent de données que les modèles n’ont jamais vues.",
+    "de": "Diese {n} Strategien wurden aus {m} getesteten ausgewählt; ihre Zahlen stammen aus Daten, die die Modelle nie gesehen haben.",
+    "zh": "这 {n} 个策略选自 {m} 个经过测试的策略，其各项数字均来自模型从未见过的数据。",
+    "ar": {
+      "zero": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجية جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "one": "اختيرت هذه الاستراتيجيات وعددها {n} من بين استراتيجية واحدة جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "two": "اختيرت هذه الاستراتيجيات وعددها {n} من بين استراتيجيتين جرى اختبارهما، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "few": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجيات جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "many": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجية جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط.",
+      "other": "اختيرت هذه الاستراتيجيات وعددها {n} من بين {m} استراتيجية جرى اختبارها، وأرقامها مأخوذة من بيانات لم ترها النماذج قط."
+    },
+    "hi": "ये {n} रणनीतियाँ {m} परखी गई रणनीतियों में से चुनी गई हैं, और इनके आँकड़े ऐसे डेटा से हैं जिसे मॉडलों ने कभी नहीं देखा।"
+  },
   "contactProblems": {
     "es": "¿Problemas? {e}",
     "en": "Problems? {e}",
@@ -649,7 +666,7 @@
   },
   "fTreeDepth": {
     "es": "Profundidad del árbol",
-    "en": "Tree Deep",
+    "en": "Tree depth",
     "pt": "Profundidade da árvore",
     "fr": "Profondeur de l’arbre",
     "de": "Baumtiefe",
@@ -798,13 +815,35 @@
     "hi": "क्रिप्टो"
   },
   "tradesWord": {
-    "es": "operaciones",
-    "en": "trades",
-    "pt": "operações",
-    "fr": "trades",
-    "de": "Trades",
+    "es": {
+      "one": "operación",
+      "other": "operaciones"
+    },
+    "en": {
+      "one": "trade",
+      "other": "trades"
+    },
+    "pt": {
+      "one": "operação",
+      "other": "operações"
+    },
+    "fr": {
+      "one": "trade",
+      "other": "trades"
+    },
+    "de": {
+      "one": "Trade",
+      "other": "Trades"
+    },
     "zh": "笔交易",
-    "ar": "صفقة",
+    "ar": {
+      "zero": "صفقة",
+      "one": "صفقة",
+      "two": "صفقتان",
+      "few": "صفقات",
+      "many": "صفقة",
+      "other": "صفقة"
+    },
     "hi": "ट्रेड"
   },
   "rangeOf": {
@@ -905,7 +944,7 @@
     "de": "Grenze den Katalog mit dem Filterbereich ein: Nettogewinn, Preis, Symbol, Zeiteinheit, Indikatoren und 16 weitere.",
     "zh": "用筛选面板缩小目录范围：净利润、价格、代码、时间周期、指标，以及另外 16 项。",
     "ar": "ضيّق نطاق الكتالوج بلوحة عوامل التصفية: صافي الربح والسعر والرمز والإطار الزمني والمؤشرات و16 غيرها.",
-    "hi": "फ़िल्टर पैनल से कैटलॉग छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 16 और।"
+    "hi": "फ़िल्टर पैनल से कैटलॉग छाँटें: शुद्ध लाभ, कीमत, सिंबल, टाइम फ़्रेम, इंडिकेटर और 16 अन्य।"
   },
   "tour2Title": {
     "es": "Lee la curva",
@@ -1115,14 +1154,14 @@
     "hi": "मुझे लिंक भेजें"
   },
   "freeSent": {
-    "es": "Hecho. Mira tu correo: el enlace vale 7 días.",
-    "en": "Done. Check your inbox: the link is valid for 7 days.",
-    "pt": "Feito. Vê o teu e-mail: a ligação vale 7 dias.",
-    "fr": "C’est fait. Consultez votre boîte de réception : le lien est valable 7 jours.",
-    "de": "Erledigt. Schau in dein Postfach: Der Link gilt 7 Tage.",
-    "zh": "已发送。请查收邮件：链接 7 天内有效。",
-    "ar": "تم. تفقّد بريدك: الرابط صالح لمدة 7 أيام.",
-    "hi": "हो गया। अपना इनबॉक्स देखें: लिंक 7 दिन तक चलेगा।"
+    "es": "Hecho. Mira tu correo: el enlace vale {days}.",
+    "en": "Done. Check your inbox: the link is valid for {days}.",
+    "pt": "Feito. Vê o teu e-mail: a ligação vale {days}.",
+    "fr": "C’est fait. Consultez votre boîte de réception : le lien est valable {days}.",
+    "de": "Erledigt. Schau in dein Postfach: Der Link gilt {days}.",
+    "zh": "已发送。请查收邮件：链接 {days}内有效。",
+    "ar": "تم. تفقّد بريدك: الرابط صالح لمدة {days}.",
+    "hi": "हो गया। अपना इनबॉक्स देखें: लिंक {days} तक चलेगा।"
   },
   "myStrategies": {
     "es": "Mis estrategias",
@@ -1282,14 +1321,78 @@
     "hi": "सब डाउनलोड करें"
   },
   "linksNote": {
-    "es": "Cada enlace vale {n} días y hasta {m} descargas. También están en Mis estrategias.",
-    "en": "Each link is valid for {n} days and up to {m} downloads. You'll also find them in My strategies.",
-    "pt": "Cada ligação vale {n} dias e até {m} downloads. Também estão em As minhas estratégias.",
-    "fr": "Chaque lien est valable {n} jours et jusqu’à {m} téléchargements. Vous les retrouverez aussi dans Mes stratégies.",
-    "de": "Jeder Link gilt {n} Tage und für bis zu {m} Downloads. Du findest sie auch unter Meine Strategien.",
-    "zh": "每个链接 {n} 天内有效，最多可下载 {m} 次。也可在“我的策略”中找到。",
-    "ar": "كل رابط صالح لمدة {n} أيام وحتى {m} مرات تنزيل. ستجدها أيضًا في استراتيجياتي.",
-    "hi": "हर लिंक {n} दिन और {m} डाउनलोड तक चलता है। ये मेरी रणनीतियाँ में भी मिलेंगे।"
+    "es": "Cada enlace vale {days} y hasta {downloads}. También están en Mis estrategias.",
+    "en": "Each link is valid for {days} and up to {downloads}. You'll also find them in My strategies.",
+    "pt": "Cada ligação vale {days} e até {downloads}. Também estão em As minhas estratégias.",
+    "fr": "Chaque lien est valable {days} et jusqu’à {downloads}. Vous les retrouverez aussi dans Mes stratégies.",
+    "de": "Jeder Link gilt {days} und für bis zu {downloads}. Du findest sie auch unter Meine Strategien.",
+    "zh": "每个链接 {days}内有效，最多可下载 {downloads}。也可在“我的策略”中找到。",
+    "ar": "كل رابط صالح لمدة {days} وحتى {downloads}. ستجدها أيضًا في استراتيجياتي.",
+    "hi": "हर लिंक {days} और {downloads} तक चलता है। ये मेरी रणनीतियाँ में भी मिलेंगे।"
+  },
+  "linkDays": {
+    "es": {
+      "one": "{n} día",
+      "other": "{n} días"
+    },
+    "en": {
+      "one": "{n} day",
+      "other": "{n} days"
+    },
+    "pt": {
+      "one": "{n} dia",
+      "other": "{n} dias"
+    },
+    "fr": {
+      "one": "{n} jour",
+      "other": "{n} jours"
+    },
+    "de": {
+      "one": "{n} Tag",
+      "other": "{n} Tage"
+    },
+    "zh": "{n} 天",
+    "ar": {
+      "zero": "{n} يوم",
+      "one": "يوم واحد",
+      "two": "يومين",
+      "few": "{n} أيام",
+      "many": "{n} يومًا",
+      "other": "{n} يوم"
+    },
+    "hi": "{n} दिन"
+  },
+  "linkDownloads": {
+    "es": {
+      "one": "{n} descarga",
+      "other": "{n} descargas"
+    },
+    "en": {
+      "one": "{n} download",
+      "other": "{n} downloads"
+    },
+    "pt": {
+      "one": "{n} download",
+      "other": "{n} downloads"
+    },
+    "fr": {
+      "one": "{n} téléchargement",
+      "other": "{n} téléchargements"
+    },
+    "de": {
+      "one": "{n} Download",
+      "other": "{n} Downloads"
+    },
+    "zh": "{n} 次",
+    "ar": {
+      "zero": "{n} تنزيل",
+      "one": "تنزيل واحد",
+      "two": "تنزيلين",
+      "few": "{n} تنزيلات",
+      "many": "{n} تنزيلًا",
+      "other": "{n} تنزيل"
+    },
+    "hi": "{n} डाउनलोड"
   },
   "totalPaid": {
     "es": "Total pagado",
@@ -1562,14 +1665,53 @@
     "hi": "ग्रेड"
   },
   "gradeTip": {
-    "es": "Muestra: {n} operaciones cerradas. Menos operaciones, más riesgo de sobreajuste.",
-    "en": "Sample: {n} closed trades. Fewer trades, more risk of overfitting.",
-    "pt": "Amostra: {n} operações fechadas. Menos operações, mais risco de sobreajuste.",
-    "fr": "Échantillon : {n} trades clôturés. Moins de trades, plus de risque de surapprentissage.",
-    "de": "Stichprobe: {n} abgeschlossene Trades. Weniger Trades, mehr Risiko der Überanpassung.",
+    "es": {
+      "one": "Muestra: {n} operación cerrada. Menos operaciones, más riesgo de sobreajuste.",
+      "other": "Muestra: {n} operaciones cerradas. Menos operaciones, más riesgo de sobreajuste."
+    },
+    "en": {
+      "one": "Sample: {n} closed trade. Fewer trades, more risk of overfitting.",
+      "other": "Sample: {n} closed trades. Fewer trades, more risk of overfitting."
+    },
+    "pt": {
+      "one": "Amostra: {n} operação fechada. Menos operações, mais risco de sobreajuste.",
+      "other": "Amostra: {n} operações fechadas. Menos operações, mais risco de sobreajuste."
+    },
+    "fr": {
+      "one": "Échantillon : {n} trade clôturé. Moins de trades, plus de risque de surapprentissage.",
+      "other": "Échantillon : {n} trades clôturés. Moins de trades, plus de risque de surapprentissage."
+    },
+    "de": {
+      "one": "Stichprobe: {n} abgeschlossener Trade. Weniger Trades, mehr Risiko der Überanpassung.",
+      "other": "Stichprobe: {n} abgeschlossene Trades. Weniger Trades, mehr Risiko der Überanpassung."
+    },
     "zh": "样本：{n} 笔已平仓交易。交易越少，过拟合风险越高。",
-    "ar": "العينة: {n} صفقة مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+    "ar": {
+      "zero": "العينة: لا صفقات مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "one": "العينة: صفقة مغلقة واحدة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "two": "العينة: صفقتان مغلقتان. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "few": "العينة: {n} صفقات مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "many": "العينة: {n} صفقة مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص.",
+      "other": "العينة: {n} صفقة مغلقة. كلما قلّت الصفقات زاد خطر فرط التخصيص."
+    },
     "hi": "नमूना: {n} बंद ट्रेड। कम ट्रेड, ओवरफ़िटिंग का ज़्यादा जोखिम।"
+  },
+  "gradeCuts": {
+    "es": "A desde {a} operaciones, B desde {b}, C desde {c}; D, menos de {c}.",
+    "en": "A from {a} trades, B from {b}, C from {c}; D, fewer than {c}.",
+    "pt": "A a partir de {a} operações, B a partir de {b}, C a partir de {c}; D, menos de {c}.",
+    "fr": "A dès {a} trades, B dès {b}, C dès {c} ; D, moins de {c}.",
+    "de": "A ab {a} Trades, B ab {b}, C ab {c}; D unter {c}.",
+    "zh": "A：{a} 笔及以上；B：{b} 笔及以上；C：{c} 笔及以上；D：少于 {c} 笔。",
+    "ar": {
+      "zero": "A: {a} صفقة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "one": "A: صفقة واحدة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "two": "A: صفقتان فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "few": "A: {a} صفقات فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "many": "A: {a} صفقة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}.",
+      "other": "A: {a} صفقة فأكثر، B: {b} فأكثر، C: {c} فأكثر، D: أقل من {c}."
+    },
+    "hi": "A: {a} या ज़्यादा ट्रेड, B: {b} या ज़्यादा, C: {c} या ज़्यादा, D: {c} से कम।"
   },
   "packTitle": {
     "es": "Arma tu pack",
@@ -1582,24 +1724,31 @@
     "hi": "अपना बंडल बनाएँ"
   },
   "packHint": {
-    "es": "Elige {n} más · 5 por {price}",
-    "en": "Pick {n} more · 5 for {price}",
-    "pt": "Escolhe mais {n} · 5 por {price}",
-    "fr": "Encore {n} · 5 pour {price}",
-    "de": "Noch {n} · 5 für {price}",
-    "zh": "再选 {n} 个 · 5 个只需 {price}",
-    "ar": "اختر {n} أخرى · 5 مقابل {price}",
-    "hi": "{n} और चुनें · 5 सिर्फ़ {price} में"
+    "es": "Elige {n} más · {size} por {price}",
+    "en": "Pick {n} more · {size} for {price}",
+    "pt": "Escolhe mais {n} · {size} por {price}",
+    "fr": "Encore {n} · {size} pour {price}",
+    "de": "Noch {n} · {size} für {price}",
+    "zh": "再选 {n} 个 · {size} 个只需 {price}",
+    "ar": {
+      "zero": "اختر {n} أخرى · {size} مقابل {price}",
+      "one": "اختر واحدة أخرى · {size} مقابل {price}",
+      "two": "اختر اثنتين أخريين · {size} مقابل {price}",
+      "few": "اختر {n} أخرى · {size} مقابل {price}",
+      "many": "اختر {n} أخرى · {size} مقابل {price}",
+      "other": "اختر {n} أخرى · {size} مقابل {price}"
+    },
+    "hi": "{n} और चुनें · {size} सिर्फ़ {price} में"
   },
   "packReady": {
-    "es": "5 por {price}",
-    "en": "5 for {price}",
-    "pt": "5 por {price}",
-    "fr": "5 pour {price}",
-    "de": "5 für {price}",
-    "zh": "5 个只需 {price}",
-    "ar": "5 مقابل {price}",
-    "hi": "5 सिर्फ़ {price} में"
+    "es": "{size} por {price}",
+    "en": "{size} for {price}",
+    "pt": "{size} por {price}",
+    "fr": "{size} pour {price}",
+    "de": "{size} für {price}",
+    "zh": "{size} 个只需 {price}",
+    "ar": "{size} مقابل {price}",
+    "hi": "{size} सिर्फ़ {price} में"
   },
   "addPack": {
     "es": "Añadir pack",
@@ -1732,14 +1881,14 @@
     "hi": "PayPal: हम आपका कार्ड कभी नहीं देखते"
   },
   "trustLinks": {
-    "es": "Enlaces: {n} días, {m} descargas",
-    "en": "Links: {n} days, {m} downloads",
-    "pt": "Ligações: {n} dias, {m} downloads",
-    "fr": "Liens : {n} jours, {m} téléchargements",
-    "de": "Links: {n} Tage, {m} Downloads",
-    "zh": "链接：{n} 天，{m} 次下载",
-    "ar": "الروابط: {n} أيام، {m} تنزيلات",
-    "hi": "लिंक: {n} दिन, {m} डाउनलोड"
+    "es": "Enlaces: {days}, {downloads}",
+    "en": "Links: {days}, {downloads}",
+    "pt": "Ligações: {days}, {downloads}",
+    "fr": "Liens : {days}, {downloads}",
+    "de": "Links: {days}, {downloads}",
+    "zh": "链接：{days}，{downloads}下载",
+    "ar": "الروابط لمدة {days} وحتى {downloads}",
+    "hi": "लिंक: {days}, {downloads}"
   },
   "trustInvoice": {
     "es": "Factura por correo",
@@ -2312,14 +2461,14 @@
     "hi": "आपकी मुफ़्त रणनीति: {name} ({ticker}, {interval})"
   },
   "mailFreeBody": {
-    "es": "Aquí tienes tu estrategia gratis de Edgefolio para TradingView: {name} ({ticker}, {interval}).\n\nScript de Pine: {pine}\nScript + reglas en palabras sencillas + Python/JavaScript (zip): {zip}\n\nLos enlaces valen {days} días y hasta {n} descargas. Entra con este correo en {mine} para ver tus estrategias y pedir enlaces nuevos.\n\nCómo usarla: copia el script, abre el Editor de Pine en TradingView, pégalo y pulsa «Guardar» y después «Añadir al gráfico».\n",
-    "en": "Here is your free Edgefolio strategy for TradingView: {name} ({ticker}, {interval}).\n\nPine script: {pine}\nScript + rules in plain words + Python/JavaScript (zip): {zip}\n\nThe links work for {days} days and up to {n} downloads. Sign in with this email at {mine} to see your strategies and get new links.\n\nTo use it: copy the script, open the Pine Editor in TradingView, paste it, click \"Save\" and then \"Add to chart\".\n",
-    "pt": "Aqui tens a tua estratégia grátis do Edgefolio para o TradingView: {name} ({ticker}, {interval}).\n\nScript Pine: {pine}\nScript + regras em palavras simples + Python/JavaScript (zip): {zip}\n\nAs ligações valem {days} dias e até {n} transferências. Entra com este e-mail em {mine} para veres as tuas estratégias e pedires ligações novas.\n\nComo usar: copia o script, abre o Pine Editor no TradingView, cola-o e clica em «Guardar» e depois em «Adicionar ao gráfico».\n",
-    "fr": "Voici votre stratégie Edgefolio gratuite pour TradingView : {name} ({ticker}, {interval}).\n\nScript Pine : {pine}\nScript + règles expliquées simplement + Python/JavaScript (zip) : {zip}\n\nLes liens sont valables {days} jours et pour {n} téléchargements au maximum. Connectez-vous avec cette adresse sur {mine} pour retrouver vos stratégies et obtenir de nouveaux liens.\n\nPour l’utiliser : copiez le script, ouvrez l’éditeur Pine dans TradingView, collez-le, puis cliquez sur « Enregistrer » et ensuite sur « Ajouter au graphique ».\n",
-    "de": "Hier ist deine kostenlose Edgefolio-Strategie für TradingView: {name} ({ticker}, {interval}).\n\nPine-Skript: {pine}\nSkript + Regeln in einfachen Worten + Python/JavaScript (ZIP): {zip}\n\nDie Links gelten {days} Tage und für bis zu {n} Downloads. Melde dich mit dieser E-Mail-Adresse unter {mine} an, um deine Strategien zu sehen und neue Links zu holen.\n\nSo nutzt du sie: Kopiere das Skript, öffne in TradingView den Pine Editor, füge es ein und klicke auf „Speichern“ und dann auf „Zum Chart hinzufügen“.\n",
-    "zh": "这是你在 Edgefolio 领取的免费 TradingView 策略：{name}（{ticker}，{interval}）。\n\nPine 脚本：{pine}\n脚本 + 通俗易懂的规则说明 + Python/JavaScript（zip）：{zip}\n\n链接 {days} 天内有效，最多可下载 {n} 次。用这个邮箱在 {mine} 登录，即可查看你的策略并获取新链接。\n\n使用方法：复制脚本，在 TradingView 中打开 Pine 编辑器，粘贴后点击“保存”，再点击“添加到图表”。\n",
-    "ar": "إليك استراتيجيتك المجانية من Edgefolio لمنصة TradingView: {name} ({ticker}، {interval}).\n\nسكربت Pine: {pine}\nالسكربت + القواعد بكلمات بسيطة + Python/JavaScript (ملف zip): {zip}\n\nتبقى الروابط صالحة لعدد {days} من الأيام ولعدد {n} من التنزيلات كحد أقصى. سجّل الدخول بهذا البريد الإلكتروني في {mine} لرؤية استراتيجياتك والحصول على روابط جديدة.\n\nطريقة الاستخدام: انسخ السكربت، وافتح محرر Pine في TradingView، والصقه، ثم انقر على «حفظ» ثم على «إضافة إلى الرسم البياني».\n",
-    "hi": "TradingView के लिए आपकी मुफ़्त Edgefolio रणनीति यह रही: {name} ({ticker}, {interval})।\n\nPine स्क्रिप्ट: {pine}\nस्क्रिप्ट + आसान शब्दों में नियम + Python/JavaScript (zip): {zip}\n\nये लिंक {days} दिन तक और ज़्यादा से ज़्यादा {n} डाउनलोड तक चलेंगे। अपनी रणनीतियाँ देखने और नए लिंक पाने के लिए इसी ईमेल से {mine} पर साइन इन करें।\n\nइस्तेमाल कैसे करें: स्क्रिप्ट कॉपी करें, TradingView में Pine Editor खोलें, स्क्रिप्ट पेस्ट करें, फिर \"Save\" और उसके बाद \"Add to chart\" पर क्लिक करें।\n"
+    "es": "Aquí tienes tu estrategia gratis de Edgefolio para TradingView: {name} ({ticker}, {interval}).\n\nScript de Pine: {pine}\nScript + reglas en palabras sencillas + Python/JavaScript (zip): {zip}\n\nLos enlaces valen {days} y hasta {downloads}. Entra con este correo en {mine} para ver tus estrategias y pedir enlaces nuevos.\n\nCómo usarla: copia el script, abre el Editor de Pine en TradingView, pégalo y pulsa «Guardar» y después «Añadir al gráfico».\n",
+    "en": "Here is your free Edgefolio strategy for TradingView: {name} ({ticker}, {interval}).\n\nPine script: {pine}\nScript + rules in plain words + Python/JavaScript (zip): {zip}\n\nThe links work for {days} and up to {downloads}. Sign in with this email at {mine} to see your strategies and get new links.\n\nTo use it: copy the script, open the Pine Editor in TradingView, paste it, click \"Save\" and then \"Add to chart\".\n",
+    "pt": "Aqui tens a tua estratégia grátis do Edgefolio para o TradingView: {name} ({ticker}, {interval}).\n\nScript Pine: {pine}\nScript + regras em palavras simples + Python/JavaScript (zip): {zip}\n\nAs ligações valem {days} e até {downloads}. Entra com este e-mail em {mine} para veres as tuas estratégias e pedires ligações novas.\n\nComo usar: copia o script, abre o Pine Editor no TradingView, cola-o e clica em «Guardar» e depois em «Adicionar ao gráfico».\n",
+    "fr": "Voici votre stratégie Edgefolio gratuite pour TradingView : {name} ({ticker}, {interval}).\n\nScript Pine : {pine}\nScript + règles expliquées simplement + Python/JavaScript (zip) : {zip}\n\nLes liens sont valables {days} et pour {downloads} au maximum. Connectez-vous avec cette adresse sur {mine} pour retrouver vos stratégies et obtenir de nouveaux liens.\n\nPour l’utiliser : copiez le script, ouvrez l’éditeur Pine dans TradingView, collez-le, puis cliquez sur « Enregistrer » et ensuite sur « Ajouter au graphique ».\n",
+    "de": "Hier ist deine kostenlose Edgefolio-Strategie für TradingView: {name} ({ticker}, {interval}).\n\nPine-Skript: {pine}\nSkript + Regeln in einfachen Worten + Python/JavaScript (ZIP): {zip}\n\nDie Links gelten {days} und für bis zu {downloads}. Melde dich mit dieser E-Mail-Adresse unter {mine} an, um deine Strategien zu sehen und neue Links zu holen.\n\nSo nutzt du sie: Kopiere das Skript, öffne in TradingView den Pine Editor, füge es ein und klicke auf „Speichern“ und dann auf „Zum Chart hinzufügen“.\n",
+    "zh": "这是你在 Edgefolio 领取的免费 TradingView 策略：{name}（{ticker}，{interval}）。\n\nPine 脚本：{pine}\n脚本 + 通俗易懂的规则说明 + Python/JavaScript（zip）：{zip}\n\n链接 {days}内有效，最多可下载 {downloads}。用这个邮箱在 {mine} 登录，即可查看你的策略并获取新链接。\n\n使用方法：复制脚本，在 TradingView 中打开 Pine 编辑器，粘贴后点击“保存”，再点击“添加到图表”。\n",
+    "ar": "إليك استراتيجيتك المجانية من Edgefolio لمنصة TradingView: {name} ({ticker}، {interval}).\n\nسكربت Pine: {pine}\nالسكربت + القواعد بكلمات بسيطة + Python/JavaScript (ملف zip): {zip}\n\nتبقى الروابط صالحة لمدة {days} وحتى {downloads}. سجّل الدخول بهذا البريد الإلكتروني في {mine} لرؤية استراتيجياتك والحصول على روابط جديدة.\n\nطريقة الاستخدام: انسخ السكربت، وافتح محرر Pine في TradingView، والصقه، ثم انقر على «حفظ» ثم على «إضافة إلى الرسم البياني».\n",
+    "hi": "TradingView के लिए आपकी मुफ़्त Edgefolio रणनीति यह रही: {name} ({ticker}, {interval})।\n\nPine स्क्रिप्ट: {pine}\nस्क्रिप्ट + आसान शब्दों में नियम + Python/JavaScript (zip): {zip}\n\nये लिंक {days} तक और ज़्यादा से ज़्यादा {downloads} तक चलेंगे। अपनी रणनीतियाँ देखने और नए लिंक पाने के लिए इसी ईमेल से {mine} पर साइन इन करें।\n\nइस्तेमाल कैसे करें: स्क्रिप्ट कॉपी करें, TradingView में Pine Editor खोलें, स्क्रिप्ट पेस्ट करें, फिर \"Save\" और उसके बाद \"Add to chart\" पर क्लिक करें।\n"
   },
   "mailNewsConfirm": {
     "es": "Has pedido que te avisemos de estrategias nuevas. Confírmalo con este enlace (hasta entonces no te enviaremos nada):\n{link}\nSi no lo has pedido tú, ignóralo.\n",
@@ -2372,14 +2521,39 @@
     "hi": "{name} ({ticker} · {code}): अब {price}, पहले {was}. {url}"
   },
   "mailAlertBundle": {
-    "es": "{name} ({ticker} · {code}): ahora está en el pack «{bundle}», {price} por {n} estrategias. {url}",
-    "en": "{name} ({ticker} · {code}): now in the bundle “{bundle}”, {price} for {n} strategies. {url}",
-    "pt": "{name} ({ticker} · {code}): agora está no pacote «{bundle}», {price} por {n} estratégias. {url}",
-    "fr": "{name} ({ticker} · {code}) : désormais dans le pack « {bundle} », {price} pour {n} stratégies. {url}",
-    "de": "{name} ({ticker} · {code}): jetzt im Paket „{bundle}“, {price} für {n} Strategien. {url}",
+    "es": {
+      "one": "{name} ({ticker} · {code}): ahora está en el pack «{bundle}», {price} por {n} estrategia. {url}",
+      "other": "{name} ({ticker} · {code}): ahora está en el pack «{bundle}», {price} por {n} estrategias. {url}"
+    },
+    "en": {
+      "one": "{name} ({ticker} · {code}): now in the bundle “{bundle}”, {price} for {n} strategy. {url}",
+      "other": "{name} ({ticker} · {code}): now in the bundle “{bundle}”, {price} for {n} strategies. {url}"
+    },
+    "pt": {
+      "one": "{name} ({ticker} · {code}): agora está no pacote «{bundle}», {price} por {n} estratégia. {url}",
+      "other": "{name} ({ticker} · {code}): agora está no pacote «{bundle}», {price} por {n} estratégias. {url}"
+    },
+    "fr": {
+      "one": "{name} ({ticker} · {code}) : désormais dans le pack « {bundle} », {price} pour {n} stratégie. {url}",
+      "other": "{name} ({ticker} · {code}) : désormais dans le pack « {bundle} », {price} pour {n} stratégies. {url}"
+    },
+    "de": {
+      "one": "{name} ({ticker} · {code}): jetzt im Paket „{bundle}“, {price} für {n} Strategie. {url}",
+      "other": "{name} ({ticker} · {code}): jetzt im Paket „{bundle}“, {price} für {n} Strategien. {url}"
+    },
     "zh": "{name}（{ticker} · {code}）：现已加入组合包“{bundle}”，{n} 个策略共 {price}。{url}",
-    "ar": "{name} ({ticker} · {code}): أصبحت ضمن باقة «{bundle}»، {price} مقابل {n} استراتيجيات. {url}",
-    "hi": "{name} ({ticker} · {code}): अब बंडल “{bundle}” में है, {n} रणनीतियाँ {price} में। {url}"
+    "ar": {
+      "zero": "{name} ({ticker} · {code}): أصبحت ضمن باقة «{bundle}»، {price} مقابل {n} استراتيجية. {url}",
+      "one": "{name} ({ticker} · {code}): أصبحت ضمن باقة «{bundle}»، {price} مقابل استراتيجية واحدة. {url}",
+      "two": "{name} ({ticker} · {code}): أصبحت ضمن باقة «{bundle}»، {price} مقابل استراتيجيتين. {url}",
+      "few": "{name} ({ticker} · {code}): أصبحت ضمن باقة «{bundle}»، {price} مقابل {n} استراتيجيات. {url}",
+      "many": "{name} ({ticker} · {code}): أصبحت ضمن باقة «{bundle}»، {price} مقابل {n} استراتيجية. {url}",
+      "other": "{name} ({ticker} · {code}): أصبحت ضمن باقة «{bundle}»، {price} مقابل {n} استراتيجية. {url}"
+    },
+    "hi": {
+      "one": "{name} ({ticker} · {code}): अब बंडल “{bundle}” में है, {n} रणनीति {price} में। {url}",
+      "other": "{name} ({ticker} · {code}): अब बंडल “{bundle}” में है, {n} रणनीतियाँ {price} में। {url}"
+    }
   },
   "errUnknownItems": {
     "es": "Algunas estrategias de tu carrito ya no están a la venta: las hemos quitado.",
@@ -2402,14 +2576,39 @@
     "hi": "वह बंडल अब बिक्री पर नहीं है।"
   },
   "errPackSize": {
-    "es": "Un pack lleva exactamente {n} estrategias de pago distintas.",
-    "en": "A pack needs exactly {n} different paid strategies.",
-    "pt": "Um pacote leva exatamente {n} estratégias pagas diferentes.",
-    "fr": "Un pack contient exactement {n} stratégies payantes différentes.",
-    "de": "Ein Paket braucht genau {n} verschiedene kostenpflichtige Strategien.",
+    "es": {
+      "one": "Un pack lleva exactamente {n} estrategia de pago.",
+      "other": "Un pack lleva exactamente {n} estrategias de pago distintas."
+    },
+    "en": {
+      "one": "A pack needs exactly {n} paid strategy.",
+      "other": "A pack needs exactly {n} different paid strategies."
+    },
+    "pt": {
+      "one": "Um pacote leva exatamente {n} estratégia paga.",
+      "other": "Um pacote leva exatamente {n} estratégias pagas diferentes."
+    },
+    "fr": {
+      "one": "Un pack contient exactement {n} stratégie payante.",
+      "other": "Un pack contient exactement {n} stratégies payantes différentes."
+    },
+    "de": {
+      "one": "Ein Paket braucht genau {n} kostenpflichtige Strategie.",
+      "other": "Ein Paket braucht genau {n} verschiedene kostenpflichtige Strategien."
+    },
     "zh": "组合包需要正好 {n} 个不同的付费策略。",
-    "ar": "تحتاج الباقة إلى {n} استراتيجيات مدفوعة مختلفة بالضبط.",
-    "hi": "एक बंडल में ठीक {n} अलग-अलग पेड रणनीतियाँ होनी चाहिए।"
+    "ar": {
+      "zero": "تحتاج الباقة إلى {n} استراتيجية مدفوعة بالضبط.",
+      "one": "تحتاج الباقة إلى استراتيجية مدفوعة واحدة بالضبط.",
+      "two": "تحتاج الباقة إلى استراتيجيتين مدفوعتين مختلفتين بالضبط.",
+      "few": "تحتاج الباقة إلى {n} استراتيجيات مدفوعة مختلفة بالضبط.",
+      "many": "تحتاج الباقة إلى {n} استراتيجية مدفوعة مختلفة بالضبط.",
+      "other": "تحتاج الباقة إلى {n} استراتيجية مدفوعة مختلفة بالضبط."
+    },
+    "hi": {
+      "one": "एक बंडल में ठीक {n} पेड रणनीति होनी चाहिए।",
+      "other": "एक बंडल में ठीक {n} अलग-अलग पेड रणनीतियाँ होनी चाहिए।"
+    }
   },
   "errBundleOverlap": {
     "es": "Una estrategia está en dos de los packs que has elegido: quédate sólo con uno.",
@@ -2541,6 +2740,36 @@
     "ar": "هذه الاستراتيجية ليست في حسابك.",
     "hi": "यह रणनीति आपके खाते में नहीं है।"
   },
+  "errAlreadyOwned": {
+    "es": "Lo que ya es tuyo no se vuelve a cobrar: lo hemos quitado del carrito. Está en Mis estrategias.",
+    "en": "What's already yours isn't charged again: we've taken it out of your cart. It's in My strategies.",
+    "pt": "O que já é teu não se volta a cobrar: retirámo-lo do carrinho. Está em As minhas estratégias.",
+    "fr": "Ce qui est déjà à vous n’est pas facturé une seconde fois : nous l’avons retiré du panier. Retrouvez-le dans Mes stratégies.",
+    "de": "Was dir schon gehört, wird nicht noch einmal berechnet: Wir haben es aus dem Warenkorb genommen. Du findest es unter Meine Strategien.",
+    "zh": "已归你所有的策略不会重复收费：我们已将其从购物车中移除，可在“我的策略”中找到。",
+    "ar": "ما هو لك بالفعل لا يُحتسب ثمنه مرة أخرى: أزلناه من السلة، وتجده في استراتيجياتي.",
+    "hi": "जो पहले से आपका है, उसका दोबारा शुल्क नहीं लिया जाता: हमने उसे कार्ट से हटा दिया है। वह मेरी रणनीतियाँ में है।"
+  },
+  "cartUpdatedTitle": {
+    "es": "Carrito actualizado",
+    "en": "Cart updated",
+    "pt": "Carrinho atualizado",
+    "fr": "Panier mis à jour",
+    "de": "Warenkorb aktualisiert",
+    "zh": "购物车已更新",
+    "ar": "تم تحديث السلة",
+    "hi": "कार्ट अपडेट हो गई"
+  },
+  "errUpdateExpired": {
+    "es": "Esta estrategia caducó: su versión nueva ya no está incluida en tu compra.",
+    "en": "This strategy has expired: its new version is no longer included in your purchase.",
+    "pt": "Esta estratégia expirou: a versão nova já não está incluída na tua compra.",
+    "fr": "Cette stratégie a expiré : sa nouvelle version n’est plus incluse dans votre achat.",
+    "de": "Diese Strategie ist abgelaufen: Die neue Version ist nicht mehr in deinem Kauf enthalten.",
+    "zh": "该策略已过期：其新版本不再包含在你的购买中。",
+    "ar": "انتهت صلاحية هذه الاستراتيجية: لم يعد إصدارها الجديد مشمولًا في شرائك.",
+    "hi": "इस रणनीति की अवधि ख़त्म हो चुकी है: इसका नया वर्ज़न अब आपकी ख़रीद में शामिल नहीं है।"
+  },
   "errProofExpired": {
     "es": "Ese enlace de confirmación ha caducado, ya se usó o es de otra cuenta. Pide otro.",
     "en": "That confirmation link has expired, was already used or is for another account. Ask for a new one.",
@@ -2618,7 +2847,7 @@
     "fr": "Déjà confirmé",
     "de": "Bereits bestätigt",
     "zh": "已确认过",
-    "ar": "تم التأكيد من قبل",
+    "ar": "سبق تأكيده",
     "hi": "पहले से पुष्टि हो चुकी है"
   },
   "proofProvenText": {
@@ -2672,14 +2901,14 @@
     "hi": "आपका Edgefolio ऑर्डर {id}"
   },
   "mailReceiptBody": {
-    "es": "Gracias por tu compra en Edgefolio.\n\nPedido: {id}\n{lines}\n\nTotal pagado con PayPal: {total}\n\nDescarga tus estrategias en Mis estrategias (entra con este correo): {mine}\nCada enlace vale {n} días y hasta {m} descargas; allí puedes pedir enlaces nuevos.\n\n¿Problemas o necesitas factura con tus datos fiscales? Escribe a {contact}\n",
-    "en": "Thank you for your purchase on Edgefolio.\n\nOrder: {id}\n{lines}\n\nTotal paid with PayPal: {total}\n\nDownload your strategies in My strategies (sign in with this email): {mine}\nEach link works for {n} days and up to {m} downloads; you can ask for new ones there.\n\nProblems, or need an invoice with your tax details? Write to {contact}\n",
-    "pt": "Obrigado pela tua compra na Edgefolio.\n\nEncomenda: {id}\n{lines}\n\nTotal pago com PayPal: {total}\n\nDescarrega as tuas estratégias em As minhas estratégias (inicia sessão com este email): {mine}\nCada ligação vale {n} dias e até {m} downloads; lá podes pedir ligações novas.\n\nProblemas, ou precisas de fatura com os teus dados fiscais? Escreve para {contact}\n",
-    "fr": "Merci pour votre achat sur Edgefolio.\n\nCommande : {id}\n{lines}\n\nTotal payé avec PayPal : {total}\n\nTéléchargez vos stratégies dans Mes stratégies (connectez-vous avec cet e-mail) : {mine}\nChaque lien est valable {n} jours et jusqu’à {m} téléchargements ; vous pouvez y demander de nouveaux liens.\n\nUn problème, ou besoin d’une facture à vos coordonnées fiscales ? Écrivez à {contact}\n",
-    "de": "Danke für deinen Einkauf bei Edgefolio.\n\nBestellung: {id}\n{lines}\n\nMit PayPal bezahlt: {total}\n\nLade deine Strategien unter Meine Strategien herunter (melde dich mit dieser E-Mail an): {mine}\nJeder Link gilt {n} Tage und für bis zu {m} Downloads; dort kannst du neue Links anfordern.\n\nProbleme, oder brauchst du eine Rechnung mit deinen Steuerdaten? Schreib an {contact}\n",
-    "zh": "感谢你在 Edgefolio 购买。\n\n订单：{id}\n{lines}\n\n通过 PayPal 支付总额：{total}\n\n在“我的策略”中下载你的策略（使用此邮箱登录）：{mine}\n每个链接有效 {n} 天，最多下载 {m} 次；可在那里申请新链接。\n\n遇到问题，或需要带税务信息的发票？请写信至 {contact}\n",
-    "ar": "شكرًا لشرائك من Edgefolio.\n\nالطلب: {id}\n{lines}\n\nالمبلغ المدفوع عبر PayPal: {total}\n\nنزّل استراتيجياتك من استراتيجياتي (سجّل الدخول بهذا البريد): {mine}\nكل رابط صالح {n} أيام وحتى {m} تنزيلات، ويمكنك طلب روابط جديدة من هناك.\n\nهل لديك مشكلة أو تحتاج فاتورة ببياناتك الضريبية؟ اكتب إلى {contact}\n",
-    "hi": "Edgefolio पर खरीदारी के लिए धन्यवाद।\n\nऑर्डर: {id}\n{lines}\n\nPayPal से कुल भुगतान: {total}\n\nअपनी रणनीतियाँ मेरी रणनीतियाँ से डाउनलोड करें (इसी ईमेल से साइन इन करें): {mine}\nहर लिंक {n} दिन और {m} डाउनलोड तक चलता है; वहाँ आप नए लिंक माँग सकते हैं।\n\nकोई समस्या, या अपने टैक्स विवरण के साथ इनवॉइस चाहिए? {contact} पर लिखें\n"
+    "es": "Gracias por tu compra en Edgefolio.\n\nPedido: {id}\n{lines}\n\nTotal pagado con PayPal: {total}\n\nDescarga tus estrategias en Mis estrategias (entra con este correo): {mine}\nCada enlace vale {days} y hasta {downloads}; allí puedes pedir enlaces nuevos.\n\n¿Problemas o necesitas factura con tus datos fiscales? Escribe a {contact}\n",
+    "en": "Thank you for your purchase on Edgefolio.\n\nOrder: {id}\n{lines}\n\nTotal paid with PayPal: {total}\n\nDownload your strategies in My strategies (sign in with this email): {mine}\nEach link works for {days} and up to {downloads}; you can ask for new ones there.\n\nProblems, or need an invoice with your tax details? Write to {contact}\n",
+    "pt": "Obrigado pela tua compra na Edgefolio.\n\nEncomenda: {id}\n{lines}\n\nTotal pago com PayPal: {total}\n\nDescarrega as tuas estratégias em As minhas estratégias (inicia sessão com este email): {mine}\nCada ligação vale {days} e até {downloads}; lá podes pedir ligações novas.\n\nProblemas, ou precisas de fatura com os teus dados fiscais? Escreve para {contact}\n",
+    "fr": "Merci pour votre achat sur Edgefolio.\n\nCommande : {id}\n{lines}\n\nTotal payé avec PayPal : {total}\n\nTéléchargez vos stratégies dans Mes stratégies (connectez-vous avec cet e-mail) : {mine}\nChaque lien est valable {days} et jusqu’à {downloads} ; vous pouvez y demander de nouveaux liens.\n\nUn problème, ou besoin d’une facture à vos coordonnées fiscales ? Écrivez à {contact}\n",
+    "de": "Danke für deinen Einkauf bei Edgefolio.\n\nBestellung: {id}\n{lines}\n\nMit PayPal bezahlt: {total}\n\nLade deine Strategien unter Meine Strategien herunter (melde dich mit dieser E-Mail an): {mine}\nJeder Link gilt {days} und für bis zu {downloads}; dort kannst du neue Links anfordern.\n\nProbleme, oder brauchst du eine Rechnung mit deinen Steuerdaten? Schreib an {contact}\n",
+    "zh": "感谢你在 Edgefolio 购买。\n\n订单：{id}\n{lines}\n\n通过 PayPal 支付总额：{total}\n\n在“我的策略”中下载你的策略（使用此邮箱登录）：{mine}\n每个链接有效 {days}，最多下载 {downloads}；可在那里申请新链接。\n\n遇到问题，或需要带税务信息的发票？请写信至 {contact}\n",
+    "ar": "شكرًا لشرائك من Edgefolio.\n\nالطلب: {id}\n{lines}\n\nالمبلغ المدفوع عبر PayPal: {total}\n\nنزّل استراتيجياتك من استراتيجياتي (سجّل الدخول بهذا البريد): {mine}\nكل رابط صالح لمدة {days} وحتى {downloads}، ويمكنك طلب روابط جديدة من هناك.\n\nهل لديك مشكلة أو تحتاج فاتورة ببياناتك الضريبية؟ اكتب إلى {contact}\n",
+    "hi": "Edgefolio पर खरीदारी के लिए धन्यवाद।\n\nऑर्डर: {id}\n{lines}\n\nPayPal से कुल भुगतान: {total}\n\nअपनी रणनीतियाँ मेरी रणनीतियाँ से डाउनलोड करें (इसी ईमेल से साइन इन करें): {mine}\nहर लिंक {days} और {downloads} तक चलता है; वहाँ आप नए लिंक माँग सकते हैं।\n\nकोई समस्या, या अपने टैक्स विवरण के साथ इनवॉइस चाहिए? {contact} पर लिखें\n"
   },
   "viewTableTab": {
     "es": "Tabla",

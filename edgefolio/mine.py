@@ -64,19 +64,29 @@ def owned(user_id: int, emails: Iterable[str]) -> dict:
     return groups
 
 
+def update_of(s, latest: dict):
+    """La versión nueva que se le da a quien tiene ``latest`` (su último enlace), o None. Gratis mientras la estrategia
+    no ha caducado (la «Expiry date» de su script; decisión del dueño, 2026-10-26); después, no. Una gratis, siempre: se
+    pide otra vez sin pagar."""
+    if s.version <= latest["version"]:
+        return None
+    return s.version if s.serves(latest["version"], latest["kind"] == "paid") else None
+
+
 def entry(settings, s, links: list) -> dict:
     """La fila de una estrategia: la compra es la primera (su fecha y su pedido, aunque se comprara otra
     vez o se renovara el enlace); el enlace, el último."""
     now = utcnow()
     latest, first = links[-1], min(links, key=lambda x: x["date"])
-    valid = latest["expires"] > now and latest["count"] < settings.max_downloads
+    # el de una versión de antes, con la estrategia caducada, ya no vale: daría el script de hoy (downloads.checked)
+    valid = (latest["expires"] > now and latest["count"] < settings.max_downloads
+             and s.serves(latest["version"], latest["kind"] == "paid"))
     url = f"/api/download/{latest['token']}"
     return {"id": s.id, "kind": latest["kind"], "date": iso(first["date"], True), "at": iso(first["date"]),
             "order": first["paypal_id"] or None, "expires": iso(latest["expires"]),
             "days_left": max(0, math.ceil((latest["expires"] - now).total_seconds() / 86400)), "valid": valid,
             "url": url if valid else None, "zip": f"{url}?format=zip" if valid else None,
-            "version": latest["version"], "update": s.version if s.version > latest["version"] else None,
-            "row": s.as_row()}
+            "version": latest["version"], "update": update_of(s, latest), "row": s.as_row()}
 
 
 def listing(shop, user_id: int, email: str, emails: list, proof_needed: bool) -> dict:
@@ -97,16 +107,20 @@ def listing(shop, user_id: int, email: str, emails: list, proof_needed: bool) ->
 
 def renew(shop, user_id: int, emails: list, item_id: str) -> dict:
     """Un enlace nuevo si el de antes caducó o se gastó, o para una versión nueva; si no, la misma fila:
-    el botón no sirve para reiniciar el límite de un enlace que funciona."""
+    el botón no sirve para reiniciar el límite de un enlace que funciona. Una versión nueva de una de pago que ya
+    caducó no se da (403 ``errUpdateExpired``): la tienda guarda un script por estrategia, el de hoy, así que un
+    enlace nuevo de la de antes también la daría."""
     s = strategy_or_404(shop.catalogue, item_id)
     links = owned(user_id, emails).get(s.key)
     if not links:
         raise Refusal("errNotOwned", 404)
     settings = shop.settings
     current = entry(settings, s, links)
+    latest = links[-1]
+    if not s.serves(latest["version"], latest["kind"] == "paid"):
+        raise Refusal("errUpdateExpired", 403)
     if current["valid"] and not current["update"]:
         return current
-    latest = links[-1]
     if latest["kind"] == "paid":
         db.session.add(Download(token=secrets.token_urlsafe(24), paypal_id=latest["paypal_id"], item_key=s.key,
                                 expires_at=utcnow() + timedelta(days=settings.download_days), count=0,
@@ -122,10 +136,14 @@ def renew(shop, user_id: int, emails: list, item_id: str) -> dict:
 
 
 def script_path(shop, user_id: int, emails: list, item_id: str):
-    """El script completo para quien lo tiene (la vista de propietario del árbol)."""
+    """El script completo para quien lo tiene (la vista de propietario del árbol). Es el de hoy: a quien tiene una versión
+    de antes de una que ya caducó, no (sería la versión nueva, como su enlace: ``Strategy.serves``)."""
     s = strategy_or_404(shop.catalogue, item_id)
-    if s.key not in owned(user_id, emails):
+    links = owned(user_id, emails).get(s.key)
+    if not links:
         raise Refusal("errNotOwned", 404)
+    if not s.serves(links[-1]["version"], links[-1]["kind"] == "paid"):
+        raise Refusal("errUpdateExpired", 403)
     path = shop.settings.strategies_dir / s.private_file
     if not path.is_file():
         raise Refusal("errFileMissing", 404, item=s.key)

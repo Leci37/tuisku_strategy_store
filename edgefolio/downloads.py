@@ -48,6 +48,10 @@ def checked(shop, token: str):
     strategy = shop.catalogue.resolve(link.item_key)
     if not strategy:
         raise Refusal("errStrategyGone", 404)
+    if not strategy.serves(link.version, paid=isinstance(link, Download)):
+        # un enlace de una versión de antes, con la estrategia caducada: el script de hoy es la versión nueva, que ya no
+        # va con la compra (como al renovarlo, mine.renew)
+        raise Refusal("errUpdateExpired", 403)
     path = settings.strategies_dir / strategy.private_file
     if not path.is_file():
         raise Refusal("errFileMissing", 404, item=strategy.key)

@@ -2,6 +2,7 @@
 """La API del catálogo: filtros, orden, páginas y los recuentos del panel Pro, comprobados contra el
 catálogo de verdad contando sus filas en Python a secas."""
 import csv
+import json
 import math
 import time
 from decimal import Decimal
@@ -17,7 +18,7 @@ from tests.conftest import ROWS, TODAY, cart_id, strategy_id
 ROW_FIELDS = {"id", "ticker", "interval", "key", "hash", "name", "ind", "index", "market", "price", "np", "npp", "tr",
               "w", "pf", "mdd", "mddp", "avg", "avgp", "bars", "m", "actv", "cand", "prc", "tdep", "release",
               "version", "profit", "candle", "icon", "preview", "thumb_profit", "thumb_candle", "grade", "live",
-              "live_as_of", "is_new", "tv_symbol", "file", "ind_url", "ind_text"}
+              "live_as_of", "is_new", "tv_symbol", "file", "ind_url", "ind_text", "ind_lang"}
 
 
 @pytest.fixture(scope="module")
@@ -47,18 +48,46 @@ def test_row_fields(real_client):
     for k in ("profit", "candle", "icon", "preview"):
         assert row[k].startswith("/static/assets/") and (ROOT / row[k][1:]).is_file(), k
     assert row["thumb_profit"] == f"/thumbs/{row['id']}_profit.webp"
-    assert row["grade"] == ("A" if row["tr"] >= 300 else "B" if row["tr"] >= 100 else "C" if row["tr"] >= 30 else "D")
+    assert row["grade"] == ("A" if row["tr"] >= 100 else "B" if row["tr"] >= 50 else "C" if row["tr"] >= 25 else "D")
     assert row["live"] is None, "sin cifra desde la publicación hasta que la escriba el trabajo diario"
+
+
+def test_grades_follow_the_cutoffs(real_client, rows):
+    """E10: la nota dice cuánta prueba respalda el backtest: A desde 100 operaciones cerradas, B desde 50, C desde 25;
+    D, menos (GRADE_CUTOFFS). La página los recibe para decirlos en su explicación. Con el catálogo de 2026-10
+    (5–63 operaciones), B, C y D."""
+    from edgefolio.catalogue import grade
+    from edgefolio.settings import Settings
+    assert [grade(t) for t in (100, 99, 50, 49, 25, 24, 0, None)] == ["A", "B", "B", "C", "C", "D", "D", "D"]
+    assert [grade(t, (30, 20, 10)) for t in (30, 29, 20, 10, 9)] == ["A", "B", "B", "C", "D"]
+    assert real_client.get("/api/config").json["grade_cutoffs"] == [100, 50, 25]
+    served = {r["id"]: r["grade"] for r in get(real_client, "size=100")["rows"]}
+    assert served == {r["id"]: grade(r["tr"]) for r in rows} and {"B", "C", "D"} <= set(served.values())
+    # otros cortes, de la configuración: las notas cambian con ellos
+    s = Strategy("X", "1Day", "1C00", "h", Decimal("9"), {"Total Closed Trades": "30"}, grade_cutoffs=(60, 40, 30))
+    assert s.grade == "C" and Strategy("X", "1Day", "1C00", "h", Decimal("9"), {"Total Closed Trades": "30"}).grade == "C"
+    graded = Catalogue(Settings(catalogue=ROOT / "catalogue" / "catalogue.csv", grade_cutoffs=(60, 40, 7)))
+    assert {s.id: s.grade for s in graded} == {r["id"]: grade(r["tr"], (60, 40, 7)) for r in rows}
+    assert "A" in {s.grade for s in graded}
+
+
+def test_grade_cutoffs_from_the_environment(tmp_path):
+    from edgefolio.settings import Settings
+    assert Settings.from_env(tmp_path, {}).grade_cutoffs == (100, 50, 25)
+    assert Settings.from_env(tmp_path, {"GRADE_CUTOFFS": "200, 80,20"}).grade_cutoffs == (200, 80, 20)
+    for raw in ("100,50", "50,100,25", "100,50,0", "a,b,c", "100,50,50"):
+        with pytest.raises(ValueError, match="GRADE_CUTOFFS"):
+            Settings.from_env(tmp_path, {"GRADE_CUTOFFS": raw})
 
 
 def test_rows_carry_their_indicator_page(real_client):
     """«CLAVE · indicador» en las fichas de Pro lleva a la página del indicador en TradingView, y al pasar
     por encima dice qué es: lo mismo que la página de la estrategia."""
-    row = next(r for r in get(real_client, "q=1BOL&size=25")["rows"] if r["key"] == "1BOL")
+    row = next(r for r in get(real_client, "q=1BOL&size=25&ind_lang=en")["rows"] if r["key"] == "1BOL")
     assert row["ind_url"] == "https://www.tradingview.com/script/uCV8I4xA-Bollinger-RSI-Double-Strategy-by-ChartArt-v1-1/"
-    assert row["ind_text"].startswith("The Bollinger RSI Double Strategy combines")
-    detail = real_client.get(f"/api/strategies/{row['id']}").json
-    assert (detail["ind_url"], detail["ind_text"]) == (row["ind_url"], row["ind_text"])
+    assert row["ind_text"].startswith("The Bollinger RSI Double Strategy combines") and row["ind_lang"] == "en"
+    detail = real_client.get(f"/api/strategies/{row['id']}?ind_lang=en").json
+    assert (detail["ind_url"], detail["ind_text"], detail["ind_lang"]) == (row["ind_url"], row["ind_text"], "en")
     # un indicador sin página propia (una combinación: «--» en indicators.csv) lleva a la lista de scripts
     combined = next(r for r in get(real_client, "q=2BB0&size=25")["rows"] if r["key"] == "2BB0")
     assert combined["ind_url"] == TV_SCRIPTS
@@ -188,8 +217,8 @@ def test_histograms_count_every_other_filter(real_client, rows):
 
 def test_each_track_is_the_catalogues_own(real_client, rows):
     """Cada barra va del mínimo al máximo del catálogo, redondeados hacia fuera: las estrategias la llenan.
-    Con las del diseño (las del catálogo de 2024), las 143 de 2026-10 caían en un rincón: 5–63 operaciones en
-    la primera de 32 barras de 0–2000, y 29 por debajo del mínimo de «Beneficio neto (%)»."""
+    Con las del diseño (las del catálogo de 2024), las 94 de 2026-10 caían en un rincón: 5–63 operaciones en
+    la primera de 32 barras de 0–2000, y 23 por debajo del mínimo de «Beneficio neto (%)»."""
     body = get(real_client, "facets=1")
     for key, (field, *_) in RANGES.items():
         values = [r[field] for r in rows if r[field] is not None]
@@ -242,13 +271,14 @@ def test_config_gives_the_best_backtest_for_the_bars_of_the_strategy_page(real_c
 
 
 def test_options(real_client, rows):
-    body = get(real_client, "facets=1&sym=NVDA&tf=1Hour")
+    # (con NVDA de 1Hour, hasta que las horarias de acciones salieron del catálogo: ahora son de cripto)
+    body = get(real_client, "facets=1&sym=XRPUSDT&tf=1Hour")
     sym = {o["v"]: o for o in body["options"]["sym"]}
     assert len(sym) == len({r["ticker"] for r in rows}), "every value is listed, even with a count of 0"
     assert sym["NVDA"]["label"].endswith("(NVDA)") and sym["NVDA"]["icon"] == "/static/assets/icons/NVDA_big.svg"
-    assert sym["MSFT"]["count"] == sum(r["ticker"] == "MSFT" and r["interval"] == "1Hour" for r in rows)
+    assert sym["SOLUSDT"]["count"] == sum(r["ticker"] == "SOLUSDT" and r["interval"] == "1Hour" for r in rows) > 0
     tf = {o["v"]: o["count"] for o in body["options"]["tf"]}
-    assert tf["1Day"] == sum(r["ticker"] == "NVDA" and r["interval"] == "1Day" for r in rows)
+    assert tf["1Day"] == sum(r["ticker"] == "XRPUSDT" and r["interval"] == "1Day" for r in rows) > 0
     ind = {o["v"]: o["label"] for o in body["options"]["ind"]}
     assert ind["1C00"] == "1C00 – Chaikin Money Flow (CMF)"
     assert [o["v"] for o in body["options"]["idx"]] == ["CRYPTO", "NASDAQ", "NYSE"]
@@ -274,13 +304,31 @@ def test_one_strategy(client, real_client):
     assert by_id == client.get(f"/api/strategies/{cart_id(s)}").json
     assert by_id["versions"] == [{"v": 1, "date": "2024-09-27", "note": ""}]
     assert client.get("/api/strategies/NOPE_1Day_X_0").json == {"error": "errUnknownStrategy"}
-    detail = real_client.get("/api/strategies/ADBE_1Day_1C00_151aa3e7").json
+    detail = real_client.get("/api/strategies/ADBE_1Day_1C00_151aa3e7?ind_lang=en").json
     assert detail["ind_text"].startswith("The Chaikin") and detail["ind_url"].startswith("https://www.tradingview.com/")
 
 
 def test_since_release_when_the_daily_job_has_run(app, client, settings, paypal):
-    settings.since_release.write_text(f"id\tpct\tas_of\n{strategy_id(ROWS[0])}\t-3.25\t2026-10-04\n")
+    assert client.get("/api/config").json["since_release"] == 0, "sin cifras, la página no habla de ello"
+    settings.since_release.write_text(f"id\tpct\tas_of\n{strategy_id(ROWS[0])}\t-3.25\t2026-10-04\n"
+                                      f"{strategy_id(ROWS[2])}\t\t2026-10-04\nNOPE_1Day_X_0\t1.5\t2026-10-04\n")
     install(app, settings, paypal)   # la tienda, arrancada otra vez
     rows = {r["id"]: r for r in get(client, "size=10")["rows"]}
     assert rows[strategy_id(ROWS[0])]["live"] == -3.25 and rows[strategy_id(ROWS[0])]["live_as_of"] == "2026-10-04"
-    assert rows[strategy_id(ROWS[1])]["live"] is None
+    assert rows[strategy_id(ROWS[1])]["live"] is None and rows[strategy_id(ROWS[2])]["live"] is None
+    assert client.get("/api/config").json["since_release"] == 1, "las que tienen cifra (E11): vuelve sola"
+
+
+def test_config_says_among_how_many_tried_strategies(real_client, client, app, settings, paypal):
+    """E1: entre cuántas estrategias probadas se eligieron las del catálogo, de release.json (al lado de
+    catalogue.csv): las de 2026-10, entre las 1.531 que escribió esa ejecución. Sin saberlo, null (la página no lo
+    dice); y uno que no puede ser (menos que las que hay), tampoco."""
+    release = json.loads((ROOT / "catalogue" / "release.json").read_text(encoding="utf-8"))
+    real = real_client.get("/api/config").json
+    assert real["tried"] == release["tried"] == 1531 and real["strategies"] == release["rows"] == 94
+    assert client.get("/api/config").json["tried"] is None, "un catálogo sin release.json"
+    release_json = settings.catalogue.parent / "release.json"
+    for tried, served in ((9, 9), (3, None), ("9", None), (True, None)):
+        release_json.write_text(json.dumps({"rows": 4, "tried": tried}))
+        install(app, settings, paypal)
+        assert client.get("/api/config").json["tried"] == served, tried

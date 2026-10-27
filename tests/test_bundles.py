@@ -25,8 +25,10 @@ def test_bundles_and_pack_are_listed(client):
 
 def test_shipped_bundles_come_from_the_real_catalogue(real_client):
     """catalogue/bundles.json, by its rules: top5 = each ticker's best paid strategy by npp, the first five (the
-    'hot' order of /api/strategies); crypto = the 2 best paid crypto by npp; amzn = the 2 best paid AMZN by npp
-    that are not in top5. No two of them share a strategy (a cart with both would be refused)."""
+    'hot' order of /api/strategies); crypto = the 2 best paid crypto by npp; amzn = the 2 best paid AMZN daily ones
+    by npp that are not in top5. No two of them share a strategy (a cart with both would be refused). Rebuilt when
+    the 49 hourly stock strategies left the catalogue (E2: two of top5 and one of amzn were hourly stocks), at the
+    same prices: the same saving as before, 32 % on top5 and 14 % on amzn."""
     cat = Catalogue(ROOT / "catalogue" / "catalogue.csv")
     paid = sorted((s for s in cat if s.price > 0), key=lambda s: -s.numbers["npp"])
     best = {}
@@ -40,11 +42,14 @@ def test_shipped_bundles_come_from_the_real_catalogue(real_client):
     assert bundles["top5"]["ids"] == top5 and bundles["top5"]["price"] == 249
     assert len({cat.resolve(i).ticker for i in top5}) == 5, "five different tickers"
     assert bundles["crypto"]["ids"] == [s.id for s in paid if s.market == "crypto"][:2]
-    assert bundles["amzn"]["ids"] == [s.id for s in paid if s.ticker == "AMZN" and s.id not in top5][:2]
+    assert bundles["amzn"]["ids"] == [s.id for s in paid if s.ticker == "AMZN" and s.interval == "1Day"
+                                      and s.id not in top5][:2]
     every = [i for b in bundles.values() for i in b["ids"]]
     assert len(every) == len(set(every)) == 9, "no two shipped bundles share a strategy"
     for b in bundles.values():
         assert b["price"] < b["was"] == sum(float(cat.resolve(i).price) for i in b["ids"])
+    saving = {k: round(1 - b["price"] / b["was"], 2) for k, b in bundles.items()}
+    assert saving == {"top5": 0.32, "crypto": 0.16, "amzn": 0.14}, saving
 
 
 def test_a_bundle_that_lost_a_strategy_or_its_saving_is_left_out(app, client, settings, paypal, caplog):

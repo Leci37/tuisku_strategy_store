@@ -58,7 +58,11 @@ def strategies(catalogue, ids: list) -> list:
     return found
 
 
-def priced(shop, cart: dict) -> pricing.Quote:
+def priced(shop, cart: dict, owned: Iterable[str] = ()) -> pricing.Quote:
+    """El presupuesto del carrito. ``owned``: las claves de lo que ya tiene la cuenta con la sesión abierta (lo de
+    Mis estrategias): una de ellas, suelta, no se cobra otra vez (409 ``errAlreadyOwned`` con sus ids, como los
+    mandó el navegador, que las quita del carrito). En un lote o en el pack, sí: son otra oferta (decisión del
+    dueño, E8)."""
     catalogue, settings = shop.catalogue, shop.settings
     unknown = [k for k in cart["bundles"] if k not in catalogue.bundles]
     if unknown:
@@ -73,6 +77,13 @@ def priced(shop, cart: dict) -> pricing.Quote:
     items = strategies(catalogue, cart["items"])
     if not (items or cart["bundles"] or pack):
         raise Refusal("errCartEmpty", 400)
+    owned = set(owned)
+    if owned:
+        # la que va también en un lote o en el pack elegidos no se cobra suelta (pricing.quote): no cuenta
+        covered = {s.key for b in bundles for s in b.items} | {s.key for s in pack}
+        again = [raw for raw, s in zip(cart["items"], items) if s.key in owned and s.key not in covered]
+        if again:
+            raise Refusal("errAlreadyOwned", 409, items=list(dict.fromkeys(again)))
     return pricing.quote(items, cart["code"], settings, bundles, pack)
 
 
@@ -85,10 +96,10 @@ def buyer_token(cookie: Optional[str]) -> str:
 
 
 def create(shop, cart: dict, buyer: str, return_url: str, cancel_url: str, user_id: Optional[int] = None,
-           email: str = "") -> dict:
+           email: str = "", owned: Iterable[str] = ()) -> dict:
     """El pedido de PayPal por el total del servidor; ``buyer`` es la cookie del navegador (se guarda su
-    hash) y ``user_id``/``email``, la cuenta si se compra con la sesión abierta."""
-    q = priced(shop, cart)
+    hash) y ``user_id``/``email``/``owned``, la cuenta si se compra con la sesión abierta y lo que ya tiene."""
+    q = priced(shop, cart, owned)
     if q.total <= 0:
         raise Refusal("errNothingToPay", 400)
     keys = [s.key for s in q.strategies]
@@ -168,9 +179,10 @@ def email_receipt(shop, order: Order, lang: str, mine: str, mail) -> None:
     pack = lines.get("pack")
     if pack:
         out.append(f"{texts.get('packTitle', lang)} ({len(pack['ids'])}): {money(pack['price'], cur)}")
+    # los días y las descargas de un enlace son ajustes: cada cuenta, con la forma que pide su número
     body = texts.get("mailReceiptBody", lang, id=order.paypal_id, lines="\n".join("- " + line for line in out),
-                     total=money(order.total, cur), mine=mine, n=settings.download_days, m=settings.max_downloads,
-                     contact=settings.contact_email)
+                     total=money(order.total, cur), mine=mine, days=texts.get("linkDays", lang, n=settings.download_days),
+                     downloads=texts.get("linkDownloads", lang, n=settings.max_downloads), contact=settings.contact_email)
     mail(order.email, texts.get("mailReceiptSubject", lang, id=order.paypal_id), body, kind="edgefolio-receipt")
 
 

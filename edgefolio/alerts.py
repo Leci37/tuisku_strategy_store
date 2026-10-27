@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """Los avisos de las favoritas: un correo por persona cuando una estrategia que sigue tiene una versión
-nueva, baja de precio o entra en un lote. Lo lanza el trabajo diario (``flask --app app edgefolio
-send-alerts``, desde cron), no una petición.
+nueva, baja de precio o entra en un lote. Lo lanza el reloj del núcleo una vez al día (la tarea
+``send_alerts`` de tool.json, edgefolio/tasks.py), no una petición; a mano, ``flask --app app edgefolio
+send-alerts``.
 
 Cada vuelta compara el catálogo con cómo era en la anterior (edgefolio_alert_state) y guarda cómo es
-ahora: un cambio se avisa una vez. La primera vuelta sólo toma la foto: aún no hay con qué comparar.
+ahora: un cambio se avisa una vez. La primera vuelta sólo toma la foto: aún no hay con qué comparar. La foto
+nueva se guarda antes de mandar nada: una vuelta que falla al guardarla no ha mandado ningún correo.
 
 Los avisos van al correo de la cuenta sólo si la cuenta ha demostrado que es suyo (``proofs``): el
 núcleo no lo comprueba al darse de alta, y nadie tiene que recibir correos porque otro se registrara
@@ -13,6 +15,7 @@ con su dirección y marcara unas casillas. Y nunca a una cuenta borrada (``priva
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import Callable, Optional
 
 from zlecitool_core.db import db, utcnow
 from zlecitool_core.privacy import closed
@@ -63,12 +66,13 @@ def state() -> dict:
             for r in AlertState.query.all()}
 
 
-def save_state(picture_now: dict):
+def save_state(picture_now: dict, at=None):
+    """La foto de ahora en lugar de la de antes; ``at``, la hora de la vuelta (la que tocaba, en una tarea). Sin
+    ``commit``: lo guarda quien llama, con lo demás de la vuelta."""
     AlertState.query.delete()
-    now = utcnow()
+    at = at or utcnow()
     db.session.add_all(AlertState(item_key=k, version=v["version"], price=v["price"], bundles=v["bundles"],
-                                  updated_at=now) for k, v in picture_now.items())
-    db.session.commit()
+                                  updated_at=at) for k, v in picture_now.items())
 
 
 def subscriptions() -> list:
@@ -77,15 +81,21 @@ def subscriptions() -> list:
     return [r for r in rows if any((r.alerts or {}).values())]
 
 
-def run(shop, base_url: str, mail) -> dict:
-    """Manda lo que toca y guarda la foto nueva; devuelve las cuentas para el log. ``base_url`` es la
-    dirección pública de la tienda (los enlaces de los correos); ``mail``, el ``mail.send`` del núcleo."""
+def run(shop, link: Callable, mail: Callable, at=None, before_commit: Optional[Callable[[dict], None]] = None) -> dict:
+    """Manda lo que toca y guarda la foto nueva; devuelve las cuentas para el log. ``link(endpoint, **values)`` hace
+    las direcciones de los correos (con la dirección pública: ``external_url(…, trusted_host_ok=False)``); ``mail``,
+    el ``mail.send`` del núcleo; ``at``, cuándo tocaba la vuelta. ``before_commit(cuentas)`` apunta, en la misma
+    transacción que la foto, lo que haga falta (la vez de la tarea: una repetición no manda nada otra vez)."""
     catalogue, texts = shop.catalogue, shop.texts
     now = picture(catalogue)
     before = state()
     if not before:
-        save_state(now)
-        return {"first_run": True, "emails": 0, "unconfirmed": 0, "changes": 0}
+        result = {"first_run": True, "emails": 0, "unconfirmed": 0, "changes": 0}
+        save_state(now, at)
+        if before_commit is not None:
+            before_commit(result)
+        db.session.commit()
+        return result
     found = changes(before, now)
     per_person = {}  # user_id -> (correo, idioma, [líneas])
     unconfirmed = set()
@@ -103,7 +113,7 @@ def run(shop, base_url: str, mail) -> dict:
             continue
         lang = sub.lang or "en"
         common = {"name": s.row.get("Name", s.ticker), "ticker": s.ticker, "code": s.key_techs,
-                  "url": f"{base_url}/s/{s.id}"}
+                  "url": link("edgefolio.strategy_page", strategy_id=s.id)}
         lines = per_person.setdefault(sub.user_id, (sub.email, lang, []))[2]
         for switch, what in ALERTS.items():
             if not sub.alerts.get(switch) or what not in news:
@@ -118,14 +128,20 @@ def run(shop, base_url: str, mail) -> dict:
                     b = catalogue.bundles[key]
                     lines.append(texts.get("mailAlertBundle", lang, bundle=texts.get(b.name_key, lang),
                                            price=money(b.price), n=len(b.items), **common))
-    sent = 0
+    letters = []
     for email, lang, lines in per_person.values():
         if not lines:
             continue
         body = texts.get("mailAlertBody", lang, lines="\n".join("- " + line for line in lines),
-                         mine=f"{base_url}/mine")
-        mail(email, texts.get("mailAlertSubject", lang), body, kind="edgefolio-alert")
-        sent += 1
-    # Un cambio no se repite mañana: ya está en la foto, como para todos.
-    save_state(now)
-    return {"first_run": False, "emails": sent, "unconfirmed": len(unconfirmed), "changes": len(found)}
+                         mine=link("edgefolio.mine_page"))
+        letters.append((email, texts.get("mailAlertSubject", lang), body))
+    result = {"first_run": False, "emails": len(letters), "unconfirmed": len(unconfirmed), "changes": len(found)}
+    # Un cambio no se repite mañana: ya está en la foto, como para todos. Primero se guarda (con la vez de la tarea);
+    # los correos, después: si guardar falla (otra vuelta de la misma vez lo hizo antes), no sale ninguno dos veces
+    save_state(now, at)
+    if before_commit is not None:
+        before_commit(result)
+    db.session.commit()
+    for email, subject, body in letters:
+        mail(email, subject, body, kind="edgefolio-alert")
+    return result

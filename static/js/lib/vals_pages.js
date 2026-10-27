@@ -1,6 +1,6 @@
 // The pages beyond the shop lists: the strategy page, compare, My strategies, thanks, the install
 // tutorial, the welcome tour, the free-download dialog, the phone bar, the footer and errors.
-import { tvInterval, tvChartUrl } from './fmt.js';
+import { tvInterval, tvChartUrl, linkCounts } from './fmt.js';
 
 // Las páginas legales son las del núcleo, en esta misma web.
 const LEGAL = { legalPrivacyUrl: '/legal/privacidad', legalCookiesUrl: '/legal/cookies', legalTermsUrl: '/legal/terminos', legalNoticeUrl: '/legal/aviso-legal' };
@@ -29,7 +29,8 @@ export function pageVals(c) {
     ...LEGAL, legalOn: true, contactOn: !!c.contact, contactUrl: c.contact ? 'mailto:' + c.contact : '', contactEmail: c.contact,
     errOpen: !!s.error, errTitle: tx.errServer, closeErr: () => app.setState({ error: '' }),
     // the server's vars, or the contact address (a link that expired says where to write)
-    errText: t(s.error, s.errorVars || { e: c.contact }) + ((s.error === 'errPayment' || s.error === 'errLater' || s.error === 'errPayPal') && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
+    // (la cuenta que manda el servidor, n, elige la forma del texto: errPackSize en árabe, «5 استراتيجيات» pero «11 استراتيجية»)
+    errText: t(s.error, s.errorVars || { e: c.contact }, s.errorVars && typeof s.errorVars.n === 'number' ? s.errorVars.n : null) + ((s.error === 'errPayment' || s.error === 'errLater' || s.error === 'errPayPal') && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
     errTop: at.top, errBottom: at.bottom,
     toastRoom: dialogOpen && toastOn ? (s.toastH || 58) + 8 + 'px' : '0px',
     cmpBottom: base + 'px',
@@ -63,12 +64,14 @@ export function pageVals(c) {
   };
 }
 
-// cada aviso, con sus textos <aviso>Title y <aviso>Text; proofProven: se pidió la prueba de un correo que la
-// cuenta ya demostró (app.askProof)
+// cada aviso, con sus textos <aviso>Title y <aviso>Text (o el texto que diga); proofProven: se pidió la prueba de
+// un correo que la cuenta ya demostró (app.askProof); cartUpdated: el carrito llevaba lo que ya es de la cuenta y la
+// página lo quitó (el rechazo del servidor, errAlreadyOwned, es su texto: app.dropOwned)
 const NOTICES = {
   newsConfirmed: ['fa-solid fa-circle-check', '#12b76a'],
   newsExpired: ['fa-solid fa-circle-info', '#9fb8ef'],
-  proofProven: ['fa-solid fa-circle-check', '#12b76a']
+  proofProven: ['fa-solid fa-circle-check', '#12b76a'],
+  cartUpdated: ['fa-solid fa-circle-check', '#12b76a', 'errAlreadyOwned']
 };
 
 function noticeVals(c, at) {
@@ -77,7 +80,7 @@ function noticeVals(c, at) {
   if (!n || s.error) return { noticeOpen: false };
   return {
     noticeOpen: true, noticeIcon: n[0], noticeColor: n[1],
-    noticeTitle: t(s.notice + 'Title'), noticeText: t(s.notice + 'Text'), noticeTop: at.top, noticeBottom: at.bottom,
+    noticeTitle: t(s.notice + 'Title'), noticeText: t(n[2] || s.notice + 'Text'), noticeTop: at.top, noticeBottom: at.bottom,
     closeNotice: () => app.setState({ notice: '' })
   };
 }
@@ -104,13 +107,10 @@ function detailVals(c) {
   const tree = s.detTab === 'tree';
   if (!r) return { isDetail: false, det: {}, detOverview: !tree, detTreeTab: tree };
   const det = { ...c.mk(r), profit: r.profit, candle: r.candle };
-  const owned = ((s.mine && s.mine.items) || []).find(x => x.id === r.id);
-  // «Update available» is for whoever bought an older version (My strategies says which: update), not for
-  // every visitor; a free download is renewed with the new version anyway
+  const owned = c.ownedOf(r.id);
+  // «Actualización disponible», solo para quien compró una versión anterior (lo dice Mis estrategias: update, y solo
+  // mientras la estrategia no ha caducado), no para cualquiera; una gratis renovada ya trae la versión nueva
   const detOwnOld = !!(owned && owned.update && owned.kind === 'paid');
-  // ya es de la cuenta (API #15): en vez de comprarla o pedirla otra vez, su .pine si el enlace vale y es la
-  // versión de hoy; si no, Mis estrategias, que da otro enlace o la versión nueva. El diseño no tiene este estado
-  const ownedPine = owned && owned.url && !owned.update ? owned.url : '';
   // una gratis no se compra: te llega por correo (el diseño dice «compras» también en ella)
   const free = r.price === 0;
   // lines 5–16 sharp, 17–21 fading out, as the design's preview
@@ -121,9 +121,9 @@ function detailVals(c) {
   const dash = '—';
   return {
     isDetail: true, det, detOverview: !tree, detTreeTab: tree, detOwnOld,
-    detOwned: !!owned, ownedLabel: t('ownedYours') + ' · ' + (ownedPine ? tx.download : tx.myStrategies), ownedHref: ownedPine || '/mine',
-    // Mis estrategias sin recargar la página, salvo que se pida en otra pestaña o ventana (Ctrl, Cmd, Mayús)
-    ownedGo: e => { if (ownedPine || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; e.preventDefault(); app.goMine(); },
+    // ya es de la cuenta (API #15): «Ya es tuya» como en las listas (rowVals), sin el precio encima (decisión del dueño):
+    // su .pine si el enlace vale y es la versión de hoy; si no, Mis estrategias. El diseño no tiene este estado
+    detOwned: det.isOwned, ownedLabel: det.ownedLabel, ownedHref: det.ownedHref, ownedGo: det.ownedGo,
     showOverview: () => app.go({ detTab: 'overview' }, { scroll: false }), showHowTab: () => app.showHow(),
     ovBg: !tree ? '#0950e3' : '#e9f0fd', ovColor: !tree ? '#ffffff' : '#0950e3', ovLine: '#0950e3',
     hwBg: tree ? '#0e7c98' : '#e3f4f8', hwColor: tree ? '#ffffff' : '#0e7c98', hwLine: '#0e7c98',
@@ -147,7 +147,10 @@ function detailVals(c) {
     // con el nombre que le da TradingView en su menú (1D, 1h), como el tutorial de instalación; el del
     // catálogo (1Day, 1Hour) no sale en él
     detTf: t('tfNote', { tf: tvInterval(r.interval) }),
-    liveNote: r.live == null ? tx.liveUnknown : r.live_as_of ? t('liveAsOf', { date: f.fmtDate(r.live_as_of) }) : '',
+    // sin ninguna cifra desde la publicación en el catálogo, la caja es sólo del backtest: su título no promete el
+    // resultado real y la barra dice qué mide (con las dos, «Backtest» frente a «Desde su publicación»)
+    liveHead: c.liveOn ? tx.liveVsBacktest : tx.colBacktest, btLabel: c.liveOn ? tx.colBacktest : tx.npPct,
+    liveNote: !c.liveOn ? '' : r.live == null ? tx.liveUnknown : r.live_as_of ? t('liveAsOf', { date: f.fmtDate(r.live_as_of) }) : '',
     versions: versions.map((x, i) => ({
       // the date isolated (FSI…PDI): in Arabic "27/09/2024" would otherwise mix with "v1 · "
       title: 'v' + x.v + (x.date ? ' · \u2068' + f.fmtDate(x.date) + '\u2069' : ''), note: x.note || (x.v === 1 ? tx.v1note : ''),
@@ -172,9 +175,10 @@ function compareVals(c, liteDock) {
     const m = known.length ? (low ? Math.min(...known) : Math.max(...known)) : null;
     return vals.map(v => v != null && v === m && known.length > 1);
   };
+  // «Desde su publicación», sólo cuando alguna estrategia del catálogo tiene cifra (c.liveOn)
   const defs = [
     [t('fNetProfitPct'), r => r.npp, r => f.pctS(r.npp)], [t('fWinRate'), r => r.w, r => f.pct(r.w)], [t('fClosedTrades'), r => r.tr, r => f.int(r.tr)],
-    [t('fAvgProfitUsd'), r => r.avg, r => f.money(r.avg)], [tx.sinceRelease, r => r.live, r => f.pctS(r.live)],
+    [t('fAvgProfitUsd'), r => r.avg, r => f.money(r.avg)], ...(c.liveOn ? [[tx.sinceRelease, r => r.live, r => f.pctS(r.live)]] : []),
     [tx.sortPrice, r => r.price, r => (r.price ? f.pmoney(r.price) : t('landingFree')), true]
   ];
   return {
@@ -250,7 +254,7 @@ function thanksVals(c) {
     orderRows: (rc.downloads || []).map(d => ({ ...c.mk(d), pineUrl: d.url, zipUrl: d.zip })),
     orderTotal: f.money(Number(rc.total)), orderLabel: t('orderN', { id: rc.order_id }),
     downloadAllUrl: rc.download_all,
-    linksNote: t('linksNote', { n: f.int(rc.valid_days), m: f.int(rc.max_downloads) })
+    linksNote: t('linksNote', linkCounts(t, f, rc.valid_days, rc.max_downloads))
   };
 }
 

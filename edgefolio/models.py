@@ -108,6 +108,23 @@ class AlertState(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=utcnow)
 
 
+class TaskDone(db.Model):
+    """Cada vez del reloj del núcleo que una tarea de la tienda ya hizo (``"schedule"`` de tool.json: fx_update,
+    send_alerts). Una vez puede repetirse (un proceso que muere al acabar, ``flask zt task run``): la repetición la
+    encuentra aquí y no hace nada. Se apunta en la misma transacción que lo que la tarea cambia."""
+
+    __tablename__ = "edgefolio_task_done"
+
+    #: ``run.key``: «edgefolio:<tarea>:<vez>», la misma en cada repetición de la misma vez.
+    run_key = db.Column(db.String(80), primary_key=True)
+    task = db.Column(db.String(32), nullable=False)
+    #: Cuándo tocaba (``run.scheduled_for``), no cuándo corrió.
+    scheduled_for = db.Column(db.DateTime, nullable=False)
+    #: Lo que hizo, en cifras (cuántos correos, de qué día son los cambios): nunca un correo ni un nombre.
+    result = db.Column(db.JSON, nullable=False)
+    done_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+
 class EmailProof(db.Model):
     """Que una cuenta ha demostrado que un correo es suyo: abrió el enlace que se le mandó y lo confirmó.
 

@@ -18,6 +18,8 @@ const TEXT = {
     s2v: 'At or below the value (≤) the path goes left; above it (>) the path goes right.',
     s3: 'The path ends in a result: a score from −1 (sell) to +1 (buy).',
     forest: 'The strategy combines many trees like this one, so one tree alone does not decide its signal.',
+    forest1: 'The strategy has one tree, this one, so its signal is this tree’s result.',
+    forestN: 'The strategy combines {n} trees like this one, so one tree alone does not decide its signal.',
     loading: 'Loading the tree…', loadErr: 'Could not load the tree:', output: 'Tree output', sellEnd: 'Sell −1', buyEnd: 'Buy +1',
     buyEx: 'Buy example', sellEx: 'Sell example', exHelp: 'Sets the values that reach the strongest buy or sell result of this tree.',
     values: 'Indicator values', lg1: 'A value the tree checks (hover it)', lg2: 'Checked on the current path', lg3: 'Range where the result stays the same',
@@ -50,7 +52,14 @@ const TEXT = {
     ownedRest: ' Already yours: the complete tree and every tree of its forest are in the owner view.',
     ownedLock: 'Already yours: this branch and the complete tree are in the owner view.', ownedBtn: 'View as owner',
     whatIs: 'What is {f}?',
-    relNote: 'As the model sees it: divided by the close of the candle.'
+    relNote: 'As the model sees it: divided by the close of the candle.',
+    // sin los niveles del script (scored): cada resultado, con su puntuación y sin comprar, vender ni esperar
+    score: 'Score', results: 'Results', s3Score: 'The path ends in a result: its score, from −1 to +1.',
+    noLevels: 'The scores at which this script buys and closes are in its full script: here each result shows only its score.',
+    leadScore1: 'Gives this score when this condition is met:', leadScoreN: 'Gives this score when these {n} conditions are met at the same time:',
+    hiEx: 'Highest score', loEx: 'Lowest score', exHelpScore: 'Sets the values that reach the highest or lowest score of this tree.',
+    optTextScore: 'The model chose these values from historical data and they are fixed in the script. Moving a slider does not change the strategy: it simulates a different market reading so you can see which result it reaches.',
+    leafFootScore: 'Score from −1 to +1: the average of the training days that ended here. Click to go to this result.'
   },
   es: {
     locale: 'es-ES', pageName: 'Árbol de la estrategia', store: 'Abrir la tienda', h1: 'Cómo decide una estrategia',
@@ -60,6 +69,8 @@ const TEXT = {
     s2v: 'Si es igual o menor (≤), el camino va a la izquierda; si es mayor (>), a la derecha.',
     s3: 'El camino termina en un resultado: una puntuación de −1 (venta) a +1 (compra).',
     forest: 'La estrategia combina muchos árboles como este, así que su señal no la decide un solo árbol.',
+    forest1: 'La estrategia tiene un solo árbol, este, así que su señal es el resultado de este árbol.',
+    forestN: 'La estrategia combina {n} árboles como este, así que su señal no la decide un solo árbol.',
     loading: 'Cargando el árbol…', loadErr: 'No se pudo cargar el árbol:', output: 'Resultado del árbol', sellEnd: 'Venta −1', buyEnd: 'Compra +1',
     buyEx: 'Ejemplo de compra', sellEx: 'Ejemplo de venta', exHelp: 'Pone los valores que llevan al resultado de compra o venta más fuerte de este árbol.',
     values: 'Valores de los indicadores', lg1: 'Un valor que el árbol comprueba (pasa el ratón)', lg2: 'Comprobado en el camino actual', lg3: 'Rango en el que el resultado no cambia',
@@ -90,7 +101,13 @@ const TEXT = {
     ownedRest: ' Ya es tuya: el árbol completo y todos los árboles de su bosque están en la vista de propietario.',
     ownedLock: 'Ya es tuya: esta rama y el árbol completo están en la vista de propietario.', ownedBtn: 'Ver como propietario',
     whatIs: '¿Qué es {f}?',
-    relNote: 'Tal como lo ve el modelo: dividido por el cierre de la vela.'
+    relNote: 'Tal como lo ve el modelo: dividido por el cierre de la vela.',
+    score: 'Puntuación', results: 'Resultados', s3Score: 'El camino termina en un resultado: su puntuación, de −1 a +1.',
+    noLevels: 'Las puntuaciones con las que este script compra y cierra están en su script completo: aquí cada resultado enseña solo su puntuación.',
+    leadScore1: 'Da esta puntuación cuando se cumple esta condición:', leadScoreN: 'Da esta puntuación cuando se cumplen estas {n} condiciones a la vez:',
+    hiEx: 'Puntuación más alta', loEx: 'Puntuación más baja', exHelpScore: 'Pone los valores que llevan a la puntuación más alta o más baja de este árbol.',
+    optTextScore: 'El modelo eligió estos valores con datos históricos y vienen fijados en el script. Mover un deslizador no cambia la estrategia: simula otra lectura del mercado para que veas a qué resultado llega.',
+    leafFootScore: 'Puntuación de −1 a +1: la media de los días de entrenamiento que acabaron aquí. Haz clic para ir a este resultado.'
   }
 };
 
@@ -108,12 +125,19 @@ const rowId = P => (P.strategy && P.strategy.id) || '';
 // Lo que hace el script con una puntuación: compra con op_operation >= su nivel de compra y cierra con <= su
 // nivel de cierre. Desde el catálogo de 2026-10 cada script tiene los suyos (las entradas buyThreshold y
 // sellThreshold, que el generador elige para cada modelo con datos de validación: de 0,4 a 1,0 para comprar,
-// de −1,0 a −0,5 para cerrar) y la vista previa pública se corta antes: el árbol del visitante usa 0,55 y
-// −0,9, los que tenían todos los scripts del catálogo de 2024, a falta de los de verdad, así que un resultado
-// puede decir otra cosa que lo que hace el script. El script completo del propietario trae los suyos
-// (levelsOf). Los comentarios «// buy|sell» de la fábrica marcan ±0,7 y no son los niveles.
+// de −1,0 a −0,5 para cerrar) y la vista previa pública se corta antes. El propietario colorea con los de su
+// script completo (levelsOf); el visitante, con los que publica la tienda (API #3: buy_at y close_at, de
+// catalogue/levels.json) y, sin ellos, con ninguno: cada resultado enseña su puntuación, sin decir comprar,
+// vender ni esperar, y la pestaña dice por qué (scored). 0,55 y −0,9, los de todos los scripts de 2024, sólo
+// valen para un script completo que no dice los suyos. Los comentarios «// buy|sell» de la fábrica marcan ±0,7 y
+// no son los niveles.
 const BUY_AT = 0.55, CLOSE_AT = -0.9;
 const signalOf = (v, lv) => (v >= lv.buy ? 'buy' : v <= lv.close ? 'sell' : 'none');
+// Si el navegador pone el signo + del idioma (signDisplay, de Safari 14.1 en adelante): fmtV.
+const SIGNS = (() => { try { return new Intl.NumberFormat('en', { signDisplay: 'exceptZero' }).format(1) === '+1'; } catch (e) { return false; } })();
+// Los que publica la tienda para una estrategia (API #3), o null; sin el de cierre, ningún resultado cierra.
+const published = row => (row && typeof row.buy_at === 'number'
+  ? { buy: row.buy_at, close: typeof row.close_at === 'number' ? row.close_at : -Infinity } : null);
 
 // Los niveles de un script completo, leídos como los lee edgefolio/formats.py: las entradas de la plantilla
 // de 2026, usadas en `if … op_operation >= buyThreshold` y en un `op_operation <= sellThreshold` que cierra,
@@ -139,12 +163,11 @@ export function levelsOf(src) {
   });
   return { buy: buy == null ? BUY_AT : buy, close: close == null ? CLOSE_AT : close };
 }
-const STAND_IN = { buy: BUY_AT, close: CLOSE_AT };
 
 export class StrategyTree extends Component {
   // Si la estrategia está en el carrito lo dice la página (inCart): con una marca propia, el árbol seguía
   // diciendo «Añadida al carrito» después de quitarla con el botón de la cabecera.
-  state = { trees: null, full: null, fullFail: false, sel: 0, vals: {}, view: 'tree', err: '', vw: 1400, tip: null, owner: false, allRules: false };
+  state = { trees: null, full: null, fullLv: null, fullFail: false, sel: 0, vals: {}, view: 'tree', err: '', vw: 1400, tip: null, owner: false, allRules: false };
   treeRef = createRef();
   T = TEXT;
 
@@ -185,10 +208,10 @@ export class StrategyTree extends Component {
 
   load() {
     const row = this.props.strategy, owned = !!this.props.owned, tok = this._tok = {};
-    this.setState({ trees: null, full: null, fullFail: false, sel: 0, err: '', vals: {}, tip: null, owner: owned });
+    this.setState({ trees: null, full: null, fullLv: null, fullFail: false, sel: 0, err: '', vals: {}, tip: null, owner: owned });
     if (!row || !row.preview) { this.setState({ err: String((row && row.id) || '') }); return; }
     sharedData()
-      .then(([fx, ui]) => text(row.preview).then(src => { if (tok !== this._tok) return; this._fx = fx; this._ui = ui; this.setState({ trees: this.forest(src, row, STAND_IN).slice(0, 1), sel: 0 }, () => this.example('buy')); }))
+      .then(([fx, ui]) => text(row.preview).then(src => { if (tok !== this._tok) return; this._fx = fx; this._ui = ui; this.setState({ trees: this.forest(src, row).slice(0, 1), sel: 0 }, () => this.example('buy')); }))
       .catch(e => { if (tok === this._tok) this.setState({ err: String((e && e.message) || e) }); });
     if (!owned) return;
     // Owners only: the server answers 401 without the session cookie, and then the switch explains how to sign in.
@@ -196,9 +219,9 @@ export class StrategyTree extends Component {
       .then(() => text('/api/mine/' + encodeURIComponent(row.id) + '/script', { credentials: 'same-origin' }))
       .then(src => {
         if (tok !== this._tok) return;
-        const full = this.forest(src, row, levelsOf(src));
+        const full = this.forest(src, row), fullLv = levelsOf(src);
         if (!full.length) throw new Error('no tree');
-        this.setState(st => (st.owner ? { full, sel: 0, vals: {}, tip: null } : { full }), () => { if (this.state.owner) this.example('buy'); });
+        this.setState(st => (st.owner ? { full, fullLv, sel: 0, vals: {}, tip: null } : { full, fullLv }), () => { if (this.state.owner) this.example('buy'); });
       })
       .catch(() => { if (tok === this._tok) this.setState({ fullFail: true }); });
   }
@@ -210,25 +233,27 @@ export class StrategyTree extends Component {
     this.setState(same ? { owner: on } : { owner: on, sel: 0, vals: {}, tip: null }, () => { if (!same) this.example('buy'); });
   }
 
-  // Every decision_tree_N function of the script, with what the page shows about the strategy.
-  // lv: los niveles con que se leen sus resultados (levelsOf).
-  forest(src, row, lv) {
+  // Every decision_tree_N function of the script, with what the page shows about the strategy. Qué hace el script
+  // con cada resultado (sig) lo dicen los niveles al pintarlo (renderVals): los del visitante pueden llegar después.
+  forest(src, row) {
     src = src.replace(/\r/g, '');
     const lines = src.split('\n').map(l => { const m = l.match(/^(\t*)(.*)$/); return { ind: m[1].length, text: m[2].trim() }; }).filter(l => l.text);
     const bases = ((src.match(/^\/\/ Technical base pattern:(.*)$/m) || [])[1] || '').split(',').map(b => b.trim()).filter(Boolean);
     const meta = {
       ticker: row.ticker, key: row.key, hash: row.hash, interval: row.interval, icon: row.icon, bases,
       pattern: bases.map(b => b.replace(/^L_/, '').replace(/_/g, ' ')).join(' + ') || row.ind || row.key,
-      created: (src.match(/Date Creation: (\d{4})\/(\d{2})\/(\d{2})/) || []).slice(1).join('-')
+      created: (src.match(/Date Creation: (\d{4})\/(\d{2})\/(\d{2})/) || []).slice(1).join('-'),
+      // cuántos árboles tiene su bosque: lo dice la cabecera, también en la vista previa, que sólo trae el primero
+      size: +((src.match(/^\/\/\s*RANDOM FOREST AI:\s*(\d+)\s*tree/m) || [])[1]) || 0
     };
     const out = [];
-    for (let at = 0, tr; (tr = this.parse(lines, at, lv)); at = tr.next) out.push({ ...meta, ...tr });
+    for (let at = 0, tr; (tr = this.parse(lines, at)); at = tr.next) out.push({ ...meta, ...tr });
     return out;
   }
 
   // One tree from lines[from]: nested `if( f <= t )` / `if( f > t )` ending in `ret := score // buy|sell`.
   // Whatever the preview cut (or anything unexpected) becomes a locked "Paid part" stub.
-  parse(lines, from, lv) {
+  parse(lines, from) {
     let i = lines.findIndex((l, k) => k >= from && /^decision_tree_\d+_/.test(l.text));
     if (i < 0) return null;
     const sig = lines[i].text.match(/\(([^)]*)\)\s*=>/);
@@ -246,7 +271,7 @@ export class StrategyTree extends Component {
       const L = lines[i];
       if (!L || L.ind !== ind) return stub(d);
       let m = L.text.match(reLeaf);
-      if (m) { i++; leaves++; return { id: id++, leaf: true, v: +m[1], sig: signalOf(+m[1], lv || STAND_IN), mark: (m[2] || '').toLowerCase(), depth: d }; }
+      if (m) { i++; leaves++; return { id: id++, leaf: true, v: +m[1], mark: (m[2] || '').toLowerCase(), depth: d }; }
       m = L.text.match(reLe);
       if (!m) return stub(d);
       i++;
@@ -359,6 +384,10 @@ export class StrategyTree extends Component {
       : { buy: 'Buy', sell: 'Sell', none: 'Wait', rulesTab: 'Blocks', qNum: 'At or below {t}?', qBool: 'Is it true?', leadBuy: 'Buys when', leadSell: 'Sells when', leadNone: 'Waits when', between: 'between {a} and {b}', and: 'and', allRules: 'See all rules in plain words ({n})', hideRules: 'Hide the rules', rulesOne: '{n} rule', rulesN: '{n} rules', start: 'Start', lockedRules: 'Branches in the paid part: {n}', leafFoot: 'Strength from −1 to +1: the average of the training days that ended here. Click to go to this result.', s1: 'Each box asks a question about one indicator from the chart.', s2h: 'If the answer is Yes the path goes up; if No, it goes down.', s2v: 'If the answer is Yes the path goes left; if No, it goes right.', s3: 'The path ends in an action (buy, sell or wait) with its strength, from −1 to +1.' });
     Object.assign(L, (this._ui && this._ui[lg]) || {});
     const rpl = (str, o) => str.replace(/\{(\w+)\}/g, (m, k) => (o[k] != null ? o[k] : m));
+    // un texto que cuenta trae las formas del plural de su idioma, si las necesita ({few, many, other…}: en árabe,
+    // «3 قواعد» pero «16 قاعدة»); las elige el número, con las reglas del idioma (Intl.PluralRules)
+    const plural = new Intl.PluralRules(L.locale);
+    const cnt = (x, n) => rpl(x && typeof x === 'object' ? x[plural.select(n)] || x.other || '' : x || '', { n });
     const dir = P.direction === 'vertical' ? 'vertical' : 'horizontal';
     const curved = P.edgeStyle !== 'elbow', exact = !!P.exactValues;
     const seg = on => on ? ['#ffffff', '#0950e3', '0 1px 3px rgba(22,38,58,.12)'] : ['transparent', '#5a6b80', 'none'];
@@ -369,9 +398,24 @@ export class StrategyTree extends Component {
     // Ya es de la cuenta (la ficha dice «Ya es tuya»): la vista de visitante ni la vende ni la pide otra vez;
     // su aviso y el candado de una rama llevan a la de propietario (unlock), que la enseña entera
     if (P.owned) Object.assign(L, { ctaRest: L.ownedRest, lockText: L.ownedLock });
+    // con qué niveles se leen los resultados (signalOf): el bosque del propietario, con los de su script; el árbol del
+    // visitante, con los publicados. Sin ellos (scored) nada dice comprar, vender ni esperar: el tercer paso, los dos
+    // ejemplos y su ayuda, la escala de «Resultado del árbol» (−1 y +1, sin venta ni compra), la ayuda de los valores
+    // (a qué resultado llega, no qué haría) y el pie de la explicación de un resultado hablan de la puntuación, y la
+    // pestaña dice por qué (noLevels)
+    const lv = s.full && trees === s.full ? s.fullLv : published(P.strategy), scored = !lv;
+    if (scored) Object.assign(L, { s3: L.s3Score, buyEx: L.hiEx, sellEx: L.loEx, exHelp: L.exHelpScore, sellEnd: '−1', buyEnd: '+1', optText: L.optTextScore, leafFoot: L.leafFootScore });
+    // la frase de debajo del árbol, por el tamaño de su bosque: con uno solo, su señal es la de este árbol (66 de las 94
+    // de 2026-10); con varios, cuántos. Sin la cabecera, la de siempre
+    const size = (trees && trees[0] && trees[0].size) || 0;
+    if (size === 1) L.forest = L.forest1; else if (size > 1) L.forest = cnt(L.forestN, size);
+    // y sin sus colores: la escala y los dos ejemplos, en gris, sin el rojo de vender ni el verde de comprar
+    const ex = scored ? ['#16263a', '#f4f8fb', '#cfd8e3', '#16263a', '#f4f8fb', '#cfd8e3'] : ['#15803d', '#e8f7ef', '#b7e4c7', '#c0392b', '#fdecea', '#f3c1bb'];
     const unlockLabel = P.owned ? L.ownedBtn : free ? L.fBtn : P.inCart ? L.added : L.unlockBtn;
     const base = {
-      L, steps: [L.s1, dir === 'vertical' ? L.s2v : L.s2h, L.s3].map((text, i) => ({ n: String(i + 1), text })),
+      L, scored, steps: [L.s1, dir === 'vertical' ? L.s2v : L.s2h, L.s3].map((text, i) => ({ n: String(i + 1), text })),
+      gaugeBg: scored ? '#e2e9f0' : 'linear-gradient(90deg,#f3c1bb,#e2e9f0 50%,#b7e4c7)',
+      exBuyC: ex[0], exBuyBg: ex[1], exBuyBd: ex[2], exSellC: ex[3], exSellBg: ex[4], exSellBd: ex[5],
       loading: !s.trees && !s.err, ready: !!s.trees, hasErr: !!s.err, err: s.err,
       isTree: s.view === 'tree', isRules: s.view === 'rules',
       showTree: () => this.setState({ view: 'tree' }), showRules: () => this.setState({ view: 'rules' }),
@@ -393,25 +437,42 @@ export class StrategyTree extends Component {
       const a = Math.abs(x);
       return minus(new Intl.NumberFormat(L.locale, { maximumFractionDigits: a >= 1000 ? 0 : a >= 100 ? 1 : a >= 10 ? 2 : 3 }).format(x));
     };
-    const fmtV = v => (v > 0 ? '+' : '') + minus(new Intl.NumberFormat(L.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v));
+    // el + lo pone el formato del idioma (signDisplay), como el −: en árabe, con su marca de izquierda a derecha, y una
+    // puntuación sale «+0.89», no «0.89+» (sólo el − la llevaba); un navegador sin signDisplay, el + de siempre
+    const fmtV = v => (SIGNS ? '' : v > 0 ? '+' : '') + minus(new Intl.NumberFormat(L.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(v));
     const isBoolF = f => /Int$/.test(f);
     const nice = f => f.replace(/Int$/, '');
-    // [nombre, descripción, el idioma de la descripción]. Un nombre es el de su patrón (el quinto campo): `d`
-    // es la %D del RSI estocástico y una distancia de precio en WaveTrend. Las entradas del generador de 2026
-    // en unidades de precio van divididas por el cierre (`BBlower__close`): el nombre conocido, con una nota.
-    // Las descripciones están en en y es; otro idioma enseña la inglesa.
+    // [nombre, descripción, el idioma de la descripción]. Un nombre es el de su patrón (el quinto campo): `d` es la
+    // %D del RSI estocástico y una distancia de precio en WaveTrend, así que el de un nombre que usan dos patrones
+    // lleva el suyo en la clave (`d@Wave_Trend_Calculation`), que se mira antes. Las entradas del generador de 2026 en
+    // unidades de precio van divididas por el cierre (`BBlower__close`): el nombre conocido, con una nota. Nombres y
+    // descripciones, en en y es en features.json y en los otros seis idiomas en ui.json (feat y featDesc, con la misma
+    // clave); una descripción sin traducir sale en inglés, con su nota en inglés, y lo dice (lang).
     const bases = ((trees[s.sel] || {}).bases) || [];
     const own = x => (x && (!x[4] || !bases.length || bases.includes(x[4])) ? x : null);
+    const keyOf = f => {
+      for (const g of /__close$/.test(f) ? [f, f.replace(/__close$/, '')] : [f]) {
+        const k = [...bases.map(b => g + '@' + b), g].find(c => own(FX.features[c]));
+        if (k) return k;
+      }
+      return '';
+    };
     const fdesc = f => {
-      const k = own(FX.features[f]) ? f : /__close$/.test(f) && own(FX.features[f.replace(/__close$/, '')]) ? f.replace(/__close$/, '') : '';
-      // el nombre traducido (feat) también es el de su patrón: sin k, el código, como en es y en
-      const x = k ? FX.features[k] : null, ul = k ? (L.feat || {})[k] : '', note = k && k !== f ? ' ' + L.relNote : '';
-      return x ? (es ? [x[2], x[3] + note, 'es'] : [ul || x[0], x[1] + note, 'en']) : [nice(f), L.defDesc, lg];
+      const k = keyOf(f), x = k ? FX.features[k] : null;
+      // sin k, el código, en todos los idiomas: el nombre traducido (feat) también es el de su patrón
+      if (!x) return [nice(f), L.defDesc, lg];
+      const noted = (text, note) => (k.split('@')[0] !== f ? text + ' ' + note : text);
+      if (es) return [x[2], noted(x[3], L.relNote), 'es'];
+      if (lg === 'en') return [x[0], noted(x[1], L.relNote), 'en'];
+      const name = (L.feat || {})[k] || x[0], text = (L.featDesc || {})[k];
+      return text ? [name, noted(text, L.relNote), lg] : [name, noted(x[1], this.T.en.relNote), 'en'];
     };
     const SIG = {
       buy: [L.buy, '#15803d', '#e8f7ef', '#b7e4c7', 'rgba(21,128,61,.22)'],
       sell: [L.sell, '#c0392b', '#fdecea', '#f3c1bb', 'rgba(192,57,43,.22)'],
-      none: [L.none, '#5a6b80', '#f4f8fb', '#cfd8e3', 'rgba(90,107,128,.2)']
+      none: [L.none, '#5a6b80', '#f4f8fb', '#cfd8e3', 'rgba(90,107,128,.2)'],
+      // sin niveles: la puntuación, sin el color de comprar, vender ni esperar
+      score: [L.score, '#16263a', '#f4f8fb', '#cfd8e3', 'rgba(22,38,58,.16)']
     };
 
     const pickOf = i => () => { if (i !== s.sel) this.setState({ sel: i, vals: {}, tip: null }, () => this.example('buy')); };
@@ -429,7 +490,9 @@ export class StrategyTree extends Component {
       return { text: on ? rpl(L.treeOf, { n: i + 1 }) : String(i + 1), bg: on ? '#e9f0fd' : '#f4f8fb', color: on ? '#0950e3' : '#5a6b80', pick: pickOf(i) };
     }) : [];
 
-    const tr = trees[s.sel], fi = this.featInfo(tr), vals = s.vals, w = this.walk(tr.root, vals);
+    const tr = trees[s.sel];
+    this.nodesOf(tr.root).forEach(n => { if (n.leaf) n.sig = scored ? 'score' : signalOf(n.v, lv); });
+    const fi = this.featInfo(tr), vals = s.vals, w = this.walk(tr.root, vals);
 
     const sm = s.vw < 640, H = 34, PAD = sm ? 10 : 14, GAP = sm ? 34 : 40;
     const isBoolN = n => isBoolF(n.f) && n.t > 0 && n.t < 1;
@@ -474,14 +537,16 @@ export class StrategyTree extends Component {
     });
     edges.sort((a, b) => a.on - b.on);
 
-    const ICO = { buy: 'fa-solid fa-arrow-trend-up', sell: 'fa-solid fa-arrow-trend-down', none: 'fa-solid fa-pause' };
+    const ICO = { buy: 'fa-solid fa-arrow-trend-up', sell: 'fa-solid fa-arrow-trend-down', none: 'fa-solid fa-pause', score: 'fa-solid fa-gauge-simple' };
     const nodes = all.map(n => {
       const p = pos[n.id], on = w.ids.has(n.id), end = on && !n.le;
       const o = { op: on ? 1 : 0.78, x: p.x + 'px', y: p.y + 'px', isDec: !!n.le, isLeaf: !!n.leaf, isLock: !!n.locked, name: '', q: '', verb: '', value: '', str: '0%', c: '#16263a', nameC: '#16263a' };
       if (n.le) return { ...o, nameC: on ? '#0950e3' : '#16263a', name: fdesc(n.f)[0], q: isBoolN(n) ? L.qBool : rpl(L.qNum, { t: fmt(n.t) }), title: `if( ${n.f} <= ${n.raw} )`, ic: 'fa-solid fa-chart-line', icBg: on ? '#0950e3' : '#eef3fa', icC: on ? '#ffffff' : '#5a6b80', bg: on ? '#f5f8ff' : '#ffffff', bd: on ? '1.5px solid #0950e3' : '1px solid #e2e9f0', shadow: on ? '0 6px 18px rgba(9,80,227,.14)' : 'none', onEnter: e => this.showTip(e, { kind: 'node', id: n.id }), onLeave: () => this.hideTip(), onClick: e => this.clickNode(e, n.id, 'node') };
       if (n.leaf) {
         const S = SIG[n.sig];
-        return { ...o, verb: S[0], value: fmtV(n.v), str: Math.round(Math.min(1, Math.abs(n.v)) * 100) + '%', c: S[1], ic: ICO[n.sig], icBg: S[1], icC: '#ffffff', title: `ret := ${n.v.toFixed(6)}${n.mark ? ' // ' + n.mark : ''}`, bg: S[2], bd: end ? `2px solid ${S[1]}` : `1px solid ${S[3]}`, shadow: end ? `0 0 0 3px ${S[4]}, 0 6px 16px rgba(22,38,58,.12)` : 'none', onClick: e => this.clickNode(e, n.id, 'leaf'), onEnter: e => this.showTip(e, { kind: 'leaf', id: n.id }), onLeave: () => this.hideTip() };
+        // su nombre para un lector de pantalla, lo que enseña («Esperar −0,45», «Puntuación +0,89»), no la línea del
+        // script: su «// buy|sell» es de la fábrica (±0,7), no de los niveles, y decía «buy» donde la caja dice Esperar
+        return { ...o, verb: S[0], value: fmtV(n.v), str: Math.round(Math.min(1, Math.abs(n.v)) * 100) + '%', c: S[1], ic: ICO[n.sig], icBg: S[1], icC: '#ffffff', title: S[0] + ' ' + fmtV(n.v), bg: S[2], bd: end ? `2px solid ${S[1]}` : `1px solid ${S[3]}`, shadow: end ? `0 0 0 3px ${S[4]}, 0 6px 16px rgba(22,38,58,.12)` : 'none', onClick: e => this.clickNode(e, n.id, 'leaf'), onEnter: e => this.showTip(e, { kind: 'leaf', id: n.id }), onLeave: () => this.hideTip() };
       }
       return { ...o, ic: 'fa-solid fa-lock', icBg: '#e2e9f0', icC: '#5a6b80', title: L.paid, bg: '#f7f9fc', bd: end ? '2px dashed #5a6b80' : '1px dashed #b8c4d3', shadow: 'none', onEnter: e => this.showTip(e, { kind: 'lock' }), onLeave: () => this.hideTip(), onClick: e => this.clickNode(e, n.id, 'lock') };
     });
@@ -491,8 +556,9 @@ export class StrategyTree extends Component {
     if (fk !== this._fk) { this._fk = fk; setTimeout(() => this.follow(), 40); }
 
     const ZC = { buy: '#15803d', sell: '#c0392b', none: '#9aa7b8', lock: '#cfd8e3' };
+    // las zonas dicen qué haría la estrategia: sin niveles no se sabe, y no se pintan
     const zonesOf = (F, at, fr) => {
-      if (F.isBool) return [];
+      if (F.isBool || scored) return [];
       const bnd = [F.min, ...F.ts, F.max], segs = [], cur = vals[F.f];
       for (let i = 0; i < bnd.length - 1; i++) { const a = bnd[i], b = bnd[i + 1]; if (!(b > a)) continue; const lf = this.walk(tr.root, { ...vals, [F.f]: (a + b) / 2 }).leaf; const last = segs[segs.length - 1]; if (last && last.id === lf.id) last.b = b; else segs.push({ a, b, id: lf.id, lf }); }
       return segs.map((z, i) => { const sg = z.lf.leaf ? z.lf.sig : 'lock', on = (cur > z.a || i === 0) && cur <= z.b; return { l: at(z.a), w: 'calc((100% - 16px) * ' + (fr(z.b) - fr(z.a)).toFixed(4) + ')', c: ZC[sg], op: z.lf.leaf ? (0.35 + 0.65 * Math.min(1, Math.abs(z.lf.v))).toFixed(2) : '1', ring: on ? '0 0 0 2px #16263a' : 'none' }; });
@@ -528,12 +594,13 @@ export class StrategyTree extends Component {
     const constraints = n => { const by = {}, order = []; this.pathTo(tr.root, n.id).forEach(c => { if (!by[c.f]) { by[c.f] = { lo: -Infinity, hi: Infinity }; order.push(c.f); } if (c.dir === 'le') by[c.f].hi = Math.min(by[c.f].hi, c.t); else by[c.f].lo = Math.max(by[c.f].lo, c.t); }); return order.map(f => ({ f, ...by[f] })); };
     const barsOf = cs => cs.map(c => { const F = FR[c.f]; if (!F) return null; const fr = x => Math.max(0, Math.min(100, (x - F.min) / (F.max - F.min) * 100)); const a = c.lo > -Infinity ? fr(c.lo) : 0, b = c.hi < Infinity ? fr(c.hi) : 100; const B = F.isBool; return { name: fdesc(c.f)[0], range: B ? (c.hi < Infinity ? L.no : L.yes) : c.lo > -Infinity && c.hi < Infinity ? rpl(L.between, { a: fmt(c.lo), b: fmt(c.hi) }) : c.hi < Infinity ? rpl(L.orLess, { v: fmt(c.hi) }) : rpl(L.moreThan, { v: fmt(c.lo) }), l: (B ? (c.hi < Infinity ? 0 : 50) : a) + '%', w: (B ? 50 : Math.max(2, b - a)) + '%' }; }).filter(Boolean);
     const strW = v => { const a = Math.abs(v); return a >= 0.9 ? L.strVery : a >= 0.7 ? L.strStrong : a >= 0.4 ? L.strMod : L.strWeak; };
-    const strLabel = n => n.sig === 'none' ? (n.v > 0.2 ? L.leanBuy : n.v < -0.2 ? L.leanSell : L.neutral) : rpl(L.sigStr || '{s}', { s: strW(n.v) });
-    const phraseOf = n => { const cs = constraints(n), k = { buy: 'leadBuy', sell: 'leadSell', none: 'leadNone' }[n.sig]; return { text: rpl(L[k + (cs.length === 1 ? '1' : 'N')] || '', { n: cs.length }), str: strLabel(n), bars: barsOf(cs) }; };
+    const strLabel = n => n.sig === 'score' ? '' : n.sig === 'none' ? (n.v > 0.2 ? L.leanBuy : n.v < -0.2 ? L.leanSell : L.neutral) : rpl(L.sigStr || '{s}', { s: strW(n.v) });
+    const phraseOf = n => { const cs = constraints(n), k = { buy: 'leadBuy', sell: 'leadSell', none: 'leadNone', score: 'leadScore' }[n.sig]; return { text: cnt(L[k + (cs.length === 1 ? '1' : 'N')], cs.length), str: strLabel(n), bars: barsOf(cs) }; };
     const leavesAll = all.filter(n => n.leaf);
-    const groups = ['buy', 'sell', 'none'].map(sig => {
-      const S = SIG[sig], list = leavesAll.filter(n => n.sig === sig).sort((a, b) => Math.abs(b.v) - Math.abs(a.v));
-      return { verb: S[0], c: S[1], ic: ICO[sig], has: list.length > 0, count: rpl(list.length === 1 ? L.rulesOne : L.rulesN, { n: list.length }),
+    // sin niveles, un solo grupo: de la puntuación más alta a la más baja
+    const groups = (scored ? ['score'] : ['buy', 'sell', 'none']).map(sig => {
+      const S = SIG[sig], list = leavesAll.filter(n => n.sig === sig).sort((a, b) => (scored ? b.v - a.v : Math.abs(b.v) - Math.abs(a.v)));
+      return { verb: scored ? L.results : S[0], c: S[1], ic: ICO[sig], has: list.length > 0, count: cnt(list.length === 1 ? L.rulesOne : L.rulesN, list.length),
         rules: list.map(n => { const ph = phraseOf(n), now = w.leaf.id === n.id; return { text: ph.text, bars: ph.bars, str: ph.str, val: fmtV(n.v), c: S[1], deg: Math.round(Math.min(1, Math.abs(n.v)) * 360) + 'deg', now, bd: now ? '2px solid #0950e3' : '1px solid #e2e9f0', sh: now ? '0 8px 22px rgba(9,80,227,.12)' : 'none', jump: () => this.jump(n.id) }; }) };
     }).filter(g => g.has);
     const BW = Math.max(sm ? 112 : 120, Math.min(sm ? 160 : 190, Math.ceil(mName) + 42, Math.floor((s.aw || 922) / (maxD + 1)))), BU = 42;
@@ -566,7 +633,7 @@ export class StrategyTree extends Component {
         const d = fdesc(nd.f), isB = isBoolF(nd.f) && nd.t > 0 && nd.t < 1, go = (vals[nd.f] <= nd.t) !== isB ? upW : dnW;
         tip = { title: d[0], code: 'if( ' + nd.f + ' <= ' + nd.raw + ' )', text: d[1], lang: d[2], rows: isB ? [[L.yes, upW], [L.no, dnW], [L.now, curOf(nd.f) + ' → ' + go]] : [[L.yes + ' (≤ ' + fmt(nd.t) + ')', upW], [L.no + ' (> ' + fmt(nd.t) + ')', dnW], [L.now, curOf(nd.f) + ' → ' + go]] };
       }
-      else if (TP.kind === 'leaf' && nd) { const S = SIG[nd.sig], ph = phraseOf(nd); tip = { title: S[0] + ' · ' + ph.str + ' (' + fmtV(nd.v) + ')', code: '', text: ph.text, bars: ph.bars, rows: [], foot: L.leafFoot }; }
+      else if (TP.kind === 'leaf' && nd) { const S = SIG[nd.sig], ph = phraseOf(nd); tip = { title: scored ? S[0] + ' ' + fmtV(nd.v) : S[0] + ' · ' + ph.str + ' (' + fmtV(nd.v) + ')', code: '', text: ph.text, bars: ph.bars, rows: [], foot: L.leafFoot }; }
       else if (TP.kind === 'lock') tip = s.owner && P.owned ? { title: L.paid, code: '', text: ownerText, rows: [], cta: L.download, act: download } : { title: L.paid, code: '', text: L.lockText, rows: [], cta: unlockLabel };
     }
     const unlock = () => {
@@ -594,7 +661,7 @@ export class StrategyTree extends Component {
       hasLockedNote: tr.locked > 0, lockedNote: rpl(L.lockedRules, { n: tr.locked }),
       cw, ch, cwPx: cw + 'px', chPx: ch + 'px', heads, ...tipOut, unlock,
       title: `${tr.ticker} · ${tr.pattern}`,
-      summary: (tr.locked ? rpl(L.visible, { n: tr.leaves }) + ' · ' + rpl(tr.locked === 1 ? L.paid1 : L.paidN, { n: tr.locked }) : rpl(L.complete, { n: tr.leaves })) + (created ? ' · ' + rpl(L.created, { d: created }) : ''),
+      summary: (tr.locked ? cnt(L.visible, tr.leaves) + ' · ' + cnt(tr.locked === 1 ? L.paid1 : L.paidN, tr.locked) : cnt(L.complete, tr.leaves)) + (created ? ' · ' + rpl(L.created, { d: created }) : ''),
       params: `${tr.ticker}_${tr.interval}_${tr.key}_${tr.hash} · ${params}`,
       // qué es cada patrón: en y es, de features.json; los otros idiomas, de `pat` en ui.json; uno sin
       // traducir todavía, en inglés y dicho (lang), para un lector de pantalla, y de izquierda a derecha
@@ -604,7 +671,7 @@ export class StrategyTree extends Component {
       hasMarker: !!LS, markerLeft: LS ? ((LF.v + 1) / 2 * 100).toFixed(2) + '%' : '0%',
       hasUnused: unusedList.length > 0, unused: unusedList.join(', '),
       isOwner: s.owner, ownerHas, ownerFail, showCta: !s.owner && tr.locked > 0,
-      ctaText: rpl(tr.locked === 1 ? L.cta1 : L.ctaN, { n: tr.locked }) + L.ctaRest,
+      ctaText: cnt(tr.locked === 1 ? L.cta1 : L.ctaN, tr.locked) + L.ctaRest,
       ownerText, askSignIn: !P.signedIn, download
     };
   }

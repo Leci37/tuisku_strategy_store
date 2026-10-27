@@ -8,6 +8,12 @@
 // página, sin dir="auto": en árabe, la que empieza por un nombre latino («WaveTrend…») salía de izquierda a derecha.
 // Visitante | Propietario dicen cuál está puesta (aria-pressed), y a Propietario (data-tree-owner) va el foco desde
 // «Ver como propietario», el botón de quien ya la tiene; la «i» de cada valor, en el idioma de la página (infoLabel).
+// Sin los niveles del script (scored: el visitante, cuando la tienda no los publica), la leyenda dice «Puntuación» en
+// vez de Comprar | Vender | Esperar y por qué en una frase (data-tree-scored), y los valores no llevan las zonas de
+// colores ni su leyenda: dirían qué haría la estrategia, y sin los niveles no se sabe. Por lo mismo, la escala y los
+// dos ejemplos de «Resultado del árbol» van en gris (gaugeBg, exBuy*, exSell*). La escala (data-tree-gauge) va de
+// izquierda a derecha (dir="ltr"), como su barra y los deslizadores, y cada extremo en su idioma (dir="auto"): en
+// árabe, «بيع −1» quedaba bajo el extremo verde, el de +1.
 import { html } from '../../lib/html.js';
 import { s, T } from '../../lib/tpl.js';
 
@@ -40,18 +46,18 @@ export default function TreeMain(v) {
           <div style="background:#fff;border:1px solid #e2e9f0;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
             <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80">${v.L?.output}</span>
             <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><strong style="font-size:30px;font-weight:700;letter-spacing:-.5px;line-height:1.1;color:${s(v.sigColor)}">${v.sigLabel}</strong><span style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:${s(v.sigColor)}">${v.sigValue}</span></div>
-            <div style="display:flex;flex-direction:column;gap:4px">
-              <div style="position:relative;height:8px;border-radius:999px;background:linear-gradient(90deg,#f3c1bb,#e2e9f0 50%,#b7e4c7)">${' '}
+            <div dir="ltr" data-tree-gauge style="display:flex;flex-direction:column;gap:4px">
+              <div style="position:relative;height:8px;border-radius:999px;background:${s(v.gaugeBg)}">${' '}
                 ${v.hasMarker ? html`<span style="position:absolute;top:-4px;left:${s(v.markerLeft)};width:4px;height:16px;margin-left:-2px;border-radius:2px;background:#16263a"></span>` : null}${' '}
                 </div>
-              <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a6b80"><span>${v.L?.sellEnd}</span><span>0</span><span>${v.L?.buyEnd}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a6b80"><span dir="auto">${v.L?.sellEnd}</span><span>0</span><span dir="auto">${v.L?.buyEnd}</span></div>
               </div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
               ${(v.pathChips || []).map((c, $index) => html`<span style="font-size:12px;font-weight:600;background:#e9f0fd;color:#0950e3;border-radius:999px;padding:3px 9px">${c?.text}</span>`)}
               </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button onClick=${v.buyExample} style="font-family:inherit;border:1px solid #b7e4c7;background:#e8f7ef;color:#15803d;font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.buyEx}</button>
-              <button onClick=${v.sellExample} style="font-family:inherit;border:1px solid #f3c1bb;background:#fdecea;color:#c0392b;font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.sellEx}</button>
+              <button onClick=${v.buyExample} style="font-family:inherit;border:1px solid ${s(v.exBuyBd)};background:${s(v.exBuyBg)};color:${s(v.exBuyC)};font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.buyEx}</button>
+              <button onClick=${v.sellExample} style="font-family:inherit;border:1px solid ${s(v.exSellBd)};background:${s(v.exSellBg)};color:${s(v.exSellC)};font-weight:700;border-radius:10px;padding:8px 12px;font-size:12.5px;cursor:pointer">${v.L?.sellEx}</button>
               </div>
             <span style="font-size:11.5px;color:#8d9cae;margin-top:-4px">${v.L?.exHelp}</span>
             </div>
@@ -59,8 +65,8 @@ export default function TreeMain(v) {
             <span style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#5a6b80">${v.L?.values}</span>
             <div style="display:flex;flex-direction:column;gap:8px;margin-top:-4px">
               <div style="display:flex;gap:10px;align-items:flex-start;background:#f5f8ff;border:1px solid #d6e2fb;border-radius:12px;padding:10px 12px"><i class="fa-solid fa-circle-check" style="color:#0950e3;margin-top:2px"></i><span style="display:flex;flex-direction:column;gap:2px"><strong style="font-size:12.5px">${v.L?.optTitle}</strong><span style="font-size:12px;color:#5a6b80;text-wrap:pretty">${v.L?.optText}</span></span></div>
-              <div style="display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:#5a6b80"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#15803d"></span>${T(v.L?.zBuy)}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#c0392b"></span>${T(v.L?.zSell)}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#9aa7b8"></span>${T(v.L?.zWait)}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:2px;height:12px;border-radius:1px;background:#0950e3"></span>${T(v.L?.zNotch)}</span></div>
-              <span style="font-size:11.5px;color:#8d9cae;text-wrap:pretty">${v.L?.zHelp}</span>
+              <div style="display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:#5a6b80">${v.scored ? null : html`<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#15803d"></span>${T(v.L?.zBuy)}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#c0392b"></span>${T(v.L?.zSell)}</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:14px;height:8px;border-radius:2px;background:#9aa7b8"></span>${T(v.L?.zWait)}</span>`}<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:2px;height:12px;border-radius:1px;background:#0950e3"></span>${T(v.L?.zNotch)}</span></div>
+              ${v.scored ? null : html`<span style="font-size:11.5px;color:#8d9cae;text-wrap:pretty">${v.L?.zHelp}</span>`}
               </div>
             ${(v.feats || []).map((f, $index) => html`
               <div style="display:flex;flex-direction:column;gap:3px">
@@ -99,11 +105,13 @@ export default function TreeMain(v) {
             <div style="display:flex;background:#e9eef4;border-radius:10px;padding:3px"><button onClick=${v.asVisitor} aria-pressed=${String(!v.isOwner)} style="font-family:inherit;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;background:${s(v.vBg)};color:${s(v.vColor)};box-shadow:${s(v.vShadow)}">${v.L?.visitor}</button><button data-tree-owner onClick=${v.asOwner} aria-pressed=${String(!!v.isOwner)} style="font-family:inherit;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;background:${s(v.oBg)};color:${s(v.oColor)};box-shadow:${s(v.oShadow)}">${v.L?.owner}</button></div>
             </div>
           <div style="padding:0 18px 12px;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#5a6b80">
+            ${v.scored ? html`<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#f4f8fb;border:1px solid #cfd8e3"></span>${T(v.L?.score)}</span>` : html`
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#e8f7ef;border:1px solid #b7e4c7"></span>${T(v.L?.buy)}</span>
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#fdecea;border:1px solid #f3c1bb"></span>${T(v.L?.sell)}</span>
-            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#f4f8fb;border:1px solid #cfd8e3"></span>${T(v.L?.none)}</span>
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#f4f8fb;border:1px solid #cfd8e3"></span>${T(v.L?.none)}</span>`}
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#f4f8fb;border:1px dashed #b8c4d3"></span>${T(v.L?.paid)}</span>
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:3px;border-radius:2px;background:#0950e3"></span>${T(v.L?.path)}</span>
+            ${v.scored ? html`<span data-tree-scored style="flex-basis:100%;text-wrap:pretty">${v.L?.noLevels}</span>` : null}
             </div>
           ${v.showCta ? html`<div style="margin:0 18px 12px;border:1px solid #c5d6f8;background:#f5f8ff;border-radius:12px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px"><i class="fa-solid fa-lock" style="color:#0950e3"></i><span style="flex:1 1 240px;font-size:13px;text-wrap:pretty">${v.ctaText}</span><button onClick=${v.unlock} style="font-family:inherit;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;background:#0950e3;color:#ffffff;white-space:nowrap">${v.unlockLabel}</button></div>` : null}
           ${v.isOwner && !v.ownerHas && !v.ownerFail ? html`<div style="margin:0 18px 12px;border:1px solid #c5d6f8;background:#f5f8ff;border-radius:12px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px"><i class="fa-solid fa-lock" style="color:#0950e3"></i><span style="flex:1 1 240px;font-size:13px;text-wrap:pretty">${v.ownerText}</span>${v.askSignIn ? html`<a href="/mine" style="font-family:inherit;line-height:normal;border:1.5px solid #0950e3;border-radius:10px;padding:6.5px 14px;font-size:13px;font-weight:700;background:#ffffff;color:#0950e3;white-space:nowrap;text-decoration:none">${v.L?.signIn}</a>` : null}<button onClick=${v.unlock} style="font-family:inherit;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;background:#0950e3;color:#ffffff;white-space:nowrap">${v.unlockLabel}</button></div>` : null}

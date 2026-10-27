@@ -28,7 +28,7 @@ eso estos ficheros se quedan donde los busca.
 
 | Fichero | Qué |
 |---|---|
-| [IMPLEMENTATION-v7.md](IMPLEMENTATION-v7.md) | La guía técnica del diseño v7 (en inglés) |
+| [IMPLEMENTATION-v7.md](IMPLEMENTATION-v7.md) | La guía técnica del diseño v7 (en inglés). Su bloque «Status» es el de la entrega del diseño y se ha quedado atrás (dice, por ejemplo, que faltan las traducciones de los indicadores, que ya están en `catalogue/indicators.csv`): no se corrige aquí, porque `tools/design_update.py` mezcla el fichero con cada exportación. Cómo está la tienda hoy lo dicen los cuatro de «La tienda de hoy» |
 | [USER-FLOW-v7.md](USER-FLOW-v7.md) | El flujo del diseño v7, con lo esperado de cada acción (en inglés) |
 | [catalogue-updates.md](catalogue-updates.md) | Cómo se mantiene al día el catálogo (en inglés) |
 | [design/](design/) | El diseño de referencia (`python docs/design/serve.py` lo abre), sus notas (`HANDOFF.md`, `STATUS.md`, `PR_DESCRIPTION.md`) y su flujo en español (`FLUJO_USUARIO.md`, hasta el 2026-10-12 en `docs/`) |

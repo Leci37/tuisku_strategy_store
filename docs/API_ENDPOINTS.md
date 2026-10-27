@@ -146,6 +146,7 @@ Cada histograma y cada recuento cuentan con todos los filtros menos el suyo. Si 
 
 | Cuándo | Llamada | Manda | Recibe |
 |---|---|---|---|
+| Al abrir `/s/<id>/tree` (el servidor) | `GET /s/<id>/tree` | — | La misma página que `/s/<id>`, en la pestaña «Cómo decide»; el título lleva «Cómo decide» (en el idioma de la página) antes de «Edgefolio». Un id que no existe → `302` a `/`; un alias o una clave → `301` a `/s/<id>/tree`. Al cambiar de pestaña sin recargar, la página sólo cambia la dirección (no pide nada) |
 | Al abrir la pestaña | `GET /static/js/tree.js` (en otro intento, `tree.js?retry=N`), sus piezas `views/tree/*.js`, `/static/trees/features.json` y `/static/trees/ui.json` | — | El código del árbol, los indicadores y sus textos. Si el código no llega, sale `errShopNetwork`, y se pide otra vez al pulsar «Cómo decide» o al volver a la pestaña |
 | Siempre (también el propietario) | `GET /static/assets/previews/<archivo>.pine` | — | La vista previa cortada, de la que sale el árbol del visitante; el propietario la ve mientras llega su script entero o si no llega |
 | Visitante | #3, la que pidió la ficha | — | `buy_at` y `close_at`: con ellos, cada resultado dice Comprar, Vender o Esperar; sin ellos (`null`: hoy, en todas), cada uno enseña su puntuación |

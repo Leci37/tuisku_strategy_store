@@ -11,6 +11,7 @@ que la tienda no usa (versions/, offline/, prototype/brand/, docs/img/, texts.js
 docs/design/serve.py, que la abre, tiene que encontrar el núcleo instalado.
 """
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -75,6 +76,29 @@ def test_an_export_like_the_last_one_changes_nothing(tmp_path):
     done = _run(_export(tmp_path))
     assert done.returncode == 0, done.stdout + done.stderr
     assert "Cambiaría: 0 ficheros" in done.stdout, done.stdout
+
+
+def test_a_console_that_is_not_utf8_gets_the_report_too(tmp_path):
+    # La consola de Windows escribe en cp1252, que no tiene «↗» ni otros signos del registro de cambios: el
+    # informe sale igual (con «?» en su lugar), sin caerse a mitad.
+    done = subprocess.run([sys.executable, "tools/design_update.py", str(_export(tmp_path))], cwd=ROOT,
+                          capture_output=True, encoding="cp1252", timeout=300,
+                          env={**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"})
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "Cambiaría: 0 ficheros" in done.stdout, done.stdout
+
+
+def test_a_windows_checkout_with_crlf_is_not_a_change(tmp_path):
+    # Un clon de Windows (core.autocrlf) tiene los ficheros con \r\n; el mismo texto con \n no es un cambio.
+    # Un texto distinto, o un fichero binario con otros bytes, sí.
+    (tmp_path / "notas.md").write_bytes(b"# Notas\r\n\r\nUna linea\r\n")
+    (tmp_path / "otra.md").write_bytes(b"# Notas\r\n")
+    (tmp_path / "logo.png").write_bytes(b"\x89PNG\0\r\n")
+    plan = design_update.Plan()
+    plan.write("notas.md", "# Notas\n\nUna linea\n", tmp_path)
+    plan.write("otra.md", "# Otras notas\n", tmp_path)
+    plan.write("logo.png", b"\x89PNG\0\n", tmp_path)
+    assert sorted(plan.writes) == ["logo.png", "otra.md"]
 
 
 def test_a_design_change_reaches_the_adapted_view(tmp_path):
@@ -158,9 +182,9 @@ def test_a_note_the_shop_does_not_have_yet_comes_whole(tmp_path):
                                     "docs/design/FLUJO_USUARIO.md", "docs/design/STATUS.md"]
     for rel, dest in new.items():
         text = (export / rel).read_bytes()
-        assert text.strip() and plan.writes[dest] == text, dest
+        assert text.strip() and design_update.same_text(plan.writes[dest], text), dest
         assert f"{dest}: nuevo" in "\n".join(plan.notes), plan.notes
-    assert plan.writes["docs/design/handoff/STATUS.md"] == (export / "STATUS.md").read_bytes()
+    assert design_update.same_text(plan.writes["docs/design/handoff/STATUS.md"], (export / "STATUS.md").read_bytes())
     assert sorted(plan.writes) == sorted([*new.values(), "docs/design/handoff/STATUS.md"])
     assert not plan.conflicts
 

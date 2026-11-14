@@ -76,6 +76,22 @@ def test_payment_for_a_different_amount_is_refused(app, client, ids, paypal):
     assert client.get("/api/download/all?t=x").status_code == 404
 
 
+def test_a_strategy_gone_while_paying_is_not_charged(app, client, ids, paypal):
+    # Un catálogo nuevo sin ella mientras quien compra está en PayPal: hasta el 14-11-2026 se cobraba el total y no
+    # había ni enlace ni Mis estrategias para ella.
+    from edgefolio.shop import of
+    order = client.post("/api/orders", json={"items": ids[:2]}).json["id"]
+    catalogue = of(app).catalogue
+    gone = catalogue.resolve(ids[1]).key
+    kept = catalogue.items.pop(gone)
+    try:
+        r = client.post(f"/api/orders/{order}/capture")
+        assert r.status_code == 409 and r.json == {"error": "errStrategyGone"}
+        assert stored(app, order)["status"] == "CREATED" and order not in paypal.captured
+    finally:
+        catalogue.items[gone] = kept
+
+
 def test_only_free_items_cannot_be_ordered(client, ids):
     r = client.post("/api/orders", json={"items": [ids[2]]})
     assert r.status_code == 400 and r.json == {"error": "errNothingToPay"}

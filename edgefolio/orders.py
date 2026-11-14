@@ -153,6 +153,10 @@ def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = N
         # La cuenta que lo pidió se borró mientras pagaba en PayPal: no se cobra (el dinero no se mueve y
         # PayPal deja caducar lo aprobado), y su pedido, que se queda sin correo, no vuelve a tenerlo.
         raise Refusal("errAccountClosed", 409)
+    if order.status == "CREATED" and any(k not in shop.catalogue.items for k in order.items):
+        # Una estrategia del pedido salió del catálogo mientras se pagaba en PayPal: no hay script que entregar, así
+        # que no se cobra (lo aprobado caduca en PayPal). Hasta el 14-11-2026 se cobraba el total y no se entregaba.
+        raise Refusal("errStrategyGone", 409)
     try:
         cap = shop.paypal.capture(paypal_id)
     except PayPalError as e:

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Los enlaces nunca con la cabecera Host, la bandera Secure de la cookie de quien compra, ningún mapa de la
 API, correos estrictos, límites por IP en lo que manda correos y la forma de los rechazos."""
+from decimal import Decimal
+
 import pytest
 
 from edgefolio.settings import Settings
@@ -155,6 +157,17 @@ def test_proof_emails_to_one_address_are_limited_per_day(app, monkeypatch):
     assert len(outbox("victim@example.com")) == PROOF_TO_LIMIT
     assert signed(app, "acct9@example.com").post("/api/mine/proofs", json={"email": "other@example.com"}).json == {"sent": True}
     assert len(outbox("other@example.com")) == 1
+
+
+@pytest.mark.parametrize("env", [{"DISCOUNT_CODES": "spring20=20"}, {"DISCOUNT_CODES": "up=-0.10"},
+                                 {"DISCOUNT_CODES": "all=1"}, {"FLAT_PRICE_CODES": "zero=0"},
+                                 {"MAX_DISCOUNT": "1"}, {"MAX_DISCOUNT": "70"}])
+def test_money_settings_that_make_no_sense_do_not_start(tmp_path, env):
+    # «código=porcentaje» invita a escribir spring20=20: arrancaba y ese código daba el tope del 70 % (14-11-2026)
+    with pytest.raises(ValueError):
+        Settings.from_env(tmp_path, env)
+    assert Settings.from_env(tmp_path, {"DISCOUNT_CODES": "spring20=0.20", "FLAT_PRICE_CODES": "launch=0.99",
+                                        "MAX_DISCOUNT": "0.70"}).discount_codes == {"spring20": Decimal("0.20")}
 
 
 def test_the_limit_is_a_sliding_window():

@@ -41,7 +41,9 @@ def test_security_headers_on_every_response(client):
         h = client.get(path).headers
         assert "script-src 'self'" in h["content-security-policy"], path
         assert h["x-content-type-options"] == "nosniff"
-        assert h["referrer-policy"] == "strict-origin-when-cross-origin"
+        # un estático, desde el núcleo 0.35, con no-referrer (lo que pide un módulo o una fuente no manda ni su dirección)
+        policies = {"strict-origin-when-cross-origin"} | ({"no-referrer"} if path.startswith("/static/") else set())
+        assert h["referrer-policy"] in policies, path
 
 
 def test_the_browser_no_longer_downloads_the_catalogue(client):

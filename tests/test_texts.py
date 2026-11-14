@@ -101,9 +101,12 @@ def test_the_api_explains_each_indicator_in_the_language_asked(real_app):
         # sin tocar la cookie del idioma: con ?lang=, cada lista de una pestaña en otro idioma cambiaba el de la visita
         # siguiente
         assert not [c for c in r.headers.getlist("Set-Cookie") if c.startswith("zt_lang=")], r.headers.getlist("Set-Cookie")
-    # sin ?ind_lang=, el de la petición: ?lang= (como una página), o el del navegador (Accept-Language) si no hay cookie
-    # ni cuenta; uno que la tienda no habla no cuenta
-    assert real_app.test_client().get("/api/strategies?q=1BOL&size=1&lang=fr").json["rows"][0]["ind_lang"] == "fr"
+    # sin ?ind_lang=, el de la petición: el de la cookie (la página lo eligió), o el del navegador (Accept-Language) si
+    # no hay cookie ni cuenta; uno que la tienda no habla no cuenta. No ?lang=: desde el núcleo 0.35, en una petición
+    # de JSON es un parámetro de la herramienta y no cambia el idioma de quien pide
+    french = real_app.test_client()
+    french.set_cookie("zt_lang", "fr")
+    assert french.get("/api/strategies?q=1BOL&size=1").json["rows"][0]["ind_lang"] == "fr"
     german = real_app.test_client().get("/api/strategies?q=1BOL&size=1&ind_lang=xx",
                                         headers={"Accept-Language": "de-DE,de;q=0.9"}).json
     assert german["rows"][0]["ind_lang"] == "de" and german["rows"][0]["ind_text"] == said["de"]

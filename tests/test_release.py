@@ -110,6 +110,17 @@ def test_skip_scripts_publishes_and_says_how_many_are_missing(app, settings, mad
     assert {p.name: p.read_bytes() for p in settings.strategies_dir.iterdir()} == private
 
 
+def test_skip_scripts_without_any_script_keeps_the_published_levels(app, settings, made):
+    # En una máquina sin los scripts, --skip-scripts no comprueba ninguno: hasta el 14-11-2026 escribía un levels.json
+    # vacío encima del publicado (el comando levels se niega a eso: «borraría los niveles de verdad»).
+    published = '{\n  "AAPL_1Day_1ADX_aaaa1111": {"buy_at": 0.6, "close_at": -0.9}\n}\n'
+    settings.levels.write_text(published)
+    result = run(app, made[1], "--skip-scripts")
+    assert result.exit_code == 0, result.output
+    assert settings.levels.read_text() == published
+    assert "catalogue/levels.json se queda como estaba" in result.output
+
+
 def test_without_scripts_the_refusal_tells_absent_from_outdated(app, settings, made):
     result = run(app, made[1])
     assert result.exit_code != 0 and "(1 no están y 3 tienen otro contenido)" in result.output

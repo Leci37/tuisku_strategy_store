@@ -121,7 +121,8 @@ def register(bp):
         click.echo(f"{done['files']} ficheros copiados a static/assets ({done['cut']} vistas previas cortadas, "
                    f"{done['pruned']} sin usar borrados); {done['scripts']} scripts copiados; "
                    f"{done['thumbs']} miniaturas borradas")
-        click.echo(levels.summary(done["levels"], done["rows"]))
+        click.echo("catalogue/levels.json se queda como estaba: con --skip-scripts no hay ningún script comprobado"
+                   if done.get("levels_kept") else levels.summary(done["levels"], done["rows"]))
         if done["kept"]:
             click.echo(f"{len(done['kept'])} logos del paquete son distintos de los de la tienda y se han dejado los de "
                        "la tienda (para tomar el del generador, bórralo de static/assets/icons y vuelve a importar): "

@@ -58,6 +58,5 @@ decision_tree_0_ADAUSDT_1Day_e1c36735(ci, tci, wt2, d_tci, ci_wt2, ap__close, es
 					if( esa__close <= 1.059441864490509 )
 						ret := -0.6835443037974683
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

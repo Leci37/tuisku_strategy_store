@@ -58,6 +58,5 @@ decision_tree_0_UPST_1Day_aae26f99(ma_upInt, ma_downInt, cr_upInt, cr_downInt, c
 			if( avg2__close > 1.1092272996902466 )
 				if( avg__close <= 1.017537236213684 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

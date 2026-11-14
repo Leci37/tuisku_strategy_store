@@ -58,6 +58,5 @@ decision_tree_0_RIVN_1Day_4a13684d(ma_upInt, ma_downInt, cr_upInt, cr_downInt, c
 			if( ma_upInt > 0.5 )
 				if( avg__close <= 0.9768897891044617 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_SHIBUSDT_1Day_857755fd(ad, mf, ad_mf, ema1__close, ema2__close, 
 						ret := 1 // buy
 					if( ad_mf > -26400664846336 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

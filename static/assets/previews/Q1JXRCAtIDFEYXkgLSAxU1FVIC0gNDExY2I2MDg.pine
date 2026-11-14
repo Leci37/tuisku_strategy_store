@@ -58,6 +58,5 @@ decision_tree_0_CRWD_1Day_411cb608(sqzOnInt, sqzOffInt, noSqzInt, basis__close, 
 					if( rangema__close > 0.04513901099562645 )
 						ret := -0.16091954022988506
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

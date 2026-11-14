@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_151aa3e7(ad, mf, ad_mf)=>
 					if( ad_mf > -1528629.0625 )
 						ret := -0.012032660077352814
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

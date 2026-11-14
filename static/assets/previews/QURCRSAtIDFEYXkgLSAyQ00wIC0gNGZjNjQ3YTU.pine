@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_4fc647a5(ad, mf, ad_mf, Raw_Money_Flow, Positive_Money
 		if( Typical_Price__close <= 1.0032432675361633 )
 			if( MFI_High <= -44.71411895751953 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

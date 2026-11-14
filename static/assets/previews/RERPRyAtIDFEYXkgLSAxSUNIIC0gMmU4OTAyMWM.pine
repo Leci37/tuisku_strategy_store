@@ -58,6 +58,5 @@ decision_tree_0_DDOG_1Day_2e89021c(cross_up_tenkan_kinjunInt, cross_dn_tenkan_ki
 				if( senkou_span_b__close <= 1.3222481608390808 )
 					ret := 0
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

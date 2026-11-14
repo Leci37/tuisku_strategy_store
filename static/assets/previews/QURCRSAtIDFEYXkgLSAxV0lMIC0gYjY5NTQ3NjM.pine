@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_b6954763(Color_con1, Color_con2, colInt, wvf, midLine,
 					if( wvf > 2.629415988922119 )
 						ret := -0.7060518731988472 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

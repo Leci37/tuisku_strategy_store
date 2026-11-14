@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_cfdd0d46(sqzOnInt, sqzOffInt, noSqzInt, basis__close, 
 						ret := 0.74 // buy
 					if( upperKC__close > 1.1641611456871033 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

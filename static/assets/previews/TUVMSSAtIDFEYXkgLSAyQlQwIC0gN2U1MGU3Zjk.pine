@@ -58,6 +58,5 @@ decision_tree_0_MELI_1Day_7e50e7f9(BBPower_Color, bullPower__close, bearPower__c
 					if( tema__close > 1.001530110836029 )
 						ret := -0.5
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

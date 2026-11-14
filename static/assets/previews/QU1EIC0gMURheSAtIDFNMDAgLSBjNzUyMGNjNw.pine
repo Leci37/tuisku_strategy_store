@@ -58,6 +58,5 @@ decision_tree_0_AMD_1Day_c7520cc7(Raw_Money_Flow, Positive_Money_Flow, Negative_
 			if( Typical_Price__close <= 1.0170560479164124 )
 				if( Money_Flow_Ratio <= 1.2675731778144836 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

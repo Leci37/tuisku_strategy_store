@@ -58,6 +58,5 @@ decision_tree_0_XLMUSDT_1Day_405f3ab4(ad, mf, ad_mf, rsi1, k, d, d_k, smoothD_d,
 				if( smoothK_k > 62.081275939941406 )
 					ret := 0.045454545454545456
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

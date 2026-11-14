@@ -58,6 +58,5 @@ decision_tree_0_AMZN_1Day_b5c2ac97(rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
 					if( rsi1 > 43.79586410522461 )
 						ret := 0.4774774774774775
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

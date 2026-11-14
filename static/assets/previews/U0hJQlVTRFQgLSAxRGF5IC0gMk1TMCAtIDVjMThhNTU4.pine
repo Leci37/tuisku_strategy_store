@@ -58,6 +58,5 @@ decision_tree_0_SHIBUSDT_1Day_5c18a558(Raw_Money_Flow, Positive_Money_Flow, Nega
 				if( Raw_Money_Flow > 67613000 )
 					if( smoothD_d <= -1.7625620365142822 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

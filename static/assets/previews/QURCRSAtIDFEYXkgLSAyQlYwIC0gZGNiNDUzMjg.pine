@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_dcb45328(BBPower_Color, VIP, VIM, VIP_VIM, bullPower__
 					if( VIP > 0.9128623902797699 )
 						ret := 0.07662588538312942
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

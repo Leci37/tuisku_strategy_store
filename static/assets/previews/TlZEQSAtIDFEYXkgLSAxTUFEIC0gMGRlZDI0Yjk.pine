@@ -58,6 +58,5 @@ decision_tree_0_NVDA_1Day_0ded24b9(ma05_colorInt, ma10_colorInt, ma15_colorInt, 
 					if( ma20__close > 1.0391854047775269 )
 						ret := 0.35294117647058826
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

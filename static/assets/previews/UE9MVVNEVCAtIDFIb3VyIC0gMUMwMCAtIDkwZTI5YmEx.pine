@@ -58,6 +58,5 @@ decision_tree_0_POLUSDT_1Hour_90e29ba1(ad, mf, ad_mf)=>
 						ret := -0.391304347826087
 					if( ad > -4491500.25 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

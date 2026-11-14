@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_e28441dc(vrsi, crossover_rsi_bblowerInt, crossunder_rs
 					if( dif_source_BBupper__close > -0.04396418482065201 )
 						ret := 0.09379128137384413
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

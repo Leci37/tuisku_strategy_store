@@ -40,24 +40,5 @@ decision_tree_0_SPOT_1Day_9788bfcf(basis__close, upper_1__close, upper_2__close,
 				ret := 0.82 // buy
 	ret //return
 
-decision_tree_1_SPOT_1Day_9788bfcf(basis__close, upper_1__close, upper_2__close, upper_3__close, upper_4__close, upper_5__close, upper_6__close, lower_1__close, lower_2__close, lower_3__close, lower_4__close, lower_5__close, lower_6__close, basis_minus__close, basis_max__close)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=914636141)
-	if( upper_5__close <= 2.9612432718276978 )
-		if( lower_6__close <= 0.13914690911769867 )
-			if( upper_6__close <= 2.8671311140060425 )
-				ret := -0.8524590163934426 // sell
-			if( upper_6__close > 2.8671311140060425 )
-				ret := -0.12
-		if( lower_6__close > 0.13914690911769867 )
-			if( lower_4__close <= 0.7261078059673309 )
-				if( upper_6__close <= 1.307078242301941 )
-					if( basis_max__close <= -0.30681678652763367 )
-						ret := -0.007042253521126761
-					if( basis_max__close > -0.30681678652763367 )
-						ret := 0.75 // buy
-				if( upper_6__close > 1.307078242301941 )
-					ret := 0.5171232876712328
-			if( lower_4__close > 0.7261078059673309 )
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

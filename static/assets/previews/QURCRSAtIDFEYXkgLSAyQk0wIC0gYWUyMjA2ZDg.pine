@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_ae2206d8(BBPower_Color, Raw_Money_Flow, Positive_Money
 				if( Typical_Price__close > 1.0108954310417175 )
 					ret := 1 // buy
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

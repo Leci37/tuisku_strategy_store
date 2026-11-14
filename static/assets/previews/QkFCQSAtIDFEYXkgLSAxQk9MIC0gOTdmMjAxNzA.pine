@@ -58,6 +58,5 @@ decision_tree_0_BABA_1Day_97f20170(vrsi, crossover_rsi_bblowerInt, crossunder_rs
 					if( BBupper__close > 1.1658760905265808 )
 						ret := 0.6046511627906976
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_SOLUSDT_1Hour_da04888c(Raw_Money_Flow, Positive_Money_Flow, Nega
 						ret := 0.27807486631016043
 					if( VIP_VIM > 0.08165814727544785 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_NIO_1Day_0f228ee2(ad, mf, ad_mf)=>
 					if( ad > -2025978.3125 )
 						ret := 0.15384615384615385
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

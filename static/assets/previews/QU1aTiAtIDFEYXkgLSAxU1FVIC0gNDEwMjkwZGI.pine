@@ -58,6 +58,5 @@ decision_tree_0_AMZN_1Day_410290db(sqzOnInt, sqzOffInt, noSqzInt, basis__close, 
 					if( rangema__close > 0.022846044972538948 )
 						ret := -0.9047619047619048 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

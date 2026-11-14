@@ -58,6 +58,5 @@ decision_tree_0_ABNB_1Day_4720f882(trend, buySignalInt, sellSignalInt, atr2__clo
 		if( up__close <= 0.7722494304180145 )
 			if( dn__close <= 1.209464192390442 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

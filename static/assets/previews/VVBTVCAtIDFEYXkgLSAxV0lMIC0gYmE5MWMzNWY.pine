@@ -34,30 +34,5 @@ decision_tree_0_UPST_1Day_ba91c35f(Color_con1, Color_con2, colInt, wvf, midLine,
 		ret := 0.24040066777963273
 	ret //return
 
-decision_tree_1_UPST_1Day_ba91c35f(Color_con1, Color_con2, colInt, wvf, midLine, lowerBand, upperBand, rangeHigh, sDev)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=sqrt, max_leaf_nodes=20,min_impurity_decrease=0.01, min_samples_leaf=7,random_state=914636141)
-	if( rangeHigh <= 29.94749927520752 )
-		if( sDev <= 15.035408020019531 )
-			ret := 0.19369369369369369
-		if( sDev > 15.035408020019531 )
-			ret := 0.7421875 // buy
-	if( rangeHigh > 29.94749927520752 )
-		if( wvf <= 58.61495780944824 )
-			if( Color_con1 <= -9.832733154296875 )
-				if( upperBand <= 32.47823524475098 )
-					ret := -0.875 // sell
-				if( upperBand > 32.47823524475098 )
-					if( midLine <= 34.44661903381348 )
-						ret := -0.07518796992481203
-					if( midLine > 34.44661903381348 )
-						ret := -0.5513513513513514
-			if( Color_con1 > -9.832733154296875 )
-				ret := 0.1881918819188192
-		if( wvf > 58.61495780944824 )
-			ret := 0.9347826086956522 // buy
-	ret //return
-
-
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

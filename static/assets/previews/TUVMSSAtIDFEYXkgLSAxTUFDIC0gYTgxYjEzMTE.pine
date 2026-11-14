@@ -58,6 +58,5 @@ decision_tree_0_MELI_1Day_a81b1311(histA_IsUpInt, histA_IsDownInt, histB_IsDownI
 						ret := -1 // sell
 					if( hist__close > -0.02315900381654501 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

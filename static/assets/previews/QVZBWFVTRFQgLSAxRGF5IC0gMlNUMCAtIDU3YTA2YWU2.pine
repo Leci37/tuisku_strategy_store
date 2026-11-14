@@ -58,6 +58,5 @@ decision_tree_0_AVAXUSDT_1Day_57a06ae6(rsi1, k, d, d_k, smoothD_d, smoothK_k, em
 		if( k <= 57.29425239562988 )
 			if( ema13__close <= 0.10748560354113579 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

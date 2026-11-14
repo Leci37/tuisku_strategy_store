@@ -58,6 +58,5 @@ decision_tree_0_UNIUSDT_1Day_433f4e29(histA_IsUpInt, histA_IsDownInt, histB_IsDo
 						ret := 0.42105263157894735
 				if( histA_IsUpInt > 0.5 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

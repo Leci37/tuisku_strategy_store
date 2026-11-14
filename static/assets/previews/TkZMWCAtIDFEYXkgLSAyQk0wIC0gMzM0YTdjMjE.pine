@@ -58,6 +58,5 @@ decision_tree_0_NFLX_1Day_334a7c21(BBPower_Color, Raw_Money_Flow, Positive_Money
 					ret := 0.2
 				if( bbm__close > 0.04812767542898655 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

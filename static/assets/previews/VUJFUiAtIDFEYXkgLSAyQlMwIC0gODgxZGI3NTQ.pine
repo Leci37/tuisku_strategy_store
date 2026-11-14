@@ -58,6 +58,5 @@ decision_tree_0_UBER_1Day_881db754(BBPower_Color, rsi1, k, d, d_k, smoothD_d, sm
 				if( smoothK_k > 88.02373504638672 )
 					if( smoothK_k <= 90.18386840820312 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

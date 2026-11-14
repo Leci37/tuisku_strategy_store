@@ -58,6 +58,5 @@ decision_tree_0_NIO_1Day_7c0e3e34(ad, mf, ad_mf, VIP, VIM, VIP_VIM)=>
 					if( VIP > 0.9493134617805481 )
 						ret := -0.6326530612244898
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

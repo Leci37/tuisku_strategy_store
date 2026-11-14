@@ -58,6 +58,5 @@ decision_tree_0_AMD_1Day_625ccd68(Raw_Money_Flow, Positive_Money_Flow, Negative_
 			if( Raw_Money_Flow > 10293792768 )
 				ret := 0.9444444444444444 // buy
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_UNIUSDT_1Day_7486fa75(Raw_Money_Flow, Positive_Money_Flow, Negat
 				if( MA_Cross__close > 1.386608600616455 )
 					if( Short_Long_Diff__close <= -0.14183087646961212 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

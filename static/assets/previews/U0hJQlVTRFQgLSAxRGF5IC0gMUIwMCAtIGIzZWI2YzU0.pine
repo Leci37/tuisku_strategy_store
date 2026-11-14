@@ -58,6 +58,5 @@ decision_tree_0_SHIBUSDT_1Day_b3eb6c54(BBPower_Color, bullPower__close, bearPowe
 					if( bbm__close > 0.08870413154363632 )
 						ret := -0.4342105263157895
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -31,33 +31,5 @@ decision_tree_0_SNOW_1Day_b2abbfcb(ci, tci, wt2, d_tci, ci_wt2, ap__close, esa__
 			ret := -0.9473684210526315 // sell
 	ret //return
 
-decision_tree_1_SNOW_1Day_b2abbfcb(ci, tci, wt2, d_tci, ci_wt2, ap__close, esa__close, d__close)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
-	if( ci <= -66.2571907043457 )
-		if( ap__close <= 1.0096591114997864 )
-			ret := 0.46735395189003437
-		if( ap__close > 1.0096591114997864 )
-			if( tci <= -51.82579040527344 )
-				ret := 0.7894736842105263 // buy
-			if( tci > -51.82579040527344 )
-				if( ci <= -132.4576187133789 )
-					ret := 0.76 // buy
-				if( ci > -132.4576187133789 )
-					ret := -0.5238095238095238
-	if( ci > -66.2571907043457 )
-		if( tci <= 64.6103630065918 )
-			if( tci <= -53.764427185058594 )
-				ret := -0.5915492957746479
-			if( tci > -53.764427185058594 )
-				if( ci <= 16.169045448303223 )
-					ret := 0.1111111111111111
-				if( ci > 16.169045448303223 )
-					ret := -0.14021571648690292
-		if( tci > 64.6103630065918 )
-			ret := -0.9743589743589743 // sell
-	ret //return
-
-
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

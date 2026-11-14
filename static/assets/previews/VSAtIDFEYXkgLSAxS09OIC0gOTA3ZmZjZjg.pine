@@ -58,6 +58,5 @@ decision_tree_0_U_1Day_907ffcf8(pvi, pvi_ema, pvim, pvimax, pvimin, oscp, azul, 
 				if( BollOsc > 39.23524856567383 )
 					ret := -0.8108108108108109 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

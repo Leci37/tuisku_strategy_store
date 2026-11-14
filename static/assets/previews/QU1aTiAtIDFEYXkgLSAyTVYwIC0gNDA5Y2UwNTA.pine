@@ -58,6 +58,5 @@ decision_tree_0_AMZN_1Day_409ce050(Raw_Money_Flow, Positive_Money_Flow, Negative
 					if( Negative_Money_Flow > 9246515200 )
 						ret := -0.3302238805970149
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

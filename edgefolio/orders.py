@@ -183,7 +183,7 @@ def email_receipt(shop, order: Order, lang: str, mine: str, mail) -> None:
     body = texts.get("mailReceiptBody", lang, id=order.paypal_id, lines="\n".join("- " + line for line in out),
                      total=money(order.total, cur), mine=mine, days=texts.get("linkDays", lang, n=settings.download_days),
                      downloads=texts.get("linkDownloads", lang, n=settings.max_downloads), contact=settings.contact_email)
-    mail(order.email, texts.get("mailReceiptSubject", lang, id=order.paypal_id), body, kind="edgefolio-receipt")
+    mail(order.email, texts.get("mailOrderSubject", lang, id=order.paypal_id), body, kind="edgefolio-receipt")
 
 
 # ── los enlaces ──────────────────────────────────────────────────────────────

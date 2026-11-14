@@ -2890,7 +2890,7 @@
     "ar": "يحتاج Edgefolio إلى JavaScript لعرض الاستراتيجيات.",
     "hi": "रणनीतियाँ दिखाने के लिए Edgefolio को JavaScript चाहिए।"
   },
-  "mailReceiptSubject": {
+  "mailOrderSubject": {
     "es": "Tu pedido de Edgefolio {id}",
     "en": "Your Edgefolio order {id}",
     "pt": "A tua encomenda Edgefolio {id}",

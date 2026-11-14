@@ -6,7 +6,8 @@ GET /api/download/<token>               el .pine; con ?format=zip, además las r
 GET /api/download/all?t=<tok>&t=<tok>   el .pine de cada enlace válido, en un zip (la página de gracias)
 
 Cada fichero enviado gasta una de las MAX_DOWNLOADS del enlace, con un único UPDATE condicional antes de
-mandar nada: dos peticiones a la vez por la última descarga no pasan las dos.
+mandar nada: dos peticiones a la vez por la última descarga no pasan las dos. Un HEAD (el escáner de un correo,
+la vista previa de un enlace en un chat) sólo mira, con ``usable()``: no gasta.
 """
 from __future__ import annotations
 
@@ -56,6 +57,18 @@ def checked(shop, token: str):
     if not path.is_file():
         raise Refusal("errFileMissing", 404, item=strategy.key)
     return strategy, path
+
+
+def usable(shop, tokens: list) -> None:
+    """Para un HEAD: nada si alguno de los enlaces vale; si no, el primer rechazo, como el GET. No gasta."""
+    first_error = None
+    for token in list(dict.fromkeys(tokens))[:MAX_TOKENS]:
+        try:
+            checked(shop, token)
+            return
+        except Refusal as e:
+            first_error = first_error or e
+    raise first_error or Refusal("errLinkNotFound", 404)
 
 
 def claim_download(token: str, max_downloads: int) -> bool:

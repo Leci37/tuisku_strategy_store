@@ -258,6 +258,22 @@ def test_paypal_rest_capture_with_a_lost_answer_asks_for_the_order(monkeypatch):
     assert rest.settled("5O1") is None
 
 
+def test_a_head_request_spends_no_download(client, ids, settings):
+    # Los escáneres de correo y las vistas previas de un enlace en un chat piden con HEAD, y Flask lo contestaba con
+    # la vista del GET, que gasta: tres HEAD dejaban 7 de las 10 descargas antes del primer clic (14-11-2026).
+    settings.max_downloads = 2
+    body = buy(client, [ids[0]]).json
+    url = body["downloads"][0]["url"]
+    for _ in range(3):
+        assert client.head(url).status_code == 200
+        assert client.head(url + "?format=zip").status_code == 200
+        assert client.head(body["download_all"]).status_code == 200
+    assert [client.get(url).status_code for _ in range(3)] == [200, 200, 429]
+    assert client.head(url).status_code == 429          # y dice lo mismo que el GET
+    assert client.head(body["download_all"]).status_code == 429
+    assert client.head("/api/download/guessed-token").status_code == 404
+
+
 def test_parallel_downloads_never_pass_the_limit(app, client, ids, settings, monkeypatch):
     settings.max_downloads = 3
     url = buy(client, [ids[0]]).json["downloads"][0]["url"]

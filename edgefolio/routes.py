@@ -287,10 +287,21 @@ def _download(make):
         return redirect(f"{where}?link={refusal.key}", code=303)
 
 
+def _looked_at(tokens: list):
+    """Un HEAD: Flask lo contesta con la vista del GET, que gasta una descarga, y los escáneres de correo y las
+    vistas previas de un enlace piden así: tres HEAD dejaban 7 de las 10 antes del primer clic. Sólo mira."""
+    downloads.usable(shop(), tokens)
+    response = current_app.response_class(status=200)
+    response.headers["Cache-Control"] = "private, no-store"
+    return response
+
+
 @bp.get("/api/download/all")
 @public
 def download_all():
     def make():
+        if request.method == "HEAD":
+            return _looked_at(request.args.getlist("t"))
         data, name = downloads.all_in_one(shop(), request.args.getlist("t"))
         return _attachment(data, "application/zip", name)
     return _download(make)
@@ -300,6 +311,8 @@ def download_all():
 @public
 def download(token):
     def make():
+        if request.method == "HEAD":
+            return _looked_at([token])
         data, mimetype, name = downloads.one(shop(), token, request.args.get("format", "pine"))
         return _attachment(data, mimetype, name)
     return _download(make)

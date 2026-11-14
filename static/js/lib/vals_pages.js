@@ -30,7 +30,7 @@ export function pageVals(c) {
     errOpen: !!s.error, errTitle: tx.errServer, closeErr: () => app.setState({ error: '' }),
     // the server's vars, or the contact address (a link that expired says where to write)
     // (la cuenta que manda el servidor, n, elige la forma del texto: errPackSize en árabe, «5 استراتيجيات» pero «11 استراتيجية»)
-    errText: t(s.error, s.errorVars || { e: c.contact }, s.errorVars && typeof s.errorVars.n === 'number' ? s.errorVars.n : null) + ((s.error === 'errPayment' || s.error === 'errLater' || s.error === 'errPayPal') && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
+    errText: t(s.error, s.errorVars || { e: c.contact }, s.errorVars && typeof s.errorVars.n === 'number' ? s.errorVars.n : null) + (['errPayment', 'errLater', 'errPayPal', 'errPayPalCapture', 'errPaymentPending'].includes(s.error) && c.contact ? ' ' + t('contactProblems', { e: c.contact }) : ''),
     errTop: at.top, errBottom: at.bottom,
     toastRoom: dialogOpen && toastOn ? (s.toastH || 58) + 8 + 'px' : '0px',
     cmpBottom: base + 'px',

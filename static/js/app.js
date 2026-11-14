@@ -505,7 +505,14 @@ export class App extends Component {
       this.mineChanged();
       this.setState({ receipt: rc, ...(rc.paid_now ? { cart: [], bundles: [], packIds: [] } : {}), instFor: first ? first.id : '', mine: null,
         instStep: !first || read('edgefolio-install-v1') ? -1 : 0 });
-    }).catch(e => { this.fail(e); this.go({ page: 'shop' }, { replace: true }); });
+    }).catch(e => {
+      this.fail(e);
+      // Un cobro que PayPal no ha confirmado (o tiene pendiente) puede estar hecho: se ve la tienda, pero la dirección
+      // se queda con su pedido (/thanks?token=…), para que recargar lo vuelva a preguntar, y el aviso pide no pagar
+      // otra vez. Hasta el 14-11-2026 volvía a la tienda sin el pedido, con «No se te ha cobrado nada».
+      if (e && (e.network || e.key === 'errPayPalCapture' || e.key === 'errPaymentPending')) this.setState({ page: 'shop', tip: '' });
+      else this.go({ page: 'shop' }, { replace: true });
+    });
   }
 
   toggleCompare(id) {

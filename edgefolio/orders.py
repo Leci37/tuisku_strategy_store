@@ -14,6 +14,7 @@ confianza bajo el botón de pagar) al correo del pedido: el de la cuenta, o el d
 from __future__ import annotations
 
 import hmac
+import logging
 import re
 import secrets
 from datetime import timedelta
@@ -30,6 +31,8 @@ from . import pricing
 from .models import Download, Order
 from .paypal import PayPalError
 from .web import Refusal, digest, json_object, list_field, text_field
+
+log = logging.getLogger(__name__)
 
 BUYER_DAYS = 30
 BUYER_TOKEN = re.compile(r"^[A-Za-z0-9_-]{32,64}$")  # lo que da secrets.token_urlsafe(32)
@@ -120,11 +123,27 @@ def find(paypal_id: str) -> Optional[Order]:
     return db.session.get(Order, paypal_id)
 
 
+def settled(shop, paypal_id: str):
+    """Lo que PayPal dice que cobró de un pedido, o None si no cobró nada o no contesta."""
+    try:
+        return shop.paypal.settled(paypal_id)
+    except PayPalError as e:
+        log.warning("PayPal no dio el pedido | pedido=%s | %s", paypal_id, e)
+        return None
+
+
 def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = None) -> Order:
     """Cobrar en PayPal y comprobar que se pagó el total del pedido, en su moneda. Repetirlo (un fallo de
     red) no cobra otra vez: un pedido pagado se devuelve tal cual. ``on_paid(order)`` corre una sola vez
     por pedido, en el cobro que lo pasó a pagado (el recibo por correo). El de una cuenta borrada no se
-    cobra (409 ``errAccountClosed``)."""
+    cobra (409 ``errAccountClosed``).
+
+    Si el cobro falla, antes de decir nada se pregunta a PayPal por el pedido: pudo cobrar sin que llegara su
+    respuesta, y entonces cada intento siguiente contesta «ya cobrado» (hasta el 14-11-2026, el pedido se
+    quedaba sin pagar para siempre, con «No se te ha cobrado nada»). Si no cobró, 502 ``errPayPalCapture``,
+    que pide recargar la página en vez de pagar otra vez. Un cobro que PayPal deja pendiente (lo revisa)
+    deja el pedido en PENDING, no en FAILED: 402 ``errPaymentPending``, y abrir otra vez la página lo pasa
+    a pagado cuando PayPal lo complete."""
     order = find(paypal_id)
     if order is None:
         raise Refusal("errUnknownOrder", 404)
@@ -137,8 +156,16 @@ def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = N
     try:
         cap = shop.paypal.capture(paypal_id)
     except PayPalError as e:
-        raise Refusal("errPayPal", 502, detail=str(e)) from e
-    if cap.status != "COMPLETED" or cap.amount != Decimal(order.total) or cap.currency != order.currency:
+        cap = settled(shop, paypal_id)
+        if cap is None:
+            log.warning("Cobro sin confirmar | pedido=%s | %s", paypal_id, e)
+            raise Refusal("errPayPalCapture", 502, detail=str(e)) from e
+    right = cap.amount == Decimal(order.total) and cap.currency == order.currency
+    if cap.status == "PENDING" and right:
+        order.status, order.payer = "PENDING", cap.payer or ""
+        db.session.commit()
+        raise Refusal("errPaymentPending", 402, paid=f"{cap.amount} {cap.currency} {cap.status}")
+    if cap.status != "COMPLETED" or not right:
         order.status, order.payer = "FAILED", cap.payer or ""
         db.session.commit()
         raise Refusal("errPayment", 402, paid=f"{cap.amount} {cap.currency} {cap.status}")

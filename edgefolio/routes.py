@@ -12,6 +12,8 @@ página lo enseña traducido.
 """
 from __future__ import annotations
 
+import ipaddress
+
 from flask import Blueprint, Response, current_app, jsonify, redirect, render_template, request, send_file
 
 from zlecitool_core import current_tool
@@ -74,9 +76,22 @@ def link(endpoint: str, **values) -> str:
     return url
 
 
+def client_key() -> str:
+    """De quién es la petición para los límites: su IP o, si es IPv6, su red /64 (la de una casa o un servidor, que
+    cambia de dirección dentro de ella cuando quiere; el núcleo agrupa igual). Hasta el 14-11-2026, la IPv6 entera."""
+    ip = request.remote_addr or "unknown"
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip
+    if addr.version == 6 and addr.ipv4_mapped is None:
+        return str(ipaddress.ip_network(f"{addr}/64", strict=False))
+    return ip
+
+
 def limited(name: str):
     """429 cuando esta IP ha gastado el límite ``name`` (shop.limits)."""
-    if not shop().limits[name].hit(request.remote_addr or "unknown"):
+    if not shop().limits[name].hit(client_key()):
         raise Refusal("errTooMany", 429)
 
 
@@ -217,7 +232,7 @@ def _guarded(cart: dict, price):
     """El presupuesto (o el pedido) de un carrito con su código, sin que sirva para adivinar códigos: una IP que ya
     probó CODE_LIMIT códigos que no valen recibe 429 con cualquier código, también uno que vale, hasta que corre la
     ventana; sin código, el presupuesto sale igual."""
-    ip = request.remote_addr or "unknown"
+    ip = client_key()
     if cart["code"] and shop().limits["code"].full(ip):
         raise Refusal("errTooMany", 429)
     out = price()

@@ -170,6 +170,15 @@ def test_money_settings_that_make_no_sense_do_not_start(tmp_path, env):
                                         "MAX_DISCOUNT": "0.70"}).discount_codes == {"spring20": Decimal("0.20")}
 
 
+def test_an_ipv6_network_shares_one_limit(app, client, free_file):  # noqa: F811
+    # Un /64 es una casa o un servidor, que cambia de dirección dentro de él cuando quiere: hasta el 14-11-2026, cada
+    # IPv6 tenía su límite, y bastaba con cambiar los últimos números.
+    for i in range(FREE_LIMIT):
+        assert claim(visitor(app, ip=f"2001:db8:1:2::{i + 1:x}"), f"p{i // 5}@example.com").status_code == 200
+    assert claim(visitor(app, ip="2001:db8:1:2:ffff::9"), "fresh@example.com").status_code == 429
+    assert claim(visitor(app, ip="2001:db8:1:3::1"), "fresh@example.com").status_code == 200
+
+
 def test_the_limit_is_a_sliding_window():
     now = [0.0]
     limit = RateLimit(3, 60, clock=lambda: now[0])

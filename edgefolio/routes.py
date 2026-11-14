@@ -194,6 +194,9 @@ def thumb(stem):
         path = media.thumb(shop().settings, stem)
     except KeyError:
         return jsonify({"error": "errNotFound"}), 404
+    except OSError:
+        # su gráfico ya no está (un import --prune con la tienda en marcha) o está roto: hasta el 14-11-2026, un 500
+        return jsonify({"error": "errNotFound"}), 404
     if path is None:
         return redirect(f"/static/assets/charts/{stem}.png", code=307)
     response = send_file(path, mimetype="image/webp", conditional=True)

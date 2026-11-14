@@ -49,6 +49,16 @@ def test_only_existing_charts(client, settings):
     assert not settings.thumbs_dir.exists() or not any(settings.thumbs_dir.iterdir())
 
 
+def test_a_chart_gone_or_broken_is_a_404(client, monkeypatch):
+    # tras un import --prune con la tienda en marcha, la raíz sigue en la lista guardada y su PNG ya no está; o el PNG
+    # está roto (Pillow lanza un OSError): hasta el 14-11-2026, un 500
+    def broken(src, dest):
+        raise FileNotFoundError(src)
+    monkeypatch.setattr(media, "make_thumb", broken)
+    r = client.get(f"/thumbs/{STEM}.webp")
+    assert r.status_code == 404 and r.json == {"error": "errNotFound"}
+
+
 def test_without_pillow_the_png_is_served(client, monkeypatch):
     monkeypatch.setattr(media, "Image", None)
     r = client.get(f"/thumbs/{STEM}.webp")

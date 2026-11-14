@@ -88,6 +88,21 @@ def script_expiry(path: Path):
         return None
 
 
+def chart_version(static: Path, path) -> str:
+    """La versión de un gráfico publicado: su fecha de modificación (cambia cuando publish.py lo reescribe, y no si
+    trae el mismo fichero), o '' si no está."""
+    try:
+        return format((static / (path or "").strip()).stat().st_mtime_ns // 1_000_000_000, "x") if path else ""
+    except OSError:
+        return ""
+
+
+def thumb_url(stem: str, version) -> str:
+    if not stem:
+        return ""
+    return f"/thumbs/{stem}.webp" + (f"?v={version}" if version else "")
+
+
 def read_release(path: Path) -> dict:
     """release.json, o {} sin él (un catálogo publicado con la forma de antes de los paquetes) o roto."""
     try:
@@ -111,6 +126,7 @@ class Strategy:
     grade_cutoffs: tuple = GRADE_CUTOFFS
     expiry: date = None       # la «Expiry date» de su script publicado (su vista previa); None si no la dice
     ind_name: str = None      # el nombre de su indicador en indicators.csv; sin él, el de la fila del catálogo
+    charts_v: dict = field(default_factory=dict, compare=False)  # la versión de cada gráfico, para su miniatura
 
     @property
     def id(self) -> str:
@@ -201,8 +217,10 @@ class Strategy:
             **self.numbers, "release": self.release, "version": self.version,
             "profit": asset(r.get("path_stra")), "candle": asset(r.get("path_candle")),
             "icon": asset(r.get("path_ico_big")), "preview": asset(r.get("pine_path_shadow")),
-            "thumb_profit": f"/thumbs/{stems['profit']}.webp" if stems["profit"] else "",
-            "thumb_candle": f"/thumbs/{stems['candle']}.webp" if stems["candle"] else "",
+            # con la versión del gráfico: la miniatura se guarda un año como inmutable, y un catálogo nuevo puede
+            # cambiar el gráfico sin cambiarle el nombre (hasta el 14-11-2026 se veía la de antes un año)
+            "thumb_profit": thumb_url(stems["profit"], self.charts_v.get("profit")),
+            "thumb_candle": thumb_url(stems["candle"], self.charts_v.get("candle")),
             "grade": self.grade, "tv_symbol": self.tv_symbol, "file": self.file,
         }
 
@@ -279,6 +297,8 @@ class Catalogue:
                 preview = (row.get("pine_path_shadow") or "").strip()
                 if preview:
                     s = replace(s, expiry=script_expiry(Path(source.static) / preview))
+                s = replace(s, charts_v={k: chart_version(Path(source.static), row.get(col))
+                                         for k, col in (("profit", "path_stra"), ("candle", "path_candle"))})
                 if s.key not in self.items:
                     self.items[s.key] = s
                     self.by_id[s.id] = s

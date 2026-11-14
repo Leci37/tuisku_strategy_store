@@ -25,6 +25,23 @@ def test_thumbnail_is_a_small_webp_made_once(client, settings):
     assert client.get(f"/thumbs/{STEM}.webp").data == r.data and cached.stat().st_mtime_ns == made
 
 
+def test_a_new_chart_gets_a_new_thumbnail_address(tmp_path):
+    # La miniatura se guarda un año como inmutable: un gráfico nuevo con el mismo nombre (otro catálogo) tiene que
+    # llegar por otra dirección. Hasta el 14-11-2026 era /thumbs/<nombre>.webp siempre, y se veía la de antes.
+    import os
+    from edgefolio.catalogue import chart_version, thumb_url
+    png = tmp_path / "assets" / "charts" / "X_profit.png"
+    png.parent.mkdir(parents=True)
+    png.write_bytes(b"one")
+    os.utime(png, ns=(1_700_000_000 * 10 ** 9, 1_700_000_000 * 10 ** 9))
+    before = thumb_url("X_profit", chart_version(tmp_path, "assets/charts/X_profit.png"))
+    os.utime(png, ns=(1_800_000_000 * 10 ** 9, 1_800_000_000 * 10 ** 9))
+    after = thumb_url("X_profit", chart_version(tmp_path, "assets/charts/X_profit.png"))
+    assert before.startswith("/thumbs/X_profit.webp?v=") and after.startswith("/thumbs/X_profit.webp?v=")
+    assert before != after
+    assert thumb_url("X_profit", chart_version(tmp_path, "assets/charts/missing.png")) == "/thumbs/X_profit.webp"
+
+
 def test_only_existing_charts(client, settings):
     for path in ("/thumbs/NOPE_profit.webp", "/thumbs/..%2F..%2Fedgefolio%2Fsettings.webp", "/thumbs/.hidden.webp",
                  f"/thumbs/{STEM}.png.webp", "/thumbs/%2Fetc%2Fpasswd.webp"):

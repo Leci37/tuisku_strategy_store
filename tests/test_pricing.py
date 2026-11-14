@@ -47,6 +47,17 @@ def test_the_code_part_is_what_it_takes_off_after_the_cap(settings):
     assert q.total == Decimal("840.00")
 
 
+def test_no_next_tier_is_offered_once_the_cap_is_reached(settings):
+    # «Añade X más para llegar al N %» no miraba el tope: con big60 (60 %) y el escalón del 15 %, ya en el 70 %,
+    # prometía el del 20 %, que no quita nada más (14-11-2026). Sin código, el siguiente escalón sí se ofrece.
+    from edgefolio.catalogue import Strategy
+    two = [Strategy("T", "1Day", f"K{i}", f"id{i}", Decimal("90"), {}) for i in range(2)]  # 180 $: escalón del 15 %
+    assert quote(two, "", settings).next_tier["rate"] == "0.20"
+    capped = quote(two, "big60", settings)
+    assert capped.discount_rate == settings.max_discount and capped.next_tier is None
+    assert quote(two, "spring20", settings).next_tier["rate"] == "0.20"   # 35 % → 40 %: sí quita más
+
+
 def test_flat_price_code(client, ids):
     r = client.post("/api/quote", json={"items": ids[:2], "code": "launch"})
     assert r.json["total"] == "1.98" and r.json["code_status"] == "applied"

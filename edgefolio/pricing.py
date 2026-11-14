@@ -133,6 +133,10 @@ def quote(strategies: list, code: str, settings: Settings, bundles: list = (), p
     rate = min(tier + code_rate, settings.max_discount)
     off = 1 - rate
     passed, upcoming = ladder(subtotal, settings)
+    if upcoming is not None and min(Decimal(upcoming["rate"]) + code_rate, settings.max_discount) <= rate:
+        # con el tope ya alcanzado, el escalón siguiente no quita nada más: «Añade X para llegar al N %» prometía
+        # un descuento que no llegaba (con un código del 30 % o más; 14-11-2026)
+        upcoming = None
     # Lo que cada parte quita de verdad, después del tope: el escalón primero y el código, lo que queda hasta
     # el descuento. Con el escalón del 70 % y un código del 20 %, el código no quita nada ("0.00"): la franja
     # de Pro decía «70 % … + 20 % con el código», un 90 % que nadie cobraba.

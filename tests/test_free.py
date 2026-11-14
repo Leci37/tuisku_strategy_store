@@ -29,7 +29,8 @@ def free_file(settings):
     """El script entero de la gratis en la carpeta privada (la de conftest sólo tiene las de pago)."""
     s = Strategy(FREE["ticker"], FREE["interval"], FREE["key_techs"], FREE["id_model"], Decimal("0"), FREE)
     path = settings.strategies_dir / s.private_file
-    path.write_text(ONE_TREE)
+    # En bytes: write_text pondría \r\n en Windows, y la descarga (el fichero tal cual) ya no sería ONE_TREE.
+    path.write_bytes(ONE_TREE.encode("utf-8"))
     return path
 
 

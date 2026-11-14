@@ -398,15 +398,19 @@ def test_what_cannot_be_published_safely_is_refused(publish, tmp_path, shop):
     de estrategia (no se puede cortar) y una fila sin su clave."""
     d_result, rows = factory(tmp_path)
     package = package_of(d_result, rows)
-    os.symlink("/etc/passwd", package / "icons" / "enlace.svg")
+    try:
+        os.symlink("/etc/passwd", package / "icons" / "enlace.svg")
+        linked = True
+    except OSError:  # Windows sin el privilegio de crear enlaces simbólicos: el resto se prueba igual
+        linked = False
     preview = package / "pine_TW_hide" / posixpath.basename(rows[0]["pine_path_shadow"])
     preview.unlink()
     preview.write_text("sin arbol\n")
     rewrite_catalogue(package, lambda df: df.assign(id_model=["aaaa1111", "", "cccc3333", "dddd4444"]))
-    edit_manifest(package, lambda m: m["files"].update({"icons/enlace.svg": "0" * 64,
+    edit_manifest(package, lambda m: m["files"].update({**({"icons/enlace.svg": "0" * 64} if linked else {}),
                                                         f"pine_TW_hide/{preview.name}": sha(preview)}))
     problems = refused(publish, package, shop)
-    assert "icons/enlace.svg: in the manifest but not a file of the package" in problems
+    assert not linked or "icons/enlace.svg: in the manifest but not a file of the package" in problems
     assert f"pine_TW_hide/{preview.name}: not a preview of a strategy script" in problems
     assert "1 rows without ticker, interval, key_techs, id_model: lines 3 of catalogue.csv" in problems
 

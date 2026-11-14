@@ -307,8 +307,9 @@ def test_the_receipt_links_go_only_to_the_buyers_browser(app, client, ids):
     order_id, buyer = order.json["id"], client.get_cookie(BUYER).value
     stranger = visitor(app)  # alguien que sólo tiene el id del pedido (va en la dirección de vuelta de PayPal)
     hidden = receipt_for(stranger, order_id)
+    # sin quien pagó: ni enmascarado, que daba el dominio de su correo (14-11-2026)
     assert hidden == {"order_id": order_id, "status": "PAID", "total": "146.20", "currency": "USD",
-                      "payer": "b•••@example.com", "valid_days": 7, "max_downloads": 10, "download_all": None,
+                      "payer": "", "valid_days": 7, "max_downloads": 10, "download_all": None,
                       "downloads": [], "links_hidden": True, "paid_now": True}
     assert stored(app, order_id)["status"] == "PAID", "cobrar lo puede pedir cualquiera"
     mine = receipt_for(client, order_id)

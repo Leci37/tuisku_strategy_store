@@ -253,8 +253,10 @@ def receipt(shop, order: Order, may_see: bool) -> dict:
     bought = [catalogue.items[k] for k in order.items if k in catalogue.items]
     # se hacen aunque no se enseñen aquí: Mis estrategias lista los enlaces del pedido
     links = issue_links(order.paypal_id, bought, settings.download_days)
+    # quien pagó, enmascarado (b•••@empresa.com), sólo a quien puede ver los enlaces: a cualquiera con el id del
+    # pedido (va en la dirección de vuelta de PayPal) le daba el dominio entero, que puede ser el de su empresa
     out = {"order_id": order.paypal_id, "status": "PAID", "total": order.total, "currency": order.currency,
-           "payer": masked(order.payer), "valid_days": settings.download_days,
+           "payer": masked(order.payer) if may_see else "", "valid_days": settings.download_days,
            "max_downloads": settings.max_downloads}
     if not may_see:
         return {**out, "download_all": None, "downloads": [], "links_hidden": True}

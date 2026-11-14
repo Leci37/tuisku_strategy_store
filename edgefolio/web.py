@@ -113,6 +113,13 @@ class RateLimit:
         self.calls = 0
         self.lock = threading.Lock()
 
+    def full(self, key: str) -> bool:
+        """True si ``key`` ya llegó al límite en la ventana; no cuenta."""
+        now = self.clock()
+        with self.lock:
+            q = self.hits.get(key)
+            return bool(q) and sum(1 for t in q if t > now - self.window) >= self.limit
+
     def hit(self, key: str) -> bool:
         """True (y cuenta) si ``key`` está por debajo del límite; False (y no cuenta) si no."""
         now = self.clock()

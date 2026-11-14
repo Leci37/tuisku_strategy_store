@@ -124,10 +124,44 @@ def test_free_claims_are_limited_per_ip(app, client, free_file):  # noqa: F811
     assert claim(other, "fresh@example.com").status_code == 200
 
 
+def test_discount_codes_cannot_be_guessed(app, client, ids):
+    # /api/quote decía de cualquier código si valía, sin límite: 300 probados en un segundo (14-11-2026). Una IP que
+    # ya probó CODE_LIMIT que no valen no ve ninguno más, tampoco uno que vale; el presupuesto sin código, sí.
+    from edgefolio.shop import CODE_LIMIT
+    for i in range(CODE_LIMIT):
+        r = client.post("/api/quote", json={"items": [ids[0]], "code": f"guess{i}"})
+        assert r.status_code == 200 and r.json["code_status"] == "invalid", i
+    r = client.post("/api/quote", json={"items": [ids[0]], "code": "spring20"})
+    assert r.status_code == 429 and r.json == {"error": "errTooMany"}
+    assert client.post("/api/orders", json={"items": [ids[0]], "code": "spring20"}).status_code == 429
+    assert client.post("/api/quote", json={"items": [ids[0]]}).status_code == 200
+    other = visitor(app, ip="198.51.100.8")
+    assert other.post("/api/quote", json={"items": [ids[0]], "code": "spring20"}).json["code_status"] == "applied"
+    # un código que vale no gasta: quien lo tiene aplicado presupuesta las veces que quiera
+    for _ in range(CODE_LIMIT + 5):
+        assert other.post("/api/quote", json={"items": [ids[0]], "code": "spring20"}).status_code == 200
+
+
+def test_proof_emails_to_one_address_are_limited_per_day(app, monkeypatch):
+    # Una cuenta podía pedir «Confirma tu correo» para la misma dirección ajena cada 61 segundos, sin fin; y crear
+    # cuentas no cuesta nada (14-11-2026). Ahora, PROOF_TO_LIMIT al día por dirección, de cualquier cuenta.
+    from edgefolio import proofs
+    from edgefolio.shop import PROOF_TO_LIMIT
+    monkeypatch.setattr(proofs, "RESEND_SECONDS", 0)
+    for n in range(PROOF_TO_LIMIT + 3):
+        who = signed(app, f"acct{n % 2}@example.com")
+        who.environ_base["REMOTE_ADDR"] = f"203.0.113.{n + 1}"
+        assert who.post("/api/mine/proofs", json={"email": "victim@example.com"}).json == {"sent": True}
+    assert len(outbox("victim@example.com")) == PROOF_TO_LIMIT
+    assert signed(app, "acct9@example.com").post("/api/mine/proofs", json={"email": "other@example.com"}).json == {"sent": True}
+    assert len(outbox("other@example.com")) == 1
+
+
 def test_the_limit_is_a_sliding_window():
     now = [0.0]
     limit = RateLimit(3, 60, clock=lambda: now[0])
     assert [limit.hit("ip") for _ in range(4)] == [True, True, True, False]
+    assert limit.full("ip") and not limit.full("other") and not limit.full("never")
     assert limit.hit("other")
     now[0] = 30
     assert not limit.hit("ip"), "lo rechazado no cuenta, pero la ventana aún no ha pasado de los primeros"

@@ -30,6 +30,12 @@ DICTIONARY = ROOT / "i18n" / "ui.json"
 # ventana: PROOF_LIMIT en PROOF_WINDOW segundos. Y las descargas gratis: FREE_LIMIT en FREE_WINDOW.
 PROOF_LIMIT, PROOF_WINDOW = 10, 600
 FREE_LIMIT, FREE_WINDOW = 20, 3600
+# Códigos de descuento que no valen que puede probar una IP en una ventana: el presupuesto dice si uno vale, y sin
+# tope se adivinaban (300 en un segundo, 14-11-2026). Pasado, ningún código se mira hasta que la ventana corre.
+CODE_LIMIT, CODE_WINDOW = 20, 3600
+# Correos de «Confirma tu correo» a una misma dirección (de cualquier cuenta) en una ventana: una cuenta nueva no
+# cuesta nada, y cada 61 segundos salía otro a la misma dirección ajena (14-11-2026).
+PROOF_TO_LIMIT, PROOF_TO_WINDOW = 5, 86400
 
 
 class Texts:
@@ -94,7 +100,8 @@ class Shop:
                            PayPalREST(s.paypal_mode, s.paypal_client_id, s.paypal_client_secret))
         if self.texts is None:
             self.texts = Texts()
-        self.limits = {"proof": RateLimit(PROOF_LIMIT, PROOF_WINDOW), "free": RateLimit(FREE_LIMIT, FREE_WINDOW)}
+        self.limits = {"proof": RateLimit(PROOF_LIMIT, PROOF_WINDOW), "free": RateLimit(FREE_LIMIT, FREE_WINDOW),
+                       "code": RateLimit(CODE_LIMIT, CODE_WINDOW), "proof_to": RateLimit(PROOF_TO_LIMIT, PROOF_TO_WINDOW)}
 
 
 def install(app, settings: Settings, paypal=None, catalogue: Optional[Catalogue] = None) -> Shop:

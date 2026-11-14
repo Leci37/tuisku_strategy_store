@@ -210,10 +210,25 @@ def owned_now() -> set:
     return set(mine.owned(uid, proofs.proven(uid))) if uid is not None else set()
 
 
+def _guarded(cart: dict, price):
+    """El presupuesto (o el pedido) de un carrito con su código, sin que sirva para adivinar códigos: una IP que ya
+    probó CODE_LIMIT códigos que no valen recibe 429 con cualquier código, también uno que vale, hasta que corre la
+    ventana; sin código, el presupuesto sale igual."""
+    ip = request.remote_addr or "unknown"
+    if cart["code"] and shop().limits["code"].full(ip):
+        raise Refusal("errTooMany", 429)
+    out = price()
+    status = out.code_status if hasattr(out, "code_status") else out.get("code_status")
+    if status == "invalid":
+        shop().limits["code"].hit(ip)
+    return out
+
+
 @bp.post("/api/quote")
 @public
 def quote():
-    return jsonify(orders.priced(shop(), orders.cart_of(request.get_json(silent=True)), owned_now()).as_dict())
+    cart = orders.cart_of(request.get_json(silent=True))
+    return jsonify(_guarded(cart, lambda: orders.priced(shop(), cart, owned_now())).as_dict())
 
 
 @bp.post("/api/orders")
@@ -224,9 +239,9 @@ def create_order():
     cart = orders.cart_of(request.get_json(silent=True))
     buyer = orders.buyer_token(request.cookies.get(BUYER_COOKIE))
     user = signed_in()
-    created = orders.create(shop(), cart, buyer, return_url=link("edgefolio.thanks"),
-                            cancel_url=link("edgefolio.index", checkout="cancel"),
-                            user_id=user.id if user else None, email=user.email if user else "", owned=owned_now())
+    created = _guarded(cart, lambda: orders.create(
+        shop(), cart, buyer, return_url=link("edgefolio.thanks"), cancel_url=link("edgefolio.index", checkout="cancel"),
+        user_id=user.id if user else None, email=user.email if user else "", owned=owned_now()))
     response = jsonify(created)
     response.set_cookie(BUYER_COOKIE, buyer, max_age=orders.BUYER_DAYS * 86400, path="/", httponly=True,
                         samesite="Lax", secure=bool(current_app.config.get("SESSION_COOKIE_SECURE", True)))
@@ -389,7 +404,10 @@ def ask_proof():
     b = body()
     email = email_of(b.get("email") or current_user.email)
     limited("proof")
-    token = proofs.request(current_user.id, email)
+    # y por dirección, de cualquier cuenta: la misma respuesta, sin correo, si esa dirección ya recibió los suyos
+    token = proofs.request(current_user.id, email) if not shop().limits["proof_to"].full(email) else None
+    if token:
+        shop().limits["proof_to"].hit(email)
     if token:
         texts, lang = shop().texts, request_language()
         url = external_url("edgefolio.mine_page", trusted_host_ok=False, proof=token)

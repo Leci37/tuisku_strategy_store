@@ -170,7 +170,7 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 | `thumb`: `except OSError` | 404 | WARNING `Miniatura sin hacer \| gráfico= \| <error>`: el gráfico estaba al arrancar y ya no (un `import --prune` con la tienda en marcha) o está roto |
 | `client_key`: `except ValueError` | la clave es `remote_addr` tal cual | nada: no es una IP (un socket), y la clave del límite sigue valiendo |
 | `_guarded`: un código que no vale | cuenta para el tope | nada: lo dice la respuesta (`code_status`), y pasar el tope es un rechazo con su línea |
-| la línea de cada petición (regla, cuenta, resultado, tiempo) | la de werkzeug o gunicorn | **0.36** (el núcleo) |
+| la línea de cada petición (regla, cuenta, resultado, tiempo) | la de werkzeug o gunicorn | **0.36**: el núcleo, con `zlecitool.requests` (`GET /s/<strategy_id> 200 \| ms=12 user=42`, con `error=errAlgo` en un rechazo), sin IP ni consulta; la de werkzeug se va. La tienda no escribe líneas de petición |
 
 ### `edgefolio/catalogue.py` y `edgefolio/shop.py` — la carga del catálogo
 
@@ -241,43 +241,62 @@ pendiente, y con él sus logs. No bloquea nada de esta ronda: las líneas de los
 
 ## El frontal y los cambios de pantalla (esperan a la 0.36)
 
-El frontal no tiene hoy con qué escribir como pide la pauta: el ayudante del núcleo (`zt.log` o como acabe llamándose,
-que además manda los errores del navegador y los cambios de pantalla al log del servidor) llega con la 0.36. Hasta
-entonces no se toca (nada de parches locales). Lo que se hará entonces:
+El frontal no tiene hoy con qué escribir como pide la pauta. El núcleo 0.36 trae `zt.log` (CONTRATO §27, «Los logs»;
+`log.js`, en todas las páginas): `zt.log.debug` y `zt.log.info(qué, datos)`, sólo a la consola; `zt.log.warn`, a la
+consola y al servidor (WARNING); `zt.log.error(qué, datos|Error)`, a la consola y al servidor (ERROR), por
+`POST /zt/log`, con el logger `zlecitool.front`, en el log de la tienda. `datos`: un objeto plano de ids y referencias (8
+claves como mucho, valores cortos), nunca contenido. Y `zt.log.view(tipo, nombre)` para los cambios de ventana. El
+núcleo recoge solo `error`, `unhandledrejection` y los `zt.fetchJSON` sin red o con 5xx: eso no se repite aquí. Hasta
+que la tienda suba a la 0.36, no se toca (nada de parches locales). Lo que se hará entonces:
+
+**Por qué `App.fail` escribe**: la tienda no pide con `zt.fetchJSON`, sino con su `lib/api.js`, así que el núcleo no
+ve sus fallos de red ni sus 5xx. `App.fail` decide: un fallo de la página (sin código, no de red), `zt.log.error`; uno
+de red, `zt.log.info` (a la consola: no llegó al servidor, y mandárselo fallaría igual); un 5xx, nada más (el servidor
+ya lo apuntó, y su aviso, §22); un rechazo con su clave (4xx), nada (la línea del rechazo y la de la petición, en el
+servidor).
 
 ### Cada `catch`
 
 | Sitio | Hoy | Con la 0.36 |
 |---|---|---|
-| `app.js` `App.fail` (el que reciben 18 de los 26 `catch` de `app.js`) | `console.error(e)` si no tiene código ni es de red | `zt.log.error`, que llega al servidor; un fallo de red, a la consola sólo (`warn`); un rechazo con clave, nada: ya lo apunta el servidor |
+| `app.js` `App.fail` (el que reciben 18 de los 26 `catch` de `app.js`) | `console.error(e)` si no tiene código ni es de red | arriba: `zt.log.error('Fallo de la página', e)`; de red, `zt.log.info`; 5xx y 4xx, nada |
 | `app.js:105, 106, 108, 359, 380, 408, 425, 434, 642` | `this.fail(e)` | por `fail` |
 | `app.js:318, 452, 496, 513, 557, 571, 582, 632, 705` | lo esperado (404, 400 de un campo, 401) se trata; lo demás, `fail` | por `fail` |
-| `app.js:107` (`/api/fx`) | nada: los precios, en dólares | `zt.log.warn` (una vez) |
-| `app.js:109` (`/api/me`) | nada: como sin cuenta | `zt.log.warn` |
-| `app.js:365` (la vista previa del script) | nada: la vista previa, vacía | `zt.log.warn` con la estrategia |
+| `app.js:107` (`/api/fx`) | nada: los precios, en dólares | `zt.log.warn('Cambios de moneda sin cargar', {estado})`, una vez |
+| `app.js:109` (`/api/me`) | nada: como sin cuenta | `zt.log.warn('Cuenta sin cargar', {estado})` |
+| `app.js:365` (la vista previa del script) | nada: la vista previa, vacía | `zt.log.warn('Vista previa sin cargar', {estrategia: id})` |
 | `app.js:541` (`/logout`) | nada: a la tienda igual | nada: salir ya lo apunta el núcleo |
 | `app.js:719, 754, 779` (`scrollTo`), `819` (`setPointerCapture`) | nada | nada: el navegador no lo admite y no pasa nada |
-| `tree.js:118` (`ui.json` del árbol) | `{}` | `zt.log.warn` |
+| `tree.js:118` (`ui.json` del árbol) | `{}` | `zt.log.warn('Textos del árbol sin cargar')` |
 | `tree.js:119` | relanza | se queda |
 | `tree.js:137` (`signDisplay`) | `false` | nada: un navegador viejo |
-| `tree.js:215` (el árbol no se monta) | el error en la pantalla | `zt.log.error` con la estrategia |
-| `tree.js:226` (el bosque del propietario) | «no se pudo» en la pantalla | `zt.log.warn` |
+| `tree.js:215` (el árbol no se monta) | el error en la pantalla | `zt.log.error('Árbol sin montar', {estrategia: id})` con el `Error` |
+| `tree.js:226` (el bosque del propietario) | «no se pudo» en la pantalla | `zt.log.warn('Bosque del propietario sin cargar', {estrategia: id})` |
 | `lib/api.js:23, 29` | relanzan como error de red | se quedan (lo dice `fail`) |
 | `lib/route.js:5` | el id tal cual | nada: la ficha dice que no la encuentra |
 | `lib/saved.js:7, 16, 23` | el valor por defecto | nada: sin `localStorage` (privado, bloqueado), se sigue sin recordar |
 
-Los errores del navegador que nadie atrapa (`window.onerror`, `unhandledrejection`) los recoge el ayudante del núcleo.
+Los que quedan sin atrapar (`error`, `unhandledrejection`) los recoge el núcleo.
 
-### Cada cambio de pantalla
+### Cada cambio de ventana
 
-En un solo sitio, `App.componentDidUpdate` (`sync(prevState)`), comparando con el estado de antes, una línea por cambio
-(nunca por pintura):
+Las pantallas de la tienda son una sola página (`/`, `/s/<id>`, `/s/<id>/tree`, `/mine`, `/thanks`, con
+`history.pushState`): llegar a ella lo apunta la línea de la petición, y lo demás no recarga. Así que la tienda llama a
+`zt.log.view` ella misma, en un solo sitio, `App.componentDidUpdate` (`sync(prevState)`), comparando con el estado de
+antes: una vez por cambio, nunca por pintura, y vale para `go()` y para atrás/adelante (`onPop`). Siempre con un nombre
+fijo de la tienda, **nunca un dato** (ni la estrategia de la ficha, ni lo buscado):
 
-- la pantalla: `page` (`shop`, `detail`, `mine`, `thanks`) y, en la ficha, `detTab` (`overview`, `tree`), con la
-  estrategia (`detail`); vale para `go()` y para atrás/adelante (`onPop`);
-- Lite o Pro (`mode`), la pestaña de Lite (`liteTab`) y la vista de Pro (`pview`: tabla o tarjetas);
-- cada diálogo que se abre o se cierra (`syncModal`): la gratis, el recorrido, el tutorial de instalación, Comparar y el
-  pack; y el carrito.
+| Tipo | Nombre | Cuándo |
+|---|---|---|
+| `"screen"` | `shop`, `detail`, `mine`, `thanks` | cambia `page` |
+| `"tab"` | `overview`, `tree` | cambia `detTab` (la ficha y «Cómo decide») |
+| `"tab"` | `lite`, `pro` | cambia `mode` |
+| `"tab"` | la clave de la pestaña de Lite (`hot`…) | cambia `liteTab` |
+| `"tab"` | `table`, `cards` | cambia `pview` (la vista de Pro) |
+| `"dialog"` | `free`, `tour`, `install`, `compare`, `pack` | se abre uno (`freeFor`, el recorrido, `instFor`, `cmpOpen`, `packOpen`) |
+
+Los diálogos de la tienda no son `zt.openDialog` (son las capas del diseño, `lib/modal.js`): el núcleo no los apunta
+solo, y por eso van en la tabla. El nombre sale de la clave del estado, no del `aria-label` (que va traducido).
 
 ## Privacidad
 
@@ -287,17 +306,32 @@ En un solo sitio, `App.componentDidUpdate` (`sync(prevState)`), comparando con e
   `GET /api/strategies?q=Zelda%20Logsprueba`. También el `Debugger PIN` de werkzeug al arrancar. Con gunicorn, el
   `accesslog = "-"` de `gunicorn.conf.py` (su formato por defecto: IP, petición con su consulta, referer y agente) lo
   manda a la salida estándar. Es de toda la familia y del núcleo: va a «Para el núcleo» de `ESTADO.md`; aquí no se
-  parchea.
+  parchea. La 0.36 la cambia por la suya (`zlecitool.requests`, por la regla, sin IP ni consulta) y quita la de
+  werkzeug; el `accesslog` de `gunicorn.conf.py` es de la tienda, y con la 0.36 se mira si se quita (pregunta en
+  `ESTADO.md`).
 - Las líneas de la tienda nombran las cuentas por su id y lo demás por su clave; nunca un correo (las de los pedidos y
   las pruebas sin él), un código de descuento (sólo si se aplicó) ni un token de enlace.
 
 ## Lo que depende de la 0.36
 
-1. El ayudante del frontal y la ruta que lleva sus errores y los cambios de pantalla al servidor: todo «El frontal».
-2. `external_call` en el CONTRATO: la traza de la llamada al BCE (`fx.py`); la de PayPal se va con la migración.
-3. Las comprobaciones de `check_tool()` (sin salidas propias ni `print`; con `privacy_sample`, que el correo y el nombre
-   de la cuenta de prueba no salgan en los logs): `tests/test_privacy.py` ya pasa `privacy_sample`.
-4. La línea de cada petición por su regla (sin IP, sin credenciales ni consulta).
+Al subir la etiqueta de `requirements.txt` a la 0.36 (CONTRATO §27, «Los logs»):
+
+1. **El frontal**: `zt.log` en `App.fail`, en los 6 `catch` de la tabla y `zt.log.view` en `App.componentDidUpdate`
+   (arriba, «El frontal y los cambios de pantalla»). Sus pruebas, en el navegador de la sesión de pytest (un solo
+   Chromium): un fallo de la página llega a `POST /zt/log` y queda en el log con `zlecitool.front`; un cambio de pantalla,
+   de pestaña y de diálogo, con su nombre fijo.
+2. **`external_call`** (`from zlecitool_core.observability.trace import external_call`) alrededor del `httpx.get` de
+   `fx.fetch`: las líneas «API → / API ← / API ✗» con su tiempo. El WARNING de `fx.update` se queda (dice qué fichero
+   sigue como estaba). La de PayPal se va con la migración de los pagos.
+3. **La línea de cada petición es del núcleo** (`zlecitool.requests`, con `error=errAlgo` en un rechazo). La línea
+   `Rechazo |` de `routes.py` se queda sólo donde dice lo que la del núcleo no ve: el campo que no valía (`campo=`), el
+   rechazo de un enlace abierto en la pestaña (el núcleo ve un 303, no la clave) y los 5xx en WARNING; los demás
+   rechazos ya los dice `error=errAlgo`. Las decisiones que no son un rechazo (la dirección pública que falta, el tope
+   de una dirección, la miniatura) se quedan.
+4. **Las comprobaciones de `check_tool()`** (sin salidas propias ni `print`; con `privacy_sample`, que el correo y el
+   nombre de la cuenta de prueba no salgan en los logs): `tests/test_privacy.py` ya pasa `privacy_sample`.
+5. **El `accesslog` de gunicorn**: con la línea del núcleo, sobra y lleva la IP y la consulta; se quita de
+   `gunicorn.conf.py` si el CONTRATO de la 0.36 lo dice (pregunta en «Para el núcleo»).
 
 ## Lo añadido (F3, 15-11-2026)
 

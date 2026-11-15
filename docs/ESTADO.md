@@ -24,18 +24,21 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
 
 ## Para el núcleo
 
-1. **El ayudante del frontal** (`zt.log` o como se llame), que escribe en la consola y manda los errores del navegador
-   y los cambios de pantalla al log del servidor de la herramienta por una ruta del núcleo. La tienda lo usará en
-   `App.fail` (hoy un `console.error`), en los `catch` que callan y en `App.componentDidUpdate` para las pantallas, las
-   pestañas y los diálogos. Espera a la 0.36.
-2. **`external_call` en el CONTRATO** (`observability/trace.py`): la traza de la llamada al BCE (`edgefolio/fx.py`).
-   Espera a la 0.36.
+1. **El frontal: `zt.log`** (0.36, CONTRATO §27: `debug`/`info` a la consola, `warn`/`error` también al servidor por
+   `POST /zt/log`, y `zt.log.view(tipo, nombre)`). La tienda lo usará en `App.fail` (hoy un `console.error`; pide con su
+   `lib/api.js`, no con `zt.fetchJSON`, así que el núcleo no ve sus fallos de red), en 6 `catch` que hoy callan y en
+   `App.componentDidUpdate` para sus pantallas, pestañas y diálogos (los suyos no son `zt.openDialog`). El plan, en
+   [tecnico/LOGS.md](tecnico/LOGS.md). Espera a subir a la 0.36.
+2. **`external_call`** (0.36: `from zlecitool_core.observability.trace import external_call`): la traza de la llamada al
+   BCE (`edgefolio/fx.py`). Espera a subir a la 0.36.
 3. **Las comprobaciones de `check_tool()`**: sin salidas propias ni `print` en el paquete, y con `privacy_sample`, que
    el correo y el nombre de la cuenta de prueba no salgan en los logs. Espera a la 0.36.
 4. **La línea de cada petición.** Con `python app.py`, el núcleo manda al fichero del día la línea de werkzeug, que lleva
    la IP, la ruta con sus credenciales (`/api/download/<token>`, `/api/news/confirm?token=…`, `/api/download/all?t=…`),
    la consulta que tecleó la persona (`GET /api/strategies?q=…`, vista con la cuenta de prueba el 15-11-2026) y, al
    arrancar, el `Debugger PIN` de werkzeug. Con gunicorn, el `accesslog = "-"` de `gunicorn.conf.py`, en su formato por
-   defecto (IP, petición con su consulta, referer y agente), lo lleva a la salida estándar. Se pide la línea de cada
-   petición por su regla, con la cuenta por su id, el resultado y el tiempo, sin IP ni consulta (la de la 0.36), y qué
-   hacer con la de werkzeug y el `accesslog` de gunicorn: toca a toda la familia, y aquí no se parchea.
+   defecto (IP, petición con su consulta, referer y agente), lo lleva a la salida estándar. La 0.36 la resuelve: la
+   línea de cada petición es suya (`zlecitool.requests`, por la regla, con la cuenta por su id, el resultado, el tiempo
+   y `error=errAlgo` en un rechazo; sin IP ni consulta) y la de werkzeug se quita. **Pregunta**: ¿el CONTRATO de la 0.36
+   dice que cada herramienta quite el `accesslog = "-"` de su `gunicorn.conf.py`? Con la línea del núcleo sobra, y
+   sigue llevando la IP y la consulta a la salida estándar. Aquí no se toca hasta saberlo.

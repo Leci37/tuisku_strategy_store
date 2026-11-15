@@ -184,8 +184,14 @@ un clon sin ella, se saltan. La que entiende el script de cada estrategia del ca
 ella: los de la historia son del catálogo de antes (es la saltada de cada vuelta), y sólo corre con
 `STRATEGIES_DIR` en los de verdad. Las de la página en un navegador (las de `test_phone_bar.py`,
 `test_keyboard.py`, `test_listing_page.py`, `test_buying_page.py`, `test_mine_page.py`, `test_walkthrough.py` y `test_scales.py`, y
-parte de las de `test_lists_cart.py`, `test_strategy_page.py`, `test_tree.py` y `test_texts.py`) abren un
+parte de las de `test_lists_cart.py`, `test_strategy_page.py`, `test_tree.py` y `test_texts.py`) usan un
 Chromium (el kit del núcleo, `testing.mobile`); sin él, se saltan y no prueban nada.
+
+**Un solo Chromium para toda la sesión de pytest** (regla del dueño, 2026-11-15): la fixture `chromium` de
+`tests/conftest.py`, de sesión, y un contexto nuevo por prueba (`mobile.open_page`, que se cierra al acabar). Nunca un
+`with mobile.browser()` ni un `chromium.launch()` dentro de una prueba, ni una fixture de navegador que no sea de
+sesión: lanzar Chromium cuesta 1-2 s cada vez, y los minutos de la CI se pagan (en SolarVillage, uno por prueba se
+comía 20 de sus 82 minutos). `tests/test_layout.py` lo vigila.
 
 | Fichero | Qué prueba |
 |---|---|

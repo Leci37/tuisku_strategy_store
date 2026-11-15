@@ -75,8 +75,8 @@ SET_VALUE = """([sel, text]) => { const i = document.querySelector(sel);
   i.dispatchEvent(new Event('input', { bubbles: true })); }"""
 
 
-def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -172,7 +172,7 @@ def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
             tab.close()
 
 
-def test_the_news_tab_and_the_approximate_prices_follow_the_data(real_app):
+def test_the_news_tab_and_the_approximate_prices_follow_the_data(real_app, chromium):
     # 2026-11-15: «Novedades · 0» se esconde, y con el cambio de ejemplo (sin fecha) no sale ningún «≈»: los precios,
     # en dólares, y el chip de la moneda, quieto
     from edgefolio.shop import of
@@ -180,7 +180,7 @@ def test_the_news_tab_and_the_approximate_prices_follow_the_data(real_app):
     day = of(real_app).settings.fx_today                 # el cambio del día de la tienda de las pruebas, fuera
     kept = day.read_bytes()
     day.unlink()
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -209,8 +209,8 @@ OPEN_ROW = """() => { const td = document.querySelector("td[colspan='12']"), box
     return [Math.round(b.left), Math.round(b.right), Math.round(b.top)]; }) }; }"""
 
 
-def test_pro_tour_texts_and_the_open_table_row(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_pro_tour_texts_and_the_open_table_row(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -281,8 +281,8 @@ def test_pro_tour_texts_and_the_open_table_row(real_app):
 DEAD = "AAPL_1Day_1S00_deadbeef"         # una favorita guardada con el catálogo de 2024
 
 
-def test_on_arrival_dictionary_favourites_and_thanks(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_on_arrival_dictionary_favourites_and_thanks(real_app, chromium):
+    with mobile.serve(real_app) as live:
         # B6: sin diccionario, el aviso que escribió el servidor (antes, la página se quedaba en blanco)
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page

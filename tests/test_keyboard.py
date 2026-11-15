@@ -51,8 +51,8 @@ def at_step(page, text):
     page.wait_for_function("t => document.querySelector('[role=dialog]').innerText.includes(t)", arg=text)
 
 
-def test_the_dialogs_of_lite_take_the_keyboard_and_give_it_back(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_the_dialogs_of_lite_take_the_keyboard_and_give_it_back(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -212,8 +212,8 @@ PRO_TABLE = """(() => { localStorage.setItem('edgefolio-tour-v1', '1'); localSto
   localStorage.setItem('tuisku-sf-pview5', 'table'); })()"""
 
 
-def test_pro_by_keyboard_rows_dropdowns_and_their_labels(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_pro_by_keyboard_rows_dropdowns_and_their_labels(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:

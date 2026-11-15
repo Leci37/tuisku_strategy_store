@@ -98,3 +98,31 @@ def test_the_readme_says_what_a_link_and_a_preview_give():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "gastan del mismo enlace que el `.pine`" in readme and "cortadas al final de su primer árbol" in readme
     assert "cortadas a 50 líneas de su primer árbol" not in readme
+
+
+def test_one_chromium_for_the_whole_test_session():
+    """Regla del dueño (2026-11-15): un Chromium para toda la sesión de pytest, con un contexto nuevo por prueba; nunca
+    uno por prueba, porque los minutos de la CI se pagan (en SolarVillage, uno por prueba se comía 20 de sus 82 min).
+    Ninguna prueba lanza el suyo (``mobile.browser()``, ``chromium.launch()``, ``sync_playwright()``): piden la fixture
+    ``chromium`` de tests/conftest.py, de sesión. Y ninguna fixture de navegador deja de ser de sesión."""
+    import ast
+    launches, fixtures = [], []
+    for path in sorted((ROOT / "tests").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                f = node.func
+                name = f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", "")
+                owner = getattr(getattr(f, "value", None), "id", "") if isinstance(f, ast.Attribute) else ""
+                if (name == "browser" and owner == "mobile") or name in ("launch", "launch_persistent_context",
+                                                                           "sync_playwright", "async_playwright"):
+                    launches.append(f"{path.name}:{node.lineno}")
+            if isinstance(node, ast.FunctionDef) and any(w in node.name.lower() for w in ("browser", "chromium")):
+                for d in node.decorator_list:
+                    call = d if isinstance(d, ast.Call) else None
+                    target = call.func if call else d
+                    if getattr(target, "attr", getattr(target, "id", "")) == "fixture":
+                        scope = next((k.value.value for k in (call.keywords if call else []) if k.arg == "scope"), None)
+                        fixtures.append((path.name, node.name, scope))
+    assert len(launches) == 1 and launches[0].startswith("conftest.py:"), launches   # el de la fixture, y nada más
+    assert fixtures and all(scope == "session" for _, _, scope in fixtures), fixtures

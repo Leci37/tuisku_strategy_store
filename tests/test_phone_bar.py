@@ -30,8 +30,8 @@ MEASURED = "() => getComputedStyle(document.documentElement).getPropertyValue('-
 LISTED = "() => document.querySelectorAll('#app img').length > 0"
 
 
-def test_on_a_phone_the_page_leaves_the_room_the_bottom_bar_covers(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_on_a_phone_the_page_leaves_the_room_the_bottom_bar_covers(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "phone")
         try:
             mobile.sign_in(tab)              # con el aviso de cookies contestado: no deja su propio sitio
@@ -52,8 +52,8 @@ def test_on_a_phone_the_page_leaves_the_room_the_bottom_bar_covers(real_app):
             tab.close()
 
 
-def test_on_a_laptop_there_is_no_bar_and_no_room(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_on_a_laptop_there_is_no_bar_and_no_room(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         try:
             mobile.sign_in(tab)
@@ -80,14 +80,14 @@ ABOVE_CART = """() => document.querySelector('[data-ef-toast]').getBoundingClien
   document.querySelector('[data-sf-cart]').getBoundingClientRect().top"""
 
 
-def test_on_a_phone_a_toast_never_covers_an_open_dialog(real_app):
+def test_on_a_phone_a_toast_never_covers_an_open_dialog(real_app, chromium):
     """C13: con un diálogo abierto, su velo tapa el carrito flotante y la barra: el aviso va arriba y el diálogo le
     deja su sitio. Antes, en Lite con algo en el carrito, el aviso de un enlace gastado (encima del carrito
     flotante) tapaba «Enviarme el enlace» de la gratis; y el selector del pack (90vh) no deja sitio ni arriba ni
     abajo. Al cerrarse, el aviso vuelve encima del carrito."""
     paid = real_app.test_client().get("/api/strategies?paid=1&size=1").json["rows"][0]["id"]
     cart = json.dumps({"cart": [paid], "bundles": [], "packIds": [], "code": "", "applied": ""})
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "phone")
         page = tab.page
         try:

@@ -16,6 +16,7 @@ from decimal import Decimal
 import pytest
 
 from zlecitool_core import testing
+from zlecitool_core.testing import mobile
 
 from edgefolio.catalogue import Strategy, b64url
 from edgefolio.paypal import FakePayPal
@@ -170,3 +171,24 @@ def real_app(tmp_path_factory):
 @pytest.fixture
 def real_client(real_app):
     return visitor(real_app)
+
+
+# ── el navegador ────────────────────────────────────────────────────────────
+
+@pytest.fixture(scope="session")
+def chromium():
+    """UN Chromium para toda la sesión de pytest; cada prueba abre su contexto (``mobile.open_page``: sus cookies y su
+    almacenamiento) y lo cierra. Nunca uno por prueba: lanzarlo cuesta 1-2 s y un contexto, 0,2 s, y los minutos de
+    la CI se pagan (regla del dueño, 2026-11-15; tests/test_layout.py lo vigila). Sin Playwright o sin Chromium, las
+    pruebas que lo piden se saltan."""
+    with mobile.browser() as browser:
+        yield browser
+
+
+@pytest.fixture(autouse=True)
+def _each_test_closes_its_contexts(request):
+    """Lo que una prueba con el navegador deja abierto (un contexto sin cerrar tras un fallo) no pasa a la siguiente."""
+    yield
+    if "chromium" in request.fixturenames:
+        for context in list(request.getfixturevalue("chromium").contexts):
+            context.close()

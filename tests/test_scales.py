@@ -50,7 +50,7 @@ def boxes(tab, label: str) -> list:
         ".map(i => i.value)", label)]
 
 
-def test_the_pro_ranges_and_the_strategy_bars_follow_the_catalogue(real_app, real_client):
+def test_the_pro_ranges_and_the_strategy_bars_follow_the_catalogue(real_app, real_client, chromium):
     catalogue = of(real_app).catalogue
     by_npp = sorted((s for s in catalogue if s.numbers["npp"] is not None), key=lambda s: s.numbers["npp"])
     low, best = by_npp[0], by_npp[-1]
@@ -58,7 +58,7 @@ def test_the_pro_ranges_and_the_strategy_bars_follow_the_catalogue(real_app, rea
     served = real_client.get("/api/strategies?facets=1").json["ranges"]
     np_track = [str(served["np"]["min"]), str(served["np"]["max"])]
     want = round((served["price"]["min"] + served["price"]["max"]) / 2)
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         try:
             mobile.sign_in(tab)

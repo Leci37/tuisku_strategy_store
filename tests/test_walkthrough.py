@@ -43,9 +43,9 @@ def picks(app):
     raise AssertionError("ninguna estrategia de pago es la primera de la búsqueda de su ticker")
 
 
-def test_buy_by_clicking_then_see_it_in_my_strategies(real_app):
+def test_buy_by_clicking_then_see_it_in_my_strategies(real_app, chromium):
     card, searched, found = picks(real_app)
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:

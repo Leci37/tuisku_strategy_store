@@ -13,8 +13,8 @@ TOUR_SEEN = "try { localStorage.setItem('edgefolio-tour-v1', '1'); } catch (e) {
 SAVED = "() => { try { return JSON.parse(localStorage.getItem('edgefolio-cart-v1')); } catch (e) { return null; } }"
 
 
-def test_a_malformed_strategy_link_says_it_is_not_found(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_a_malformed_strategy_link_says_it_is_not_found(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page, errors = tab.page, []
         page.on("pageerror", lambda e: errors.append(str(e)))
@@ -27,10 +27,10 @@ def test_a_malformed_strategy_link_says_it_is_not_found(real_app):
             tab.close()
 
 
-def test_a_saved_code_the_server_refuses_is_forgotten(real_app):
+def test_a_saved_code_the_server_refuses_is_forgotten(real_app, chromium):
     paid = next(r for r in real_app.test_client().get("/api/strategies?paid=1&size=1").json["rows"])
     saved = json.dumps({"cart": [paid["id"]], "bundles": [], "packIds": [], "code": "x" * 70, "applied": "x" * 70})
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:

@@ -69,12 +69,12 @@ def published_as(app, sid, **changes):
         cat.items[s.key] = cat.by_id[s.id] = s
 
 
-def test_what_the_account_has_is_already_yours_everywhere_and_leaves_the_cart(real_app):
+def test_what_the_account_has_is_already_yours_everywhere_and_leaves_the_cart(real_app, chromium):
     owned, gone = first_paid_in_both(real_app, 2)
     other = next(r["id"] for r in rows(real_app, "paid=1&size=48") if r["id"] not in (owned, gone))
     days = of(real_app).settings.download_days
     cart = json.dumps({"cart": [owned, other], "bundles": [], "packIds": [], "code": "", "applied": ""})
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -137,7 +137,7 @@ def test_what_the_account_has_is_already_yours_everywhere_and_leaves_the_cart(re
             tab.close()
 
 
-def test_paying_does_not_refuse_what_was_just_bought(real_app):
+def test_paying_does_not_refuse_what_was_just_bought(real_app, chromium):
     """De vuelta de PayPal, el carrito espera al cobro: antes se presupuestaba enseguida lo que se acababa de pagar,
     el servidor lo rechazaba (ya es de la cuenta) y la página de gracias salía con «Carrito actualizado». Y de Gracias a
     la tienda, sin recargar, lo que se acaba de comprar dice «Ya es tuya», también cuando lo de la cuenta se leyó antes
@@ -154,7 +154,7 @@ def test_paying_does_not_refuse_what_was_just_bought(real_app):
     if made:
         script.parent.mkdir(parents=True, exist_ok=True)
         script.write_text('//@version=5\nstrategy("free")\n', encoding="utf-8")
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -215,14 +215,14 @@ def test_paying_does_not_refuse_what_was_just_bought(real_app):
                 script.unlink()
 
 
-def test_an_update_is_offered_only_until_the_strategy_expires(real_app):
+def test_an_update_is_offered_only_until_the_strategy_expires(real_app, chromium):
     """Con una v2 publicada, la v1 comprada: sin caducar, «Obtener la actualización» y «Actualización disponible»; caducada,
     ninguna de las dos, y su enlace de antes, aún válido, tampoco se ofrece (daría el script de hoy, la v2): ni el .pine
     de Mis estrategias ni «Ya es tuya». La v2 no va con su compra: se vende, con «Añadir al carrito» (M9, 2026-11-15;
     antes, «Ya es tuya», y comprarla daba errAlreadyOwned)."""
     [sid] = first_paid_in_both(real_app, 1)
     get_update = say("getUpdate") + " · v2"
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -250,14 +250,14 @@ def test_an_update_is_offered_only_until_the_strategy_expires(real_app):
             tab.close()
 
 
-def test_the_free_dialog_scrolls_inside_on_a_phone_lying_down(real_app):
+def test_the_free_dialog_scrolls_inside_on_a_phone_lying_down(real_app, chromium):
     """En alemán (o en francés) y con un aviso arriba, la gratis mide más que lo que le deja un móvil tumbado: antes
     se salía por abajo, y «Enviarme el enlace» con ella; ahora cabe y se desliza por dentro."""
     send_de, download_de = UI["sendLink"]["de"], UI["download"]["de"]
     reachable = """t => { const b = [...document.querySelectorAll('[role=dialog] button')].find(x => x.textContent.trim() === t);
       const r = b.getBoundingClientRect(), at = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return !!at && b.contains(at); }"""
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "phone_landscape")
         page = tab.page
         try:
@@ -285,8 +285,8 @@ def test_the_free_dialog_scrolls_inside_on_a_phone_lying_down(real_app):
             tab.close()
 
 
-def test_done_is_announced(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_done_is_announced(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -313,8 +313,8 @@ WHERE = """() => { const css = getComputedStyle(document.documentElement);
     focused: document.activeElement === document.querySelector('input[data-search=pro]') }; }"""
 
 
-def test_the_phone_bar_search_lands_just_under_the_fixed_bar(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_the_phone_bar_search_lands_just_under_the_fixed_bar(real_app, chromium):
+    with mobile.serve(real_app) as live:
         for screen in ("phone", (600, 480, True, 2)):
             tab = mobile.open_page(chromium, live, screen)
             page = tab.page

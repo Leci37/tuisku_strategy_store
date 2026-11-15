@@ -13,6 +13,7 @@ import weakref
 from datetime import date, timedelta
 from typing import Optional
 
+from .catalogue import utc_today
 from .web import Refusal, invalid
 
 # clave -> (campo de la fila, mínimo y máximo de la barra, escala logarítmica, barras): los deslizadores
@@ -128,7 +129,7 @@ class Index:
 
     def new_mask(self, new_days: int) -> int:
         """Publicadas en los últimos NEW_DAYS días: se recalcula al cambiar el día, no en cada petición."""
-        today = date.today()
+        today = utc_today()
         if self._new[0] != (today, new_days):
             since = today - timedelta(days=new_days)
             self._new = ((today, new_days), to_mask(d is not None and since <= d <= today for d in self.releases))

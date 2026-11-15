@@ -58,6 +58,5 @@ decision_tree_0_SOLUSDT_1Hour_ac0bcf76(Raw_Money_Flow, Positive_Money_Flow, Nega
 						if( Negative_Money_Flow_Sum <= 645533152 )
 							ret := 0.20723917672107878
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

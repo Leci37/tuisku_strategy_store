@@ -106,9 +106,9 @@ def test_the_tab_title_says_which_strategy_from_the_server(client):
 # ── en un navegador ────────────────────────────────────────────────────────────
 
 
-def test_the_sheet_of_a_free_and_a_paid_strategy_and_its_title(real_app):
+def test_the_sheet_of_a_free_and_a_paid_strategy_and_its_title(real_app, chromium):
     free, _, hourly = pick(real_app)
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -187,9 +187,9 @@ def test_the_sheet_of_a_free_and_a_paid_strategy_and_its_title(real_app):
             tab.close()
 
 
-def test_the_tree_tab_tries_again_and_follows_the_cart(real_app):
+def test_the_tree_tab_tries_again_and_follows_the_cart(real_app, chromium):
     _, paid, _ = pick(real_app)
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -255,7 +255,7 @@ def test_the_tree_tab_tries_again_and_follows_the_cart(real_app):
             tab.close()
 
 
-def test_a_strategy_the_account_has_says_so(real_app):
+def test_a_strategy_the_account_has_says_so(real_app, chromium):
     """B29: con la sesión abierta, la ficha de una estrategia que ya es de la cuenta dice «Ya es tuya» en vez
     de «Añadir al carrito» (o «Descargar», en una gratis), sin el precio encima (decisión del dueño, 2026-10-26):
     su .pine si su enlace vale y es de la versión de hoy; si no, Mis estrategias (que da otro, o la
@@ -275,7 +275,7 @@ def test_a_strategy_the_account_has_says_so(real_app):
             script.write_text(OWNED_SCRIPT, encoding="utf-8")
             made.append(script)
     days = shop.settings.download_days
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:

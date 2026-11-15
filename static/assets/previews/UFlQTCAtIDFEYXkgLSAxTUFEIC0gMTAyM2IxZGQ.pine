@@ -55,9 +55,5 @@ decision_tree_0_PYPL_1Day_1023b1dd(ma05_colorInt, ma10_colorInt, ma15_colorInt, 
 				ret := 0
 	ret //return
 
-// Define expected timeframe based on the selected interval: 1Day pine_value: D   Trigger an alert and show a label if the timeframe is incorrect
-alert_message_time_wrong = "The current candle TIMEframe is WRONG: "+ str.tostring(timeframe.period) + ", CHANGE it to the CORRECT one:  1DAY !!"
-
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_48ec91b0(Raw_Money_Flow, Positive_Money_Flow, Negative
 				if( MFI > 40.58008003234863 )
 					ret := -0.84375 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

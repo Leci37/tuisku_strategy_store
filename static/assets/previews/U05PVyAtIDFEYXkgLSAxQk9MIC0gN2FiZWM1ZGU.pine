@@ -58,6 +58,5 @@ decision_tree_0_SNOW_1Day_7abec5de(vrsi, crossover_rsi_bblowerInt, crossunder_rs
 					if( dif_source_BBlower__close <= 0.2773972302675247 )
 						ret := 0.12998712998713
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

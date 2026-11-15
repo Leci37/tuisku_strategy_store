@@ -58,6 +58,5 @@ decision_tree_0_XRPUSDT_1Day_90f26c6a(Raw_Money_Flow, Positive_Money_Flow, Negat
 					if( VIP_VIM > 0.5201157033443451 )
 						ret := -0.8 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

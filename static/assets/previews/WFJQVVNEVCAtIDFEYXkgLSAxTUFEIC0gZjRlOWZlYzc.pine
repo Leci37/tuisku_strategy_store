@@ -58,6 +58,5 @@ decision_tree_0_XRPUSDT_1Day_f4e9fec7(ma05_colorInt, ma10_colorInt, ma15_colorIn
 			if( ma75__close <= 1.552361011505127 )
 				if( ma85__close <= 0.8587751984596252 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

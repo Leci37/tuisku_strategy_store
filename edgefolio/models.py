@@ -65,6 +65,10 @@ class FreeClaim(db.Model):
     count = db.Column(db.Integer, nullable=False, default=0)
     version = db.Column(db.Integer, nullable=False, default=1)
     lang = db.Column(db.String(8), nullable=False, default="")
+    #: Quién la pidió (el hash de «u:<cuenta>» o de «ip:<IP o red /64>»): el tope del día de una dirección se cuenta
+    #: por quien pide, y así nadie deja a otro sin las suyas (2026-11-15). Vacío en las de antes. Admite vacío: el
+    #: núcleo (0.35) la añade a la tabla al arrancar.
+    requester_hash = db.Column(db.String(64), nullable=True)
 
 
 class Subscriber(db.Model):

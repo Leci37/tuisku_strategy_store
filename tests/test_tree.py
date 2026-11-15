@@ -462,14 +462,18 @@ def test_every_value_a_published_preview_asks_about_has_its_name():
     assert not taken, f"{len(taken)} valores sin nombre: {sorted(taken)[:10]}"
 
 
-def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
+def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app, monkeypatch, chromium):
     shop = of(real_app)
     pick = chosen(shop.catalogue)
     real, crafted, owned, free = (pick[k].id for k in ("real", "crafted", "owned", "free"))
+    # lo que ve el visitante sin los niveles del script: los de las de pago de la prueba (de varios árboles, publicados
+    # desde el 2026-11-15), fuera durante la prueba; los publicados los mira tests/test_levels.py
+    for sid in (real, crafted, owned):
+        monkeypatch.delitem(shop.catalogue.levels, sid, raising=False)
     script = shop.settings.strategies_dir / pick["owned"].private_file
     script.parent.mkdir(parents=True, exist_ok=True)
     script.write_text(OWNED_SCRIPT, encoding="utf-8")
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         try:
             client = mobile.sign_in(tab)
@@ -662,9 +666,9 @@ def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
             tab.close()
 
 
-def test_on_a_phone_a_tapped_question_keeps_its_explanation_while_the_page_moves(real_app):
+def test_on_a_phone_a_tapped_question_keeps_its_explanation_while_the_page_moves(real_app, chromium):
     crafted = chosen(of(real_app).catalogue)["crafted"]
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "phone")
         try:
             mobile.sign_in(tab)
@@ -694,7 +698,7 @@ def test_on_a_phone_a_tapped_question_keeps_its_explanation_while_the_page_moves
             tab.close()
 
 
-def test_the_sentence_under_the_tree_counts_the_trees_of_its_forest(real_app):
+def test_the_sentence_under_the_tree_counts_the_trees_of_its_forest(real_app, chromium):
     """Debajo del árbol, cuántos árboles tiene el bosque, de la cabecera de su vista previa («RANDOM FOREST AI: N
     tree(s)»): con uno solo (66 de las 94 de 2026-10), su señal es la de este árbol; antes, a todas «La estrategia
     combina muchos árboles como este». Con varios, cuántos, en la forma de su número (en árabe, «5 أشجار»)."""
@@ -704,7 +708,7 @@ def test_the_sentence_under_the_tree_counts_the_trees_of_its_forest(real_app):
         size = int(re.search(r"^//\s*RANDOM FOREST AI:\s*(\d+)\s*tree", src, re.M).group(1))
         sizes.setdefault(size, s.id)
     assert {1, 5} <= set(sizes), sizes
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         try:
             for strategy, lang, said in ((sizes[1], "es", es("forest1")),

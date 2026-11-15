@@ -34,7 +34,8 @@ def test_a_bundle_is_one_line_and_a_retry_sends_nothing_more(client):
     assert client.post(f"/api/orders/{order_id}/capture").status_code == 200   # otra vez (un fallo de red)
     [mail] = receipts()
     assert mail["subject"] == f"Your Edgefolio order {order_id}"
-    assert "(2): 150.00 USD" in mail["body"] and "Total paid with PayPal: 150.00 USD" in mail["body"]
+    # el lote de las pruebas, «duo» (150 $), valdría 172 suelto: nunca cuesta más que sueltas (2026-11-15)
+    assert "(2): 127.50 USD" in mail["body"] and "Total paid with PayPal: 127.50 USD" in mail["body"]
 
 
 def test_without_a_public_address_the_payment_still_goes_through(client, monkeypatch):

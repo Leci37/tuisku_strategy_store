@@ -14,6 +14,7 @@ confianza bajo el botón de pagar) al correo del pedido: el de la cuenta, o el d
 from __future__ import annotations
 
 import hmac
+import logging
 import re
 import secrets
 from datetime import timedelta
@@ -30,6 +31,8 @@ from . import pricing
 from .models import Download, Order
 from .paypal import PayPalError
 from .web import Refusal, digest, json_object, list_field, text_field
+
+log = logging.getLogger(__name__)
 
 BUYER_DAYS = 30
 BUYER_TOKEN = re.compile(r"^[A-Za-z0-9_-]{32,64}$")  # lo que da secrets.token_urlsafe(32)
@@ -120,11 +123,27 @@ def find(paypal_id: str) -> Optional[Order]:
     return db.session.get(Order, paypal_id)
 
 
+def settled(shop, paypal_id: str):
+    """Lo que PayPal dice que cobró de un pedido, o None si no cobró nada o no contesta."""
+    try:
+        return shop.paypal.settled(paypal_id)
+    except PayPalError as e:
+        log.warning("PayPal no dio el pedido | pedido=%s | %s", paypal_id, e)
+        return None
+
+
 def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = None) -> Order:
     """Cobrar en PayPal y comprobar que se pagó el total del pedido, en su moneda. Repetirlo (un fallo de
     red) no cobra otra vez: un pedido pagado se devuelve tal cual. ``on_paid(order)`` corre una sola vez
     por pedido, en el cobro que lo pasó a pagado (el recibo por correo). El de una cuenta borrada no se
-    cobra (409 ``errAccountClosed``)."""
+    cobra (409 ``errAccountClosed``).
+
+    Si el cobro falla, antes de decir nada se pregunta a PayPal por el pedido: pudo cobrar sin que llegara su
+    respuesta, y entonces cada intento siguiente contesta «ya cobrado» (hasta el 14-11-2026, el pedido se
+    quedaba sin pagar para siempre, con «No se te ha cobrado nada»). Si no cobró, 502 ``errPayPalCapture``,
+    que pide recargar la página en vez de pagar otra vez. Un cobro que PayPal deja pendiente (lo revisa)
+    deja el pedido en PENDING, no en FAILED: 402 ``errPaymentPending``, y abrir otra vez la página lo pasa
+    a pagado cuando PayPal lo complete."""
     order = find(paypal_id)
     if order is None:
         raise Refusal("errUnknownOrder", 404)
@@ -134,11 +153,23 @@ def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = N
         # La cuenta que lo pidió se borró mientras pagaba en PayPal: no se cobra (el dinero no se mueve y
         # PayPal deja caducar lo aprobado), y su pedido, que se queda sin correo, no vuelve a tenerlo.
         raise Refusal("errAccountClosed", 409)
+    if order.status == "CREATED" and any(k not in shop.catalogue.items for k in order.items):
+        # Una estrategia del pedido salió del catálogo mientras se pagaba en PayPal: no hay script que entregar, así
+        # que no se cobra (lo aprobado caduca en PayPal). Hasta el 14-11-2026 se cobraba el total y no se entregaba.
+        raise Refusal("errStrategyGone", 409)
     try:
         cap = shop.paypal.capture(paypal_id)
     except PayPalError as e:
-        raise Refusal("errPayPal", 502, detail=str(e)) from e
-    if cap.status != "COMPLETED" or cap.amount != Decimal(order.total) or cap.currency != order.currency:
+        cap = settled(shop, paypal_id)
+        if cap is None:
+            log.warning("Cobro sin confirmar | pedido=%s | %s", paypal_id, e)
+            raise Refusal("errPayPalCapture", 502, detail=str(e)) from e
+    right = cap.amount == Decimal(order.total) and cap.currency == order.currency
+    if cap.status == "PENDING" and right:
+        order.status, order.payer = "PENDING", cap.payer or ""
+        db.session.commit()
+        raise Refusal("errPaymentPending", 402, paid=f"{cap.amount} {cap.currency} {cap.status}")
+    if cap.status != "COMPLETED" or not right:
         order.status, order.payer = "FAILED", cap.payer or ""
         db.session.commit()
         raise Refusal("errPayment", 402, paid=f"{cap.amount} {cap.currency} {cap.status}")
@@ -183,7 +214,7 @@ def email_receipt(shop, order: Order, lang: str, mine: str, mail) -> None:
     body = texts.get("mailReceiptBody", lang, id=order.paypal_id, lines="\n".join("- " + line for line in out),
                      total=money(order.total, cur), mine=mine, days=texts.get("linkDays", lang, n=settings.download_days),
                      downloads=texts.get("linkDownloads", lang, n=settings.max_downloads), contact=settings.contact_email)
-    mail(order.email, texts.get("mailReceiptSubject", lang, id=order.paypal_id), body, kind="edgefolio-receipt")
+    mail(order.email, texts.get("mailOrderSubject", lang, id=order.paypal_id), body, kind="edgefolio-receipt")
 
 
 # ── los enlaces ──────────────────────────────────────────────────────────────
@@ -226,8 +257,10 @@ def receipt(shop, order: Order, may_see: bool) -> dict:
     bought = [catalogue.items[k] for k in order.items if k in catalogue.items]
     # se hacen aunque no se enseñen aquí: Mis estrategias lista los enlaces del pedido
     links = issue_links(order.paypal_id, bought, settings.download_days)
+    # quien pagó, enmascarado (b•••@empresa.com), sólo a quien puede ver los enlaces: a cualquiera con el id del
+    # pedido (va en la dirección de vuelta de PayPal) le daba el dominio entero, que puede ser el de su empresa
     out = {"order_id": order.paypal_id, "status": "PAID", "total": order.total, "currency": order.currency,
-           "payer": masked(order.payer), "valid_days": settings.download_days,
+           "payer": masked(order.payer) if may_see else "", "valid_days": settings.download_days,
            "max_downloads": settings.max_downloads}
     if not may_see:
         return {**out, "download_all": None, "downloads": [], "links_hidden": True}

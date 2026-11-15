@@ -58,6 +58,5 @@ decision_tree_0_SNAP_1Day_deb0fea4(Color_con1, Color_con2, colInt, wvf, midLine,
 					if( rangeLow <= 2.6608155965805054 )
 						ret := -0.21428571428571427
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

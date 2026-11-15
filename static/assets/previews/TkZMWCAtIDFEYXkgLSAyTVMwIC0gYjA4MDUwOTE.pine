@@ -58,6 +58,5 @@ decision_tree_0_NFLX_1Day_b0805091(Raw_Money_Flow, Positive_Money_Flow, Negative
 				if( d_k > -2.307666540145874 )
 					ret := -0.7267080745341615 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -47,7 +47,10 @@ def test_row_fields(real_client):
     assert row["file"] == "Tuisku_" + row["id"] and row["tv_symbol"] == "NASDAQ:NVDA"
     for k in ("profit", "candle", "icon", "preview"):
         assert row[k].startswith("/static/assets/") and (ROOT / row[k][1:]).is_file(), k
-    assert row["thumb_profit"] == f"/thumbs/{row['id']}_profit.webp"
+    # con la versión del gráfico: la miniatura se guarda un año, y un catálogo nuevo cambia el gráfico sin cambiar
+    # su nombre (14-11-2026)
+    png = ROOT / row["profit"][1:]
+    assert row["thumb_profit"] == f"/thumbs/{row['id']}_profit.webp?v={png.stat().st_mtime_ns // 10 ** 9:x}"
     assert row["grade"] == ("A" if row["tr"] >= 100 else "B" if row["tr"] >= 50 else "C" if row["tr"] >= 25 else "D")
     assert row["live"] is None, "sin cifra desde la publicación hasta que la escriba el trabajo diario"
 

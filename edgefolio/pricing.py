@@ -9,7 +9,7 @@ se rechaza (overlap): cada uno la cobraría.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import ROUND_HALF_UP, Decimal
 
 from .settings import Settings
@@ -121,18 +121,37 @@ def quote(strategies: list, code: str, settings: Settings, bundles: list = (), p
     subtotal = (sum((s.price for s in loose), ZERO) + fixed).quantize(CENT)
     code = (code or "").strip().lower()
     if code and code in settings.flat_price_codes:
-        # un precio de lanzamiento para las sueltas: los lotes y el pack ya son una oferta, sin escalón encima
+        # un precio de lanzamiento para las sueltas: los lotes y el pack ya son una oferta, sin escalón encima. Con dos
+        # guardas (2026-11-15): ninguna suelta baja más que MAX_DISCOUNT (0,99 por una de 73 era un 98,6 % menos), y si
+        # sin el código el carrito costaría menos (los lotes pierden su escalón), se cobra como sin él
         flat = settings.flat_price_codes[code].quantize(CENT)
-        charged = [(s, min(flat, s.price)) for s in loose]
+        charged = [(s, max(min(flat, s.price), cents(s.price * (1 - settings.max_discount)))) for s in loose]
         total = (sum((p for _, p in charged), ZERO) + fixed).quantize(CENT)
+        plain = quote(strategies, "", settings, bundles, pack)
+        if plain.total < total:
+            return replace(plain, code=code, code_status="applied")
         return Quote(charged, subtotal, ZERO, total, code, "applied", [(b, b.price) for b in chosen],
                      (pack, pack_price, pack_price) if pack else None)
     code_rate = settings.discount_codes.get(code, ZERO) if code else ZERO
     status = "" if not code else ("applied" if code in settings.discount_codes else "invalid")
-    tier = tier_rate(subtotal, settings)
+    # Un lote o el pack nunca encarecen: con su precio de oferta, un carrito grande bajaba de tramo al añadir un pack
+    # que «ahorra un 32 %» (633,00 → 704,25 US$; 2026-11-15). Si con el tramo de la oferta costaría más que con sus
+    # estrategias sueltas, el tramo se cuenta con lo que valen sueltas. Si no, todo sigue igual.
+    worth = (sum((s.price for s in loose), ZERO) + sum((s.price for b in chosen for s in b.items), ZERO)
+             + sum((s.price for s in pack), ZERO)).quantize(CENT)
+    tier, basis = tier_rate(subtotal, settings), subtotal
+    if worth > subtotal:
+        as_offer = cents(subtotal * (1 - min(tier + code_rate, settings.max_discount)))
+        as_loose = cents(worth * (1 - min(tier_rate(worth, settings) + code_rate, settings.max_discount)))
+        if as_offer > as_loose:
+            tier, basis = tier_rate(worth, settings), worth
     rate = min(tier + code_rate, settings.max_discount)
     off = 1 - rate
-    passed, upcoming = ladder(subtotal, settings)
+    passed, upcoming = ladder(basis, settings)
+    if upcoming is not None and min(Decimal(upcoming["rate"]) + code_rate, settings.max_discount) <= rate:
+        # con el tope ya alcanzado, el escalón siguiente no quita nada más: «Añade X para llegar al N %» prometía
+        # un descuento que no llegaba (con un código del 30 % o más; 14-11-2026)
+        upcoming = None
     # Lo que cada parte quita de verdad, después del tope: el escalón primero y el código, lo que queda hasta
     # el descuento. Con el escalón del 70 % y un código del 20 %, el código no quita nada ("0.00"): la franja
     # de Pro decía «70 % … + 20 % con el código», un 90 % que nadie cobraba.

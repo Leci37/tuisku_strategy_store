@@ -58,6 +58,5 @@ decision_tree_0_BTCUSDT_1Hour_4ea3800c(Bullish_BOSInt, Bearish_BOSInt, Bullish_C
 							ret := 1 // buy
 					if( atr__close > 0.02510763332247734 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

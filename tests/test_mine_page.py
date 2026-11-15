@@ -45,8 +45,8 @@ def asked(live) -> list:
     return [r for r in live.requests if r[1].startswith("/api/mine/proofs")]
 
 
-def test_the_proof_field_says_what_is_wrong_and_done_stays(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_the_proof_field_says_what_is_wrong_and_done_stays(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -119,8 +119,8 @@ def test_the_proof_field_says_what_is_wrong_and_done_stays(real_app):
             tab.close()
 
 
-def test_the_favourites_wait_for_the_account_and_come_back_when_refused(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_the_favourites_wait_for_the_account_and_come_back_when_refused(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -168,8 +168,8 @@ def test_the_favourites_wait_for_the_account_and_come_back_when_refused(real_app
             tab.close()
 
 
-def test_the_install_tutorial_waits_for_a_strategy_of_the_account(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_the_install_tutorial_waits_for_a_strategy_of_the_account(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -197,8 +197,8 @@ def test_the_install_tutorial_waits_for_a_strategy_of_the_account(real_app):
             tab.close()
 
 
-def test_an_answer_cut_halfway_is_a_network_failure_not_a_script_error(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_an_answer_cut_halfway_is_a_network_failure_not_a_script_error(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:

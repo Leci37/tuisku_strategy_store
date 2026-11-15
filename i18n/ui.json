@@ -2430,6 +2430,36 @@
     "ar": "سنراسلك عندما تتوفر استراتيجيات جديدة.",
     "hi": "नई रणनीतियाँ आने पर हम आपको ईमेल करेंगे।"
   },
+  "newsUnsubscribedTitle": {
+    "es": "Baja hecha",
+    "en": "Unsubscribed",
+    "pt": "Subscrição cancelada",
+    "fr": "Désinscription faite",
+    "de": "Abgemeldet",
+    "zh": "已退订",
+    "ar": "تم إلغاء الاشتراك",
+    "hi": "सदस्यता रद्द"
+  },
+  "newsUnsubscribedText": {
+    "es": "No te escribiremos más sobre estrategias nuevas.",
+    "en": "We will not write to you about new strategies any more.",
+    "pt": "Não te voltaremos a escrever sobre estratégias novas.",
+    "fr": "Nous ne vous écrirons plus au sujet des nouvelles stratégies.",
+    "de": "Wir schreiben dir nicht mehr über neue Strategien.",
+    "zh": "我们不会再就新策略给你发邮件。",
+    "ar": "لن نراسلك بعد الآن بشأن الاستراتيجيات الجديدة.",
+    "hi": "हम अब आपको नई रणनीतियों के बारे में नहीं लिखेंगे।"
+  },
+  "mailNewsUnsubscribe": {
+    "es": "Para darte de baja de las novedades en cualquier momento: {link}",
+    "en": "To unsubscribe from the news at any time: {link}",
+    "pt": "Para cancelares as novidades a qualquer momento: {link}",
+    "fr": "Pour vous désinscrire des nouveautés à tout moment : {link}",
+    "de": "Um dich jederzeit von den Neuigkeiten abzumelden: {link}",
+    "zh": "随时退订新策略通知：{link}",
+    "ar": "لإلغاء الاشتراك في الأخبار في أي وقت: {link}",
+    "hi": "समाचार से कभी भी सदस्यता रद्द करने के लिए: {link}"
+  },
   "newsExpiredTitle": {
     "es": "Ese enlace de confirmación ha caducado",
     "en": "That confirmation link has expired",
@@ -2649,6 +2679,36 @@
     "zh": "PayPal 没有响应。没有扣款：请几分钟后再试。",
     "ar": "لم يستجب PayPal. لم يُخصم أي مبلغ: حاول بعد بضع دقائق.",
     "hi": "PayPal ने जवाब नहीं दिया। कुछ भी नहीं लिया गया: कुछ मिनट बाद फिर कोशिश करें।"
+  },
+  "errPayPalCapture": {
+    "es": "PayPal aún no ha confirmado el cobro de este pedido. No lo pagues otra vez: recarga esta página dentro de unos minutos y, si PayPal te cobró, saldrán tus descargas.",
+    "en": "PayPal has not confirmed the payment for this order yet. Do not pay it again: reload this page in a few minutes and, if PayPal charged you, your downloads will appear.",
+    "pt": "O PayPal ainda não confirmou o pagamento desta encomenda. Não a pagues outra vez: recarrega esta página daqui a uns minutos e, se o PayPal te cobrou, aparecem os teus downloads.",
+    "fr": "PayPal n’a pas encore confirmé le paiement de cette commande. Ne la payez pas une deuxième fois : rechargez cette page dans quelques minutes et, si PayPal vous a débité, vos téléchargements apparaîtront.",
+    "de": "PayPal hat die Zahlung für diese Bestellung noch nicht bestätigt. Bezahle sie nicht noch einmal: Lade diese Seite in ein paar Minuten neu. Wenn PayPal abgebucht hat, erscheinen dann deine Downloads.",
+    "zh": "PayPal 尚未确认此订单的付款。请不要再次付款：几分钟后重新加载此页面；如果 PayPal 已扣款，你的下载就会出现。",
+    "ar": "لم يؤكّد PayPal بعدُ دفع هذا الطلب. لا تدفعه مرة أخرى: أعد تحميل هذه الصفحة بعد بضع دقائق، وإذا خصم PayPal المبلغ فستظهر تنزيلاتك.",
+    "hi": "PayPal ने अभी तक इस ऑर्डर के भुगतान की पुष्टि नहीं की है। दोबारा भुगतान न करें: कुछ मिनट बाद यह पेज फिर से लोड करें; अगर PayPal ने पैसे लिए हैं, तो आपके डाउनलोड दिखेंगे।"
+  },
+  "errPaymentPending": {
+    "es": "Tu pago está pendiente en PayPal: lo está revisando y aún no se ha completado. No lo pagues otra vez. Cuando PayPal lo complete, vuelve a abrir esta página y saldrán tus descargas.",
+    "en": "Your payment is pending in PayPal: it is being reviewed and is not complete yet. Do not pay again. Once PayPal completes it, open this page again and your downloads will appear.",
+    "pt": "O teu pagamento está pendente no PayPal: está a ser revisto e ainda não foi concluído. Não pagues outra vez. Quando o PayPal o concluir, volta a abrir esta página e aparecem os teus downloads.",
+    "fr": "Votre paiement est en attente chez PayPal : il est en cours de vérification et n’est pas encore finalisé. Ne payez pas une deuxième fois. Quand PayPal l’aura finalisé, rouvrez cette page et vos téléchargements apparaîtront.",
+    "de": "Deine Zahlung ist bei PayPal ausstehend: Sie wird geprüft und ist noch nicht abgeschlossen. Bezahle nicht noch einmal. Sobald PayPal sie abschließt, öffne diese Seite erneut, dann erscheinen deine Downloads.",
+    "zh": "你的付款在 PayPal 处于待处理状态：正在审核，尚未完成。请不要再次付款。PayPal 完成后，重新打开此页面，你的下载就会出现。",
+    "ar": "دفعتك معلّقة في PayPal: تجري مراجعتها ولم تكتمل بعد. لا تدفع مرة أخرى. عندما يُكملها PayPal، افتح هذه الصفحة من جديد وستظهر تنزيلاتك.",
+    "hi": "आपका भुगतान PayPal में लंबित है: उसकी जाँच हो रही है और वह अभी पूरा नहीं हुआ है। दोबारा भुगतान न करें। जब PayPal उसे पूरा कर दे, यह पेज फिर से खोलें और आपके डाउनलोड दिखेंगे।"
+  },
+  "errNoLongerFree": {
+    "es": "Esta estrategia ya no es gratis: para tener un enlace nuevo, cómprala.",
+    "en": "This strategy is no longer free: to get a new link, buy it.",
+    "pt": "Esta estratégia já não é gratuita: para teres um link novo, compra-a.",
+    "fr": "Cette stratégie n’est plus gratuite : pour obtenir un nouveau lien, achetez-la.",
+    "de": "Diese Strategie ist nicht mehr kostenlos: Für einen neuen Link kaufe sie.",
+    "zh": "这个策略已不再免费：如需新链接，请购买。",
+    "ar": "لم تعد هذه الاستراتيجية مجانية: للحصول على رابط جديد، اشترِها.",
+    "hi": "यह रणनीति अब मुफ़्त नहीं है: नया लिंक पाने के लिए इसे खरीदें।"
   },
   "errUnknownOrder": {
     "es": "No encontramos ese pedido.",
@@ -2890,7 +2950,7 @@
     "ar": "يحتاج Edgefolio إلى JavaScript لعرض الاستراتيجيات.",
     "hi": "रणनीतियाँ दिखाने के लिए Edgefolio को JavaScript चाहिए।"
   },
-  "mailReceiptSubject": {
+  "mailOrderSubject": {
     "es": "Tu pedido de Edgefolio {id}",
     "en": "Your Edgefolio order {id}",
     "pt": "A tua encomenda Edgefolio {id}",
@@ -2901,14 +2961,14 @@
     "hi": "आपका Edgefolio ऑर्डर {id}"
   },
   "mailReceiptBody": {
-    "es": "Gracias por tu compra en Edgefolio.\n\nPedido: {id}\n{lines}\n\nTotal pagado con PayPal: {total}\n\nDescarga tus estrategias en Mis estrategias (entra con este correo): {mine}\nCada enlace vale {days} y hasta {downloads}; allí puedes pedir enlaces nuevos.\n\n¿Problemas o necesitas factura con tus datos fiscales? Escribe a {contact}\n",
-    "en": "Thank you for your purchase on Edgefolio.\n\nOrder: {id}\n{lines}\n\nTotal paid with PayPal: {total}\n\nDownload your strategies in My strategies (sign in with this email): {mine}\nEach link works for {days} and up to {downloads}; you can ask for new ones there.\n\nProblems, or need an invoice with your tax details? Write to {contact}\n",
-    "pt": "Obrigado pela tua compra na Edgefolio.\n\nEncomenda: {id}\n{lines}\n\nTotal pago com PayPal: {total}\n\nDescarrega as tuas estratégias em As minhas estratégias (inicia sessão com este email): {mine}\nCada ligação vale {days} e até {downloads}; lá podes pedir ligações novas.\n\nProblemas, ou precisas de fatura com os teus dados fiscais? Escreve para {contact}\n",
-    "fr": "Merci pour votre achat sur Edgefolio.\n\nCommande : {id}\n{lines}\n\nTotal payé avec PayPal : {total}\n\nTéléchargez vos stratégies dans Mes stratégies (connectez-vous avec cet e-mail) : {mine}\nChaque lien est valable {days} et jusqu’à {downloads} ; vous pouvez y demander de nouveaux liens.\n\nUn problème, ou besoin d’une facture à vos coordonnées fiscales ? Écrivez à {contact}\n",
-    "de": "Danke für deinen Einkauf bei Edgefolio.\n\nBestellung: {id}\n{lines}\n\nMit PayPal bezahlt: {total}\n\nLade deine Strategien unter Meine Strategien herunter (melde dich mit dieser E-Mail an): {mine}\nJeder Link gilt {days} und für bis zu {downloads}; dort kannst du neue Links anfordern.\n\nProbleme, oder brauchst du eine Rechnung mit deinen Steuerdaten? Schreib an {contact}\n",
-    "zh": "感谢你在 Edgefolio 购买。\n\n订单：{id}\n{lines}\n\n通过 PayPal 支付总额：{total}\n\n在“我的策略”中下载你的策略（使用此邮箱登录）：{mine}\n每个链接有效 {days}，最多下载 {downloads}；可在那里申请新链接。\n\n遇到问题，或需要带税务信息的发票？请写信至 {contact}\n",
-    "ar": "شكرًا لشرائك من Edgefolio.\n\nالطلب: {id}\n{lines}\n\nالمبلغ المدفوع عبر PayPal: {total}\n\nنزّل استراتيجياتك من استراتيجياتي (سجّل الدخول بهذا البريد): {mine}\nكل رابط صالح لمدة {days} وحتى {downloads}، ويمكنك طلب روابط جديدة من هناك.\n\nهل لديك مشكلة أو تحتاج فاتورة ببياناتك الضريبية؟ اكتب إلى {contact}\n",
-    "hi": "Edgefolio पर खरीदारी के लिए धन्यवाद।\n\nऑर्डर: {id}\n{lines}\n\nPayPal से कुल भुगतान: {total}\n\nअपनी रणनीतियाँ मेरी रणनीतियाँ से डाउनलोड करें (इसी ईमेल से साइन इन करें): {mine}\nहर लिंक {days} और {downloads} तक चलता है; वहाँ आप नए लिंक माँग सकते हैं।\n\nकोई समस्या, या अपने टैक्स विवरण के साथ इनवॉइस चाहिए? {contact} पर लिखें\n"
+    "es": "Gracias por tu compra en Edgefolio.\n\nPedido: {id}\n{lines}\n\nTotal pagado con PayPal: {total}\n\nDescarga tus estrategias en Mis estrategias: {mine}\nSi compraste sin cuenta, entra (o crea una cuenta) y confirma este correo en «¿Compraste sin cuenta?».\nCada enlace vale {days} y hasta {downloads}; allí puedes pedir enlaces nuevos.\n\n¿Problemas o necesitas factura con tus datos fiscales? Escribe a {contact}\n",
+    "en": "Thank you for your purchase on Edgefolio.\n\nOrder: {id}\n{lines}\n\nTotal paid with PayPal: {total}\n\nDownload your strategies in My strategies: {mine}\nIf you bought without an account, sign in (or create one) and confirm this email under “Bought without an account?”.\nEach link works for {days} and up to {downloads}; you can ask for new ones there.\n\nProblems, or need an invoice with your tax details? Write to {contact}\n",
+    "pt": "Obrigado pela tua compra na Edgefolio.\n\nEncomenda: {id}\n{lines}\n\nTotal pago com PayPal: {total}\n\nDescarrega as tuas estratégias em As minhas estratégias: {mine}\nSe compraste sem conta, inicia sessão (ou cria uma conta) e confirma este email em «Compraste sem conta?».\nCada ligação vale {days} e até {downloads}; lá podes pedir ligações novas.\n\nProblemas, ou precisas de fatura com os teus dados fiscais? Escreve para {contact}\n",
+    "fr": "Merci pour votre achat sur Edgefolio.\n\nCommande : {id}\n{lines}\n\nTotal payé avec PayPal : {total}\n\nTéléchargez vos stratégies dans Mes stratégies : {mine}\nSi vous avez acheté sans compte, connectez-vous (ou créez un compte) et confirmez cet e-mail dans « Vous avez acheté sans compte ? ».\nChaque lien est valable {days} et jusqu’à {downloads} ; vous pouvez y demander de nouveaux liens.\n\nUn problème, ou besoin d’une facture à vos coordonnées fiscales ? Écrivez à {contact}\n",
+    "de": "Danke für deinen Einkauf bei Edgefolio.\n\nBestellung: {id}\n{lines}\n\nMit PayPal bezahlt: {total}\n\nLade deine Strategien unter Meine Strategien herunter: {mine}\nWenn du ohne Konto gekauft hast, melde dich an (oder erstelle ein Konto) und bestätige diese E-Mail unter „Ohne Konto gekauft?“.\nJeder Link gilt {days} und für bis zu {downloads}; dort kannst du neue Links anfordern.\n\nProbleme, oder brauchst du eine Rechnung mit deinen Steuerdaten? Schreib an {contact}\n",
+    "zh": "感谢你在 Edgefolio 购买。\n\n订单：{id}\n{lines}\n\n通过 PayPal 支付总额：{total}\n\n在“我的策略”中下载你的策略：{mine}\n如果你未登录时购买，请登录（或创建账户），并在“未登录时购买过？”中确认此邮箱。\n每个链接有效 {days}，最多下载 {downloads}；可在那里申请新链接。\n\n遇到问题，或需要带税务信息的发票？请写信至 {contact}\n",
+    "ar": "شكرًا لشرائك من Edgefolio.\n\nالطلب: {id}\n{lines}\n\nالمبلغ المدفوع عبر PayPal: {total}\n\nنزّل استراتيجياتك من استراتيجياتي: {mine}\nإذا اشتريت من دون حساب، فسجّل الدخول (أو أنشئ حسابًا) وأكّد هذا البريد في «اشتريت من دون حساب؟».\nكل رابط صالح لمدة {days} وحتى {downloads}، ويمكنك طلب روابط جديدة من هناك.\n\nهل لديك مشكلة أو تحتاج فاتورة ببياناتك الضريبية؟ اكتب إلى {contact}\n",
+    "hi": "Edgefolio पर खरीदारी के लिए धन्यवाद।\n\nऑर्डर: {id}\n{lines}\n\nPayPal से कुल भुगतान: {total}\n\nअपनी रणनीतियाँ मेरी रणनीतियाँ से डाउनलोड करें: {mine}\nअगर आपने बिना खाते के ख़रीदा था, तो साइन इन करें (या खाता बनाएँ) और «बिना खाते के ख़रीदा था?» में इस ईमेल की पुष्टि करें।\nहर लिंक {days} और {downloads} तक चलता है; वहाँ आप नए लिंक माँग सकते हैं।\n\nकोई समस्या, या अपने टैक्स विवरण के साथ इनवॉइस चाहिए? {contact} पर लिखें\n"
   },
   "viewTableTab": {
     "es": "Tabla",

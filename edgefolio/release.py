@@ -135,6 +135,8 @@ def scripts_of(rows, wanted: dict, copy: dict, target: Path, have: set):
     pub = publisher()
     for key in rows[pub.KEY].astype(str).itertuples(index=False):
         name = pub.private_name(*key)
+        if name not in wanted:
+            continue          # una que se deja fuera (LEFT_OUT): ni se publica ni cuenta (2026-11-15: «sin su script»)
         path = copy.get(name) or (target / name if name in have else None)
         data = path.read_bytes() if path is not None and regular(path) else None
         good = data is not None and sha256_of(data) == str(wanted.get(name, "")).lower()
@@ -201,13 +203,17 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
                        "copian (o --skip-scripts para publicar sin ellos)"])
 
     found, counted = levels.collect(scripts_of(checked[1], wanted, copy, target, have))
+    # con --skip-scripts y ningún script comprobado no se sabe nada de los niveles: un fichero vacío borraría los
+    # publicados (el comando levels se niega a lo mismo). Hasta el 14-11-2026 los vaciaba.
+    keep_levels = skip_scripts and not found and Path(settings.levels).is_file()
 
     stage = pub.Staged()
     try:
         copied_scripts = stage_scripts(copy, wanted, target, stage)
         # los niveles son de los scripts de este catálogo: se escriben siempre, también vacíos (los de antes eran de
-        # otras estrategias)
-        stage.write(Path(settings.levels), levels.dumps(found))
+        # otras estrategias), salvo keep_levels
+        if not keep_levels:
+            stage.write(Path(settings.levels), levels.dumps(found))
         catalogue = pub.publish_package(package, prune=prune, out=Path(settings.catalogue), assets=assets,
                                         checked=checked, stage=stage,
                                         list_intraday_stocks=settings.list_intraday_stocks)
@@ -229,6 +235,7 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
         "rows": done["rows"], "files": done["copied"], "cut": done["cut"], "pruned": done["pruned"],
         "kept": done["kept"], "scripts": copied_scripts, "scripts_missing": len(absent) if skip_scripts else 0,
         "scripts_outdated": len(outdated) if skip_scripts else 0, "thumbs": thumbs, "levels": counted,
+        "levels_kept": keep_levels,
         "bundles_out": bundles_left_out(settings.bundles, catalogue),
         "contract": manifest["contract"], "created": manifest["created"],
         "commit": str(manifest["generator"].get("commit") or ""),

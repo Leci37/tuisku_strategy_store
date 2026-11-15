@@ -20,6 +20,10 @@ const PACK_FIND = 40;
 const CART_KEY = 'edgefolio-cart-v1';
 const FAVS_KEY = 'edgefolio-favs-v1';
 const list = x => (Array.isArray(x) ? x.filter(v => typeof v === 'string') : []);
+// Un código guardado que el servidor no acepta (más de 64 caracteres, o no un texto) se olvida: hasta el 14-11-2026
+// cada presupuesto daba errRequest, recargar no lo arreglaba y el carrito enseñaba «Pagas 0,00 US$».
+const CODE_MAX = 64;
+const savedCode = x => (typeof x === 'string' && x.length <= CODE_MAX ? x : '');
 // lo que contesta un enlace de descarga abierto en la pestaña: el servidor devuelve aquí a la persona con la clave
 // (errUpdateExpired: el de una versión de antes, con la estrategia caducada, daría la nueva)
 const LINK_ERRORS = ['errLinkNotFound', 'errLinkExpired', 'errDownloadLimit', 'errStrategyGone', 'errFileMissing', 'errUpdateExpired'];
@@ -61,7 +65,7 @@ export class App extends Component {
       pro: [], proTotal: 0, proFirst: 1, proPage: 0, proLoaded: false, hist: {}, options: {}, ranges: null,
       expanded: '', tip: '',
       cart: list(cart.cart), bundles: list(cart.bundles), packIds: list(cart.packIds),
-      code: cart.code || '', applied: cart.applied || '', codeState: '', codeOpen: !!cart.applied, quote: null,
+      code: savedCode(cart.code), applied: savedCode(cart.applied), codeState: '', codeOpen: !!savedCode(cart.applied), quote: null,
       favs: list(favs.favs), alerts: favs.alerts && typeof favs.alerts === 'object' ? favs.alerts : {},
       compare: [], cmpOpen: false, packOpen: false, packQ: '', packFound: [],
       freeFor: '', freeEmail: '', freeNews: false, freeSent: false, freeErr: '', dockH: 0, toastH: 0,
@@ -119,7 +123,8 @@ export class App extends Component {
     // back from the link that confirms the news opt-in
     const news = qs.get('news');
     if (news) {
-      if (news === 'confirmed' || news === 'expired') this.setState({ notice: news === 'confirmed' ? 'newsConfirmed' : 'newsExpired' });
+      const notices = { confirmed: 'newsConfirmed', expired: 'newsExpired', unsubscribed: 'newsUnsubscribed' };
+      if (notices[news]) this.setState({ notice: notices[news] });
       dropParams('news');
     }
     this.sync(null);
@@ -505,7 +510,14 @@ export class App extends Component {
       this.mineChanged();
       this.setState({ receipt: rc, ...(rc.paid_now ? { cart: [], bundles: [], packIds: [] } : {}), instFor: first ? first.id : '', mine: null,
         instStep: !first || read('edgefolio-install-v1') ? -1 : 0 });
-    }).catch(e => { this.fail(e); this.go({ page: 'shop' }, { replace: true }); });
+    }).catch(e => {
+      this.fail(e);
+      // Un cobro que PayPal no ha confirmado (o tiene pendiente) puede estar hecho: se ve la tienda, pero la dirección
+      // se queda con su pedido (/thanks?token=…), para que recargar lo vuelva a preguntar, y el aviso pide no pagar
+      // otra vez. Hasta el 14-11-2026 volvía a la tienda sin el pedido, con «No se te ha cobrado nada».
+      if (e && (e.network || e.key === 'errPayPalCapture' || e.key === 'errPaymentPending')) this.setState({ page: 'shop', tip: '' });
+      else this.go({ page: 'shop' }, { replace: true });
+    });
   }
 
   toggleCompare(id) {

@@ -47,9 +47,53 @@ def test_the_code_part_is_what_it_takes_off_after_the_cap(settings):
     assert q.total == Decimal("840.00")
 
 
+def test_no_next_tier_is_offered_once_the_cap_is_reached(settings):
+    # «Añade X más para llegar al N %» no miraba el tope: con big60 (60 %) y el escalón del 15 %, ya en el 70 %,
+    # prometía el del 20 %, que no quita nada más (14-11-2026). Sin código, el siguiente escalón sí se ofrece.
+    from edgefolio.catalogue import Strategy
+    two = [Strategy("T", "1Day", f"K{i}", f"id{i}", Decimal("90"), {}) for i in range(2)]  # 180 $: escalón del 15 %
+    assert quote(two, "", settings).next_tier["rate"] == "0.20"
+    capped = quote(two, "big60", settings)
+    assert capped.discount_rate == settings.max_discount and capped.next_tier is None
+    assert quote(two, "spring20", settings).next_tier["rate"] == "0.20"   # 35 % → 40 %: sí quita más
+
+
+def test_a_bundle_never_makes_the_cart_dearer(settings):
+    # M1: con su precio de oferta, un lote bajaba el carrito de tramo: 15 sueltas de 69 (1.035 $, −40 %) costaban
+    # 621,00, y las mismas con 5 en un lote de 229 (919 $, −25 %), 689,25. Cuando la oferta costaría más que sueltas,
+    # el tramo cuenta lo que valen sueltas; si no, el precio es el de siempre.
+    from types import SimpleNamespace
+    from edgefolio.catalogue import Strategy
+    fifteen = [Strategy("T", "1Day", f"K{i}", f"id{i}", Decimal("69"), {}) for i in range(15)]
+    bundle = SimpleNamespace(key="top5", price=Decimal("229"), items=fifteen[:5])
+    loose = quote(fifteen, "", settings)
+    packed = quote(fifteen[5:], "", settings, [bundle])
+    assert (loose.total, loose.discount_rate) == (Decimal("621.00"), Decimal("0.40"))
+    assert packed.discount_rate == Decimal("0.40") and packed.total == Decimal("551.40") and packed.total < loose.total
+    own = quote(fifteen[5:], "", settings, pack=fifteen[:5])          # «Arma tu pack», igual
+    assert own.discount_rate == Decimal("0.40") and own.total < loose.total
+    alone = quote([], "", settings, [bundle])                         # el lote solo, más barato que suelto: igual
+    assert (alone.total, alone.discount_rate) == (Decimal("194.65"), Decimal("0.15"))
+
+
 def test_flat_price_code(client, ids):
+    # 0,99 por cada suelta, pero nunca más del tope (MAX_DISCOUNT, 70 %): 79 → 23,70 y 93 → 27,90 (2026-11-15; antes,
+    # 1,98 las dos: un 98,8 % menos)
     r = client.post("/api/quote", json={"items": ids[:2], "code": "launch"})
-    assert r.json["total"] == "1.98" and r.json["code_status"] == "applied"
+    assert r.json["total"] == "51.60" and r.json["code_status"] == "applied"
+
+
+def test_a_flat_price_code_never_raises_the_total(settings):
+    # M8: con un código de precio fijo, los lotes pierden su escalón: una suelta y un lote grande costaban más con el
+    # código que sin él. Si sin él cuesta menos, se cobra como sin él.
+    from types import SimpleNamespace
+    from edgefolio.catalogue import Strategy
+    one = Strategy("T", "1Day", "K0", "id0", Decimal("69"), {})
+    many = [Strategy("T", "1Day", f"B{i}", f"b{i}", Decimal("99"), {}) for i in range(30)]
+    big = SimpleNamespace(key="big", price=Decimal("2600"), items=many)
+    plain = quote([one], "", settings, [big])
+    coded = quote([one], "launch", settings, [big])
+    assert plain.discount_rate == Decimal("0.70") and coded.total == plain.total and coded.code_status == "applied"
 
 
 def test_unknown_code_gives_no_discount(client, ids):

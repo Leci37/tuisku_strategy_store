@@ -19,45 +19,5 @@ decision_tree_0_ADBE_1Day_6c6818a7(rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
 			ret := 0.07799586776859505
 	ret //return
 
-decision_tree_1_ADBE_1Day_6c6818a7(rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
-	if( rsi1 <= 37.72455024719238 )
-		ret := 0.47767857142857145
-	if( rsi1 > 37.72455024719238 )
-		if( d <= 33.72922897338867 )
-			ret := -0.26974483596597815
-		if( d > 33.72922897338867 )
-			if( d_k <= 10.619085311889648 )
-				ret := -0.012665862484921592
-			if( d_k > 10.619085311889648 )
-				ret := 0.30751708428246016
-	ret //return
-
-decision_tree_2_ADBE_1Day_6c6818a7(rsi1, k, d, d_k, smoothD_d, smoothK_k)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=1228959102)
-	if( rsi1 <= 36.47228240966797 )
-		ret := 0.38738738738738737
-	if( rsi1 > 36.47228240966797 )
-		if( d <= 33.525604248046875 )
-			ret := -0.23404255319148937
-		if( d > 33.525604248046875 )
-			ret := 0.049132947976878616
-	ret //return
-
-// Define expected timeframe based on the selected interval: 1Day pine_value: D   Trigger an alert and show a label if the timeframe is incorrect
-alert_message_time_wrong = "The current candle TIMEframe is WRONG: "+ str.tostring(timeframe.period) + ", CHANGE it to the CORRECT one:  1DAY !!"
-if (str.tostring(timeframe.period) != "D")
-    alert(alert_message_time_wrong, alert.freq_once_per_bar_close)
-    label.new(bar_index -300, high+30, text = alert_message_time_wrong, style = label.style_label_down,size = size.large, color = color.red, textcolor = color.white)
-    log.error(alert_message_time_wrong)
-
-//CODE associated with the technical indicator L_Stochastic_RSI 
-//@version=5
-//indicator title="Stochastic RSI", shorttitle="Stoch RSI", format=format.price, precision=2, timeframe="", timeframe_gaps=true)
-smoothK = input.int(3, "K", minval=1)
-smoothD = input.int(3, "D", minval=1)
-lengthRSI = input.int(14, "RSI Length", minval=1)
-
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

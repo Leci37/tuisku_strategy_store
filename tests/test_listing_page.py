@@ -76,8 +76,8 @@ def figures_app(tmp_path_factory):
         yield application
 
 
-def test_the_catalogue_says_among_how_many_tried_and_hides_what_it_has_not_measured(real_app):
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+def test_the_catalogue_says_among_how_many_tried_and_hides_what_it_has_not_measured(real_app, chromium):
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -108,8 +108,8 @@ def test_the_catalogue_says_among_how_many_tried_and_hides_what_it_has_not_measu
             tab.close()
 
 
-def test_since_release_comes_back_with_a_figure(figures_app):
-    with mobile.serve(figures_app) as live, mobile.browser() as chromium:
+def test_since_release_comes_back_with_a_figure(figures_app, chromium):
+    with mobile.serve(figures_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:

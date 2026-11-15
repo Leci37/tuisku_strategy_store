@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 
 from edgefolio import downloads, orders
-from edgefolio.paypal import Capture
+from edgefolio.paypal import Capture, PayPalError
 from edgefolio.shop import install
 from edgefolio.web import digest
 from tests.conftest import prove, signed, visitor
@@ -74,6 +74,22 @@ def test_payment_for_a_different_amount_is_refused(app, client, ids, paypal):
     assert r.status_code == 402 and r.json == {"error": "errPayment", "paid": "0.01 USD COMPLETED"}
     assert stored(app, order)["status"] == "FAILED"
     assert client.get("/api/download/all?t=x").status_code == 404
+
+
+def test_a_strategy_gone_while_paying_is_not_charged(app, client, ids, paypal):
+    # Un catálogo nuevo sin ella mientras quien compra está en PayPal: hasta el 14-11-2026 se cobraba el total y no
+    # había ni enlace ni Mis estrategias para ella.
+    from edgefolio.shop import of
+    order = client.post("/api/orders", json={"items": ids[:2]}).json["id"]
+    catalogue = of(app).catalogue
+    gone = catalogue.resolve(ids[1]).key
+    kept = catalogue.items.pop(gone)
+    try:
+        r = client.post(f"/api/orders/{order}/capture")
+        assert r.status_code == 409 and r.json == {"error": "errStrategyGone"}
+        assert stored(app, order)["status"] == "CREATED" and order not in paypal.captured
+    finally:
+        catalogue.items[gone] = kept
 
 
 def test_only_free_items_cannot_be_ordered(client, ids):
@@ -152,6 +168,128 @@ def test_paypal_rest_order(monkeypatch):
     assert sent[-1][1]["purchase_units"][0]["amount"] == {"currency_code": "USD", "value": "12.50"}
 
 
+ALREADY = 'PayPal no cobró: 422 {"name": "UNPROCESSABLE_ENTITY", "details": [{"issue": "ORDER_ALREADY_CAPTURED"}]}'
+
+
+def test_a_capture_whose_answer_never_arrives_is_paid_from_what_paypal_says(app, client, ids, paypal):
+    # PayPal cobra, pero su respuesta no llega (un tiempo agotado, un reinicio): la tienda le pregunta por el pedido.
+    # Hasta el 14-11-2026 contestaba «No se te ha cobrado nada», y cada intento siguiente recibía «ya cobrado»: el
+    # pedido se quedaba sin pagar para siempre, sin enlaces, y quien compró sin cuenta podía pagar otra vez.
+    real = paypal.capture
+
+    def lost(order_id):
+        if order_id in paypal.captured:
+            raise PayPalError(ALREADY)
+        real(order_id)
+        raise PayPalError("PayPal no contestó: ReadTimeout")
+    paypal.capture = lost
+    order = client.post("/api/orders", json={"items": [ids[0]]}).json["id"]
+    first = client.post(f"/api/orders/{order}/capture")
+    assert first.status_code == 200 and first.json["status"] == "PAID" and first.json["paid_now"] is True
+    assert first.json["downloads"]
+    again = client.post(f"/api/orders/{order}/capture")
+    assert again.status_code == 200 and again.json["paid_now"] is False
+    assert stored(app, order)["status"] == "PAID"
+
+
+def test_with_paypal_unreachable_the_order_waits_for_a_reload(app, client, ids, paypal):
+    # Si tampoco se puede preguntar a PayPal, el pedido se queda como estaba y la página pide recargar, no pagar otra
+    # vez (errPayPalCapture); al recargar, con PayPal de vuelta, sale pagado.
+    real, settled, down = paypal.capture, paypal.settled, [True]
+
+    def lost(order_id):
+        if order_id in paypal.captured:
+            raise PayPalError(ALREADY)
+        real(order_id)
+        raise PayPalError("PayPal no contestó: ConnectTimeout")
+
+    def asked(order_id):
+        if down[0]:
+            raise PayPalError("PayPal no contestó: ConnectError")
+        return settled(order_id)
+    paypal.capture, paypal.settled = lost, asked
+    order = client.post("/api/orders", json={"items": [ids[0]]}).json["id"]
+    r = client.post(f"/api/orders/{order}/capture")
+    assert r.status_code == 502 and r.json["error"] == "errPayPalCapture"
+    assert stored(app, order)["status"] == "CREATED"
+    down[0] = False
+    r = client.post(f"/api/orders/{order}/capture")
+    assert r.status_code == 200 and r.json["status"] == "PAID" and r.json["paid_now"] is True
+
+
+def test_a_pending_capture_waits_and_is_paid_once_paypal_completes_it(app, client, ids, paypal):
+    # PayPal deja el cobro pendiente (lo revisa): hasta el 14-11-2026 el pedido pasaba a FAILED para siempre, con
+    # «no se te ha cobrado nada», y cuando PayPal lo liberaba el dinero llegaba sin nada que entregar.
+    real = paypal.capture
+
+    def pending(order_id):
+        if order_id in paypal.captured:
+            raise PayPalError(ALREADY)
+        cap = real(order_id)
+        paypal.captured[order_id] = Capture("PENDING", cap.amount, cap.currency, cap.payer)
+        return paypal.captured[order_id]
+    paypal.capture = pending
+    order = client.post("/api/orders", json={"items": [ids[0]]}).json["id"]
+    r = client.post(f"/api/orders/{order}/capture")
+    assert r.status_code == 402 and r.json["error"] == "errPaymentPending"
+    assert stored(app, order)["status"] == "PENDING"
+    assert client.post(f"/api/orders/{order}/capture").json["error"] == "errPaymentPending"  # sigue pendiente
+    held = paypal.captured[order]
+    paypal.captured[order] = Capture("COMPLETED", held.amount, held.currency, held.payer)  # PayPal lo libera
+    r = client.post(f"/api/orders/{order}/capture")
+    assert r.status_code == 200 and r.json["status"] == "PAID" and r.json["paid_now"] is True and r.json["downloads"]
+
+
+def test_paypal_rest_capture_with_a_lost_answer_asks_for_the_order(monkeypatch):
+    import httpx
+    import pytest
+    from edgefolio import paypal as pp
+    headers = []
+
+    class Answer:
+        def __init__(self, body, status=200):
+            self.status_code, self.body, self.text = status, body, ""
+
+        def json(self):
+            return self.body
+
+    def post(url, **kw):
+        if url.endswith("/oauth2/token"):
+            return Answer({"access_token": "T"})
+        headers.append(kw.get("headers") or {})
+        raise httpx.ReadTimeout("la respuesta no llegó")
+
+    order = {"id": "5O1", "status": "COMPLETED", "payer": {"email_address": "b@example.com"},
+             "purchase_units": [{"payments": {"captures": [
+                 {"status": "COMPLETED", "amount": {"value": "12.50", "currency_code": "USD"}}]}}]}
+    monkeypatch.setattr(pp.httpx, "post", post)
+    monkeypatch.setattr(pp.httpx, "get", lambda url, **kw: Answer(order))
+    rest = pp.PayPalREST("sandbox", "id", "secret")
+    with pytest.raises(pp.PayPalError):   # hasta el 14-11-2026, un httpx.ReadTimeout sin más: un 500
+        rest.capture("5O1")
+    assert headers[-1]["PayPal-Request-Id"] == "edgefolio-capture-5O1"
+    assert rest.settled("5O1") == pp.Capture("COMPLETED", Decimal("12.50"), "USD", "b@example.com")
+    monkeypatch.setattr(pp.httpx, "get", lambda url, **kw: Answer({"id": "5O1", "status": "APPROVED",
+                                                                    "purchase_units": [{}]}))
+    assert rest.settled("5O1") is None
+
+
+def test_a_head_request_spends_no_download(client, ids, settings):
+    # Los escáneres de correo y las vistas previas de un enlace en un chat piden con HEAD, y Flask lo contestaba con
+    # la vista del GET, que gasta: tres HEAD dejaban 7 de las 10 descargas antes del primer clic (14-11-2026).
+    settings.max_downloads = 2
+    body = buy(client, [ids[0]]).json
+    url = body["downloads"][0]["url"]
+    for _ in range(3):
+        assert client.head(url).status_code == 200
+        assert client.head(url + "?format=zip").status_code == 200
+        assert client.head(body["download_all"]).status_code == 200
+    assert [client.get(url).status_code for _ in range(3)] == [200, 200, 429]
+    assert client.head(url).status_code == 429          # y dice lo mismo que el GET
+    assert client.head(body["download_all"]).status_code == 429
+    assert client.head("/api/download/guessed-token").status_code == 404
+
+
 def test_parallel_downloads_never_pass_the_limit(app, client, ids, settings, monkeypatch):
     settings.max_downloads = 3
     url = buy(client, [ids[0]]).json["downloads"][0]["url"]
@@ -185,8 +323,9 @@ def test_the_receipt_links_go_only_to_the_buyers_browser(app, client, ids):
     order_id, buyer = order.json["id"], client.get_cookie(BUYER).value
     stranger = visitor(app)  # alguien que sólo tiene el id del pedido (va en la dirección de vuelta de PayPal)
     hidden = receipt_for(stranger, order_id)
+    # sin quien pagó: ni enmascarado, que daba el dominio de su correo (14-11-2026)
     assert hidden == {"order_id": order_id, "status": "PAID", "total": "146.20", "currency": "USD",
-                      "payer": "b•••@example.com", "valid_days": 7, "max_downloads": 10, "download_all": None,
+                      "payer": "", "valid_days": 7, "max_downloads": 10, "download_all": None,
                       "downloads": [], "links_hidden": True, "paid_now": True}
     assert stored(app, order_id)["status"] == "PAID", "cobrar lo puede pedir cualquiera"
     mine = receipt_for(client, order_id)
@@ -258,9 +397,9 @@ def test_a_single_strategy_the_account_has_is_not_sold_again(app, ids, settings,
         assert r.status_code == 409 and r.json == {"error": "errAlreadyOwned", "items": [ids[0], AAPL_ID]}, path
     assert len(paypal.orders) == made, "ningún pedido en PayPal"
     assert ana.post("/api/quote", json={"items": [ids[1]]}).json["total"] == "93.00"
-    assert ana.post("/api/quote", json={"bundles": ["duo"]}).json["total"] == "150.00"
+    assert ana.post("/api/quote", json={"bundles": ["duo"]}).json["total"] == "127.50"     # nunca más que sueltas
     both = ana.post("/api/quote", json={"items": [ids[0]], "bundles": ["duo"]})
-    assert both.status_code == 200 and both.json["items"] == [] and both.json["total"] == "150.00"
+    assert both.status_code == 200 and both.json["items"] == [] and both.json["total"] == "127.50"
     settings.pack_size = 2
     assert ana.post("/api/quote", json={"pack": [AAPL_ID, "TSLA_1Day_1C00_dddd4444"]}).json["total"] == "129.00"
     assert visitor(app).post("/api/quote", json={"items": [ids[0]]}).status_code == 200, "sin sesión, de nadie"

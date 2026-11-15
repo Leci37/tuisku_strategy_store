@@ -31,33 +31,5 @@ decision_tree_0_AVAXUSDT_1Day_db14fd5f(Raw_Money_Flow, Positive_Money_Flow, Nega
 			ret := 0.475177304964539
 	ret //return
 
-decision_tree_1_AVAXUSDT_1Day_db14fd5f(Raw_Money_Flow, Positive_Money_Flow, Negative_Money_Flow, Positive_Money_Flow_Sum, Negative_Money_Flow_Sum, Money_Flow_Ratio, MFI, MFI_High, MFI_Low, Typical_Price__close, ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
-	if( Negative_Money_Flow <= 16559219 )
-		if( ema13__close <= 0.0940060243010521 )
-			if( Negative_Money_Flow_Sum <= 13771926 )
-				ret := -0.703125 // sell
-			if( Negative_Money_Flow_Sum > 13771926 )
-				ret := 0.08042635658914729
-		if( ema13__close > 0.0940060243010521 )
-			if( Positive_Money_Flow_Sum <= 642365696 )
-				ret := 0.8953488372093024 // buy
-			if( Positive_Money_Flow_Sum > 642365696 )
-				ret := 0.043478260869565216
-	if( Negative_Money_Flow > 16559219 )
-		if( Negative_Money_Flow <= 275458432 )
-			if( Raw_Money_Flow <= 88920252 )
-				ret := 0.008928571428571428
-			if( Raw_Money_Flow > 88920252 )
-				ret := -0.43823529411764706
-		if( Negative_Money_Flow > 275458432 )
-			ret := 0.6115702479338843
-	ret //return
-
-decision_tree_2_AVAXUSDT_1Day_db14fd5f(Raw_Money_Flow, Positive_Money_Flow, Negative_Money_Flow, Positive_Money_Flow_Sum, Negative_Money_Flow_Sum, Money_Flow_Ratio, MFI, MFI_High, MFI_Low, Typical_Price__close, ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=1228959102)
-	if( Raw_Money_Flow <= 68563828 )
-
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

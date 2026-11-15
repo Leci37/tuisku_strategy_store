@@ -58,6 +58,5 @@ decision_tree_0_PYPL_1Day_1f82aaf8(ci, tci, wt2, d_tci, ci_wt2, ap__close, esa__
 						ret := -0.017699115044247787
 					if( esa__close > 1.0954574942588806 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

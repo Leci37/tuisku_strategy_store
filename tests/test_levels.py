@@ -79,6 +79,12 @@ def test_the_command_writes_the_levels_of_the_published_catalogue(app, settings,
     # API #3 los manda, cuando la tienda arranca otra vez; sin ellos, null
     assert client.get(f"/api/strategies/{aapl.id}").json["buy_at"] is None, "la tienda en marcha sigue con lo de antes"
     install(app, settings, paypal)
+    # sólo en las de varios árboles (2026-11-15): la de las pruebas no dice cuántos tiene; con tres, sí
+    assert client.get(f"/api/strategies/{aapl.id}").json["buy_at"] is None
+    from dataclasses import replace
+    from edgefolio.shop import of
+    cat = of(app).catalogue
+    cat.items[aapl.key] = cat.by_id[aapl.id] = replace(cat.items[aapl.key], forest=3)
     detail = client.get(f"/api/strategies/{aapl.id}").json
     assert (detail["buy_at"], detail["close_at"]) == (0.8, -0.55)
     other = client.get(f"/api/strategies/{msft.id}").json
@@ -96,3 +102,23 @@ def test_with_no_script_of_its_own_the_command_leaves_the_file_alone(app, settin
     result = run(app, "levels")
     assert result.exit_code != 0 and "4 cuyo script es el de otra estrategia" in result.output
     assert "no se toca" in result.output and settings.levels.read_bytes() == before
+
+
+def test_a_visitor_gets_the_levels_only_of_a_forest_of_several_trees(real_client):
+    # Dueño, 2026-11-15: con catalogue/levels.json publicado, el visitante ve Comprar, Vender o Esperar sólo en las de
+    # varios árboles; en una de un árbol, su árbol (el de la vista previa) y sus niveles son el modelo que se vende.
+    from edgefolio.catalogue import forest_size
+    from edgefolio.settings import ROOT as REPO
+    published = levels.load(REPO / "catalogue" / "levels.json")
+    assert published, "catalogue/levels.json, publicado"
+    seen = {1: 0, "more": 0}
+    for row in real_client.get("/api/strategies?size=100").json["rows"]:
+        trees = forest_size(REPO / row["preview"].lstrip("/"))
+        got = real_client.get(f"/api/strategies/{row['id']}").json
+        if trees > 1 and row["id"] in published:
+            assert (got["buy_at"], got["close_at"]) == (published[row["id"]]["buy_at"], published[row["id"]]["close_at"])
+            seen["more"] += 1
+        else:
+            assert got["buy_at"] is None and got["close_at"] is None, row["id"]
+            seen[1] += trees == 1
+    assert seen[1] and seen["more"], seen

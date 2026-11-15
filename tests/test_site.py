@@ -41,7 +41,9 @@ def test_security_headers_on_every_response(client):
         h = client.get(path).headers
         assert "script-src 'self'" in h["content-security-policy"], path
         assert h["x-content-type-options"] == "nosniff"
-        assert h["referrer-policy"] == "strict-origin-when-cross-origin"
+        # un estático, desde el núcleo 0.35, con no-referrer (lo que pide un módulo o una fuente no manda ni su dirección)
+        policies = {"strict-origin-when-cross-origin"} | ({"no-referrer"} if path.startswith("/static/") else set())
+        assert h["referrer-policy"] in policies, path
 
 
 def test_the_browser_no_longer_downloads_the_catalogue(client):
@@ -100,6 +102,27 @@ def test_every_public_preview_is_cut():
     full = "//@version=5\ndecision_tree_0_X(a)=>\n" + "".join(f"\tif( a <= {i} )\n\t\tret := 1\n" for i in range(80))
     cut = cut_preview(full)
     assert cut.endswith(PREVIEW_TAIL) and cut.count("if( a <=") < 30 and cut_preview(cut) == cut
+
+
+def test_a_public_preview_holds_one_tree_at_most():
+    # Con árboles pequeños, 50 líneas daban dos o tres: la de ADBE 1Day 1S00 (69 US$) traía sus tres árboles,
+    # el modelo entero que se vende, y otras siete traían dos o más.
+    import re
+    import sys
+    sys.path.insert(0, str(ROOT / "catalogue"))
+    from previews import PREVIEW_TAIL, cut_preview
+
+    for f in sorted((STATIC / "assets" / "previews").glob("*.pine")):
+        assert len(re.findall(r"^decision_tree_", f.read_text(encoding="utf-8"), re.M)) == 1, f.name
+    tree = "\tfloat ret = na\n\tif( a <= 1 )\n\t\tret := 1 // buy\n\telse\n\t\tret := -1 // sell\n\tret //return\n"
+    forest = ("//@version=5\n//RANDOM FOREST AI: 3 tree(s)\n"
+              + "".join(f"decision_tree_{n}_X(a)=>\n{tree}\n" for n in range(3)) + "a = ta.rsi(close, 14)\n")
+    cut = cut_preview(forest)
+    assert cut.count("decision_tree_") == 1 and "ret //return" in cut and "ta.rsi" not in cut
+    assert cut.endswith(PREVIEW_TAIL) and cut_preview(cut) == cut
+    # una cortada de antes, con dos árboles, se corta otra vez
+    old = "\n".join(forest.split("\n")[:2 + 2 * 8]) + "\n" + PREVIEW_TAIL
+    assert old.count("decision_tree_") == 2 and cut_preview(old) == cut
 
 
 def test_no_paid_script_is_whole_in_an_archived_design_export():

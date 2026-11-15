@@ -58,6 +58,5 @@ decision_tree_0_SNAP_1Day_9d2b1ff1(VIP, VIM, VIP_VIM)=>
 		if( VIP <= 0.8613066971302032 )
 			if( VIM <= 0.9776276648044586 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

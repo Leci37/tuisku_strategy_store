@@ -58,6 +58,5 @@ decision_tree_0_SHIBUSDT_1Day_54cef080(BBPower_Color, ad, mf, ad_mf, bullPower__
 			if( ad_mf <= 16575452151808 )
 				if( bbp__close <= -0.024335223250091076 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_LTCUSDT_1Day_80a8b285(BBPower_Color, ad, mf, ad_mf, bullPower__c
 					if( mf > -0.06770063191652298 )
 						ret := 0.2196669310071372
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

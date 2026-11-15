@@ -58,6 +58,5 @@ decision_tree_0_RBLX_1Day_6bbff06a(BBPower_Color, Raw_Money_Flow, Positive_Money
 			if( Money_Flow_Ratio <= 0.45842549204826355 )
 				if( bearPower__close <= -0.09510305151343346 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

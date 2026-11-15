@@ -58,6 +58,5 @@ decision_tree_0_ADAUSDT_1Day_ab4657ca(ad, mf, ad_mf)=>
 			if( ad <= 111603492 )
 				ret := -0.875 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_NFLX_1Day_f90ef3f4(ad, mf, ad_mf, Raw_Money_Flow, Positive_Money
 		if( MFI_High <= -15.459656238555908 )
 			ret := 0.043478260869565216
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

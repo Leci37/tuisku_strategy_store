@@ -143,6 +143,15 @@ README de aquí: la base de datos, las compras, la prueba de un correo.
     de borrar ni exportar por su cuenta. `check_tool(app, privacy_sample=…)` lo
     comprueba (`tests/test_privacy.py`, con `testing.export_account` y
     `testing.close_account`).
+24. **Un solo Chromium para toda la sesión de pytest.** La fixture `chromium`
+    de `tests/conftest.py` es de sesión (`scope="session"`), y cada prueba
+    abre su contexto con `mobile.open_page` y lo cierra. Nunca un
+    `with mobile.browser()` ni un `chromium.launch()` dentro de una prueba,
+    ni una fixture de navegador que no sea de sesión: lanzar Chromium cuesta
+    1-2 s cada vez y **los minutos de la CI se pagan** (en SolarVillage, uno
+    por prueba se comía 20 de sus 82 minutos). `tests/test_layout.py` lo
+    vigila. Regla del dueño, 15-11-2026: que no se repita en ninguna
+    herramienta.
 
 ## La aplicación gemela
 

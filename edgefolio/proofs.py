@@ -32,19 +32,26 @@ PROOF_HOURS = 24
 MAX_PENDING = 5
 #: Un correo de confirmación a la misma dirección, como mucho cada tanto (un doble clic, una impaciencia).
 RESEND_SECONDS = 60
+#: Lo que vale una prueba: una dirección puede pasar a otra persona (2026-11-15; antes, para siempre). Pasado, se pide
+#: otra vez como la primera.
+PROOF_VALID_DAYS = 365
+
+
+def _fresh():
+    return EmailProof.verified_at > utcnow() - timedelta(days=PROOF_VALID_DAYS)
 
 
 def proven(user_id: Optional[int]) -> List[str]:
     """Los correos que la cuenta ha demostrado que son suyos."""
     if user_id is None:
         return []
-    rows = EmailProof.query.filter(EmailProof.user_id == user_id, EmailProof.verified_at.isnot(None))
+    rows = EmailProof.query.filter(EmailProof.user_id == user_id, EmailProof.verified_at.isnot(None), _fresh())
     return sorted(r.email for r in rows)
 
 
 def is_proven(user_id: Optional[int], email: str) -> bool:
     return bool(user_id is not None and email and EmailProof.query.filter(
-        EmailProof.user_id == user_id, EmailProof.email == email, EmailProof.verified_at.isnot(None)).first())
+        EmailProof.user_id == user_id, EmailProof.email == email, EmailProof.verified_at.isnot(None), _fresh()).first())
 
 
 def request(user_id: int, email: str) -> Optional[str]:
@@ -53,7 +60,9 @@ def request(user_id: int, email: str) -> Optional[str]:
     now = utcnow()
     row = EmailProof.query.filter_by(user_id=user_id, email=email).first()
     if row is not None and row.verified_at is not None:
-        return None
+        if row.verified_at > utcnow() - timedelta(days=PROOF_VALID_DAYS):
+            return None
+        row.verified_at = None                               # caducada: se demuestra otra vez
     if row is not None and row.token_hash and row.requested_at > now - timedelta(seconds=RESEND_SECONDS):
         return None
     if row is None:

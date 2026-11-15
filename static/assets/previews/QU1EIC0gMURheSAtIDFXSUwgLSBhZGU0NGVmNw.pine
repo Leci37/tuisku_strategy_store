@@ -58,6 +58,5 @@ decision_tree_0_AMD_1Day_ade44ef7(Color_con1, Color_con2, colInt, wvf, midLine, 
 					if( lowerBand > 1.1466861367225647 )
 						ret := 0.3548387096774194
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

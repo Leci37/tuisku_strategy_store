@@ -58,6 +58,5 @@ decision_tree_0_PYPL_1Day_5eedfa3d(trend, buySignalInt, sellSignalInt, atr2__clo
 					if( dn1__close > 1.2642438411712646 )
 						ret := 1 // buy
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

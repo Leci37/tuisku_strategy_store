@@ -58,6 +58,5 @@ decision_tree_0_U_1Day_f84a469e(ma05_colorInt, ma10_colorInt, ma15_colorInt, ma2
 						ret := 0.4
 				if( ma100__close > 1.538123071193695 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_PINS_1Day_783b3a7b(BBPower_Color, rsi1, k, d, d_k, smoothD_d, sm
 					if( d_k <= -19.135997772216797 )
 						ret := -0.5689655172413793
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

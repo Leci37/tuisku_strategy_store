@@ -58,6 +58,5 @@ decision_tree_0_PINS_1Day_9297bf53(BBPower_Color, basis__close, Upper_Band__clos
 					if( basis__close <= 0.9496201276779175 )
 						ret := 0.2553191489361702
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

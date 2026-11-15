@@ -58,6 +58,5 @@ decision_tree_0_PYPL_1Day_54d80c02(ad, mf, ad_mf, rsi1, k, d, d_k, smoothD_d, sm
 				if( ad_mf > 15714701.5 )
 					ret := -0.90625 // sell
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

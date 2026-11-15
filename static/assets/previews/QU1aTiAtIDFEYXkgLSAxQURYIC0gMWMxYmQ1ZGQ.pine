@@ -58,6 +58,5 @@ decision_tree_0_AMZN_1Day_1c1bd5dd(diPlus, diMinus, dx, adx, trueRange__close, d
 				if( adx > 14.766980171203613 )
 					if( smoothedTrueRange__close <= 0.2672847509384155 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

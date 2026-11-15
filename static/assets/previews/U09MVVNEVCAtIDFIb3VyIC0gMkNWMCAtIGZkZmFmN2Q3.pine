@@ -58,6 +58,5 @@ decision_tree_0_SOLUSDT_1Hour_fdfaf7d7(ad, mf, ad_mf, VIP, VIM, VIP_VIM)=>
 		if( ad_mf <= 780882.59375 )
 			if( VIM <= 1.034359872341156 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

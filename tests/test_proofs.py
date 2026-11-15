@@ -157,3 +157,25 @@ def test_signing_out_is_the_cores(app):
     assert ana.post("/logout").status_code in (200, 302)
     assert ana.get("/api/me").json == {"email": None}
     assert ana.get("/api/mine", headers={"Sec-Fetch-Dest": "empty"}).status_code == 401
+
+
+def test_a_proof_lasts_twelve_months(app):
+    # B13: una cuenta que demostró x@empresa lo tenía para siempre; si la dirección pasaba a otra persona, seguía viendo
+    # (y renovando) lo que esa comprara sin cuenta. Vale PROOF_VALID_DAYS; después se pide otra vez.
+    from datetime import timedelta
+    from zlecitool_core.db import db, utcnow
+    from edgefolio import proofs as pr
+    from edgefolio.models import EmailProof
+    from tests.conftest import prove, signed
+    ana = signed(app, "ana@example.com")
+    prove(ana)
+    with app.app_context():
+        assert pr.proven(ana.user_id) == ["ana@example.com"]
+        row = EmailProof.query.filter_by(user_id=ana.user_id).one()
+        row.verified_at = utcnow() - timedelta(days=pr.PROOF_VALID_DAYS + 1)
+        db.session.commit()
+        assert pr.proven(ana.user_id) == [] and not pr.is_proven(ana.user_id, "ana@example.com")
+    assert ana.get("/api/mine").json["proof_needed"] is True
+    prove(ana)                                            # otra vez, como la primera
+    with app.app_context():
+        assert pr.proven(ana.user_id) == ["ana@example.com"]

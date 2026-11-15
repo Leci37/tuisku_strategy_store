@@ -37,6 +37,11 @@ import os
 
 bind = f"0.0.0.0:{os.environ.get('PORT', '5105')}"
 workers = int(os.environ.get("WEB_CONCURRENCY", multiprocessing.cpu_count() * 2 + 1))
+# El PayPal simulado (PAYPAL_MODE=fake, el de por defecto) guarda sus pedidos en la memoria de cada proceso: con varios,
+# el cobro llega a otro, que no conoce el pedido, y falla (2026-11-15). Con fake, un proceso, diga lo que diga
+# WEB_CONCURRENCY; para un servidor de pruebas con varios, PAYPAL_MODE=sandbox.
+if (os.environ.get("PAYPAL_MODE") or "fake").strip().lower() == "fake":
+    workers = 1
 threads = int(os.environ.get("GUNICORN_THREADS", "4"))
 worker_class = "gthread"
 timeout = int(os.environ.get("GUNICORN_TIMEOUT", "360"))

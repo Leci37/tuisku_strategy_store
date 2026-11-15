@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_43248983(VIP, VIM, VIP_VIM, ema1__close, ema2__close, 
 					ret := -0.8333333333333334 // sell
 				if( tema__close > 0.9956905245780945 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

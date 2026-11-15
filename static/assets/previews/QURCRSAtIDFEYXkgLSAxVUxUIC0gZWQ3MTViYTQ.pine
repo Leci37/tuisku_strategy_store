@@ -58,6 +58,5 @@ decision_tree_0_ADBE_1Day_ed715ba4(ma_upInt, ma_downInt, cr_upInt, cr_downInt, c
 			if( avg2__close <= 0.9405890107154846 )
 				if( avg__close <= 0.9691619277000427 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

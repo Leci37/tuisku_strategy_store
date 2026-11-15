@@ -58,6 +58,5 @@ decision_tree_0_XRPUSDT_1Day_e42a25a9(Raw_Money_Flow, Positive_Money_Flow, Negat
 					if( MFI_Low <= 68.04816818237305 )
 						ret := -0.6428571428571429
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -58,6 +58,5 @@ decision_tree_0_SHOP_1Day_0b996044(VIP, VIM, VIP_VIM)=>
 						ret := 1 // buy
 					if( VIM > 0.6471130847930908 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

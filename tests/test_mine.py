@@ -259,6 +259,30 @@ def test_download_all_in_one_zip(client, settings):
     assert client.get(url).status_code == 429, "cada fichero cuenta una descarga"
 
 
+def test_two_renewals_at_once_give_one_link(app, settings, monkeypatch):
+    # B12: dos «Pedir un enlace nuevo» a la vez (un doble clic) daban dos enlaces nuevos: 20 descargas (2026-11-15)
+    from edgefolio import mine
+    from edgefolio.models import Download
+    ana = signed(app, "ana@example.com")
+    days = settings.download_days
+    settings.download_days = -1                       # nacido caducado: se renueva
+    buy(ana, [AAPL])
+    settings.download_days = days
+    look = mine.entry
+
+    def slow(*a, **k):                                # las dos miran antes de que ninguna apunte
+        out = look(*a, **k)
+        time.sleep(0.2)
+        return out
+    monkeypatch.setattr(mine, "entry", slow)
+    with ThreadPoolExecutor(2) as pool:
+        codes = list(pool.map(lambda _: ana.post("/api/mine/renew", json={"id": AAPL}).status_code, range(2)))
+    assert codes == [200, 200]
+    from zlecitool_core.db import utcnow
+    with app.app_context():                           # lo único que compró: un enlace nuevo, no dos
+        assert Download.query.filter(Download.expires_at > utcnow()).count() == 1
+
+
 def test_parallel_download_all_never_passes_the_limit(app, client, settings, monkeypatch):
     settings.max_downloads = 2
     receipt = buy(client, [AAPL, MSFT])
@@ -334,6 +358,7 @@ def test_an_update_is_free_until_the_strategy_expires(app, client, settings, pay
     settings.download_days = -1                       # nacido caducado: el de TSLA se renueva
     buy(ana, [TSLA])
     assert claim(ana, "ana@example.com").json == {"sent": True}
+    prove(ana)                                        # la gratis es del correo: sale cuando la cuenta lo demuestra
     settings.download_days = 7
     published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2, "NVDA": 2},
                     {"AAPL": "2099/01/01", "MSFT": "2020/01/01", "TSLA": "2020/01/01", "NVDA": "2020/01/01"})
@@ -353,6 +378,17 @@ def test_an_update_is_free_until_the_strategy_expires(app, client, settings, pay
     assert renewed["valid"] and renewed["version"] == 1, "el enlace de la versión comprada, aunque haya caducado"
     free = ana.post("/api/mine/renew", json={"id": NVDA}).json
     assert free["version"] == 2 and free["kind"] == "free", "una gratis, siempre"
+
+
+def test_the_new_version_of_an_expired_strategy_can_be_bought(app, settings, paypal):
+    # M9: quien tenía la v1 de una estrategia caducada con la v2 publicada no podía comprar la v2 suelta: «Ya es tuya»
+    # y errAlreadyOwned miraban la estrategia, no la versión. La v2 no va con su compra: se vende.
+    ana = signed(app, "ana@example.com")
+    buy(ana, [AAPL, MSFT])
+    published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2}, {"AAPL": "2099/01/01", "MSFT": "2020/01/01"})
+    assert ana.post("/api/quote", json={"items": [AAPL]}).status_code == 409, "sin caducar, la v2 va con la compra"
+    r = ana.post("/api/quote", json={"items": [MSFT]})
+    assert r.status_code == 200 and r.json["total"] == "93.00", r.get_data(as_text=True)
 
 
 def test_an_old_link_does_not_give_the_new_version_once_the_strategy_has_expired(app, settings, paypal):
@@ -405,7 +441,31 @@ def test_a_strategy_expires_at_midnight_utc_as_its_script(monkeypatch):
     for moment, expired in (((2027, 6, 12, 12, 0, 0), False), ((2027, 6, 12, 23, 59, 59), False),
                             ((2027, 6, 13, 0, 0, 0), True)):
         At.moment = datetime(*moment, tzinfo=timezone.utc)
-        assert (s.expired, s.serves(1), s.serves(2), s.serves(1, paid=False)) == (expired, not expired, True, True), moment
+        # una gratis de la v1 de una de pago no da la v2 (2026-11-15: la daba, también caducada)
+        assert (s.expired, s.serves(1), s.serves(2), s.serves(1, paid=False)) == (expired, not expired, True, False), moment
+
+
+def test_news_counts_with_the_utc_day(monkeypatch):
+    # B12: «Novedades» usaba la fecha local del servidor y la caducidad, la UTC: la pestaña cambiaba a medianoche de
+    # donde estuviera el servidor (2026-11-15). Ahora, las dos en UTC.
+    from datetime import date, datetime, timedelta, timezone
+    from decimal import Decimal
+    from edgefolio import catalogue
+    from edgefolio.catalogue import Strategy
+
+    class At(datetime):
+        moment = None
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.moment.astimezone(tz) if tz else (cls.moment + timedelta(hours=14)).replace(tzinfo=None)
+
+    monkeypatch.setattr(catalogue, "datetime", At)
+    s = Strategy("AAPL", "1Day", "1ADX", "aaaa1111", Decimal("79"), {"Release date": "2026-10-13"}, new_days=30)
+    for moment, new in (((2026, 11, 12, 23, 30), True), ((2026, 11, 13, 0, 30), False)):
+        At.moment = datetime(*moment, tzinfo=timezone.utc)
+        assert s.is_new is new, moment
+    assert catalogue.utc_today() == date(2026, 11, 13)
 
 
 def test_every_published_strategy_says_when_it_expires(real_app):

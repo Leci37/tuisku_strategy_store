@@ -31,33 +31,5 @@ decision_tree_0_NIO_1Day_8c43883a(ema1__close, ema2__close, ema3__close, tema__c
 			ret := 0.35555555555555557
 	ret //return
 
-decision_tree_1_NIO_1Day_8c43883a(ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=914636141)
-	if( ema13__close <= 0.04257718473672867 )
-		if( tema__close <= 1.0142697095870972 )
-			if( tema__close <= 0.9758844077587128 )
-				if( ema2__close <= 0.9245645403862 )
-					ret := 0.41818181818181815
-				if( ema2__close > 0.9245645403862 )
-					ret := -0.31746031746031744
-			if( tema__close > 0.9758844077587128 )
-				ret := 0.12517193947730398
-		if( tema__close > 1.0142697095870972 )
-			ret := -0.3094017094017094
-	if( ema13__close > 0.04257718473672867 )
-		if( ema2__close <= 0.8712175786495209 )
-			if( ema1__close <= 0.8829181790351868 )
-				ret := 0.4322033898305085
-			if( ema1__close > 0.8829181790351868 )
-				ret := -0.3575757575757576
-		if( ema2__close > 0.8712175786495209 )
-			ret := 0.4463276836158192
-	ret //return
-
-decision_tree_2_NIO_1Day_8c43883a(ema1__close, ema2__close, ema3__close, tema__close, ema12__close, ema13__close)=>
-	float ret = na  // # DecisionTreeRegressor(max_depth=5, max_features=0.9, max_leaf_nodes=12,min_impurity_decrease=0.01, min_samples_leaf=4,min_samples_split=5, random_state=1228959102)
-	if( ema13__close <= 0.04846804589033127 )
-
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

@@ -101,9 +101,12 @@ def test_the_api_explains_each_indicator_in_the_language_asked(real_app):
         # sin tocar la cookie del idioma: con ?lang=, cada lista de una pestaña en otro idioma cambiaba el de la visita
         # siguiente
         assert not [c for c in r.headers.getlist("Set-Cookie") if c.startswith("zt_lang=")], r.headers.getlist("Set-Cookie")
-    # sin ?ind_lang=, el de la petición: ?lang= (como una página), o el del navegador (Accept-Language) si no hay cookie
-    # ni cuenta; uno que la tienda no habla no cuenta
-    assert real_app.test_client().get("/api/strategies?q=1BOL&size=1&lang=fr").json["rows"][0]["ind_lang"] == "fr"
+    # sin ?ind_lang=, el de la petición: el de la cookie (la página lo eligió), o el del navegador (Accept-Language) si
+    # no hay cookie ni cuenta; uno que la tienda no habla no cuenta. No ?lang=: desde el núcleo 0.35, en una petición
+    # de JSON es un parámetro de la herramienta y no cambia el idioma de quien pide
+    french = real_app.test_client()
+    french.set_cookie("zt_lang", "fr")
+    assert french.get("/api/strategies?q=1BOL&size=1").json["rows"][0]["ind_lang"] == "fr"
     german = real_app.test_client().get("/api/strategies?q=1BOL&size=1&ind_lang=xx",
                                         headers={"Accept-Language": "de-DE,de;q=0.9"}).json
     assert german["rows"][0]["ind_lang"] == "de" and german["rows"][0]["ind_text"] == said["de"]
@@ -343,9 +346,9 @@ TRADES = """() => [...document.querySelectorAll('#app button')].map(b => [b.quer
   .map(([s, b]) => [s.textContent, b.textContent.slice(s.textContent.length).trim()])"""
 
 
-def test_arabic_lite_counts_with_the_right_form(real_app):
+def test_arabic_lite_counts_with_the_right_form(real_app, chromium):
     ar = {k: v["ar"] for k, v in UI.items() if not k.startswith("_")}
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -381,12 +384,12 @@ def test_arabic_lite_counts_with_the_right_form(real_app):
             tab.close()
 
 
-def test_arabic_links_and_packs_count_with_the_right_form_in_the_page(real_app):
+def test_arabic_links_and_packs_count_with_the_right_form_in_the_page(real_app, chromium):
     """En la página, lo que cuenta un ajuste: la fila de confianza bajo «Pagar» (DOWNLOAD_DAYS, MAX_DOWNLOADS), la nota
     de los enlaces en Gracias y el aviso de un pack que no vale (PACK_SIZE). Antes, «الروابط لمدة 7 أيام وحتى 10
     تنزيلات» llevaba sus números escritos, y con otros ajustes decía «11 أيام» o «2 تنزيلات»."""
     rows = real_app.test_client().get("/api/strategies?paid=1&size=2").json["rows"]
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -437,10 +440,10 @@ def pack_of(size: int):
     return config
 
 
-def test_the_pack_says_its_size_and_counts_what_is_left_in_its_form(real_app):
+def test_the_pack_says_its_size_and_counts_what_is_left_in_its_form(real_app, chromium):
     """«Arma tu pack» dice su tamaño (PACK_SIZE, de API #1), no un 5 escrito en el texto, y cuántas faltan con la forma
     que pide su número (en árabe, «اختر اثنتين أخريين» con 2)."""
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         for lang, size, said in (("ar", 2, "اختر اثنتين أخريين · 2 مقابل "), ("es", 7, "Elige 7 más · 7 por "),
                                  ("ar", 1, "اختر واحدة أخرى · 1 مقابل ")):
             tab = mobile.open_page(chromium, live, "laptop")
@@ -467,11 +470,11 @@ def test_a_combined_indicator_is_named_like_its_tree_names_it():
             assert row["Full Indicator Name"] == " + ".join(p.replace("L_", "", 1).replace("_", " ") for p in parts), row["Key"]
 
 
-def test_a_bundle_list_that_wraps_never_ends_a_line_with_its_dot(real_app):
+def test_a_bundle_list_that_wraps_never_ends_a_line_with_its_dot(real_app, chromium):
     """La lista de tickers de un lote va en una línea de izquierda a derecha dentro de la tarjeta; si se parte, el
     punto se queda con el ticker que le sigue. En árabe, el que acababa la primera línea quedaba junto al que la
     separa del recuento: «SNOW · ADBE · META · AMD · · 5 استراتيجيات»."""
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         tab = mobile.open_page(chromium, live, "laptop")
         page = tab.page
         try:
@@ -499,10 +502,10 @@ def test_a_bundle_list_that_wraps_never_ends_a_line_with_its_dot(real_app):
             tab.close()
 
 
-def test_the_free_dialog_says_how_long_its_link_lasts(real_app):
+def test_the_free_dialog_says_how_long_its_link_lasts(real_app, chromium):
     """El «Hecho» de la gratis dice cuánto vale su enlace (DOWNLOAD_DAYS, de API #1), en la forma de su número; antes
     decía 7 días, escrito en el texto de los 8 idiomas."""
-    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+    with mobile.serve(real_app) as live:
         for lang, days, said in (("ar", 11, "تم. تفقّد بريدك: الرابط صالح لمدة 11 يومًا."),
                                  ("es", 1, "Hecho. Mira tu correo: el enlace vale 1 día.")):
             tab = mobile.open_page(chromium, live, "laptop")
@@ -524,3 +527,11 @@ def test_the_free_dialog_says_how_long_its_link_lasts(real_app):
                 assert tab.problems() == [], tab.problems()
             finally:
                 tab.close()
+
+
+def test_the_receipt_says_how_to_see_a_purchase_made_without_an_account():
+    # Decía «entra con este correo», y entrar no basta: lo comprado sin cuenta sale cuando la cuenta demuestra el correo,
+    # en «¿Compraste sin cuenta?» (2026-11-15). Cada idioma nombra ese apartado como lo nombra la página.
+    for lang in UI["_languages"]:
+        body = UI["mailReceiptBody"][lang]
+        assert UI["proofTitle"][lang] in body and "{mine}" in body, lang

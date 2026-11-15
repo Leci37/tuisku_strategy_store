@@ -87,8 +87,18 @@ class Plan:
     def write(self, rel: str, text, root: Path):
         data = text.encode("utf-8") if isinstance(text, str) else text
         path = root / rel
-        if not path.is_file() or path.read_bytes() != data:
+        if not path.is_file() or not same_text(path.read_bytes(), data):
             self.writes[rel] = data
+
+
+def same_text(old: bytes, new: bytes) -> bool:
+    """Iguales, o un texto que sólo cambia en el fin de línea: en un clon de Windows (core.autocrlf) los
+    ficheros tienen \\r\\n, y git los guarda con \\n (``* text=auto`` en .gitattributes): no es un cambio."""
+    if old == new:
+        return True
+    if b"\0" in old or b"\0" in new:
+        return False
+    return old.replace(b"\r\n", b"\n") == new.replace(b"\r\n", b"\n")
 
 
 # ---------------------------------------------------------------- el zip
@@ -458,6 +468,11 @@ def report(plan: Plan, root: Path, applied: bool, out=sys.stdout):
 
 
 def main(argv=None) -> int:
+    # Una consola que no es UTF-8 (la de Windows, cp1252) no sabe escribir «↗» ni otros signos del registro
+    # de cambios: sale «?» en su lugar, en vez de caerse con lo ya aplicado a medio contar.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("zip", type=Path, help="la exportación de Claude Design (.zip)")
     ap.add_argument("--apply", action="store_true", help="escribirlo (si no, sólo dice qué cambiaría)")

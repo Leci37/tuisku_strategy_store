@@ -58,6 +58,5 @@ decision_tree_0_ADAUSDT_1Day_fd2b897b(BBPower_Color, Raw_Money_Flow, Positive_Mo
 			if( Positive_Money_Flow_Sum > 1547405568 )
 				if( Positive_Money_Flow <= 1699164864 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

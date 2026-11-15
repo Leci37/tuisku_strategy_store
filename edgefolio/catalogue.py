@@ -72,6 +72,20 @@ def grade(trades, cutoffs: tuple = GRADE_CUTOFFS) -> str:
     return "A" if t >= a else "B" if t >= b else "C" if t >= c else "D"
 
 
+FOREST = re.compile(r"^//\s*RANDOM FOREST AI:\s*(\d+)\s*tree", re.M)
+
+
+def forest_size(path: Path) -> int:
+    """Cuántos árboles tiene el bosque de un script (``//RANDOM FOREST AI: 3 tree(s)``, la misma en su vista previa
+    pública), o 0 sin esa línea."""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            m = FOREST.search(f.read(4096))
+    except OSError:
+        return 0
+    return int(m[1]) if m else 0
+
+
 def script_expiry(path: Path):
     """La «Expiry date» de la cabecera de un script (``// ID_model: … Date Creation: … Expiry date: 2027/06/13``, la
     misma en su vista previa pública), o None sin ella. Desde ese día, a las 00:00 UTC, el script no abre operaciones
@@ -86,6 +100,27 @@ def script_expiry(path: Path):
         return date(int(m[1]), int(m[2]), int(m[3])) if m else None
     except ValueError:
         return None
+
+
+def chart_version(static: Path, path) -> str:
+    """La versión de un gráfico publicado: su fecha de modificación (cambia cuando publish.py lo reescribe, y no si
+    trae el mismo fichero), o '' si no está."""
+    try:
+        return format((static / (path or "").strip()).stat().st_mtime_ns // 1_000_000_000, "x") if path else ""
+    except OSError:
+        return ""
+
+
+def thumb_url(stem: str, version) -> str:
+    if not stem:
+        return ""
+    return f"/thumbs/{stem}.webp" + (f"?v={version}" if version else "")
+
+
+def utc_today() -> date:
+    """El día de hoy en UTC, el de la caducidad de los scripts: «Novedades» cambia a la misma hora en todos los
+    servidores (2026-11-15; antes, a medianoche de donde estuviera el servidor)."""
+    return datetime.now(timezone.utc).date()
 
 
 def read_release(path: Path) -> dict:
@@ -111,6 +146,8 @@ class Strategy:
     grade_cutoffs: tuple = GRADE_CUTOFFS
     expiry: date = None       # la «Expiry date» de su script publicado (su vista previa); None si no la dice
     ind_name: str = None      # el nombre de su indicador en indicators.csv; sin él, el de la fila del catálogo
+    charts_v: dict = field(default_factory=dict, compare=False)  # la versión de cada gráfico, para su miniatura
+    forest: int = 0           # los árboles de su bosque (la cabecera de su vista previa); 0 si no lo dice
 
     @property
     def id(self) -> str:
@@ -169,7 +206,8 @@ class Strategy:
     @property
     def is_new(self) -> bool:
         d = self.release_date
-        return bool(d) and date.today() - timedelta(days=self.new_days) <= d <= date.today()
+        today = utc_today()
+        return bool(d) and today - timedelta(days=self.new_days) <= d <= today
 
     @property
     def expired(self) -> bool:
@@ -180,10 +218,13 @@ class Strategy:
     def serves(self, version: int, paid: bool = True) -> bool:
         """Si un enlace de la versión ``version`` (de pago; con ``paid=False``, de una gratis) da el script de hoy, el único
         que guarda la tienda. El de su versión, siempre; el de una de antes, mientras la estrategia no ha caducado (la
-        versión nueva es gratis hasta su «Expiry date»; decisión del dueño, 2026-10-26); el de una gratis, siempre. Lo
-        miran Mis estrategias, renovar (API #16) y la descarga (API #10): si no, el enlace de antes, aún válido, daría la
-        versión nueva."""
-        return not paid or version >= self.version or not self.expired
+        versión nueva es gratis hasta su «Expiry date»; decisión del dueño, 2026-10-26). El de una gratis, la de hoy
+        mientras siga siendo gratis; si pasó a ser de pago, sólo el de su versión, la que se pidió, hasta que caduca el
+        enlace (2026-11-15; hasta entonces daba también las versiones de pago). Lo miran Mis estrategias, renovar (API #16)
+        y la descarga (API #10): si no, el enlace de antes, aún válido, daría la versión nueva."""
+        if not paid:
+            return version >= self.version or self.price == 0
+        return version >= self.version or not self.expired
 
     @cached_property
     def numbers(self) -> dict:
@@ -201,8 +242,10 @@ class Strategy:
             **self.numbers, "release": self.release, "version": self.version,
             "profit": asset(r.get("path_stra")), "candle": asset(r.get("path_candle")),
             "icon": asset(r.get("path_ico_big")), "preview": asset(r.get("pine_path_shadow")),
-            "thumb_profit": f"/thumbs/{stems['profit']}.webp" if stems["profit"] else "",
-            "thumb_candle": f"/thumbs/{stems['candle']}.webp" if stems["candle"] else "",
+            # con la versión del gráfico: la miniatura se guarda un año como inmutable, y un catálogo nuevo puede
+            # cambiar el gráfico sin cambiarle el nombre (hasta el 14-11-2026 se veía la de antes un año)
+            "thumb_profit": thumb_url(stems["profit"], self.charts_v.get("profit")),
+            "thumb_candle": thumb_url(stems["candle"], self.charts_v.get("candle")),
             "grade": self.grade, "tv_symbol": self.tv_symbol, "file": self.file,
         }
 
@@ -278,7 +321,10 @@ class Catalogue:
                     s = replace(s, live=number(live[s.id].get("pct")), live_as_of=live[s.id].get("as_of") or None)
                 preview = (row.get("pine_path_shadow") or "").strip()
                 if preview:
-                    s = replace(s, expiry=script_expiry(Path(source.static) / preview))
+                    s = replace(s, expiry=script_expiry(Path(source.static) / preview),
+                                forest=forest_size(Path(source.static) / preview))
+                s = replace(s, charts_v={k: chart_version(Path(source.static), row.get(col))
+                                         for k, col in (("profit", "path_stra"), ("candle", "path_candle"))})
                 if s.key not in self.items:
                     self.items[s.key] = s
                     self.by_id[s.id] = s
@@ -364,10 +410,12 @@ class Catalogue:
 
     def detail(self, s: Strategy, lang: str = "en") -> dict:
         """La de una estrategia (API #3): la fila, el autor del indicador, sus versiones y los niveles de su script,
-        con los que el árbol del visitante dice comprar, vender o esperar (null si la tienda no los tiene)."""
+        con los que el árbol del visitante dice comprar, vender o esperar (null si la tienda no los tiene). Sólo en las
+        de varios árboles (decisión del dueño, 2026-11-15, «lo más conservador»): en una de un árbol, el árbol de la
+        vista previa y sus niveles son el modelo entero que se vende."""
         ind = self.indicators.get(s.key_techs, {})
         versions = [{"v": v, "date": s.release if v == s.version else None, "note": ""}
                     for v in range(s.version, 0, -1)]
-        levels = self.levels.get(s.id, {})
+        levels = self.levels.get(s.id, {}) if s.forest > 1 else {}
         return {**self.row(s, lang), "ind_author": ind.get("ind_author", ""), "versions": versions,
                 "buy_at": levels.get("buy_at"), "close_at": levels.get("close_at")}

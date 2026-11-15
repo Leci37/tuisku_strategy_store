@@ -58,6 +58,5 @@ decision_tree_0_CRWD_1Day_fd7d1e12(Raw_Money_Flow, Positive_Money_Flow, Negative
 			if( Short_MA__close > 1.022936224937439 )
 				if( MFI <= 39.459285736083984 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

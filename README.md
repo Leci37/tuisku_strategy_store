@@ -162,6 +162,11 @@ de una gratis, el de confirmar un correo, los avisos, el recibo de una compra); 
 scripts de pago todo funciona, y una descarga contesta que el fichero no está (los que trae `restore-scripts` son los
 del catálogo de antes: ver «Comandos»).
 
+`requirements-dev.txt` instala el núcleo de `../zlecitool-core` tal como esté su rama, que puede ser otra versión que
+la de producción. Para probar con la de producción, después, el de la etiqueta que fija `requirements.txt`:
+`pip install "zlecitool-core[dev] @ git+https://github.com/Leci37/zlecitool-core@<etiqueta>"` (con el token de lectura
+de GitHub, como el servidor).
+
 ## Pruebas
 
 ```
@@ -178,9 +183,15 @@ comprueba que no queda nada fuera de los pedidos). Las de los scripts de pago (`
 un clon sin ella, se saltan. La que entiende el script de cada estrategia del catálogo se salta también con
 ella: los de la historia son del catálogo de antes (es la saltada de cada vuelta), y sólo corre con
 `STRATEGIES_DIR` en los de verdad. Las de la página en un navegador (las de `test_phone_bar.py`,
-`test_keyboard.py`, `test_listing_page.py`, `test_buying_page.py`, `test_mine_page.py` y `test_scales.py`, y
-parte de las de `test_lists_cart.py`, `test_strategy_page.py`, `test_tree.py` y `test_texts.py`) abren un
+`test_keyboard.py`, `test_listing_page.py`, `test_buying_page.py`, `test_mine_page.py`, `test_walkthrough.py` y `test_scales.py`, y
+parte de las de `test_lists_cart.py`, `test_strategy_page.py`, `test_tree.py` y `test_texts.py`) usan un
 Chromium (el kit del núcleo, `testing.mobile`); sin él, se saltan y no prueban nada.
+
+**Un solo Chromium para toda la sesión de pytest** (regla del dueño, 2026-11-15): la fixture `chromium` de
+`tests/conftest.py`, de sesión, y un contexto nuevo por prueba (`mobile.open_page`, que se cierra al acabar). Nunca un
+`with mobile.browser()` ni un `chromium.launch()` dentro de una prueba, ni una fixture de navegador que no sea de
+sesión: lanzar Chromium cuesta 1-2 s cada vez, y los minutos de la CI se pagan (en SolarVillage, uno por prueba se
+comía 20 de sus 82 minutos). `tests/test_layout.py` lo vigila.
 
 | Fichero | Qué prueba |
 |---|---|
@@ -208,6 +219,7 @@ Chromium (el kit del núcleo, `testing.mobile`); sin él, se saltan y no prueban
 | `test_lists_cart.py` | en un Chromium, las listas, el carrito y el recorrido: los packs esperan a los lotes; los buscadores no pasan de 100; Intro aplica el código; el árabe; el singular de Pro; la fila desplegada de la Tabla; al llegar, el diccionario, las favoritas y la página de gracias |
 | `test_listing_page.py` | en un Chromium, lo que la tienda dice de su catálogo: entre cuántas probadas en el aviso de sobreajuste, los cortes de la nota y «Desde su publicación» sólo con cifras |
 | `test_buying_page.py` | en un Chromium, «Ya es tuya» en Lite, Pro y la ficha (sin precio) y el carrito que la pierde con su aviso; la página de gracias, que no rechaza lo que se acaba de pagar; la actualización sólo hasta la caducidad; la gratis en un móvil tumbado; «Hecho» anunciado; el buscador de Pro bajo la barra |
+| `test_walkthrough.py` | en un Chromium, el camino de compra de punta a punta, a clics: «Comprar» en Lite, el buscador, la ficha y «Añadir al carrito», «Pagar» con el PayPal de prueba, Gracias con lo pagado; después, con una cuenta, «¿Compraste sin cuenta?», el enlace del correo, «Sí, … es mío» y Mis estrategias con lo comprado (medio minuto) |
 | `test_strategy_page.py`, `test_scales.py` | en un Chromium, la ficha: la temporalidad de TradingView, la explicación del indicador en el idioma de la página, una gratis, «Ya es tuya», el título de la pestaña, «Cómo decide» que se pide otra vez y sigue al carrito; las escalas de Pro y las barras de la ficha, del catálogo |
 | `test_tree.py`, `test_mine_page.py` | «Cómo decide»: cada patrón y cada valor de las vistas previas publicadas con su nombre, en los 8 idiomas; en un Chromium, la pestaña como visitante (con los niveles publicados o, sin ellos, con la puntuación de cada resultado; la escala y los signos en árabe; la frase de cuántos árboles tiene el bosque) y como propietario, y el móvil. Mis estrategias en un Chromium: la prueba de un correo, las favoritas, el tutorial y una respuesta cortada |
 | `test_design_update.py` | aplicar una exportación del diseño: una igual a la anterior no cambia nada; un cambio del diseño llega a la vista adaptada; la forma de las de octubre (`vendor/`, las notas nuevas, `versions/` y `offline/` fuera); `docs/design/serve.py` encuentra el núcleo |
@@ -242,8 +254,10 @@ Cada estrategia de un pedido pagado tiene su enlace (`/api/download/<token>`): v
 `MAX_DOWNLOADS` descargas, que se gastan con un único `UPDATE` condicional antes de mandar nada (dos
 peticiones a la vez no se llevan la misma última descarga). `?format=zip` añade las reglas en Markdown y
 las versiones beta en Python y JavaScript; `/api/download/all?t=…&t=…` junta los `.pine` de un pedido.
-Los scripts completos están en la carpeta privada (`STRATEGIES_DIR`), nunca en `static/`; las vistas
-previas públicas van cortadas a 50 líneas de su primer árbol.
+El `.zip` y «Descargar todo» gastan del mismo enlace que el `.pine`: `MAX_DOWNLOADS` en total por estrategia, no por
+formato. Un `HEAD` (el escáner de un correo, la vista previa de un enlace en un chat) mira si el enlace vale y no
+gasta nada. Los scripts completos están en la carpeta privada (`STRATEGIES_DIR`), nunca en `static/`; las vistas
+previas públicas van cortadas al final de su primer árbol, o a 50 líneas de él si es más largo.
 
 **Quién ve los enlaces del recibo:** el navegador que hizo el pedido (su cookie `edgefolio_buyer`,
 HttpOnly, 30 días; en la base de datos sólo su hash), la cuenta que compró con la sesión abierta y, si se
@@ -304,10 +318,14 @@ de la tienda (sin la petición de nadie):
 ### Las gratis y las novedades
 
 Las 10 estrategias gratis se mandan por correo (`POST /api/free`): el enlace va en el correo, nunca en la
-respuesta. Como mucho 10 al día por dirección (contadas con la fila de la dirección bloqueada, así que
-diez peticiones a la vez no se cuelan) y 20 por IP a la hora. Las novedades son una casilla aparte, sin
-marcar: se apuntan sólo si se marca y sólo cuentan cuando se confirman desde el correo
-(`/api/news/confirm`, doble opt-in).
+respuesta. Como mucho 10 al día por dirección y por quien pide (la cuenta o la IP: nadie deja a otro sin las suyas) y
+20 al día por dirección de todos, contadas con la fila de la dirección bloqueada (diez peticiones a la vez no se
+cuelan), y 20 por IP a la hora. Con la sesión abierta, una gratis sale en Mis estrategias si se mandó al correo de la
+cuenta o a uno demostrado. Si pasa a ser de pago, su enlace sirve hasta que caduca la versión que se pidió, ya no se
+renueva y, caducado, se puede comprar. Las novedades son una casilla aparte, sin marcar: se apuntan sólo si se marca
+y sólo cuentan cuando se confirman desde el correo (`/api/news/confirm`, doble opt-in). Cada correo de novedades lleva
+su baja (`/api/news/unsubscribe`; `flask edgefolio subscribers` da el enlace de cada una), y la tarea `purge` borra
+cada día las altas sin confirmar de más de 30 días y las gratis caducadas hace más de 90.
 
 ### Idiomas y textos
 
@@ -557,7 +575,7 @@ Otras dos formas, sin Flask (sólo pandas):
 
 1. **El servidor**: Python 3.10 o más (3.11 recomendado), con HTTPS delante.
 2. **El núcleo** es privado: un token de GitHub con lectura de `Leci37/zlecitool-core` para que `pip` lo
-   instale en la etiqueta que fija `requirements.txt` (**v0.31.2**).
+   instale en la etiqueta que fija `requirements.txt` (**v0.35.0**).
 3. `pip install -r requirements.txt`
 4. **El entorno**: el común de la familia (`FLASK_SECRET_KEY` el mismo que las otras, `DATABASE_URL` a
    Postgres, `ZLECITOOL_PUBLIC_URL`, el SMTP, `ZLECITOOL_TRUSTED_PROXIES=1` detrás de nginx, los datos

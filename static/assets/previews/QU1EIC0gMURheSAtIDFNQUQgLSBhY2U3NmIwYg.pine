@@ -58,6 +58,5 @@ decision_tree_0_AMD_1Day_ace76b0b(ma05_colorInt, ma10_colorInt, ma15_colorInt, m
 			if( ma20__close <= 1.0571624636650085 )
 				ret := 0.6829268292682927
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

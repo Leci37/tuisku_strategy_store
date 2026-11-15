@@ -19,6 +19,20 @@ def test_production_pins_the_core_to_a_version():
         "requirements.txt tiene que fijar el núcleo a una etiqueta vX.Y.Z")
 
 
+def test_the_readme_names_the_pinned_core():
+    # «Desplegar» dice qué etiqueta instala el servidor: la de requirements.txt, no la de antes (15-11-2026: el README
+    # seguía en la v0.31.2)
+    pinned = re.search(r"@v(\d+\.\d+\.\d+)", next(l for l in _lines("requirements.txt") if l.startswith(CORE))).group(1)
+    named = re.findall(r"requirements.txt` \(\*\*v(\d+\.\d+\.\d+)\*\*\)", (ROOT / "README.md").read_text(encoding="utf-8"))
+    assert named == [pinned], (named, pinned)
+
+
+def test_the_core_in_use_is_at_least_the_pinned_one():
+    import zlecitool_core
+    pinned = re.search(r"@v(\d+)\.(\d+)\.(\d+)", next(l for l in _lines("requirements.txt") if l.startswith(CORE)))
+    assert tuple(int(x) for x in zlecitool_core.__version__.split(".")[:3]) >= tuple(int(x) for x in pinned.groups())
+
+
 def test_development_uses_the_core_beside_this_repo():
     assert any(line.startswith("-e ../zlecitool-core") for line in _lines("requirements-dev.txt"))
 
@@ -41,6 +55,15 @@ def test_production_runs_gunicorn_with_its_config(monkeypatch):
         monkeypatch.delenv(name, raising=False)
     conf = runpy.run_path(str(ROOT / "gunicorn.conf.py"))
     assert conf["worker_class"] == "gthread" and conf["bind"] == "0.0.0.0:5105"
+
+
+def test_gunicorn_runs_one_process_with_the_fake_paypal(monkeypatch):
+    # B14: el PayPal simulado vive en la memoria de cada proceso; con varios, el cobro llegaba a otro y fallaba
+    monkeypatch.setenv("WEB_CONCURRENCY", "9")
+    monkeypatch.delenv("PAYPAL_MODE", raising=False)
+    assert runpy.run_path(str(ROOT / "gunicorn.conf.py"))["workers"] == 1
+    monkeypatch.setenv("PAYPAL_MODE", "live")
+    assert runpy.run_path(str(ROOT / "gunicorn.conf.py"))["workers"] == 9
 
 
 def test_gunicorn_does_not_preload_the_app(monkeypatch):
@@ -67,3 +90,42 @@ def test_every_screenshot_the_docs_show_exists():
             if not (doc.parent / src).is_file():
                 missing.append(f"{doc.relative_to(ROOT)}: {src}")
     assert not missing, f"capturas que no están: {missing}"
+
+
+def test_the_readme_says_what_a_link_and_a_preview_give():
+    # Lo que el INFORME del 14-11-2026 echó en falta: que el .zip y «Descargar todo» gastan del mismo enlace, y que la
+    # vista previa acaba con el primer árbol (decía «50 líneas»)
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "gastan del mismo enlace que el `.pine`" in readme and "cortadas al final de su primer árbol" in readme
+    assert "cortadas a 50 líneas de su primer árbol" not in readme
+
+
+def test_one_chromium_for_the_whole_test_session():
+    """Regla del dueño (2026-11-15): un Chromium para toda la sesión de pytest, con un contexto nuevo por prueba; nunca
+    uno por prueba, porque los minutos de la CI se pagan (en SolarVillage, uno por prueba se comía 20 de sus 82 min).
+    Ninguna prueba lanza el suyo (``mobile.browser()``, ``chromium.launch()``, ``sync_playwright()``): piden la fixture
+    ``chromium`` de tests/conftest.py, de sesión. Y ninguna fixture de navegador deja de ser de sesión."""
+    import ast
+    launches, fixtures = [], []
+    for path in sorted((ROOT / "tests").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                f = node.func
+                name = f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", "")
+                owner = getattr(getattr(f, "value", None), "id", "") if isinstance(f, ast.Attribute) else ""
+                if (name == "browser" and owner == "mobile") or name in ("launch", "launch_persistent_context",
+                                                                           "sync_playwright", "async_playwright"):
+                    launches.append(f"{path.name}:{node.lineno}")
+            if isinstance(node, ast.FunctionDef) and any(w in node.name.lower() for w in ("browser", "chromium")):
+                for d in node.decorator_list:
+                    call = d if isinstance(d, ast.Call) else None
+                    target = call.func if call else d
+                    if getattr(target, "attr", getattr(target, "id", "")) == "fixture":
+                        scope = next((k.value.value for k in (call.keywords if call else []) if k.arg == "scope"), None)
+                        fixtures.append((path.name, node.name, scope))
+    assert len(launches) == 1 and launches[0].startswith("conftest.py:"), launches   # el de la fixture, y nada más
+    assert fixtures and all(scope == "session" for _, _, scope in fixtures), fixtures
+    # y la regla, escrita donde la leen las sesiones (CLAUDE.md, regla 24), con su porqué
+    rules = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "Un solo Chromium para toda la sesión de pytest" in rules and "los minutos de la CI se pagan" in rules

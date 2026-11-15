@@ -58,6 +58,5 @@ decision_tree_0_UNIUSDT_1Day_555cfbeb(trend, buySignalInt, sellSignalInt, atr2__
 			if( dn1__close <= 2.4159687757492065 )
 				if( atr__close <= 0.25995007157325745 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

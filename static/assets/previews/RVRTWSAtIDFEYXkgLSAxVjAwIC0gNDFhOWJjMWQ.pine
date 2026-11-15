@@ -58,6 +58,5 @@ decision_tree_0_ETSY_1Day_41a9bc1d(VIP, VIM, VIP_VIM)=>
 					if( VIP > 1.2867844700813293 )
 						ret := -0.06493506493506493
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

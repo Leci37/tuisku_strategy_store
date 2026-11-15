@@ -58,6 +58,5 @@ decision_tree_0_SOLUSDT_1Hour_a2e7320e(ema1__close, ema2__close, ema3__close, te
 							ret := -0.003803727653100038
 					if( ema2__close > 1.0566396117210388 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

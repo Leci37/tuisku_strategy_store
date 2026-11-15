@@ -58,6 +58,5 @@ decision_tree_0_UNIUSDT_1Day_001f9a6c(VIP, VIM, VIP_VIM, ema1__close, ema2__clos
 						ret := 0.8529411764705882 // buy
 				if( ema2__close > 0.7266381978988647 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

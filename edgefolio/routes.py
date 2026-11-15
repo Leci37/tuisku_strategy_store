@@ -12,6 +12,8 @@ página lo enseña traducido.
 """
 from __future__ import annotations
 
+import ipaddress
+
 from flask import Blueprint, Response, current_app, jsonify, redirect, render_template, request, send_file
 
 from zlecitool_core import current_tool
@@ -74,9 +76,22 @@ def link(endpoint: str, **values) -> str:
     return url
 
 
+def client_key() -> str:
+    """De quién es la petición para los límites: su IP o, si es IPv6, su red /64 (la de una casa o un servidor, que
+    cambia de dirección dentro de ella cuando quiere; el núcleo agrupa igual). Hasta el 14-11-2026, la IPv6 entera."""
+    ip = request.remote_addr or "unknown"
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip
+    if addr.version == 6 and addr.ipv4_mapped is None:
+        return str(ipaddress.ip_network(f"{addr}/64", strict=False))
+    return ip
+
+
 def limited(name: str):
     """429 cuando esta IP ha gastado el límite ``name`` (shop.limits)."""
-    if not shop().limits[name].hit(request.remote_addr or "unknown"):
+    if not shop().limits[name].hit(client_key()):
         raise Refusal("errTooMany", 429)
 
 
@@ -194,6 +209,9 @@ def thumb(stem):
         path = media.thumb(shop().settings, stem)
     except KeyError:
         return jsonify({"error": "errNotFound"}), 404
+    except OSError:
+        # su gráfico ya no está (un import --prune con la tienda en marcha) o está roto: hasta el 14-11-2026, un 500
+        return jsonify({"error": "errNotFound"}), 404
     if path is None:
         return redirect(f"/static/assets/charts/{stem}.png", code=307)
     response = send_file(path, mimetype="image/webp", conditional=True)
@@ -205,15 +223,32 @@ def thumb(stem):
 
 def owned_now() -> set:
     """Las claves de lo que ya tiene la cuenta con la sesión abierta, lo de Mis estrategias (sus compras y sus
-    gratis, y las de sus correos demostrados): suelta, no se vende otra vez. Sin sesión, nada."""
+    gratis, y las de sus correos demostrados): suelta, no se vende otra vez (E8). Sin sesión, nada. Una que sólo tiene
+    gratis y ya es de pago es suya mientras su enlace sirve; después, no (no se renueva: errNoLongerFree), y se puede
+    comprar (2026-11-15; hasta entonces se quedaba sin poder comprarla)."""
     uid = user_id()
-    return set(mine.owned(uid, proofs.proven(uid))) if uid is not None else set()
+    return mine.held(shop(), uid, proofs.proven(uid), own=current_user.email) if uid is not None else set()
+
+
+def _guarded(cart: dict, price):
+    """El presupuesto (o el pedido) de un carrito con su código, sin que sirva para adivinar códigos: una IP que ya
+    probó CODE_LIMIT códigos que no valen recibe 429 con cualquier código, también uno que vale, hasta que corre la
+    ventana; sin código, el presupuesto sale igual."""
+    ip = client_key()
+    if cart["code"] and shop().limits["code"].full(ip):
+        raise Refusal("errTooMany", 429)
+    out = price()
+    status = out.code_status if hasattr(out, "code_status") else out.get("code_status")
+    if status == "invalid":
+        shop().limits["code"].hit(ip)
+    return out
 
 
 @bp.post("/api/quote")
 @public
 def quote():
-    return jsonify(orders.priced(shop(), orders.cart_of(request.get_json(silent=True)), owned_now()).as_dict())
+    cart = orders.cart_of(request.get_json(silent=True))
+    return jsonify(_guarded(cart, lambda: orders.priced(shop(), cart, owned_now())).as_dict())
 
 
 @bp.post("/api/orders")
@@ -224,9 +259,9 @@ def create_order():
     cart = orders.cart_of(request.get_json(silent=True))
     buyer = orders.buyer_token(request.cookies.get(BUYER_COOKIE))
     user = signed_in()
-    created = orders.create(shop(), cart, buyer, return_url=link("edgefolio.thanks"),
-                            cancel_url=link("edgefolio.index", checkout="cancel"),
-                            user_id=user.id if user else None, email=user.email if user else "", owned=owned_now())
+    created = _guarded(cart, lambda: orders.create(
+        shop(), cart, buyer, return_url=link("edgefolio.thanks"), cancel_url=link("edgefolio.index", checkout="cancel"),
+        user_id=user.id if user else None, email=user.email if user else "", owned=owned_now()))
     response = jsonify(created)
     response.set_cookie(BUYER_COOKIE, buyer, max_age=orders.BUYER_DAYS * 86400, path="/", httponly=True,
                         samesite="Lax", secure=bool(current_app.config.get("SESSION_COOKIE_SECURE", True)))
@@ -287,10 +322,21 @@ def _download(make):
         return redirect(f"{where}?link={refusal.key}", code=303)
 
 
+def _looked_at(tokens: list):
+    """Un HEAD: Flask lo contesta con la vista del GET, que gasta una descarga, y los escáneres de correo y las
+    vistas previas de un enlace piden así: tres HEAD dejaban 7 de las 10 antes del primer clic. Sólo mira."""
+    downloads.usable(shop(), tokens)
+    response = current_app.response_class(status=200)
+    response.headers["Cache-Control"] = "private, no-store"
+    return response
+
+
 @bp.get("/api/download/all")
 @public
 def download_all():
     def make():
+        if request.method == "HEAD":
+            return _looked_at(request.args.getlist("t"))
         data, name = downloads.all_in_one(shop(), request.args.getlist("t"))
         return _attachment(data, "application/zip", name)
     return _download(make)
@@ -300,6 +346,8 @@ def download_all():
 @public
 def download(token):
     def make():
+        if request.method == "HEAD":
+            return _looked_at([token])
         data, mimetype, name = downloads.one(shop(), token, request.args.get("format", "pine"))
         return _attachment(data, mimetype, name)
     return _download(make)
@@ -322,7 +370,10 @@ def free_claim():
     if not isinstance(news, bool):
         raise Refusal("errRequest", 400, field="news")
     limited("free")
-    return jsonify(free.claim(shop(), s, email, news, request_language(), link, send_mail, user_id=user_id()))
+    uid = user_id()
+    who = f"u:{uid}" if uid is not None else f"ip:{client_key()}"
+    return jsonify(free.claim(shop(), s, email, news, request_language(), link, send_mail, user_id=uid, requester=who,
+                              secret=current_app.secret_key))
 
 
 @bp.get("/api/news/confirm")
@@ -332,6 +383,15 @@ def confirm_news():
     token = request.args.get("token", "")
     done = free.confirm_news(token) if 0 < len(token) <= 200 else None
     return redirect("/?news=confirmed" if done else "/?news=expired", code=303)
+
+
+@bp.get("/api/news/unsubscribe")
+@public
+def unsubscribe_news():
+    """El enlace de baja de cada correo de novedades: la dirección deja de estar en la lista (se borra su fila). Va por
+    GET, como en cualquier correo: un escáner que lo abra sólo puede dar de baja, nunca de alta."""
+    free.unsubscribe(request.args.get("t", ""), current_app.secret_key)
+    return redirect("/?news=unsubscribed", code=303)
 
 
 # ── quién es ─────────────────────────────────────────────────────────────────
@@ -359,12 +419,12 @@ def my_strategies():
 @bp.post("/api/mine/renew")
 def renew():
     item = text_field(body(), "id", 200)
-    return jsonify(mine.renew(shop(), current_user.id, _proven(), item))
+    return jsonify(mine.renew(shop(), current_user.id, _proven(), item, own=current_user.email))
 
 
 @bp.get("/api/mine/<item_id>/script")
 def script(item_id):
-    path = mine.script_path(shop(), current_user.id, _proven(), item_id)
+    path = mine.script_path(shop(), current_user.id, _proven(), item_id, own=current_user.email)
     return Response(path.read_text(encoding="utf-8", errors="replace"), mimetype="text/plain",
                     headers=PRIVATE)
 
@@ -376,7 +436,10 @@ def ask_proof():
     b = body()
     email = email_of(b.get("email") or current_user.email)
     limited("proof")
-    token = proofs.request(current_user.id, email)
+    # y por dirección, de cualquier cuenta: la misma respuesta, sin correo, si esa dirección ya recibió los suyos
+    token = proofs.request(current_user.id, email) if not shop().limits["proof_to"].full(email) else None
+    if token:
+        shop().limits["proof_to"].hit(email)
     if token:
         texts, lang = shop().texts, request_language()
         url = external_url("edgefolio.mine_page", trusted_host_ok=False, proof=token)

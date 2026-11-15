@@ -17,7 +17,7 @@ from edgefolio import downloads, free
 from edgefolio.catalogue import Strategy
 from edgefolio.models import FreeClaim, Subscriber
 from edgefolio.web import digest
-from tests.conftest import ROWS, outbox, signed, visitor
+from tests.conftest import ROWS, outbox, prove, signed, visitor
 from tests.test_formats import ONE_TREE
 
 FREE = ROWS[2]
@@ -29,7 +29,8 @@ def free_file(settings):
     """El script entero de la gratis en la carpeta privada (la de conftest sólo tiene las de pago)."""
     s = Strategy(FREE["ticker"], FREE["interval"], FREE["key_techs"], FREE["id_model"], Decimal("0"), FREE)
     path = settings.strategies_dir / s.private_file
-    path.write_text(ONE_TREE)
+    # En bytes: write_text pondría \r\n en Windows, y la descarga (el fichero tal cual) ya no sería ONE_TREE.
+    path.write_bytes(ONE_TREE.encode("utf-8"))
     return path
 
 
@@ -140,6 +141,24 @@ def test_news_counts_only_once_confirmed_from_the_email(app, client, free_file):
         assert [s["email"] for s in free.subscribers()] == ["keen@example.com"]
 
 
+def test_each_news_email_carries_its_unsubscribe_link(app, client, free_file):
+    # M11: no había forma de darse de baja de las novedades (2026-11-15). Cada correo de novedades lleva su enlace de
+    # baja, sin el correo a la vista; abrirlo borra la suscripción, confirmada o no.
+    claim(client, "keen@example.com", news=True)
+    claim(client, "other@example.com", news=True)
+    body = outbox("keen@example.com")[-1]["body"]
+    unsub = next(w for w in body.split() if "/api/news/unsubscribe?t=" in w)
+    assert "keen" not in unsub
+    assert opened(client, confirm_link("keen@example.com")) == "/?news=confirmed"
+    assert opened(client, unsub) == "/?news=unsubscribed"
+    with app.app_context():
+        assert free.subscribers() == [] and [r.email for r in Subscriber.query.all()] == ["other@example.com"]
+    assert opened(client, unsub) == "/?news=unsubscribed", "otra vez: nada más"
+    assert opened(client, "/api/news/unsubscribe?t=made-up") == "/?news=unsubscribed"
+    with app.app_context():
+        assert [r.email for r in Subscriber.query.all()] == ["other@example.com"]
+
+
 def test_no_news_writes_nothing(app, client, free_file):
     claim(client, "quiet@example.com", news=False)
     assert rows(app, Subscriber) == []
@@ -203,8 +222,8 @@ def test_parallel_claims_never_pass_the_daily_limit(app, client, free_file, monk
     aquí, en la pausa que se mete justo después de contar."""
     count = free.claims_since
 
-    def slow(email, since):
-        n = count(email, since)
+    def slow(email, since, *by):
+        n = count(email, since, *by)
         time.sleep(0.05)
         return n
     monkeypatch.setattr(free, "claims_since", slow)
@@ -215,10 +234,66 @@ def test_parallel_claims_never_pass_the_daily_limit(app, client, free_file, monk
     assert len(outbox("ana@example.com")) == 10
 
 
-def test_a_claim_made_signed_in_belongs_to_the_account(app, free_file):
+def test_a_claim_made_signed_in_shows_once_its_address_is_proven(app, free_file):
+    # M5: hasta el 2026-11-15, la cuenta que la pedía la veía (y la renovaba) en Mis estrategias para cualquier
+    # dirección, sin abrir ningún correo. Ahora, la pedida para otra dirección sale cuando la demuestra; la pedida para
+    # el correo de la cuenta, al momento.
+    bo = signed(app, "bo@example.com")
+    assert claim(bo, "bo@example.com").status_code == 200
+    assert [i["id"] for i in bo.get("/api/mine").json["items"]] == [FREE_ID]
     ana = signed(app, "ana@example.com")
     assert claim(ana, "ana.work@example.com").status_code == 200
-    assert [r["user_id"] for r in rows(app, FreeClaim)] == [ana.user_id]
+    assert [r["user_id"] for r in rows(app, FreeClaim)][-1] == ana.user_id
+    assert ana.get("/api/mine").json["items"] == []
+    prove(ana, "ana.work@example.com")
     assert [i["id"] for i in ana.get("/api/mine").json["items"]] == [FREE_ID]
     other = signed(app, "ana.work@example.com")        # el correo, sin demostrar: no es suya
     assert other.get("/api/mine").json["items"] == []
+
+
+def test_a_free_strategy_that_becomes_paid(app, client, settings, paypal, free_file):
+    # M2: hasta el 2026-11-15, el enlace de una gratis daba el script para siempre (también sus versiones nuevas), Mis
+    # estrategias lo renovaba cuantas veces se quisiera y comprarla daba errAlreadyOwned para siempre. Ahora: su enlace
+    # sirve, hasta que caduca, la versión que se pidió; renovarlo ya no; mientras sirve es suya (E8: no se vende suelta)
+    # y, gastado o caducado, se puede comprar.
+    import csv
+    from edgefolio.shop import install
+    ana = signed(app, "ana@example.com")
+    prove(ana)
+    assert claim(ana, "ana@example.com").status_code == 200
+    link = emailed_link("ana@example.com")
+    with open(settings.catalogue, newline="") as f:
+        table = list(csv.DictReader(f, delimiter="\t"))
+    for row in table:
+        if row["ticker"] == "NVDA":
+            row["Price"] = "50"
+    with open(settings.catalogue, "w", newline="") as f:
+        out = csv.DictWriter(f, fieldnames=list(table[0]), delimiter="\t")
+        out.writeheader()
+        out.writerows(table)
+    install(app, settings, paypal)                    # el catálogo de mañana: ya cuesta 50
+    assert client.get(link).status_code == 200, "la versión que se pidió, hasta que caduca"
+    renewed = ana.post("/api/mine/renew", json={"id": FREE_ID})
+    assert renewed.status_code == 403 and renewed.json == {"error": "errNoLongerFree"}
+    assert ana.post("/api/quote", json={"items": [FREE_ID]}).status_code == 409, "mientras su enlace sirve, es suya"
+    settings.max_downloads = 2
+    assert client.get(link).status_code == 200      # la segunda: el enlace, gastado
+    assert client.get(link).status_code == 429
+    q = ana.post("/api/quote", json={"items": [FREE_ID]})
+    assert q.status_code == 200 and q.json["total"] == "50.00", q.get_data(as_text=True)
+
+
+def test_someone_else_cannot_use_up_an_address_free_claims(app, free_file):
+    # M5: cualquiera, sin cuenta, pedía 10 con el correo de otra persona, que se quedaba sin las suyas hasta el día
+    # siguiente. El tope del día se cuenta por quien pide; el del buzón, de todos.
+    stranger = visitor(app, ip="198.51.100.20")
+    for _ in range(free.DAILY_CLAIMS):
+        assert claim(stranger, "bea@example.com").status_code == 200
+    assert claim(stranger, "bea@example.com").status_code == 429
+    bea = visitor(app, ip="203.0.113.40")
+    assert claim(bea, "bea@example.com").status_code == 200
+    for n in range(free.ADDRESS_DAILY_CLAIMS - free.DAILY_CLAIMS - 1):
+        assert claim(visitor(app, ip=f"192.0.2.{n + 1}"), "bea@example.com").status_code == 200
+    assert len(outbox("bea@example.com")) == free.ADDRESS_DAILY_CLAIMS
+    assert claim(visitor(app, ip="192.0.2.200"), "bea@example.com").status_code == 429   # el buzón, lleno
+    assert len(outbox("bea@example.com")) == free.ADDRESS_DAILY_CLAIMS

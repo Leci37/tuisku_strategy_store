@@ -58,6 +58,5 @@ decision_tree_0_TTD_1Day_2b548cb6(BBPower_Color, rsi1, k, d, d_k, smoothD_d, smo
 						ret := 0.8461538461538461 // buy
 					if( smoothK_k > 2.2488070130348206 )
 
-
 	...
 The rest of this Pine script is part of the paid version. Visit the website for more info.

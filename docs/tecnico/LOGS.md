@@ -329,3 +329,26 @@ vez aunque se cobre dos veces, las descargas, la gratis y las novedades, las pru
 borrado de una cuenta), cada tarea dice lo que hizo (y la repetición, que nada), un rechazo deja una sola línea con la
 regla de su ruta, el formato «Qué pasó | clave=valor» se cumple, y ni el correo de la cuenta de prueba, ni lo
 tecleado, ni un código, ni un token salen en ninguna línea, de la tienda ni del núcleo.
+
+## Verificado (F4, 15-11-2026)
+
+- `pytest`: 396 pasan y 1 se salta (`test_formats.py`: los scripts de pago de verdad no están en esta máquina); los 16
+  de `tests/test_logs.py`, entre ellos.
+- El recorrido de F0, otra vez, con una base de datos nueva, y las tres tareas a mano (`send_alerts` dos veces) y
+  `flask --app app edgefolio subscribers`, leyendo `edgefolio-2026-11-15.log`. Cada paso deja su línea:
+  `Rechazo | método=GET ruta=/api/strategies clave=errRequest estado=400 user_id=- campo=size`, `Gratis mandada |
+  estrategia=PYPL_1Day_1MAC_2a2425c6 user_id=- novedades=pendientes`, `Descarga | … tipo=gratis formato=pine`,
+  `Novedades confirmadas`, `Pedido creado | pedido=FAKE-… user_id=- estrategias=1 lotes=0 pack=no total=58.40
+  moneda=USD código=sí`, `Pedido cobrado`, `Enlaces de descarga | … nuevos=1`, las dos descargas de pago, `Prueba de
+  correo pedida | user_id=1 prueba=1`, `Correo demostrado`, los rechazos de Mis estrategias (`errProofExpired`,
+  `errNotOwned`), dos `Favorita guardada` y una `Favorita quitada`; y `Cambios del BCE guardados | día=2026-11-13
+  cambios=31`, `Avisos de las favoritas: primera vuelta, sólo la foto | estrategias=94`, `Limpieza de lo que ya no se
+  guarda | altas_sin_confirmar=0 gratis=0 buzones=0`, `Tarea ya hecha: nada que hacer | tarea=send_alerts vez=…` y
+  `Lista de las novedades sacada | direcciones=1`.
+- La consola del navegador, como en F0: sólo los «Failed to load resource» de los rechazos buscados.
+- En toda la carpeta `C:\Users\leci\Documents\tuisku\logs`, el correo de la cuenta de prueba
+  (`logs-edgefolio@example.test`, también con `%40`) no sale ninguna vez. El nombre que tecleó («Zelda Logsprueba», en
+  la búsqueda) sale 2 veces en `edgefolio-2026-11-15.log`, las dos en la línea de werkzeug del núcleo
+  (`GET /api/strategies?q=Zelda%20Logsprueba`), una por recorrido: es el punto 4 de «Para el núcleo» de
+  [../ESTADO.md](../ESTADO.md). En las líneas de la tienda, ninguna.
+

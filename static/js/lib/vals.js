@@ -19,7 +19,9 @@ export function renderVals(app) {
   const lang = s.lang;
   const rtl = s.dir === 'rtl';
   const t = translator(s.dict, {}, lang);
-  const rates = (s.fx && s.fx.rates) || {};
+  // el «≈» sólo con un cambio del día (el del BCE, con su fecha): con los de ejemplo del repo, sin fecha, los precios
+  // van en dólares; antes salían «≈ 63 €» con un cambio que nadie había mirado (2026-11-15)
+  const rates = (s.fx && s.fx.date && s.fx.rates) || {};
   const f = formatters(lang, { local: s.cur === 'local', rate: rates[LOCAL_CURRENCY[lang]] || 0 });
   // el chip de la moneda sólo cambia algo si el idioma tiene otra moneda y su cambio llegó (API #5); si no
   // (inglés, o sin cambios), se queda en USD: antes, el clic cambiaba la elección sin que se viera nada y

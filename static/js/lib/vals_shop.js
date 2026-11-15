@@ -19,7 +19,9 @@ export function shopVals(c) {
     tape: s.tape.map(r => ({ icon: r.icon, ticker: r.ticker + ' · ' + r.key, pct: f.pctS(r.npp) })),
     // la pestaña marcada pide otra vez su primera página (la de la búsqueda de ahora): después de un fallo,
     // o para refrescar; sin esto, su lista no cambiaba y no se mandaba nada
-    liteTabs: [['hot', t('tabHot')], ['win', tx.sortWin], ['stocks', t('tabStocks')], ['crypto', t('tabCrypto')], ['new', t('tabNew') + ' · ' + f.int(counts.new || 0)], ['free', t('landingFree')]].map(([k, label]) => ({
+    // «Novedades · 0» no sale (2026-11-15): sin ninguna nueva, la pestaña se esconde, salvo que sea la marcada
+    liteTabs: [['hot', t('tabHot')], ['win', tx.sortWin], ['stocks', t('tabStocks')], ['crypto', t('tabCrypto')], ['new', t('tabNew') + ' · ' + f.int(counts.new || 0)], ['free', t('landingFree')]]
+      .filter(([k]) => k !== 'new' || (counts.new || 0) > 0 || tab === 'new').map(([k, label]) => ({
       label, sel: String(tab === k), color: tab === k ? '#16263a' : '#5a6b80', line: tab === k ? '#0950e3' : 'transparent',
       go: () => (tab === k ? app.loadLite(1) : app.setState({ liteTab: k })) })),
     liteRows: lite.map(c.mk), liteEmpty: !!s.lite && lite.length === 0,

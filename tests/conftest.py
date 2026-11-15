@@ -156,7 +156,14 @@ def real_app(tmp_path_factory):
     with testing.isolated(tmp / "zt"):
         from app import create_app
         application = testing.prepare(create_app())
-        install(application, Settings.for_data_dir(tmp / "data"), FakePayPal())
+        settings = Settings.for_data_dir(tmp / "data")
+        # un cambio del día, como en producción (el del BCE, con su fecha): con sólo el de ejemplo del repo, la página
+        # no enseña «≈» (2026-11-15)
+        settings.fx_today.parent.mkdir(parents=True, exist_ok=True)
+        settings.fx_today.write_text(json.dumps({"base": "USD", "date": "2026-11-13", "source": "ECB via frankfurter.app",
+                                                 "rates": {"USD": 1, "EUR": 0.92, "INR": 83.5, "CNY": 7.2, "SAR": 3.75}}),
+                                     encoding="utf-8")
+        install(application, settings, FakePayPal())
         yield application
 
 

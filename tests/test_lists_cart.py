@@ -172,6 +172,33 @@ def test_lite_waits_for_its_data_and_keeps_its_cart_readable(real_app):
             tab.close()
 
 
+def test_the_news_tab_and_the_approximate_prices_follow_the_data(real_app):
+    # 2026-11-15: «Novedades · 0» se esconde, y con el cambio de ejemplo (sin fecha) no sale ningún «≈»: los precios,
+    # en dólares, y el chip de la moneda, quieto
+    from edgefolio.shop import of
+    new = real_app.test_client().get("/api/strategies?tab=hot&size=1").json["counts"]["new"]
+    day = of(real_app).settings.fx_today                 # el cambio del día de la tienda de las pruebas, fuera
+    kept = day.read_bytes()
+    day.unlink()
+    with mobile.serve(real_app) as live, mobile.browser() as chromium:
+        tab = mobile.open_page(chromium, live, "laptop")
+        page = tab.page
+        try:
+            page.add_init_script(TOUR_SEEN)
+            tab.goto("/")
+            page.wait_for_function(SHOWING)
+            tabs = page.locator("[role=tablist] [role=tab]").all_inner_texts()
+            assert any(UI["tabNew"]["es"] in t for t in tabs) == (new > 0), tabs
+            page.get_by_text(UI["packTitle"]["es"], exact=True).wait_for()
+            page.wait_for_function("() => /US\\$/.test(document.querySelector('#app').innerText)")
+            assert "≈" not in text(page)
+            chip = page.locator(CHIP)
+            assert (chip.inner_text(), chip.get_attribute("aria-disabled")) == ("USD", "true")
+        finally:
+            tab.close()
+            day.write_bytes(kept)
+
+
 # ── Pro ────────────────────────────────────────────────────────────────────────
 
 PRO_TABLE = """(() => { localStorage.setItem('tuisku-sf-mode', 'pro'); localStorage.setItem('tuisku-sf-pview5', 'table'); })()"""

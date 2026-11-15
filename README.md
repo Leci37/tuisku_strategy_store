@@ -162,6 +162,11 @@ de una gratis, el de confirmar un correo, los avisos, el recibo de una compra); 
 scripts de pago todo funciona, y una descarga contesta que el fichero no está (los que trae `restore-scripts` son los
 del catálogo de antes: ver «Comandos»).
 
+`requirements-dev.txt` instala el núcleo de `../zlecitool-core` tal como esté su rama, que puede ser otra versión que
+la de producción. Para probar con la de producción, después, el de la etiqueta que fija `requirements.txt`:
+`pip install "zlecitool-core[dev] @ git+https://github.com/Leci37/zlecitool-core@<etiqueta>"` (con el token de lectura
+de GitHub, como el servidor).
+
 ## Pruebas
 
 ```
@@ -243,8 +248,10 @@ Cada estrategia de un pedido pagado tiene su enlace (`/api/download/<token>`): v
 `MAX_DOWNLOADS` descargas, que se gastan con un único `UPDATE` condicional antes de mandar nada (dos
 peticiones a la vez no se llevan la misma última descarga). `?format=zip` añade las reglas en Markdown y
 las versiones beta en Python y JavaScript; `/api/download/all?t=…&t=…` junta los `.pine` de un pedido.
-Los scripts completos están en la carpeta privada (`STRATEGIES_DIR`), nunca en `static/`; las vistas
-previas públicas van cortadas a 50 líneas de su primer árbol.
+El `.zip` y «Descargar todo» gastan del mismo enlace que el `.pine`: `MAX_DOWNLOADS` en total por estrategia, no por
+formato. Un `HEAD` (el escáner de un correo, la vista previa de un enlace en un chat) mira si el enlace vale y no
+gasta nada. Los scripts completos están en la carpeta privada (`STRATEGIES_DIR`), nunca en `static/`; las vistas
+previas públicas van cortadas al final de su primer árbol, o a 50 líneas de él si es más largo.
 
 **Quién ve los enlaces del recibo:** el navegador que hizo el pedido (su cookie `edgefolio_buyer`,
 HttpOnly, 30 días; en la base de datos sólo su hash), la cuenta que compró con la sesión abierta y, si se
@@ -305,10 +312,14 @@ de la tienda (sin la petición de nadie):
 ### Las gratis y las novedades
 
 Las 10 estrategias gratis se mandan por correo (`POST /api/free`): el enlace va en el correo, nunca en la
-respuesta. Como mucho 10 al día por dirección (contadas con la fila de la dirección bloqueada, así que
-diez peticiones a la vez no se cuelan) y 20 por IP a la hora. Las novedades son una casilla aparte, sin
-marcar: se apuntan sólo si se marca y sólo cuentan cuando se confirman desde el correo
-(`/api/news/confirm`, doble opt-in).
+respuesta. Como mucho 10 al día por dirección y por quien pide (la cuenta o la IP: nadie deja a otro sin las suyas) y
+20 al día por dirección de todos, contadas con la fila de la dirección bloqueada (diez peticiones a la vez no se
+cuelan), y 20 por IP a la hora. Con la sesión abierta, una gratis sale en Mis estrategias si se mandó al correo de la
+cuenta o a uno demostrado. Si pasa a ser de pago, su enlace sirve hasta que caduca la versión que se pidió, ya no se
+renueva y, caducado, se puede comprar. Las novedades son una casilla aparte, sin marcar: se apuntan sólo si se marca
+y sólo cuentan cuando se confirman desde el correo (`/api/news/confirm`, doble opt-in). Cada correo de novedades lleva
+su baja (`/api/news/unsubscribe`; `flask edgefolio subscribers` da el enlace de cada una), y la tarea `purge` borra
+cada día las altas sin confirmar de más de 30 días y las gratis caducadas hace más de 90.
 
 ### Idiomas y textos
 

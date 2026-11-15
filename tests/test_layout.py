@@ -90,3 +90,11 @@ def test_every_screenshot_the_docs_show_exists():
             if not (doc.parent / src).is_file():
                 missing.append(f"{doc.relative_to(ROOT)}: {src}")
     assert not missing, f"capturas que no están: {missing}"
+
+
+def test_the_readme_says_what_a_link_and_a_preview_give():
+    # Lo que el INFORME del 14-11-2026 echó en falta: que el .zip y «Descargar todo» gastan del mismo enlace, y que la
+    # vista previa acaba con el primer árbol (decía «50 líneas»)
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "gastan del mismo enlace que el `.pine`" in readme and "cortadas al final de su primer árbol" in readme
+    assert "cortadas a 50 líneas de su primer árbol" not in readme

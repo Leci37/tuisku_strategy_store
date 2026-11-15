@@ -162,7 +162,8 @@ def test_proof_emails_to_one_address_are_limited_per_day(app, monkeypatch):
 
 @pytest.mark.parametrize("env", [{"DISCOUNT_CODES": "spring20=20"}, {"DISCOUNT_CODES": "up=-0.10"},
                                  {"DISCOUNT_CODES": "all=1"}, {"FLAT_PRICE_CODES": "zero=0"},
-                                 {"MAX_DISCOUNT": "1"}, {"MAX_DISCOUNT": "70"}])
+                                 {"MAX_DISCOUNT": "1"}, {"MAX_DISCOUNT": "70"},
+                                 {"DISCOUNT_CODES": "odd=0.125"}])     # tres decimales: las líneas no suman el total
 def test_money_settings_that_make_no_sense_do_not_start(tmp_path, env):
     # «código=porcentaje» invita a escribir spring20=20: arrancaba y ese código daba el tope del 70 % (14-11-2026)
     with pytest.raises(ValueError):

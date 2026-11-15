@@ -148,6 +148,9 @@ class Settings:
         for code, rate in s.discount_codes.items():
             if not Decimal("0") < rate < Decimal("1"):
                 raise ValueError(f"DISCOUNT_CODES: {code}={rate} no es un tanto por uno entre 0 y 1 (el 20 % es 0.20)")
+            if rate != rate.quantize(Decimal("0.01")):
+                # con tres decimales (0.125), cada línea se redondea por su cuenta y no suman el total (2026-11-15)
+                raise ValueError(f"DISCOUNT_CODES: {code}={rate} lleva más de dos decimales (un 12,5 % no: 0.12 o 0.13)")
         for code, price in s.flat_price_codes.items():
             if not price > 0:
                 raise ValueError(f"FLAT_PRICE_CODES: {code}={price} no es un precio mayor que 0")

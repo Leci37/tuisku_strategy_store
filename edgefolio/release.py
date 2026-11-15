@@ -135,6 +135,8 @@ def scripts_of(rows, wanted: dict, copy: dict, target: Path, have: set):
     pub = publisher()
     for key in rows[pub.KEY].astype(str).itertuples(index=False):
         name = pub.private_name(*key)
+        if name not in wanted:
+            continue          # una que se deja fuera (LEFT_OUT): ni se publica ni cuenta (2026-11-15: «sin su script»)
         path = copy.get(name) or (target / name if name in have else None)
         data = path.read_bytes() if path is not None and regular(path) else None
         good = data is not None and sha256_of(data) == str(wanted.get(name, "")).lower()

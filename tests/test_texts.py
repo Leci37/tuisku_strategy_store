@@ -527,3 +527,11 @@ def test_the_free_dialog_says_how_long_its_link_lasts(real_app):
                 assert tab.problems() == [], tab.problems()
             finally:
                 tab.close()
+
+
+def test_the_receipt_says_how_to_see_a_purchase_made_without_an_account():
+    # Decía «entra con este correo», y entrar no basta: lo comprado sin cuenta sale cuando la cuenta demuestra el correo,
+    # en «¿Compraste sin cuenta?» (2026-11-15). Cada idioma nombra ese apartado como lo nombra la página.
+    for lang in UI["_languages"]:
+        body = UI["mailReceiptBody"][lang]
+        assert UI["proofTitle"][lang] in body and "{mine}" in body, lang

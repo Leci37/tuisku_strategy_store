@@ -229,6 +229,38 @@ def test_a_claim_made_signed_in_shows_once_its_address_is_proven(app, free_file)
     assert other.get("/api/mine").json["items"] == []
 
 
+def test_a_free_strategy_that_becomes_paid(app, client, settings, paypal, free_file):
+    # M2: hasta el 2026-11-15, el enlace de una gratis daba el script para siempre (también sus versiones nuevas), Mis
+    # estrategias lo renovaba cuantas veces se quisiera y comprarla daba errAlreadyOwned para siempre. Ahora: su enlace
+    # sirve, hasta que caduca, la versión que se pidió; renovarlo ya no; mientras sirve es suya (E8: no se vende suelta)
+    # y, gastado o caducado, se puede comprar.
+    import csv
+    from edgefolio.shop import install
+    ana = signed(app, "ana@example.com")
+    prove(ana)
+    assert claim(ana, "ana@example.com").status_code == 200
+    link = emailed_link("ana@example.com")
+    with open(settings.catalogue, newline="") as f:
+        table = list(csv.DictReader(f, delimiter="\t"))
+    for row in table:
+        if row["ticker"] == "NVDA":
+            row["Price"] = "50"
+    with open(settings.catalogue, "w", newline="") as f:
+        out = csv.DictWriter(f, fieldnames=list(table[0]), delimiter="\t")
+        out.writeheader()
+        out.writerows(table)
+    install(app, settings, paypal)                    # el catálogo de mañana: ya cuesta 50
+    assert client.get(link).status_code == 200, "la versión que se pidió, hasta que caduca"
+    renewed = ana.post("/api/mine/renew", json={"id": FREE_ID})
+    assert renewed.status_code == 403 and renewed.json == {"error": "errNoLongerFree"}
+    assert ana.post("/api/quote", json={"items": [FREE_ID]}).status_code == 409, "mientras su enlace sirve, es suya"
+    settings.max_downloads = 2
+    assert client.get(link).status_code == 200      # la segunda: el enlace, gastado
+    assert client.get(link).status_code == 429
+    q = ana.post("/api/quote", json={"items": [FREE_ID]})
+    assert q.status_code == 200 and q.json["total"] == "50.00", q.get_data(as_text=True)
+
+
 def test_someone_else_cannot_use_up_an_address_free_claims(app, free_file):
     # M5: cualquiera, sin cuenta, pedía 10 con el correo de otra persona, que se quedaba sin las suyas hasta el día
     # siguiente. El tope del día se cuenta por quien pide; el del buzón, de todos.

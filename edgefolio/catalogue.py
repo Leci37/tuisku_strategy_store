@@ -196,10 +196,13 @@ class Strategy:
     def serves(self, version: int, paid: bool = True) -> bool:
         """Si un enlace de la versión ``version`` (de pago; con ``paid=False``, de una gratis) da el script de hoy, el único
         que guarda la tienda. El de su versión, siempre; el de una de antes, mientras la estrategia no ha caducado (la
-        versión nueva es gratis hasta su «Expiry date»; decisión del dueño, 2026-10-26); el de una gratis, siempre. Lo
-        miran Mis estrategias, renovar (API #16) y la descarga (API #10): si no, el enlace de antes, aún válido, daría la
-        versión nueva."""
-        return not paid or version >= self.version or not self.expired
+        versión nueva es gratis hasta su «Expiry date»; decisión del dueño, 2026-10-26). El de una gratis, la de hoy
+        mientras siga siendo gratis; si pasó a ser de pago, sólo el de su versión, la que se pidió, hasta que caduca el
+        enlace (2026-11-15; hasta entonces daba también las versiones de pago). Lo miran Mis estrategias, renovar (API #16)
+        y la descarga (API #10): si no, el enlace de antes, aún válido, daría la versión nueva."""
+        if not paid:
+            return version >= self.version or self.price == 0
+        return version >= self.version or not self.expired
 
     @cached_property
     def numbers(self) -> dict:

@@ -66,13 +66,28 @@ def owned(user_id: int, emails: Iterable[str]) -> dict:
     return groups
 
 
+def held(shop, user_id: int, emails: Iterable[str]) -> set:
+    """Las claves de lo que la cuenta tiene, para no vendérselo suelto (E8): lo de Mis estrategias. Una gratis que ya
+    es de pago, sólo mientras su enlace sirve: después no se renueva (errNoLongerFree) y se puede comprar."""
+    items, settings, now = shop.catalogue.items, shop.settings, utcnow()
+
+    def still_hers(key, links):
+        if any(link["kind"] == "paid" for link in links) or not (key in items and items[key].price > 0):
+            return True
+        latest = links[-1]
+        return latest["expires"] > now and latest["count"] < settings.max_downloads
+    return {key for key, links in owned(user_id, emails).items() if still_hers(key, links)}
+
+
 def update_of(s, latest: dict):
     """La versión nueva que se le da a quien tiene ``latest`` (su último enlace), o None. Gratis mientras la estrategia
     no ha caducado (la «Expiry date» de su script; decisión del dueño, 2026-10-26); después, no. Una gratis, siempre: se
     pide otra vez sin pagar."""
     if s.version <= latest["version"]:
         return None
-    return s.version if s.serves(latest["version"], latest["kind"] == "paid") else None
+    if latest["kind"] == "free":
+        return s.version if s.price == 0 else None   # se pide otra vez sin pagar, mientras siga siendo gratis
+    return s.version if s.serves(latest["version"]) else None
 
 
 def entry(settings, s, links: list) -> dict:
@@ -119,7 +134,12 @@ def renew(shop, user_id: int, emails: list, item_id: str) -> dict:
     settings = shop.settings
     current = entry(settings, s, links)
     latest = links[-1]
-    if not s.serves(latest["version"], latest["kind"] == "paid"):
+    if latest["kind"] == "free":
+        if s.price > 0:
+            # pasó a ser de pago: su enlace sirve hasta que caduca, y uno nuevo se compra (2026-11-15; hasta entonces se
+            # renovaba siempre, también en sus versiones nuevas)
+            raise Refusal("errNoLongerFree", 403)
+    elif not s.serves(latest["version"]):
         raise Refusal("errUpdateExpired", 403)
     if current["valid"] and not current["update"]:
         return current

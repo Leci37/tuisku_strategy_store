@@ -2670,6 +2670,16 @@
     "ar": "دفعتك معلّقة في PayPal: تجري مراجعتها ولم تكتمل بعد. لا تدفع مرة أخرى. عندما يُكملها PayPal، افتح هذه الصفحة من جديد وستظهر تنزيلاتك.",
     "hi": "आपका भुगतान PayPal में लंबित है: उसकी जाँच हो रही है और वह अभी पूरा नहीं हुआ है। दोबारा भुगतान न करें। जब PayPal उसे पूरा कर दे, यह पेज फिर से खोलें और आपके डाउनलोड दिखेंगे।"
   },
+  "errNoLongerFree": {
+    "es": "Esta estrategia ya no es gratis: para tener un enlace nuevo, cómprala.",
+    "en": "This strategy is no longer free: to get a new link, buy it.",
+    "pt": "Esta estratégia já não é gratuita: para teres um link novo, compra-a.",
+    "fr": "Cette stratégie n’est plus gratuite : pour obtenir un nouveau lien, achetez-la.",
+    "de": "Diese Strategie ist nicht mehr kostenlos: Für einen neuen Link kaufe sie.",
+    "zh": "这个策略已不再免费：如需新链接，请购买。",
+    "ar": "لم تعد هذه الاستراتيجية مجانية: للحصول على رابط جديد، اشترِها.",
+    "hi": "यह रणनीति अब मुफ़्त नहीं है: नया लिंक पाने के लिए इसे खरीदें।"
+  },
   "errUnknownOrder": {
     "es": "No encontramos ese pedido.",
     "en": "We could not find that order.",

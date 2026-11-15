@@ -100,7 +100,9 @@ function rowVals(c, r) {
   const fav = s.favs.includes(id), cmp = s.compare.includes(id);
   // ya es de la cuenta: «Ya es tuya», nunca «Comprar» (el servidor tampoco la vende suelta: errAlreadyOwned, E8); su
   // .pine si el enlace vale y es la versión de hoy, si no Mis estrategias (que da otro enlace o la actualización)
-  const own = c.ownedOf(id), ownedPine = own && own.url && !own.update ? own.url : '';
+  // una gratis que ya es de pago es «Ya es tuya» mientras su enlace sirve (E8); caducado, se puede comprar
+  const had = c.ownedOf(id), own = had && !(had.kind === 'free' && r.price > 0 && !had.url) ? had : null;
+  const ownedPine = own && own.url && !own.update ? own.url : '';
   const live = r.live;
   const tipFor = m => () => app.setState(st => ({ tip: st.tip === id + ':' + m ? '' : id + ':' + m }));
   const openAt = tab => e => { stop(e); app.go({ page: 'detail', detail: id, detTab: tab }); };

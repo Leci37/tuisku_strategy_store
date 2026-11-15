@@ -406,7 +406,8 @@ def test_a_strategy_expires_at_midnight_utc_as_its_script(monkeypatch):
     for moment, expired in (((2027, 6, 12, 12, 0, 0), False), ((2027, 6, 12, 23, 59, 59), False),
                             ((2027, 6, 13, 0, 0, 0), True)):
         At.moment = datetime(*moment, tzinfo=timezone.utc)
-        assert (s.expired, s.serves(1), s.serves(2), s.serves(1, paid=False)) == (expired, not expired, True, True), moment
+        # una gratis de la v1 de una de pago no da la v2 (2026-11-15: la daba, también caducada)
+        assert (s.expired, s.serves(1), s.serves(2), s.serves(1, paid=False)) == (expired, not expired, True, False), moment
 
 
 def test_every_published_strategy_says_when_it_expires(real_app):

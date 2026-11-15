@@ -223,9 +223,11 @@ def thumb(stem):
 
 def owned_now() -> set:
     """Las claves de lo que ya tiene la cuenta con la sesión abierta, lo de Mis estrategias (sus compras y sus
-    gratis, y las de sus correos demostrados): suelta, no se vende otra vez. Sin sesión, nada."""
+    gratis, y las de sus correos demostrados): suelta, no se vende otra vez (E8). Sin sesión, nada. Una que sólo tiene
+    gratis y ya es de pago es suya mientras su enlace sirve; después, no (no se renueva: errNoLongerFree), y se puede
+    comprar (2026-11-15; hasta entonces se quedaba sin poder comprarla)."""
     uid = user_id()
-    return set(mine.owned(uid, proofs.proven(uid))) if uid is not None else set()
+    return mine.held(shop(), uid, proofs.proven(uid)) if uid is not None else set()
 
 
 def _guarded(cart: dict, price):

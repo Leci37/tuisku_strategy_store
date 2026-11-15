@@ -31,6 +31,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -38,6 +39,8 @@ from typing import Optional
 
 from . import levels
 from .settings import CATALOGUE
+
+log = logging.getLogger(__name__)
 
 SHOWN = 10   # los nombres que se enseñan en un problema; los demás se cuentan
 
@@ -218,7 +221,11 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
                                         checked=checked, stage=stage,
                                         list_intraday_stocks=settings.list_intraday_stocks)
     except Exception as e:
-        problems = e.problems if isinstance(e, (Refused, pub.ContractError)) else [f"{type(e).__name__}: {e}"]
+        expected = isinstance(e, (Refused, pub.ContractError))
+        if not expected:
+            # lo que no se esperaba, con su traza: el comando sólo enseña el tipo y el mensaje
+            log.exception("Importación fallida | escritos=%s", stage.done)
+        problems = e.problems if expected else [f"{type(e).__name__}: {e}"]
         if stage.done:
             problems.append(f"falló a medias: {stage.done} ficheros (los scripts y los niveles primero, luego "
                             "static/assets, el catálogo y release.json, por ese orden) ya estaban en su sitio; los "
@@ -231,6 +238,9 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
         # lo que ya está en su sitio puede ser un gráfico nuevo con el nombre de uno de antes, aunque algo fallara
         thumbs = clear_thumbs(settings.thumbs_dir) if stage.done else 0
     done = catalogue.attrs["published"]
+    log.info("Catálogo importado | contrato=%s estrategias=%s ficheros=%s scripts=%s miniaturas_borradas=%s commit=%s",
+             manifest["contract"], done["rows"], done["copied"], copied_scripts, thumbs,
+             str(manifest["generator"].get("commit") or "")[:12] or "-")
     return {
         "rows": done["rows"], "files": done["copied"], "cut": done["cut"], "pruned": done["pruned"],
         "kept": done["kept"], "scripts": copied_scripts, "scripts_missing": len(absent) if skip_scripts else 0,

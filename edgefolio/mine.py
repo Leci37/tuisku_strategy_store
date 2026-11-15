@@ -12,6 +12,7 @@ que pedía para cualquier dirección, sin abrir ningún correo.
 """
 from __future__ import annotations
 
+import logging
 import math
 import secrets
 from datetime import timedelta, timezone
@@ -24,6 +25,8 @@ from zlecitool_core.db import db, utcnow
 from .free import add_claim
 from .models import Download, Favourite, FreeClaim, Order
 from .web import Refusal, bool_field, invalid, json_object
+
+log = logging.getLogger(__name__)
 
 ALERT_KEYS = ("nv", "pd", "bd")  # una versión nueva, una bajada de precio, en un lote
 
@@ -173,12 +176,16 @@ def renew(shop, user_id: int, emails: list, item_id: str, own: str = "") -> dict
                                     expires_at=now + timedelta(days=settings.download_days), count=0,
                                     version=s.version))
         db.session.commit()
+        if fresh is None:   # si otra petición (un doble clic) ya lo hizo, ella lo dijo
+            log.info("Enlace renovado | user_id=%s estrategia=%s tipo=pago pedido=%s versión=%s", user_id, s.id,
+                     latest["paypal_id"], s.version)
     else:
         # La renovada guarda la hora de la primera petición: no cuenta para el límite del día.
         first = min(x["date"] for x in links if x["kind"] == "free")
         news = any(x.get("news") for x in links if x["kind"] == "free")
         add_claim(latest["email"], s.key, news, "", settings.download_days, s.version, consent_at=first,
                   user_id=user_id, unless_valid=settings.max_downloads)
+        log.info("Enlace renovado | user_id=%s estrategia=%s tipo=gratis versión=%s", user_id, s.id, s.version)
     return entry(settings, s, owned(user_id, emails, own)[s.key])
 
 
@@ -208,16 +215,20 @@ def alerts_of(body: dict) -> dict:
 def set_favourite(shop, user_id: int, email: str, lang: str, item_id: str, alerts: dict) -> dict:
     s = strategy_or_404(shop.catalogue, item_id)
     fav = db.session.get(Favourite, (user_id, s.key))
-    if fav is None:
+    new = fav is None
+    if new:
         fav = Favourite(user_id=user_id, item_key=s.key, created_at=utcnow())
         db.session.add(fav)
     fav.alerts, fav.email, fav.lang = dict(alerts), email, lang
     db.session.commit()
+    log.info("Favorita guardada | user_id=%s estrategia=%s nueva=%s avisos=%s", user_id, s.id,
+             "sí" if new else "no", ",".join(k for k in ALERT_KEYS if alerts.get(k)) or "ninguno")
     return {"id": s.id, "alerts": dict(alerts), "row": s.as_row()}
 
 
 def delete_favourite(shop, user_id: int, item_id: str) -> dict:
     s = strategy_or_404(shop.catalogue, item_id)
-    Favourite.query.filter_by(user_id=user_id, item_key=s.key).delete()
+    gone = Favourite.query.filter_by(user_id=user_id, item_key=s.key).delete()
     db.session.commit()
+    log.info("Favorita quitada | user_id=%s estrategia=%s borradas=%s", user_id, s.id, gone)
     return {"id": s.id, "deleted": True}

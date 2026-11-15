@@ -7,8 +7,8 @@ añade ya y lo que espera a la 0.36 del núcleo.
 ## La pauta, en corto
 
 - Formato «Qué pasó | clave=valor clave=valor», en español (como los del núcleo: `Cuenta creada | user_id=1`).
-- Las personas, por su id (`user_id=`); lo de la tienda, por su referencia: `pedido=<id de PayPal>`, `estrategia=<clave>`,
-  `prueba=<id>`, `lote=<clave>`. **Nunca** un correo, lo tecleado (la búsqueda, un código de descuento), una IP, un
+- Las personas, por su id (`user_id=`); lo de la tienda, por su referencia: `pedido=<id de PayPal>`, `estrategia=<id>`
+  (el de la URL, `AAPL_1Day_1ADX_aaaa1111`), `prueba=<id>`, `lote=<clave>`. **Nunca** un correo, lo tecleado (la búsqueda, un código de descuento), una IP, un
   token de enlace (`/api/download/<token>`, los de confirmar), el contenido de un script.
 - Niveles: DEBUG, desarrollo; INFO, lo que pasó; WARNING, algo raro o un servicio de fuera que falla, y se sigue;
   ERROR, falló (con la traza si no se esperaba).
@@ -81,7 +81,7 @@ núcleo, abajo). De los 35 de esta ronda, 19 vuelven a lanzar o escriben y 16 ca
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| traer los cambios | `fetch()` sin una línea | `update(out)`, que usan la tarea y el comando: INFO `Cambios del BCE guardados \| día= cambios=`; con `fx.FAILURES`, WARNING `BCE sin cambios nuevos \| fichero= error=` y relanza |
+| traer los cambios | `fetch()` sin una línea | `update(out)`, que usan la tarea y el comando: INFO `Cambios del BCE guardados \| día= cambios=`; con `fx.FAILURES`, WARNING `BCE sin cambios nuevos: <fichero> sigue como estaba \| error=` y relanza |
 | la traza de la llamada (`API → / API ←`) | — | **0.36**: `external_call` del núcleo, cuando esté en su CONTRATO |
 
 ### `edgefolio/alerts.py` — los avisos de las favoritas
@@ -96,7 +96,7 @@ núcleo, abajo). De los 35 de esta ronda, 19 vuelven a lanzar o escriben y 16 ca
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `claim`: la gratis sale | nada | INFO `Gratis mandada \| estrategia= user_id= novedades=` |
+| `claim`: la gratis sale | nada | INFO `Gratis mandada \| estrategia= user_id= novedades=pendientes\|confirmadas\|no` |
 | `add_claim`: el tope del día | `None` → `errFreeDaily` 429 | la línea del rechazo |
 | `request_news` | nada | INFO `Novedades pendientes de confirmar \| origen=` |
 | `confirm_news` | nada | INFO `Novedades confirmadas`, o `Novedades sin confirmar: enlace usado, viejo o inventado` |
@@ -107,13 +107,13 @@ núcleo, abajo). De los 35 de esta ronda, 19 vuelven a lanzar o escriben y 16 ca
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `create`: `except PayPalError` | relanza `errPayPal` 502, sin línea | WARNING `PayPal no creó el pedido \| estrategias= total= \| <error>`; la línea del rechazo, también (5xx: WARNING) |
-| `create`: el pedido | nada | INFO `Pedido creado \| pedido= user_id= estrategias= lotes= pack= total= código=sí\|no` (el código, nunca) |
+| `create`: `except PayPalError` | relanza `errPayPal` 502, sin línea | WARNING `PayPal no creó el pedido \| estrategias= total= moneda= \| <error>`; la línea del rechazo, también (5xx: WARNING) |
+| `create`: el pedido | nada | INFO `Pedido creado \| pedido= user_id= estrategias= lotes= pack= total= moneda= código=sí\|no` (el código, nunca) |
 | `settled`: `except PayPalError` | WARNING `PayPal no dio el pedido \| pedido= \| <error>` | se queda |
-| `capture`: `except PayPalError` | pregunta a PayPal; sin respuesta, WARNING `Cobro sin confirmar` y relanza 502 | se queda; si PayPal ya lo había cobrado, INFO `Cobro que PayPal ya había hecho \| pedido=` |
+| `capture`: `except PayPalError` | pregunta a PayPal; sin respuesta, WARNING `Cobro sin confirmar` y relanza 502 | se queda; si PayPal ya lo había cobrado, INFO `Cobro que PayPal ya había hecho: se toma ese \| pedido= estado=` |
 | `capture`: pendiente en PayPal | `PENDING`, 402, sin línea | INFO `Cobro pendiente en PayPal \| pedido=` |
-| `capture`: no cuadra (otro importe, otra moneda, otro estado) | `FAILED`, 402, sin línea | WARNING `Cobro que no cuadra \| pedido= estado= importe=bien\|distinto` |
-| `capture`: pagado | nada | INFO `Pedido cobrado \| pedido= user_id= estrategias= total=` (sólo el cobro que lo pasó a pagado) |
+| `capture`: no cuadra (otro importe, otra moneda, otro estado) | `FAILED`, 402, sin línea | WARNING `Cobro que no cuadra: el pedido queda FAILED \| pedido= estado= importe=bien\|distinto` |
+| `capture`: pagado | nada | INFO `Pedido cobrado \| pedido= user_id= estrategias= total= moneda=` (sólo el cobro que lo pasó a pagado) |
 | `capture`: cuenta borrada, estrategia que salió | `errAccountClosed`, `errStrategyGone` | la línea del rechazo |
 | `issue_links`: enlaces nuevos | nada | INFO `Enlaces de descarga \| pedido= nuevos=` (pedir el recibo otra vez no escribe) |
 | `email_receipt` sin correo | nada | nada: un pedido sin correo no tiene a quién mandarlo; el correo que sale lo apunta el núcleo |
@@ -134,7 +134,7 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `renew`: enlace nuevo de pago | nada | INFO `Enlace renovado \| user_id= estrategia= tipo=pago versión=` (si otra petición ya lo hizo, nada) |
+| `renew`: enlace nuevo de pago | nada | INFO `Enlace renovado \| user_id= estrategia= tipo=pago pedido= versión=` (si otra petición ya lo hizo, nada) |
 | `renew`: enlace nuevo gratis | nada | INFO `Enlace renovado \| user_id= estrategia= tipo=gratis versión=` |
 | `set_favourite` | nada | INFO `Favorita guardada \| user_id= estrategia= nueva=sí\|no avisos=nv,pd` |
 | `delete_favourite` | nada | INFO `Favorita quitada \| user_id= estrategia= borradas=` |
@@ -145,7 +145,7 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 | Sitio | Hoy | Decisión |
 |---|---|---|
 | `request`: enlace nuevo | nada | INFO `Prueba de correo pedida \| user_id= prueba=` |
-| `request`: no se manda (ya demostrado, uno hace menos de un minuto, cinco pendientes) | `None`, la misma respuesta (a propósito) | INFO `Prueba de correo sin mandar \| user_id= motivo=demostrado\|reciente\|pendientes`: la respuesta no lo dice, el log sí |
+| `request`: no se manda (ya demostrado, uno hace menos de un minuto, cinco pendientes) | `None`, la misma respuesta (a propósito) | INFO `Prueba de correo sin mandar \| user_id= motivo=demostrado\|reciente\|pendientes`, con la prueba o cuántas: la respuesta no lo dice, el log sí |
 | `forget` | nada | INFO `Prueba de correo anulada: no salió \| user_id=` |
 | `confirm` | nada | INFO `Correo demostrado \| user_id= prueba=`; un enlace que no vale, la línea del rechazo (`errProofExpired`) |
 
@@ -160,7 +160,7 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `_refused`: cada `Refusal` | la respuesta, sin línea | INFO `Rechazo \| ruta=<método> <regla> clave= estado= user_id= [campo=]` (WARNING si es 5xx); la regla (`/api/download/<token>`), nunca la ruta con su token |
+| `_refused`: cada `Refusal` | la respuesta, sin línea | INFO `Rechazo \| método= ruta=<regla> clave= estado= user_id= [campo=]` (WARNING si es 5xx); la regla (`/api/download/<token>`), nunca la ruta con su token |
 | `_download`: un rechazo abierto en la pestaña | redirige a la tienda | la misma línea del rechazo, antes de redirigir |
 | `link`: sin `ZLECITOOL_PUBLIC_URL` | `errLater` 503 | WARNING `Enlace sin hacer: falta ZLECITOOL_PUBLIC_URL \| destino=`, y la línea del rechazo |
 | `_email_receipt` sin dirección pública | WARNING `Recibo sin mandar: falta ZLECITOOL_PUBLIC_URL \| pedido=` | se queda (con el logger del módulo, `edgefolio.routes`) |
@@ -176,7 +176,7 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `_bundles`: un lote fuera | 2 × ERROR, con otro formato | ERROR `Lote fuera: … \| lote= ausentes=` / `\| lote= precio= sueltas=` |
+| `_bundles`: un lote fuera | 2 × ERROR, con otro formato | ERROR `Lote fuera: nombra estrategias que el catálogo no trae \| lote= ausentes=`, `Lote fuera: no tiene estrategias \| lote=` y `Lote fuera: no cuesta menos que sus estrategias sueltas \| lote= precio= sueltas=` |
 | el catálogo, cargado | nada | INFO `Catálogo cargado \| estrategias= lotes= niveles= vistas_previas_ausentes= gráficos_ausentes=`, una por carga; WARNING si falta alguno |
 | `Shop`: la tienda montada | nada | INFO `Tienda en marcha \| paypal=fake\|sandbox\|live estrategias= lotes=` |
 | `number`: `except (TypeError, ValueError)` | `None` | nada: una celda vacía o que no es un número es «sin dato»; corre por cada celda |
@@ -190,7 +190,7 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `load`: `except (OSError, ValueError)` | ERROR `%s no se lee: %s` | ERROR `Niveles sin leer \| fichero= \| <error>` |
+| `load`: `except (OSError, ValueError)` | ERROR `%s no se lee: %s` | ERROR `Niveles sin leer: el árbol enseña la puntuación \| fichero= \| <error>` |
 | entradas que no valen | ERROR | ERROR `Niveles que no valen, fuera \| fichero= entradas=` |
 | `number`: `except` | `None` | nada: lectura con valor por defecto |
 
@@ -218,7 +218,7 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 | `import_package`: hecho | lo dice el comando con `click.echo` | INFO `Catálogo importado \| contrato= estrategias= ficheros= scripts= miniaturas_borradas= commit=` |
 | `import`: `except release.Refused` | `ClickException` | WARNING `Importación rechazada \| paquete= problemas=`, y la excepción |
 | `import`: `except ModuleNotFoundError` | relanza (o `ClickException` sin pandas) | se queda |
-| `levels` | `click.echo` | INFO `Niveles publicados \| estrategias=`; sin ningún script, nada (lo dice el comando y no cambia nada) |
+| `levels` | `click.echo` | INFO `Niveles publicados \| estrategias= de=`; sin ningún script, nada (lo dice el comando y no cambia nada) |
 | `restore-scripts` | `click.echo` | INFO `Scripts de pago restaurados \| n= commit=` |
 | `fx-update`: `except fx.FAILURES` | `ClickException` | se queda; lo dice `fx.update` |
 | `send-alerts`: `except RuntimeError` | `ClickException` | se queda; lo dice `alerts.run` |
@@ -299,6 +299,33 @@ En un solo sitio, `App.componentDidUpdate` (`sync(prevState)`), comparando con e
    de la cuenta de prueba no salgan en los logs): `tests/test_privacy.py` ya pasa `privacy_sample`.
 4. La línea de cada petición por su regla (sin IP, sin credenciales ni consulta).
 
-## Lo añadido
+## Lo añadido (F3, 15-11-2026)
 
-(se completa en F3 y F4)
+Lo que no depende del núcleo, ya en el código; lo demás, en «Para el núcleo» de [../ESTADO.md](../ESTADO.md).
+
+| Capa | Antes | Después | Qué |
+|---|---|---|---|
+| Frontal | 1 | 1 | sin tocar: espera al ayudante de la 0.36 (6 `catch` más escribirán, 10 seguirán callando con su porqué) |
+| Servidor | 6 | 53 | las tres tareas, los pedidos y los cobros, los enlaces y las descargas, las gratis y las novedades, las pruebas de correo, las favoritas, «Tus datos», la carga del catálogo, los comandos; el BCE (2) y PayPal (4), llamadas de fuera |
+| Endpoint | 1 | 6 | una línea por rechazo (por su regla), la dirección pública que falta (3), la miniatura que no sale y el tope de correos de una dirección |
+| Cambio de ventana | 0 | 0 | espera a la 0.36 |
+| **Total** | **8** | **60** | 59 sitios en Python (`log.…`), en 17 ficheros de `edgefolio/` |
+
+`except` de la ronda: los 35 con su decisión. 28 relanzan o escriben (antes, 19; 3 de ellos, en la línea que resume la
+carga del catálogo) y 7 callan con su porqué, escrito al lado (`number`, `release_date`, `resolve`, `levels.number`, la
+primera miniatura, `client_key`, una raíz de miniatura que no es de nadie). `catch` del JavaScript: 37, sin tocar.
+
+Por el camino:
+
+- `fx.update(out)`: lo comparten la tarea y el comando `fx-update` (antes, cada uno con su `fetch` y su `write`).
+- `downloads.claim_download` da de qué enlace era (`"paid"`, `"free"` o `""`) en vez de `True`/`False`: la línea de la
+  descarga lo dice.
+- `routes.py` escribe con su logger (`edgefolio.routes`), no con `current_app.logger`.
+- `release.py` tiene logger: la importación que falla a medias por algo que no se esperaba deja su traza.
+
+Las pruebas, en `tests/test_logs.py` (16, sin navegador): un error deja su línea (PayPal que no crea el pedido, un cobro
+que no cuadra, `levels.json` roto, el BCE caído), un cambio de estado la suya (el pedido, su cobro y sus enlaces una
+vez aunque se cobre dos veces, las descargas, la gratis y las novedades, las pruebas de correo, las favoritas, el
+borrado de una cuenta), cada tarea dice lo que hizo (y la repetición, que nada), un rechazo deja una sola línea con la
+regla de su ruta, el formato «Qué pasó | clave=valor» se cumple, y ni el correo de la cuenta de prueba, ni lo
+tecleado, ni un código, ni un token salen en ninguna línea, de la tienda ni del núcleo.

@@ -19,6 +19,7 @@ from __future__ import annotations
 import functools
 import io
 import json
+import logging
 import re
 import textwrap
 import zipfile
@@ -26,6 +27,8 @@ from dataclasses import dataclass, field
 from typing import Optional, Union
 
 from .settings import STATIC
+
+log = logging.getLogger(__name__)
 
 NUM = r"(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)"
 RE_TREE = re.compile(r"^decision_tree_(\d+)_\w*\s*\(([^)]*)\)\s*=>")
@@ -271,7 +274,9 @@ def feature_names() -> dict:
     d@Wave_Trend_Calculation)."""
     try:
         data = json.loads((STATIC / "trees" / "features.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except (OSError, ValueError) as e:
+        log.warning("features.json sin leer: el zip sale sin los nombres de los valores | fichero=%s | %s",
+                    "static/trees/features.json", type(e).__name__)
         return {}
     return {k: (v[0], v[1], v[4] if len(v) > 4 else "") for k, v in data.get("features", {}).items() if len(v) >= 2}
 

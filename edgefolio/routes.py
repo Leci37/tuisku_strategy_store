@@ -13,6 +13,7 @@ página lo enseña traducido.
 from __future__ import annotations
 
 import ipaddress
+import logging
 
 from flask import Blueprint, Response, current_app, jsonify, redirect, render_template, request, send_file
 
@@ -27,6 +28,8 @@ from . import cli, downloads, free, media, mine, orders, proofs, search
 from .settings import Settings
 from .shop import install, of
 from .web import Refusal, json_object, text_field, valid_email
+
+log = logging.getLogger(__name__)
 
 bp = Blueprint("edgefolio", __name__)
 cli.register(bp)
@@ -49,8 +52,20 @@ def shop():
     return of(current_app)
 
 
+def _log_refusal(refusal: Refusal) -> None:
+    """La línea de un rechazo: la ruta por su regla (``/api/download/<token>``, nunca con su token), la clave, el código
+    y la cuenta; del cuerpo, sólo el nombre del campo que no valía. INFO (la persona se equivocó, o el tope del día);
+    WARNING si es un 5xx (PayPal o la dirección pública fallan: lo arregla quien la lleva)."""
+    rule = request.url_rule.rule if request.url_rule is not None else "-"
+    field = refusal.extra.get("field")
+    (log.warning if refusal.status >= 500 else log.info)(
+        "Rechazo | método=%s ruta=%s clave=%s estado=%s user_id=%s%s", request.method, rule, refusal.key, refusal.status,
+        user_id() or "-", f" campo={field}" if isinstance(field, str) else "")
+
+
 @bp.errorhandler(Refusal)
 def _refused(refusal: Refusal):
+    _log_refusal(refusal)
     return jsonify(refusal.body()), refusal.status
 
 
@@ -72,6 +87,7 @@ def link(endpoint: str, **values) -> str:
     ZLECITOOL_PUBLIC_URL, nunca con la cabecera Host (sólo en desarrollo, sin ella)."""
     url = external_url(endpoint, trusted_host_ok=False, **values)
     if url is None:
+        log.warning("Enlace sin hacer: falta ZLECITOOL_PUBLIC_URL | destino=%s", endpoint)
         raise Refusal("errLater", 503)
     return url
 
@@ -83,7 +99,7 @@ def client_key() -> str:
     try:
         addr = ipaddress.ip_address(ip)
     except ValueError:
-        return ip
+        return ip  # sin log: no es una IP (un socket), y como clave del límite vale igual
     if addr.version == 6 and addr.ipv4_mapped is None:
         return str(ipaddress.ip_network(f"{addr}/64", strict=False))
     return ip
@@ -208,9 +224,11 @@ def thumb(stem):
     try:
         path = media.thumb(shop().settings, stem)
     except KeyError:
+        # sin log: no es un gráfico del catálogo (un enlace viejo, un robot), y la respuesta lo dice
         return jsonify({"error": "errNotFound"}), 404
-    except OSError:
+    except OSError as e:
         # su gráfico ya no está (un import --prune con la tienda en marcha) o está roto: hasta el 14-11-2026, un 500
+        log.warning("Miniatura sin hacer | gráfico=%s | %s: %s", stem, type(e).__name__, e.strerror or e)
         return jsonify({"error": "errNotFound"}), 404
     if path is None:
         return redirect(f"/static/assets/charts/{stem}.png", code=307)
@@ -290,7 +308,7 @@ def _email_receipt(order):
     ZLECITOOL_PUBLIC_URL) no sale: lo pagado ya está pagado, y la página de gracias lo enseña igual."""
     mine = external_url("edgefolio.mine_page", trusted_host_ok=False)
     if mine is None:
-        current_app.logger.warning("Recibo sin mandar: falta ZLECITOOL_PUBLIC_URL | pedido=%s", order.paypal_id)
+        log.warning("Recibo sin mandar: falta ZLECITOOL_PUBLIC_URL | pedido=%s", order.paypal_id)
         return
     orders.email_receipt(shop(), order, request_language(), mine, send_mail)
 
@@ -317,6 +335,7 @@ def _download(make):
     except Refusal as refusal:
         if not _opened_in_the_browser():
             raise
+        _log_refusal(refusal)   # no pasa por el manejador: redirige
         # a Mis estrategias, que da un enlace nuevo; sin sesión, a la tienda: el aviso, traducido allí
         where = "/mine" if signed_in() else "/"
         return redirect(f"{where}?link={refusal.key}", code=303)
@@ -437,13 +456,17 @@ def ask_proof():
     email = email_of(b.get("email") or current_user.email)
     limited("proof")
     # y por dirección, de cualquier cuenta: la misma respuesta, sin correo, si esa dirección ya recibió los suyos
-    token = proofs.request(current_user.id, email) if not shop().limits["proof_to"].full(email) else None
+    capped = shop().limits["proof_to"].full(email)
+    token = proofs.request(current_user.id, email) if not capped else None
+    if capped:
+        log.info("Prueba de correo sin mandar | user_id=%s motivo=tope_de_la_dirección", current_user.id)
     if token:
         shop().limits["proof_to"].hit(email)
     if token:
         texts, lang = shop().texts, request_language()
         url = external_url("edgefolio.mine_page", trusted_host_ok=False, proof=token)
         if url is None:
+            log.warning("Prueba de correo sin mandar: falta ZLECITOOL_PUBLIC_URL | user_id=%s", current_user.id)
             proofs.forget(current_user.id, token)
             raise Refusal("errLater", 503)
         send_mail(email, texts.get("mailProofSubject", lang),

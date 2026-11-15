@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import io
+import logging
 import os
 import subprocess
 import sys
@@ -28,6 +29,8 @@ import click
 from flask import current_app
 
 from .settings import ROOT
+
+log = logging.getLogger(__name__)
 
 SCRIPTS_COMMIT = "c3fa796"
 SCRIPTS_PATH = "d_result/pine_TW_b"
@@ -100,6 +103,7 @@ def register(bp):
             done = release.import_package(package, shop().settings, scripts=scripts, skip_scripts=skip_scripts,
                                           prune=prune)
         except release.Refused as e:
+            log.warning("Importación rechazada | paquete=%s problemas=%s", Path(package).name, len(e.problems))
             raise click.ClickException(f"no se importa {package}:\n" + "\n".join(f"  - {p}" for p in e.problems))
         except ModuleNotFoundError as e:
             # publish.py usa pandas, que sólo está en requirements-dev.txt: se importa donde se desarrolla y se
@@ -159,6 +163,7 @@ def register(bp):
             raise click.ClickException(levels.summary(counted, len(s.catalogue)) + f". Ningún script de {folder} es el "
                                        f"de su estrategia: {levels.FILE} no se toca")
         levels.write(s.settings.levels, found)
+        log.info("Niveles publicados | estrategias=%s de=%s", len(found), len(s.catalogue))
         click.echo(levels.summary(counted, len(s.catalogue)))
         # la tienda lee el catálogo, y con él los niveles, al arrancar (shop.load_catalogue)
         click.echo("reinicia la tienda para que sirva estos niveles")
@@ -175,6 +180,7 @@ def register(bp):
             return
         if n == 0:
             raise click.ClickException(f"{commit}:{SCRIPTS_PATH} no tiene ningún .pine")
+        log.info("Scripts de pago restaurados | n=%s commit=%s", n, commit)
         click.echo(f"{n} scripts en {target}")
 
     @bp.cli.command("fx-update")
@@ -184,10 +190,9 @@ def register(bp):
         from . import fx
         out = shop().settings.fx_today
         try:
-            data = fx.fetch()
+            data = fx.update(out)
         except fx.FAILURES as e:
             raise click.ClickException(f"sin cambios nuevos ({out.name} sigue como estaba): {e}") from e
-        fx.write(data, out)
         click.echo(f"{out}: {len(data['rates'])} cambios del {data['date']}")
 
     @bp.cli.command("send-alerts")
@@ -221,8 +226,11 @@ def register(bp):
         out = csv.writer(sys.stdout)
         # con el enlace de baja de cada una, para ponerlo en su correo (2026-11-15)
         out.writerow(["email", "lang", "source", "consent_at", "confirmed_at", "unsubscribe_url"])
-        for row in subscribers():
+        rows = subscribers()
+        for row in rows:
             unsub = external_url("edgefolio.unsubscribe_news", trusted_host_ok=False,
                                  t=news_token(row["email"], current_app.secret_key)) or ""
             out.writerow([row["email"], row["lang"], row["source"], row["consent_at"].isoformat(),
                           row["confirmed_at"].isoformat(), unsub])
+        # saca correos de personas: que quede su rastro (cuántos, nunca cuáles)
+        log.info("Lista de las novedades sacada | direcciones=%s", len(rows))

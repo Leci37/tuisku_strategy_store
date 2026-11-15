@@ -34,6 +34,13 @@ eso estos ficheros se quedan donde los busca.
 | [design/](design/) | El diseño de referencia (`python docs/design/serve.py` lo abre), sus notas (`HANDOFF.md`, `STATUS.md`, `PR_DESCRIPTION.md`) y su flujo en español (`FLUJO_USUARIO.md`, hasta el 2026-10-12 en `docs/`) |
 | `handoff/<fecha>/` | Cada exportación tal como llegó y su `CAMBIOS.md`: lo que la tienda hace distinto a propósito, lo que se pide al núcleo y las preguntas del dueño, las decididas y las abiertas |
 
+## El estado y lo técnico
+
+| Fichero | Qué |
+|---|---|
+| [ESTADO.md](ESTADO.md) | Lo hecho, lo que falta y lo que se pide al núcleo («Para el núcleo») |
+| [tecnico/LOGS.md](tecnico/LOGS.md) | Lo que escribe la tienda en el log, capa a capa: cada `except` y `catch` con su decisión, y lo que espera a la 0.36 del núcleo |
+
 ## Lo demás
 
 - `img/`: las capturas del README y, en español, las de `FLUJO_USUARIO.md` y `PANTALLAS.md` (`edgefolio_es_*.png`); las hace todas `tools/screenshots.py`.

@@ -55,7 +55,7 @@ def number(raw, kind=float):
     try:
         v = float(raw)
     except (TypeError, ValueError):
-        return None
+        return None  # una celda vacía o que no es un número: «sin dato», sin log (corre por cada celda)
     if math.isnan(v) or math.isinf(v):
         return None
     return int(round(v)) if kind is int else v
@@ -82,7 +82,7 @@ def forest_size(path: Path) -> int:
         with open(path, encoding="utf-8", errors="replace") as f:
             m = FOREST.search(f.read(4096))
     except OSError:
-        return 0
+        return 0  # una vista previa que no está: lo cuenta la línea de la carga del catálogo (vistas_previas_ausentes)
     return int(m[1]) if m else 0
 
 
@@ -94,11 +94,12 @@ def script_expiry(path: Path):
         with open(path, encoding="utf-8", errors="replace") as f:
             head = f.read(4096)   # la cabecera son las primeras líneas
     except OSError:
-        return None
+        return None  # lo cuenta la línea de la carga del catálogo (vistas_previas_ausentes)
     m = EXPIRY.search(head)
     try:
         return date(int(m[1]), int(m[2]), int(m[3])) if m else None
     except ValueError:
+        log.warning("Caducidad que no es una fecha: el script no caduca para la tienda | fichero=%s", Path(path).name)
         return None
 
 
@@ -108,7 +109,7 @@ def chart_version(static: Path, path) -> str:
     try:
         return format((static / (path or "").strip()).stat().st_mtime_ns // 1_000_000_000, "x") if path else ""
     except OSError:
-        return ""
+        return ""  # un gráfico que no está: lo cuenta la línea de la carga del catálogo (gráficos_ausentes)
 
 
 def thumb_url(stem: str, version) -> str:
@@ -127,7 +128,11 @@ def read_release(path: Path) -> dict:
     """release.json, o {} sin él (un catálogo publicado con la forma de antes de los paquetes) o roto."""
     try:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except OSError:
+        return {}  # sin él: un catálogo de antes de los paquetes
+    except ValueError as e:
+        log.warning("release.json sin leer: la tienda no dice entre cuántas se eligieron | fichero=%s | %s",
+                    Path(path).name, e)
         return {}
     return data if isinstance(data, dict) else {}
 
@@ -201,7 +206,7 @@ class Strategy:
         try:
             return date.fromisoformat(self.release)
         except ValueError:
-            return None
+            return None  # sin fecha de publicación: no es nueva; sin log (corre en cada petición)
 
     @property
     def is_new(self) -> bool:
@@ -311,6 +316,7 @@ class Catalogue:
         live = {r.get("id"): r for r in read_table(source.since_release)}
         self.items = {}   # por clave: lo que guardan los pedidos y los enlaces
         self.by_id = {}
+        previews_missing = charts_missing = 0   # lo que nombra el catálogo y no está: una línea, no una por fila
         with open(source.catalogue, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f, delimiter="\t"):
                 s = Strategy(row["ticker"], row["interval"], row["key_techs"], row["id_model"],
@@ -321,10 +327,14 @@ class Catalogue:
                     s = replace(s, live=number(live[s.id].get("pct")), live_as_of=live[s.id].get("as_of") or None)
                 preview = (row.get("pine_path_shadow") or "").strip()
                 if preview:
+                    if not (Path(source.static) / preview).is_file():
+                        previews_missing += 1
                     s = replace(s, expiry=script_expiry(Path(source.static) / preview),
                                 forest=forest_size(Path(source.static) / preview))
                 s = replace(s, charts_v={k: chart_version(Path(source.static), row.get(col))
                                          for k, col in (("profit", "path_stra"), ("candle", "path_candle"))})
+                charts_missing += sum(1 for k, col in (("profit", "path_stra"), ("candle", "path_candle"))
+                                      if (row.get(col) or "").strip() and not s.charts_v[k])
                 if s.key not in self.items:
                     self.items[s.key] = s
                     self.by_id[s.id] = s
@@ -336,6 +346,9 @@ class Catalogue:
         self.tried = tried if type(tried) is int and tried >= len(self.items) > 0 else None
         self.bundles = self._bundles(source.bundles)
         self.levels = load_levels(source.levels)
+        (log.warning if previews_missing or charts_missing else log.info)(
+            "Catálogo cargado | estrategias=%s lotes=%s niveles=%s vistas_previas_ausentes=%s gráficos_ausentes=%s",
+            len(self.items), len(self.bundles), len(self.levels), previews_missing, charts_missing)
 
     def _bundles(self, path: Path) -> dict:
         """Los lotes de bundles.json que siguen siendo lo que prometen. Uno que perdió una estrategia, o que ya
@@ -348,15 +361,18 @@ class Catalogue:
             ids = b.get("ids", [])
             items = [self.resolve(i) for i in ids]
             gone = [i for i, s in zip(ids, items) if not s]
-            if gone or not items:
-                log.error("lote %s fuera: %s", b.get("key"),
-                          f"no están en el catálogo: {', '.join(gone)}" if gone else "no tiene estrategias")
+            if gone:
+                log.error("Lote fuera: nombra estrategias que el catálogo no trae | lote=%s ausentes=%s", b.get("key"),
+                          ",".join(gone))
+                continue
+            if not items:
+                log.error("Lote fuera: no tiene estrategias | lote=%s", b.get("key"))
                 continue
             bundle = Bundle(b["key"], b.get("name_key", b["key"]), tuple(items),
                             Decimal(str(b["price"])).quantize(Decimal("0.01")))
             if bundle.price >= bundle.was:
-                log.error("lote %s fuera: su precio, %s, no es menor que el de sus estrategias, %s", bundle.key,
-                          bundle.price, bundle.was)
+                log.error("Lote fuera: no cuesta menos que sus estrategias sueltas | lote=%s precio=%s sueltas=%s",
+                          bundle.key, bundle.price, bundle.was)
                 continue
             out[bundle.key] = bundle
         return out
@@ -390,7 +406,7 @@ class Catalogue:
         try:
             return self.items.get(unb64url(item_id))
         except (binascii.Error, UnicodeDecodeError, ValueError):
-            return None
+            return None  # un id que no es de nadie: lo dice la respuesta (404 o la tienda); sin log
 
     def explanation(self, s: Strategy, lang: str) -> tuple:
         """(texto, idioma) de la explicación del indicador de ``s`` en ``lang``; sin ella, la inglesa, y su idioma lo

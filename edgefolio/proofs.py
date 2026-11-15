@@ -15,6 +15,7 @@ enseña cuando la cuenta ha demostrado su correo:
 """
 from __future__ import annotations
 
+import logging
 import secrets
 from datetime import timedelta
 from typing import List, Optional
@@ -25,6 +26,8 @@ from zlecitool_core.db import db, utcnow
 
 from .models import EmailProof
 from .web import digest
+
+log = logging.getLogger(__name__)
 
 PROOF_HOURS = 24
 #: Direcciones sin confirmar que puede tener pendientes una cuenta: el formulario no sirve para llenar
@@ -59,22 +62,27 @@ def request(user_id: int, email: str) -> Optional[str]:
     ya es suya, se le acaba de mandar uno o la cuenta tiene demasiadas pendientes."""
     now = utcnow()
     row = EmailProof.query.filter_by(user_id=user_id, email=email).first()
+    # la respuesta es la misma tanto si sale como si no (a propósito); el porqué, sólo en el log, sin el correo
     if row is not None and row.verified_at is not None:
         if row.verified_at > utcnow() - timedelta(days=PROOF_VALID_DAYS):
+            log.info("Prueba de correo sin mandar | user_id=%s motivo=demostrado prueba=%s", user_id, row.id)
             return None
         row.verified_at = None                               # caducada: se demuestra otra vez
     if row is not None and row.token_hash and row.requested_at > now - timedelta(seconds=RESEND_SECONDS):
+        log.info("Prueba de correo sin mandar | user_id=%s motivo=reciente prueba=%s", user_id, row.id)
         return None
     if row is None:
         pending = EmailProof.query.filter(EmailProof.user_id == user_id, EmailProof.verified_at.is_(None),
                                           EmailProof.expires_at > now).count()
         if pending >= MAX_PENDING:
+            log.info("Prueba de correo sin mandar | user_id=%s motivo=pendientes n=%s", user_id, pending)
             return None
         row = EmailProof(user_id=user_id, email=email)
         db.session.add(row)
     token = secrets.token_urlsafe(32)
     row.token_hash, row.requested_at, row.expires_at = digest(token), now, now + timedelta(hours=PROOF_HOURS)
     db.session.commit()
+    log.info("Prueba de correo pedida | user_id=%s prueba=%s", user_id, row.id)
     return token
 
 
@@ -83,6 +91,7 @@ def forget(user_id: int, token: str):
     db.session.execute(update(EmailProof).where(EmailProof.user_id == user_id,
                                                 EmailProof.token_hash == digest(token)).values(token_hash=""))
     db.session.commit()
+    log.info("Prueba de correo anulada: no salió | user_id=%s", user_id)
 
 
 def _pending(user_id: int, token: str) -> Optional[EmailProof]:
@@ -106,4 +115,6 @@ def confirm(user_id: int, token: str) -> Optional[str]:
     done = db.session.execute(update(EmailProof).where(
         EmailProof.id == row.id, EmailProof.verified_at.is_(None)).values(verified_at=utcnow(), token_hash="")).rowcount
     db.session.commit()
+    if done == 1:   # si otra petición la confirmó a la vez, ella lo dijo
+        log.info("Correo demostrado | user_id=%s prueba=%s", user_id, row.id)
     return row.email if done == 1 else None

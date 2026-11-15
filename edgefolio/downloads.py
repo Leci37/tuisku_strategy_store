@@ -12,6 +12,7 @@ la vista previa de un enlace en un chat) sólo mira, con ``usable()``: no gasta.
 from __future__ import annotations
 
 import io
+import logging
 import zipfile
 
 from sqlalchemy import select, update
@@ -22,7 +23,10 @@ from . import formats
 from .models import Download, FreeClaim, Order
 from .web import Refusal
 
+log = logging.getLogger(__name__)
+
 MAX_TOKENS = 100
+KINDS = {"paid": "pago", "free": "gratis"}
 
 
 def find_link(token: str):
@@ -67,32 +71,37 @@ def usable(shop, tokens: list) -> None:
             checked(shop, token)
             return
         except Refusal as e:
-            first_error = first_error or e
+            first_error = first_error or e   # sin log: un HEAD sólo mira; el primer rechazo va a la respuesta
     raise first_error or Refusal("errLinkNotFound", 404)
 
 
-def claim_download(token: str, max_downloads: int) -> bool:
+def claim_download(token: str, max_downloads: int) -> str:
     """Gasta una descarga de un enlace que vale (de pago o gratis) con un UPDATE condicional: de dos
     peticiones que se disputan la última, sólo una se la lleva; leer y después escribir dejaría pasar a
-    las dos."""
+    las dos. Da de qué enlace era (``"paid"`` o ``"free"``), o ``""`` si no se llevó ninguna."""
     now = utcnow()
     paid = select(Order.paypal_id).where(Order.status == "PAID")
+    kind = "paid"
     done = db.session.execute(update(Download).where(
         Download.token == token, Download.count < max_downloads, Download.expires_at > now,
         Download.paypal_id.in_(paid)).values(count=Download.count + 1)).rowcount
     if not done:
+        kind = "free"
         done = db.session.execute(update(FreeClaim).where(
             FreeClaim.token == token, FreeClaim.count < max_downloads, FreeClaim.expires_at > now)
             .values(count=FreeClaim.count + 1)).rowcount
     db.session.commit()
-    return done == 1
+    return kind if done == 1 else ""
 
 
-def spend(shop, token: str):
-    """Se lleva una descarga del enlace o, si otra petición se llevó la última, el rechazo que toca."""
-    if not claim_download(token, shop.settings.max_downloads):
+def spend(shop, token: str) -> str:
+    """Se lleva una descarga del enlace o, si otra petición se llevó la última, el rechazo que toca. Da de qué
+    enlace era (``"paid"`` o ``"free"``)."""
+    kind = claim_download(token, shop.settings.max_downloads)
+    if not kind:
         checked(shop, token)  # puede haber caducado entretanto: 410
         raise Refusal("errDownloadLimit", 429)
+    return kind
 
 
 def one(shop, token: str, fmt: str = "pine"):
@@ -102,16 +111,18 @@ def one(shop, token: str, fmt: str = "pine"):
     if fmt == "zip":
         stem = strategy.file
         data = formats.build_zip(src.decode("utf-8", errors="replace"), stem, shop.settings.contact_email)
-        spend(shop, token)
+        kind = spend(shop, token)
+        log.info("Descarga | estrategia=%s tipo=%s formato=zip", strategy.id, KINDS[kind])   # el token, nunca
         return data, "application/zip", f"{stem}.zip"
-    spend(shop, token)
+    kind = spend(shop, token)
+    log.info("Descarga | estrategia=%s tipo=%s formato=pine", strategy.id, KINDS[kind])
     return src, "text/plain; charset=utf-8", strategy.download_name
 
 
 def all_in_one(shop, tokens: list):
     """(bytes, nombre) del zip con el .pine de cada enlace que vale. El mismo script por dos enlaces se
     manda (y se gasta) una vez. Sin ninguno, el primer rechazo."""
-    files, first_error = {}, None
+    files, first_error, refused = {}, None, 0
     for token in list(dict.fromkeys(tokens))[:MAX_TOKENS]:
         try:
             strategy, path = checked(shop, token)
@@ -120,11 +131,13 @@ def all_in_one(shop, tokens: list):
             data = path.read_bytes()
             spend(shop, token)
         except Refusal as e:
-            first_error = first_error or e
+            # se sigue con los demás; si no sale ninguno, el primero va a la respuesta (y a la línea del rechazo)
+            first_error, refused = first_error or e, refused + 1
             continue
         files[strategy.download_name] = data
     if not files:
         raise first_error or Refusal("errLinkNotFound", 404)
+    log.info("Descarga de todo en un zip | ficheros=%s rechazados=%s", len(files), refused)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         for name, data in files.items():

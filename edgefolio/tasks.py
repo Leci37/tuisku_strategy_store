@@ -12,6 +12,8 @@ Lo que se fecha, con ``run.scheduled_for`` (cuándo tocaba), nunca con «ahora»
 """
 from __future__ import annotations
 
+import logging
+
 from flask import current_app
 
 from zlecitool_core.db import db, end_idle_transaction
@@ -22,10 +24,15 @@ from . import alerts, fx
 from .models import TaskDone
 from .shop import of
 
+log = logging.getLogger(__name__)
+
 
 def done(run) -> bool:
-    """Si esta vez (``run.key``) ya se hizo: una repetición no hace nada."""
-    return db.session.get(TaskDone, run.key) is not None
+    """Si esta vez (``run.key``) ya se hizo: una repetición no hace nada (y lo dice: el núcleo sólo dice «bien»)."""
+    if db.session.get(TaskDone, run.key) is None:
+        return False
+    log.info("Tarea ya hecha: nada que hacer | tarea=%s vez=%s", run.name, run.key)
+    return True
 
 
 def note(run, result: dict) -> None:
@@ -52,13 +59,12 @@ def fx_update(run) -> None:
     # frankfurter.app tarda lo que tarde: sin una transacción abierta (una conexión parada detrás de PgBouncer)
     end_idle_transaction()
     try:
-        data = fx.fetch()
+        data = fx.update(out)   # lo que trajo (o que el BCE falló), en el log
     except fx.FAILURES as e:
         # la vez queda «falló» y avisa; fx.json sigue con los de antes, y la próxima vez lo intenta otra vez
         raise RuntimeError(f"sin cambios nuevos ({out.name} sigue como estaba): {e}") from e
-    fx.write(data, out)
     note(run, {"date": data["date"], "rates": len(data["rates"])})
-    db.session.commit()
+    db.session.commit()   # el log ya lo dijo fx.update
 
 
 def send_alerts(run) -> None:
@@ -75,5 +81,8 @@ def purge(run) -> None:
     if done(run):
         return
     from . import free
-    note(run, free.purge(run.scheduled_for.replace(tzinfo=None)))
+    gone = free.purge(run.scheduled_for.replace(tzinfo=None))
+    note(run, gone)
     db.session.commit()
+    log.info("Limpieza de lo que ya no se guarda | altas_sin_confirmar=%s gratis=%s buzones=%s", gone["unconfirmed"],
+             gone["claims"], gone["mailboxes"])

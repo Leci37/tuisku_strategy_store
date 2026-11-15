@@ -10,11 +10,14 @@ La tienda sólo los usa para enseñar «≈ importe» en la moneda de quien mira
 from __future__ import annotations
 
 import json
+import logging
 import os
 import tempfile
 from pathlib import Path
 
 import httpx
+
+log = logging.getLogger(__name__)
 
 URL = "https://api.frankfurter.app/latest?from=USD"
 # El BCE no publica el riyal; está atado al dólar a 3,75 desde 1986.
@@ -39,3 +42,16 @@ def write(data: dict, path: Path):
         json.dump(data, f, indent=2)
         f.write("\n")
     os.replace(tmp, path)  # el servidor nunca lee medio fichero
+
+
+def update(out: Path) -> dict:
+    """Trae los cambios del día y los deja en ``out`` (la tarea ``fx_update`` y el comando ``fx-update``). Si el BCE no
+    los da, lo dice (WARNING: un servicio de fuera que falla) y relanza: ``out`` sigue con los de antes."""
+    try:
+        data = fetch()
+    except FAILURES as e:
+        log.warning("BCE sin cambios nuevos: %s sigue como estaba | error=%s: %s", Path(out).name, type(e).__name__, e)
+        raise
+    write(data, out)
+    log.info("Cambios del BCE guardados | día=%s cambios=%s", data["date"], len(data["rates"]))
+    return data

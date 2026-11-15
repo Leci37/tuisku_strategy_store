@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import secrets
 from datetime import timedelta
 from typing import Optional
@@ -24,6 +25,8 @@ from zlecitool_core.db import db, utcnow
 
 from .models import FreeClaim, Mailbox, Subscriber
 from .web import Refusal, digest
+
+log = logging.getLogger(__name__)
 
 DAILY_CLAIMS = 10            # por correo y por quien pide
 ADDRESS_DAILY_CLAIMS = 20    # por correo, de todos: el buzón
@@ -122,6 +125,8 @@ def claim(shop, strategy, email: str, news: bool, lang: str, links, mail, user_i
     mail(email, texts.get("mailFreeSubject", lang, **what), text, kind="edgefolio-free")
     if confirm:
         request_news(email, "free", lang, token=confirm)
+    log.info("Gratis mandada | estrategia=%s user_id=%s novedades=%s", strategy.id, user_id or "-",
+             "pendientes" if confirm else "confirmadas" if news else "no")
     return {"sent": True}
 
 
@@ -147,6 +152,7 @@ def request_news(email: str, source: str, lang: str, token: Optional[str] = None
     row.news, row.consent_at, row.source, row.lang = True, utcnow(), source, lang
     row.token_hash, row.confirmed_at = digest(token), None
     db.session.commit()
+    log.info("Novedades pendientes de confirmar | origen=%s", source)
     return token
 
 
@@ -160,6 +166,7 @@ def confirm_news(token: str, days: int = NEWS_CONFIRM_DAYS) -> Optional[str]:
         Subscriber.consent_at > since).values(confirmed_at=utcnow(), token_hash="")
         .returning(Subscriber.email)).first()
     db.session.commit()
+    log.info("Novedades confirmadas" if done else "Novedades sin confirmar: enlace usado, viejo o inventado")
     return done[0] if done else None
 
 
@@ -184,18 +191,21 @@ def unsubscribe(token: str, secret) -> Optional[str]:
     """Borra la suscripción de la dirección del enlace (confirmada o pendiente): sin la fila, no le llega nada. Da la
     dirección, o None si el enlace no es de ninguna. Abrirlo dos veces no hace nada más."""
     if not token or len(token) > 80:
-        return None
+        return None  # sin log: no es un enlace nuestro, y la respuesta es la misma (a propósito)
     for row in Subscriber.query.all():
         if hmac.compare_digest(news_token(row.email, secret), token):
             db.session.delete(row)
             db.session.commit()
+            log.info("Baja de las novedades")
             return row.email
+    log.info("Baja: el enlace no es de nadie (ya dada de baja, u otra clave del servidor)")
     return None
 
 
 def purge(now) -> dict:
     """Lo que ya no se guarda: las altas sin confirmar de más de UNCONFIRMED_DAYS, las gratis caducadas hace más de
-    EXPIRED_CLAIM_DAYS y las filas del buzón calladas desde hace MAILBOX_DAYS. Repetirlo no borra nada más."""
+    EXPIRED_CLAIM_DAYS y las filas del buzón calladas desde hace MAILBOX_DAYS. Repetirlo no borra nada más. Sin ``commit``:
+    lo guarda (y lo apunta en el log) la tarea ``purge``, con su vez."""
     out = {
         "unconfirmed": Subscriber.query.filter(Subscriber.confirmed_at.is_(None),
                                                Subscriber.consent_at < now - timedelta(days=UNCONFIRMED_DAYS))

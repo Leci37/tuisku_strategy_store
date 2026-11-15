@@ -1,0 +1,41 @@
+# Estado de Edgefolio
+
+Lo hecho, lo que falta y lo que se pide al núcleo (`ESTANDAR_DOCS.md` del núcleo, §1). Empieza el 15-11-2026, con la
+ronda de logs; lo de antes está en el README («Qué cambió desde la versión FastAPI» y «Antes de volver a vender»), en
+`design/STATUS.md` (el del diseño) y en la historia del repo.
+
+## Lo hecho
+
+### Núcleo 0.35.0 — la ronda de logs (15-11-2026)
+
+- Cada cambio de estado deja su línea (pedidos y cobros, enlaces y descargas, gratis y novedades, pruebas de correo,
+  favoritas, «Tus datos»), con los ids y cuántos, nunca un correo, un código ni un token; cada rechazo, una sola, con la
+  regla de la ruta; cada tarea dice lo que hizo; el BCE y PayPal que fallan, un WARNING; lo que no se esperaba, con su
+  traza. Fichero a fichero, en [tecnico/LOGS.md](tecnico/LOGS.md); las pruebas, en `tests/test_logs.py`.
+
+## Lo que falta
+
+- **Los pagos, del núcleo.** `edgefolio/paypal.py` es un cliente de PayPal propio, y desde la 0.35 los pagos son del
+  núcleo (CONTRATO §10, «Pagar: Stripe y PayPal»). Su migración estaba pendiente antes de la ronda de logs, y sus logs
+  se van con ella.
+- **Lo de los logs que espera a la 0.36** (abajo, «Para el núcleo»): el frontal, los cambios de pantalla, la traza de
+  la llamada al BCE y las comprobaciones de `check_tool()`. Lo que hará la tienda con cada cosa, en
+  [tecnico/LOGS.md](tecnico/LOGS.md).
+
+## Para el núcleo
+
+1. **El ayudante del frontal** (`zt.log` o como se llame), que escribe en la consola y manda los errores del navegador
+   y los cambios de pantalla al log del servidor de la herramienta por una ruta del núcleo. La tienda lo usará en
+   `App.fail` (hoy un `console.error`), en los `catch` que callan y en `App.componentDidUpdate` para las pantallas, las
+   pestañas y los diálogos. Espera a la 0.36.
+2. **`external_call` en el CONTRATO** (`observability/trace.py`): la traza de la llamada al BCE (`edgefolio/fx.py`).
+   Espera a la 0.36.
+3. **Las comprobaciones de `check_tool()`**: sin salidas propias ni `print` en el paquete, y con `privacy_sample`, que
+   el correo y el nombre de la cuenta de prueba no salgan en los logs. Espera a la 0.36.
+4. **La línea de cada petición.** Con `python app.py`, el núcleo manda al fichero del día la línea de werkzeug, que lleva
+   la IP, la ruta con sus credenciales (`/api/download/<token>`, `/api/news/confirm?token=…`, `/api/download/all?t=…`),
+   la consulta que tecleó la persona (`GET /api/strategies?q=…`, vista con la cuenta de prueba el 15-11-2026) y, al
+   arrancar, el `Debugger PIN` de werkzeug. Con gunicorn, el `accesslog = "-"` de `gunicorn.conf.py`, en su formato por
+   defecto (IP, petición con su consulta, referer y agente), lo lleva a la salida estándar. Se pide la línea de cada
+   petición por su regla, con la cuenta por su id, el resultado y el tiempo, sin IP ni consulta (la de la 0.36), y qué
+   hacer con la de werkzeug y el `accesslog` de gunicorn: toca a toda la familia, y aquí no se parchea.

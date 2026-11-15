@@ -14,6 +14,7 @@ con su dirección y marcara unas casillas. Y nunca a una cuenta borrada (``priva
 """
 from __future__ import annotations
 
+import logging
 from decimal import Decimal
 from typing import Callable, Optional
 
@@ -22,6 +23,8 @@ from zlecitool_core.privacy import closed
 
 from . import proofs
 from .models import AlertState, Favourite
+
+log = logging.getLogger(__name__)
 
 # el interruptor (como lo guarda la página) -> lo que cambió
 ALERTS = {"nv": "version", "pd": "price", "bd": "bundle"}
@@ -95,6 +98,7 @@ def run(shop, link: Callable, mail: Callable, at=None, before_commit: Optional[C
         if before_commit is not None:
             before_commit(result)
         db.session.commit()
+        log.info("Avisos de las favoritas: primera vuelta, sólo la foto | estrategias=%s", len(now))
         return result
     found = changes(before, now)
     per_person = {}  # user_id -> (correo, idioma, [líneas])
@@ -144,4 +148,6 @@ def run(shop, link: Callable, mail: Callable, at=None, before_commit: Optional[C
     db.session.commit()
     for email, subject, body in letters:
         mail(email, subject, body, kind="edgefolio-alert")
+    log.info("Avisos de las favoritas | cambios=%s correos=%s sin_confirmar=%s cerradas=%s", len(found), len(letters),
+             len(unconfirmed), len(gone))
     return result

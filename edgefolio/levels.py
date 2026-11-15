@@ -40,7 +40,7 @@ def number(raw) -> Optional[float]:
     try:
         v = float(raw)
     except (TypeError, ValueError):
-        return None
+        return None  # lectura con valor por defecto: la entrada se cuenta como «no vale» en load()
     return v if math.isfinite(v) else None
 
 
@@ -99,7 +99,7 @@ def load(path) -> dict:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as e:
-        log.error("%s no se lee: %s", path, e)
+        log.error("Niveles sin leer: el árbol enseña la puntuación | fichero=%s | %s", path.name, e)
         return {}
     out, bad = {}, []
     for strategy_id, v in (data.items() if isinstance(data, dict) else ()):
@@ -110,7 +110,8 @@ def load(path) -> dict:
             continue
         out[str(strategy_id)] = {"buy_at": buy, "close_at": close}
     if bad or not isinstance(data, dict):
-        log.error("%s: entradas que no valen, fuera: %s", path, ", ".join(bad) or "no es un objeto")
+        log.error("Niveles que no valen, fuera | fichero=%s entradas=%s", path.name,
+                  ",".join(bad) if isinstance(data, dict) else "no es un objeto")
     return out
 
 

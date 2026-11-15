@@ -11,22 +11,27 @@ un gráfico con el mismo nombre, y no sólo con ``flask edgefolio import`` (que 
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import tempfile
 from pathlib import Path
 from typing import Optional
 
+log = logging.getLogger(__name__)
+
 try:
     from PIL import Image
 except ImportError:  # la tienda sigue funcionando: el navegador recibe el PNG entero
     Image = None
+    log.warning("Sin Pillow: las miniaturas salen en PNG (requirements.txt lo trae)")
 
 WIDTH = 640
 QUALITY = 80
 STEM = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_+=-]{0,200}$")
 
 _stems = {}
+_fx_unread = set()   # los ficheros de cambios que no se leen, dichos una vez por proceso (corre en cada página)
 
 
 def charts(settings) -> set:
@@ -54,6 +59,7 @@ def make_thumb(src: Path, dest: Path):
         except BaseException:
             os.unlink(tmp)
             raise
+    log.debug("Miniatura hecha | gráfico=%s", src.stem)
 
 
 def thumb(settings, stem: str) -> Optional[Path]:
@@ -69,7 +75,7 @@ def thumb(settings, stem: str) -> Optional[Path]:
         # estricto: una hecha en el mismo instante que el gráfico (un disco de tiempos gruesos) se rehace una vez más
         fresh = dest.stat().st_mtime_ns > src.stat().st_mtime_ns
     except FileNotFoundError:  # sin miniatura; o sin el gráfico (--prune con la tienda en marcha): vale la que haya
-        fresh = dest.is_file()
+        fresh = dest.is_file()   # sin log: la primera vez no hay miniatura, y sin el gráfico lo dice /thumbs
     if not fresh:
         make_thumb(src, dest)
     return dest
@@ -81,7 +87,11 @@ def fx(settings) -> dict:
     path = settings.fx_today if Path(settings.fx_today).is_file() else settings.fx
     try:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except (OSError, ValueError) as e:
+        if str(path) not in _fx_unread:
+            _fx_unread.add(str(path))
+            log.warning("Cambios de moneda sin leer: los precios, sólo en dólares | fichero=%s | %s",
+                        Path(path).name, type(e).__name__)
         return {"base": "USD", "date": None, "rates": {"USD": 1}, "source": "none"}
     return {"base": data.get("base", "USD"), "date": data.get("date"), "rates": data.get("rates", {}),
             "source": data.get("source", "")}

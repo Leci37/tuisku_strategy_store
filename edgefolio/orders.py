@@ -110,12 +110,18 @@ def create(shop, cart: dict, buyer: str, return_url: str, cancel_url: str, user_
         created = shop.paypal.create_order(q.total, shop.settings.currency, reference=f"edgefolio-{len(keys)}",
                                            return_url=return_url, cancel_url=cancel_url)
     except PayPalError as e:
+        log.warning("PayPal no creó el pedido | estrategias=%s total=%s moneda=%s | %s", len(keys), q.total,
+                    shop.settings.currency, e)
         raise Refusal("errPayPal", 502, detail=str(e)) from e
     db.session.add(Order(paypal_id=created.id, user_id=user_id, items=keys,
                          code=q.code if q.code_status == "applied" else "", total=str(q.total),
                          currency=shop.settings.currency, status="CREATED", payer="", email=norm(email),
                          lines=q.lines(), buyer_hash=digest(buyer)))
     db.session.commit()
+    # el código, nunca: sólo si se aplicó
+    log.info("Pedido creado | pedido=%s user_id=%s estrategias=%s lotes=%s pack=%s total=%s moneda=%s código=%s",
+             created.id, user_id or "-", len(keys), len(cart["bundles"]), "sí" if cart["pack"] else "no", q.total,
+             shop.settings.currency, "sí" if q.code_status == "applied" else "no")
     return {"id": created.id, "approve_url": created.approve_url, **q.as_dict()}
 
 
@@ -164,14 +170,18 @@ def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = N
         if cap is None:
             log.warning("Cobro sin confirmar | pedido=%s | %s", paypal_id, e)
             raise Refusal("errPayPalCapture", 502, detail=str(e)) from e
+        log.info("Cobro que PayPal ya había hecho: se toma ese | pedido=%s estado=%s", paypal_id, cap.status)
     right = cap.amount == Decimal(order.total) and cap.currency == order.currency
     if cap.status == "PENDING" and right:
         order.status, order.payer = "PENDING", cap.payer or ""
         db.session.commit()
+        log.info("Cobro pendiente en PayPal | pedido=%s", paypal_id)
         raise Refusal("errPaymentPending", 402, paid=f"{cap.amount} {cap.currency} {cap.status}")
     if cap.status != "COMPLETED" or not right:
         order.status, order.payer = "FAILED", cap.payer or ""
         db.session.commit()
+        log.warning("Cobro que no cuadra: el pedido queda FAILED | pedido=%s estado=%s importe=%s", paypal_id,
+                    cap.status, "bien" if right else "distinto")
         raise Refusal("errPayment", 402, paid=f"{cap.amount} {cap.currency} {cap.status}")
     # Una sola vez de CREATED a PAID, aunque lleguen dos cobros a la vez.
     paid = db.session.execute(update(Order).where(Order.paypal_id == paypal_id, Order.status != "PAID")
@@ -181,6 +191,10 @@ def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = N
         db.session.execute(update(Order).where(Order.paypal_id == paypal_id).values(email=norm(cap.payer)))
     db.session.commit()
     db.session.refresh(order)
+    if paid:
+        # sólo el cobro que lo pasó a pagado: dos a la vez dan una línea
+        log.info("Pedido cobrado | pedido=%s user_id=%s estrategias=%s total=%s moneda=%s", paypal_id,
+                 order.user_id or "-", len(order.items), order.total, order.currency)
     if paid and on_paid is not None:
         on_paid(order)
     return order
@@ -195,7 +209,7 @@ def email_receipt(shop, order: Order, lang: str, mine: str, mail) -> None:
     de Mis estrategias). ``mail`` lo manda (el ``mail.send`` del núcleo, que nunca lanza): un correo que
     no sale no deshace el pago, la página de gracias y Mis estrategias lo tienen todo."""
     if not order.email:
-        return
+        return  # sin log: un pedido sin correo (quien pagó no lo dio) no tiene a quién mandarlo; la página lo enseña
     settings, texts, catalogue, cur = shop.settings, shop.texts, shop.catalogue, order.currency
     lines = order.lines or {}
     out = []
@@ -222,7 +236,7 @@ def email_receipt(shop, order: Order, lang: str, mine: str, mail) -> None:
 def issue_links(paypal_id: str, strategies_bought: Iterable, days: int) -> dict:
     """Un enlace por estrategia; otra vez para el mismo pedido, los mismos enlaces: el más nuevo de cada una
     («Conseguir un enlace nuevo» en Mis estrategias añade otro al mismo pedido, y el de antes caducó)."""
-    existing = {}
+    existing, new = {}, 0
     for d in Download.query.filter_by(paypal_id=paypal_id).order_by(Download.expires_at):
         existing[d.item_key] = d.token
     for s in strategies_bought:
@@ -230,7 +244,10 @@ def issue_links(paypal_id: str, strategies_bought: Iterable, days: int) -> dict:
             existing[s.key] = secrets.token_urlsafe(24)
             db.session.add(Download(token=existing[s.key], paypal_id=paypal_id, item_key=s.key,
                                     expires_at=utcnow() + timedelta(days=days), count=0, version=s.version))
+            new += 1
     db.session.commit()
+    if new:
+        log.info("Enlaces de descarga | pedido=%s nuevos=%s", paypal_id, new)   # los tokens, nunca
     return existing
 
 

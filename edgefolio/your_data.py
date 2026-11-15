@@ -26,11 +26,15 @@ nadie).
 """
 from __future__ import annotations
 
+import logging
+
 from sqlalchemy import func, or_, select, update
 
 from zlecitool_core.db import db
 
 from .models import Download, EmailProof, Favourite, FreeClaim, Mailbox, Order, Subscriber
+
+log = logging.getLogger(__name__)
 
 #: Lo que la ley obliga a guardar: los pedidos, sin correo, apuntando a la cuenta borrada.
 KEEP = ("edgefolio_order",)
@@ -86,12 +90,17 @@ def erase(subject) -> None:
     """Lo de la cuenta, fuera; sus pedidos, sin quién los hizo (arriba). Sin ``commit``: lo confirma el
     núcleo, que después comprueba que no queda nada. Otra vez no cambia nada: los correos ya no están."""
     emails = proven_emails(subject)
-    db.session.execute(update(Order).where(_orders_of(subject.user_id, emails))
-                       .values(email="", payer="", buyer_hash="").execution_options(synchronize_session=False))
-    FreeClaim.query.filter(_claims_of(subject.user_id, emails)).delete(synchronize_session=False)
-    Favourite.query.filter_by(user_id=subject.user_id).delete(synchronize_session=False)
+    orders = db.session.execute(update(Order).where(_orders_of(subject.user_id, emails))
+                                .values(email="", payer="", buyer_hash="")
+                                .execution_options(synchronize_session=False)).rowcount
+    claims = FreeClaim.query.filter(_claims_of(subject.user_id, emails)).delete(synchronize_session=False)
+    favourites = Favourite.query.filter_by(user_id=subject.user_id).delete(synchronize_session=False)
+    news = mailboxes = 0
     if emails:
-        Subscriber.query.filter(func.lower(Subscriber.email).in_(emails)).delete(synchronize_session=False)
-        Mailbox.query.filter(func.lower(Mailbox.email).in_(emails)).delete(synchronize_session=False)
+        news = Subscriber.query.filter(func.lower(Subscriber.email).in_(emails)).delete(synchronize_session=False)
+        mailboxes = Mailbox.query.filter(func.lower(Mailbox.email).in_(emails)).delete(synchronize_session=False)
     # Las pruebas, lo último: hasta aquí dicen qué correos son suyos.
-    EmailProof.query.filter_by(user_id=subject.user_id).delete(synchronize_session=False)
+    proofs = EmailProof.query.filter_by(user_id=subject.user_id).delete(synchronize_session=False)
+    # sin confirmar aún (lo confirma el núcleo, que dice «hecha»): cuántas filas, nunca de quién eran
+    log.info("Tus datos: lo de la tienda, borrado | user_id=%s pedidos_sin_dueño=%s gratis=%s favoritas=%s "
+             "novedades=%s buzones=%s pruebas=%s", subject.user_id, orders, claims, favourites, news, mailboxes, proofs)

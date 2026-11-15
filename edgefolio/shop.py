@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,6 +23,8 @@ from .catalogue import Catalogue
 from .paypal import FakePayPal, PayPalREST
 from .settings import ROOT, Settings
 from .web import RateLimit
+
+log = logging.getLogger(__name__)
 
 EXTENSION = "edgefolio"
 DICTIONARY = ROOT / "i18n" / "ui.json"
@@ -102,6 +105,8 @@ class Shop:
             self.texts = Texts()
         self.limits = {"proof": RateLimit(PROOF_LIMIT, PROOF_WINDOW), "free": RateLimit(FREE_LIMIT, FREE_WINDOW),
                        "code": RateLimit(CODE_LIMIT, CODE_WINDOW), "proof_to": RateLimit(PROOF_TO_LIMIT, PROOF_TO_WINDOW)}
+        log.info("Tienda en marcha | paypal=%s estrategias=%s lotes=%s", self.settings.paypal_mode, len(self.catalogue),
+                 len(self.catalogue.bundles))
 
 
 def install(app, settings: Settings, paypal=None, catalogue: Optional[Catalogue] = None) -> Shop:

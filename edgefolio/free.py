@@ -12,6 +12,8 @@ peticiones a la vez no pasan todas el recuento antes de apuntarse. Se cuenta de 
 """
 from __future__ import annotations
 
+import hashlib
+import hmac
 import secrets
 from datetime import timedelta
 from typing import Optional
@@ -26,6 +28,11 @@ from .web import Refusal, digest
 DAILY_CLAIMS = 10            # por correo y por quien pide
 ADDRESS_DAILY_CLAIMS = 20    # por correo, de todos: el buzón
 NEWS_CONFIRM_DAYS = 30       # lo que vale el enlace que confirma las novedades
+# Lo que se guarda (2026-11-15, RGPD; antes, para siempre): un alta sin confirmar, 30 días (lo que vale su enlace); una
+# gratis, 90 días después de caducar su enlace; la fila del buzón de una dirección, 90 días desde la última vez.
+UNCONFIRMED_DAYS = 30
+EXPIRED_CLAIM_DAYS = 90
+MAILBOX_DAYS = 90
 
 
 def lock_address(email: str):
@@ -73,7 +80,7 @@ def add_claim(email: str, key: str, news: bool, lang: str, days: int, version: i
 
 
 def claim(shop, strategy, email: str, news: bool, lang: str, links, mail, user_id: Optional[int] = None,
-          requester: Optional[str] = None) -> dict:
+          requester: Optional[str] = None, secret: Optional[str] = None) -> dict:
     """La descarga gratis de ``strategy`` para ``email``. ``links`` hace las direcciones de los correos
     (``links(endpoint, **values)``) y ``mail`` los manda (el ``mail.send`` del núcleo). ``requester``: quién la pide
     («u:<cuenta>» o «ip:<red>»), para el tope del día."""
@@ -101,6 +108,10 @@ def claim(shop, strategy, email: str, news: bool, lang: str, links, mail, user_i
     text = texts.get("mailFreeBody", lang, **what, **counts, pine=pine, zip=pine + "?format=zip", mine=mine)
     if confirm:
         text += "\n" + texts.get("mailNewsConfirm", lang, link=links("edgefolio.confirm_news", token=confirm))
+        if secret:
+            # la baja, en cada correo de novedades (2026-11-15): también en el que pide confirmarlas
+            text += "\n" + texts.get("mailNewsUnsubscribe", lang,
+                                     link=links("edgefolio.unsubscribe_news", t=news_token(email, secret)))
     mail(email, texts.get("mailFreeSubject", lang, **what), text, kind="edgefolio-free")
     if confirm:
         request_news(email, "free", lang, token=confirm)
@@ -151,3 +162,40 @@ def subscribers() -> list:
         .order_by(Subscriber.confirmed_at)
     return [{"email": r.email, "lang": r.lang, "source": r.source, "consent_at": r.consent_at,
              "confirmed_at": r.confirmed_at} for r in rows]
+
+
+# ── la baja y lo que caduca ──────────────────────────────────────────────────
+
+def news_token(email: str, secret) -> str:
+    """El token del enlace de baja de una dirección: su firma con la clave del servidor. No se guarda ni lleva el
+    correo a la vista; vale mientras no cambie la clave (FLASK_SECRET_KEY)."""
+    key = secret.encode() if isinstance(secret, str) else bytes(secret)
+    return hmac.new(key, b"edgefolio-news-unsubscribe:" + email.encode(), hashlib.sha256).hexdigest()[:40]
+
+
+def unsubscribe(token: str, secret) -> Optional[str]:
+    """Borra la suscripción de la dirección del enlace (confirmada o pendiente): sin la fila, no le llega nada. Da la
+    dirección, o None si el enlace no es de ninguna. Abrirlo dos veces no hace nada más."""
+    if not token or len(token) > 80:
+        return None
+    for row in Subscriber.query.all():
+        if hmac.compare_digest(news_token(row.email, secret), token):
+            db.session.delete(row)
+            db.session.commit()
+            return row.email
+    return None
+
+
+def purge(now) -> dict:
+    """Lo que ya no se guarda: las altas sin confirmar de más de UNCONFIRMED_DAYS, las gratis caducadas hace más de
+    EXPIRED_CLAIM_DAYS y las filas del buzón calladas desde hace MAILBOX_DAYS. Repetirlo no borra nada más."""
+    out = {
+        "unconfirmed": Subscriber.query.filter(Subscriber.confirmed_at.is_(None),
+                                               Subscriber.consent_at < now - timedelta(days=UNCONFIRMED_DAYS))
+        .delete(synchronize_session=False),
+        "claims": FreeClaim.query.filter(FreeClaim.expires_at < now - timedelta(days=EXPIRED_CLAIM_DAYS))
+        .delete(synchronize_session=False),
+        "mailboxes": Mailbox.query.filter(Mailbox.last_seen_at < now - timedelta(days=MAILBOX_DAYS))
+        .delete(synchronize_session=False),
+    }
+    return out

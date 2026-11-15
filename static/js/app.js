@@ -123,7 +123,8 @@ export class App extends Component {
     // back from the link that confirms the news opt-in
     const news = qs.get('news');
     if (news) {
-      if (news === 'confirmed' || news === 'expired') this.setState({ notice: news === 'confirmed' ? 'newsConfirmed' : 'newsExpired' });
+      const notices = { confirmed: 'newsConfirmed', expired: 'newsExpired', unsubscribed: 'newsUnsubscribed' };
+      if (notices[news]) this.setState({ notice: notices[news] });
       dropParams('news');
     }
     this.sync(null);

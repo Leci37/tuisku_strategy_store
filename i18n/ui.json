@@ -2430,6 +2430,36 @@
     "ar": "سنراسلك عندما تتوفر استراتيجيات جديدة.",
     "hi": "नई रणनीतियाँ आने पर हम आपको ईमेल करेंगे।"
   },
+  "newsUnsubscribedTitle": {
+    "es": "Baja hecha",
+    "en": "Unsubscribed",
+    "pt": "Subscrição cancelada",
+    "fr": "Désinscription faite",
+    "de": "Abgemeldet",
+    "zh": "已退订",
+    "ar": "تم إلغاء الاشتراك",
+    "hi": "सदस्यता रद्द"
+  },
+  "newsUnsubscribedText": {
+    "es": "No te escribiremos más sobre estrategias nuevas.",
+    "en": "We will not write to you about new strategies any more.",
+    "pt": "Não te voltaremos a escrever sobre estratégias novas.",
+    "fr": "Nous ne vous écrirons plus au sujet des nouvelles stratégies.",
+    "de": "Wir schreiben dir nicht mehr über neue Strategien.",
+    "zh": "我们不会再就新策略给你发邮件。",
+    "ar": "لن نراسلك بعد الآن بشأن الاستراتيجيات الجديدة.",
+    "hi": "हम अब आपको नई रणनीतियों के बारे में नहीं लिखेंगे।"
+  },
+  "mailNewsUnsubscribe": {
+    "es": "Para darte de baja de las novedades en cualquier momento: {link}",
+    "en": "To unsubscribe from the news at any time: {link}",
+    "pt": "Para cancelares as novidades a qualquer momento: {link}",
+    "fr": "Pour vous désinscrire des nouveautés à tout moment : {link}",
+    "de": "Um dich jederzeit von den Neuigkeiten abzumelden: {link}",
+    "zh": "随时退订新策略通知：{link}",
+    "ar": "لإلغاء الاشتراك في الأخبار في أي وقت: {link}",
+    "hi": "समाचार से कभी भी सदस्यता रद्द करने के लिए: {link}"
+  },
   "newsExpiredTitle": {
     "es": "Ese enlace de confirmación ha caducado",
     "en": "That confirmation link has expired",

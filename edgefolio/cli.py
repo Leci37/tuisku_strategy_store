@@ -216,9 +216,13 @@ def register(bp):
     @bp.cli.command("subscribers")
     def list_subscribers():
         """Las direcciones que confirmaron las novedades, en CSV (la única lista a la que se puede escribir)."""
-        from .free import subscribers
+        from zlecitool_core.http import external_url
+        from .free import news_token, subscribers
         out = csv.writer(sys.stdout)
-        out.writerow(["email", "lang", "source", "consent_at", "confirmed_at"])
+        # con el enlace de baja de cada una, para ponerlo en su correo (2026-11-15)
+        out.writerow(["email", "lang", "source", "consent_at", "confirmed_at", "unsubscribe_url"])
         for row in subscribers():
+            unsub = external_url("edgefolio.unsubscribe_news", trusted_host_ok=False,
+                                 t=news_token(row["email"], current_app.secret_key)) or ""
             out.writerow([row["email"], row["lang"], row["source"], row["consent_at"].isoformat(),
-                          row["confirmed_at"].isoformat()])
+                          row["confirmed_at"].isoformat(), unsub])

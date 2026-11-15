@@ -70,6 +70,7 @@ export function pageVals(c) {
 const NOTICES = {
   newsConfirmed: ['fa-solid fa-circle-check', '#12b76a'],
   newsExpired: ['fa-solid fa-circle-info', '#9fb8ef'],
+  newsUnsubscribed: ['fa-solid fa-circle-check', '#12b76a'],
   proofProven: ['fa-solid fa-circle-check', '#12b76a'],
   cartUpdated: ['fa-solid fa-circle-check', '#12b76a', 'errAlreadyOwned']
 };

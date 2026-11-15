@@ -54,7 +54,8 @@ def test_links_never_come_from_the_host_header(app, client, ids, paypal, free_fi
     bodies = [m["body"] for m in outbox()]
     links = [w for b in bodies for w in b.split() if w.startswith("http")]
     links += [order["approve_url"], sent[0]["return_url"], sent[0]["cancel_url"]]
-    assert len(links) == 1 + 4 + 3, links  # confirmar el correo; .pine, .zip, Mis estrategias, novedades; los de PayPal
+    # confirmar el correo; .pine, .zip, Mis estrategias, novedades y su baja (2026-11-15); los de PayPal
+    assert len(links) == 1 + 5 + 3, links
     assert all(u.startswith("https://shop.example/") for u in links), links
     assert "evil.example" not in "".join(bodies)
 

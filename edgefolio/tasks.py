@@ -68,3 +68,12 @@ def send_alerts(run) -> None:
         return
     alerts.run(of(current_app), public_link, send_mail, at=run.scheduled_for,
                before_commit=lambda result: note(run, result))
+
+
+def purge(run) -> None:
+    """Lo que ya no se guarda (free.purge): una vez al día, contado desde cuándo tocaba."""
+    if done(run):
+        return
+    from . import free
+    note(run, free.purge(run.scheduled_for.replace(tzinfo=None)))
+    db.session.commit()

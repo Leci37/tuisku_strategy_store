@@ -47,5 +47,7 @@ def test_subscribers_lists_only_confirmed_ones(app, client):
         free.request_news("pending@example.com", "free", "es")
         assert free.confirm_news(token) == "keen@example.com"
     out = app.test_cli_runner().invoke(args=["edgefolio", "subscribers"]).output
-    assert out.splitlines()[0] == "email,lang,source,consent_at,confirmed_at"
+    # con el enlace de baja de cada una, para ponerlo en su correo (2026-11-15)
+    assert out.splitlines()[0] == "email,lang,source,consent_at,confirmed_at,unsubscribe_url"
     assert "keen@example.com,es,free," in out and "pending@example.com" not in out
+    assert "/api/news/unsubscribe?t=" in out.splitlines()[1]

@@ -38,6 +38,7 @@ def create_app() -> Flask:
     # cambios del BCE y los avisos de las favoritas. Antes, cron
     add_task(app, "fx_update", tasks.fx_update)
     add_task(app, "send_alerts", tasks.send_alerts)
+    add_task(app, "purge", tasks.purge)
     create_tables(app)
     return app
 

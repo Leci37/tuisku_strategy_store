@@ -372,7 +372,8 @@ def free_claim():
     limited("free")
     uid = user_id()
     who = f"u:{uid}" if uid is not None else f"ip:{client_key()}"
-    return jsonify(free.claim(shop(), s, email, news, request_language(), link, send_mail, user_id=uid, requester=who))
+    return jsonify(free.claim(shop(), s, email, news, request_language(), link, send_mail, user_id=uid, requester=who,
+                              secret=current_app.secret_key))
 
 
 @bp.get("/api/news/confirm")
@@ -382,6 +383,15 @@ def confirm_news():
     token = request.args.get("token", "")
     done = free.confirm_news(token) if 0 < len(token) <= 200 else None
     return redirect("/?news=confirmed" if done else "/?news=expired", code=303)
+
+
+@bp.get("/api/news/unsubscribe")
+@public
+def unsubscribe_news():
+    """El enlace de baja de cada correo de novedades: la dirección deja de estar en la lista (se borra su fila). Va por
+    GET, como en cualquier correo: un escáner que lo abra sólo puede dar de baja, nunca de alta."""
+    free.unsubscribe(request.args.get("t", ""), current_app.secret_key)
+    return redirect("/?news=unsubscribed", code=303)
 
 
 # ── quién es ─────────────────────────────────────────────────────────────────

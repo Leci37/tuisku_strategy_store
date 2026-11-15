@@ -141,6 +141,24 @@ def test_news_counts_only_once_confirmed_from_the_email(app, client, free_file):
         assert [s["email"] for s in free.subscribers()] == ["keen@example.com"]
 
 
+def test_each_news_email_carries_its_unsubscribe_link(app, client, free_file):
+    # M11: no había forma de darse de baja de las novedades (2026-11-15). Cada correo de novedades lleva su enlace de
+    # baja, sin el correo a la vista; abrirlo borra la suscripción, confirmada o no.
+    claim(client, "keen@example.com", news=True)
+    claim(client, "other@example.com", news=True)
+    body = outbox("keen@example.com")[-1]["body"]
+    unsub = next(w for w in body.split() if "/api/news/unsubscribe?t=" in w)
+    assert "keen" not in unsub
+    assert opened(client, confirm_link("keen@example.com")) == "/?news=confirmed"
+    assert opened(client, unsub) == "/?news=unsubscribed"
+    with app.app_context():
+        assert free.subscribers() == [] and [r.email for r in Subscriber.query.all()] == ["other@example.com"]
+    assert opened(client, unsub) == "/?news=unsubscribed", "otra vez: nada más"
+    assert opened(client, "/api/news/unsubscribe?t=made-up") == "/?news=unsubscribed"
+    with app.app_context():
+        assert [r.email for r in Subscriber.query.all()] == ["other@example.com"]
+
+
 def test_no_news_writes_nothing(app, client, free_file):
     claim(client, "quiet@example.com", news=False)
     assert rows(app, Subscriber) == []

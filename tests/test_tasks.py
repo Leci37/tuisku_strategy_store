@@ -52,10 +52,10 @@ def cheaper_tesla(app, settings, paypal, price="40"):
 
 def test_the_schedule_is_in_the_ficha():
     """Los cambios del BCE, los días laborables a las 17:00 de Madrid (los publica hacia las 16:00 de Fráncfort); los
-    avisos, cada día a las 09:00."""
+    avisos, cada día a las 09:00; lo que ya no se guarda, a las 04:00 (2026-11-15)."""
     schedule = {t.name: (t.at, t.tz, t.days) for t in load_ficha(ROOT).schedule}
     assert schedule == {"fx_update": ("17:00", "Europe/Madrid", ("mon", "tue", "wed", "thu", "fri")),
-                        "send_alerts": ("09:00", "Europe/Madrid", ())}
+                        "send_alerts": ("09:00", "Europe/Madrid", ()), "purge": ("04:00", "Europe/Madrid", ())}
 
 
 def test_fx_update_runs_once_per_time_without_holding_a_connection(app, settings, monkeypatch):
@@ -149,3 +149,33 @@ def test_the_alerts_task_never_writes_to_a_closed_account(app, settings, paypal)
     run = testing.run_task(app, "send_alerts", at=TUESDAY_9)
     assert run.status == "ok" and mails("ana@example.com") == []
     assert done(app)[run.key][2] == {"first_run": False, "emails": 0, "unconfirmed": 0, "changes": 1}
+
+
+def test_purge_forgets_what_is_no_longer_kept(app):
+    # M11: las altas sin confirmar, las gratis caducadas y las filas del buzón se guardaban para siempre (2026-11-15).
+    # Una vez al día: altas sin confirmar de más de 30 días, gratis caducadas hace más de 90 y buzones callados 90.
+    from edgefolio.models import FreeClaim, Mailbox, Subscriber
+    at = datetime(2026, 11, 3, 3, 0)
+
+    def claim(token, expired_days_ago):
+        return FreeClaim(token=token, email="x@example.com", item_key="K", consent_at=at, count=0, version=1,
+                         expires_at=at - timedelta(days=expired_days_ago), lang="es")
+    with app.app_context():
+        db.session.add_all([
+            Subscriber(email="old@example.com", consent_at=at - timedelta(days=31), source="free", lang="es"),
+            Subscriber(email="new@example.com", consent_at=at - timedelta(days=5), source="free", lang="es"),
+            Subscriber(email="kept@example.com", consent_at=at - timedelta(days=400), source="free", lang="es",
+                       confirmed_at=at - timedelta(days=399)),
+            claim("gone", 91), claim("recent", 10),
+            Mailbox(email="quiet@example.com", first_seen_at=at - timedelta(days=200), last_seen_at=at - timedelta(days=91)),
+            Mailbox(email="busy@example.com", first_seen_at=at - timedelta(days=200), last_seen_at=at - timedelta(days=1)),
+        ])
+        db.session.commit()
+    first = testing.run_task(app, "purge", at=at)
+    again = testing.run_task(app, "purge", at=at)
+    assert first.status == again.status == "ok" and first.key == again.key
+    with app.app_context():
+        assert sorted(s.email for s in Subscriber.query.all()) == ["kept@example.com", "new@example.com"]
+        assert [c.token for c in FreeClaim.query.all()] == ["recent"]
+        assert [m.email for m in Mailbox.query.all()] == ["busy@example.com"]
+        assert db.session.get(TaskDone, first.key).result == {"unconfirmed": 1, "claims": 1, "mailboxes": 1}

@@ -462,10 +462,14 @@ def test_every_value_a_published_preview_asks_about_has_its_name():
     assert not taken, f"{len(taken)} valores sin nombre: {sorted(taken)[:10]}"
 
 
-def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app):
+def test_the_tree_tab_its_names_languages_cart_and_owner_views(real_app, monkeypatch):
     shop = of(real_app)
     pick = chosen(shop.catalogue)
     real, crafted, owned, free = (pick[k].id for k in ("real", "crafted", "owned", "free"))
+    # lo que ve el visitante sin los niveles del script: los de las de pago de la prueba (de varios árboles, publicados
+    # desde el 2026-11-15), fuera durante la prueba; los publicados los mira tests/test_levels.py
+    for sid in (real, crafted, owned):
+        monkeypatch.delitem(shop.catalogue.levels, sid, raising=False)
     script = shop.settings.strategies_dir / pick["owned"].private_file
     script.parent.mkdir(parents=True, exist_ok=True)
     script.write_text(OWNED_SCRIPT, encoding="utf-8")

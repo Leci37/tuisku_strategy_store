@@ -19,6 +19,20 @@ def test_production_pins_the_core_to_a_version():
         "requirements.txt tiene que fijar el núcleo a una etiqueta vX.Y.Z")
 
 
+def test_the_readme_names_the_pinned_core():
+    # «Desplegar» dice qué etiqueta instala el servidor: la de requirements.txt, no la de antes (15-11-2026: el README
+    # seguía en la v0.31.2)
+    pinned = re.search(r"@v(\d+\.\d+\.\d+)", next(l for l in _lines("requirements.txt") if l.startswith(CORE))).group(1)
+    named = re.findall(r"requirements.txt` \(\*\*v(\d+\.\d+\.\d+)\*\*\)", (ROOT / "README.md").read_text(encoding="utf-8"))
+    assert named == [pinned], (named, pinned)
+
+
+def test_the_core_in_use_is_at_least_the_pinned_one():
+    import zlecitool_core
+    pinned = re.search(r"@v(\d+)\.(\d+)\.(\d+)", next(l for l in _lines("requirements.txt") if l.startswith(CORE)))
+    assert tuple(int(x) for x in zlecitool_core.__version__.split(".")[:3]) >= tuple(int(x) for x in pinned.groups())
+
+
 def test_development_uses_the_core_beside_this_repo():
     assert any(line.startswith("-e ../zlecitool-core") for line in _lines("requirements-dev.txt"))
 

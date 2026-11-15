@@ -259,6 +259,30 @@ def test_download_all_in_one_zip(client, settings):
     assert client.get(url).status_code == 429, "cada fichero cuenta una descarga"
 
 
+def test_two_renewals_at_once_give_one_link(app, settings, monkeypatch):
+    # B12: dos «Pedir un enlace nuevo» a la vez (un doble clic) daban dos enlaces nuevos: 20 descargas (2026-11-15)
+    from edgefolio import mine
+    from edgefolio.models import Download
+    ana = signed(app, "ana@example.com")
+    days = settings.download_days
+    settings.download_days = -1                       # nacido caducado: se renueva
+    buy(ana, [AAPL])
+    settings.download_days = days
+    look = mine.entry
+
+    def slow(*a, **k):                                # las dos miran antes de que ninguna apunte
+        out = look(*a, **k)
+        time.sleep(0.2)
+        return out
+    monkeypatch.setattr(mine, "entry", slow)
+    with ThreadPoolExecutor(2) as pool:
+        codes = list(pool.map(lambda _: ana.post("/api/mine/renew", json={"id": AAPL}).status_code, range(2)))
+    assert codes == [200, 200]
+    from zlecitool_core.db import utcnow
+    with app.app_context():                           # lo único que compró: un enlace nuevo, no dos
+        assert Download.query.filter(Download.expires_at > utcnow()).count() == 1
+
+
 def test_parallel_download_all_never_passes_the_limit(app, client, settings, monkeypatch):
     settings.max_downloads = 2
     receipt = buy(client, [AAPL, MSFT])

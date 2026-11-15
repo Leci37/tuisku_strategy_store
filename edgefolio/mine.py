@@ -17,7 +17,7 @@ import secrets
 from datetime import timedelta, timezone
 from typing import Iterable
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, update
 
 from zlecitool_core.db import db, utcnow
 
@@ -159,16 +159,26 @@ def renew(shop, user_id: int, emails: list, item_id: str, own: str = "") -> dict
     if current["valid"] and not current["update"]:
         return current
     if latest["kind"] == "paid":
-        db.session.add(Download(token=secrets.token_urlsafe(24), paypal_id=latest["paypal_id"], item_key=s.key,
-                                expires_at=utcnow() + timedelta(days=settings.download_days), count=0,
-                                version=s.version))
+        # dos «Pedir un enlace nuevo» a la vez (un doble clic) daban dos enlaces: 20 descargas (2026-11-15). Con la fila
+        # del pedido bloqueada (la escritura de abajo, la primera de la transacción: en SQLite, el candado de
+        # escritura; en Postgres, la fila), se mira otra vez si ya hay uno que sirve
+        db.session.commit()
+        db.session.execute(update(Order).where(Order.paypal_id == latest["paypal_id"]).values(status=Order.status))
+        now = utcnow()
+        fresh = Download.query.filter(Download.paypal_id == latest["paypal_id"], Download.item_key == s.key,
+                                      Download.expires_at > now, Download.count < settings.max_downloads,
+                                      Download.version >= s.version).first()
+        if fresh is None:
+            db.session.add(Download(token=secrets.token_urlsafe(24), paypal_id=latest["paypal_id"], item_key=s.key,
+                                    expires_at=now + timedelta(days=settings.download_days), count=0,
+                                    version=s.version))
         db.session.commit()
     else:
         # La renovada guarda la hora de la primera petición: no cuenta para el límite del día.
         first = min(x["date"] for x in links if x["kind"] == "free")
         news = any(x.get("news") for x in links if x["kind"] == "free")
         add_claim(latest["email"], s.key, news, "", settings.download_days, s.version, consent_at=first,
-                  user_id=user_id)
+                  user_id=user_id, unless_valid=settings.max_downloads)
     return entry(settings, s, owned(user_id, emails, own)[s.key])
 
 

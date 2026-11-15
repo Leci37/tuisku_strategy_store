@@ -59,7 +59,7 @@ def claims_since(email: str, since, requester_hash: Optional[str] = None) -> int
 
 def add_claim(email: str, key: str, news: bool, lang: str, days: int, version: int = 1,
               consent_at=None, user_id: Optional[int] = None, daily_limit: Optional[int] = None,
-              requester: Optional[str] = None) -> Optional[str]:
+              requester: Optional[str] = None, unless_valid: Optional[int] = None) -> Optional[str]:
     """El token de la descarga nueva; None si ``daily_limit`` y ``requester`` (quien pide) ya pidió tantas para esta
     dirección en el último día, o si la dirección ya recibió ADDRESS_DAILY_CLAIMS de todos. Recuento y alta, de una
     vez (la fila de la dirección, bloqueada)."""
@@ -67,6 +67,13 @@ def add_claim(email: str, key: str, news: bool, lang: str, days: int, version: i
     who = digest(requester) if requester else None
     db.session.commit()  # lo que hubiera abierto, cerrado: la escritura de abajo es la primera
     lock_address(email)
+    if unless_valid is not None:
+        # renovar: si otra petición (un doble clic) ya dio uno que sirve para esta versión, ése (2026-11-15)
+        fresh = FreeClaim.query.filter(FreeClaim.email == email, FreeClaim.item_key == key, FreeClaim.expires_at > now,
+                                       FreeClaim.count < unless_valid, FreeClaim.version >= version).first()
+        if fresh is not None:
+            db.session.commit()
+            return fresh.token
     day = now - timedelta(days=1)
     if daily_limit is not None and (claims_since(email, day, who if who else None) >= daily_limit
                                     or claims_since(email, day) >= ADDRESS_DAILY_CLAIMS):

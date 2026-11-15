@@ -129,10 +129,20 @@ def quote(strategies: list, code: str, settings: Settings, bundles: list = (), p
                      (pack, pack_price, pack_price) if pack else None)
     code_rate = settings.discount_codes.get(code, ZERO) if code else ZERO
     status = "" if not code else ("applied" if code in settings.discount_codes else "invalid")
-    tier = tier_rate(subtotal, settings)
+    # Un lote o el pack nunca encarecen: con su precio de oferta, un carrito grande bajaba de tramo al añadir un pack
+    # que «ahorra un 32 %» (633,00 → 704,25 US$; 2026-11-15). Si con el tramo de la oferta costaría más que con sus
+    # estrategias sueltas, el tramo se cuenta con lo que valen sueltas. Si no, todo sigue igual.
+    worth = (sum((s.price for s in loose), ZERO) + sum((s.price for b in chosen for s in b.items), ZERO)
+             + sum((s.price for s in pack), ZERO)).quantize(CENT)
+    tier, basis = tier_rate(subtotal, settings), subtotal
+    if worth > subtotal:
+        as_offer = cents(subtotal * (1 - min(tier + code_rate, settings.max_discount)))
+        as_loose = cents(worth * (1 - min(tier_rate(worth, settings) + code_rate, settings.max_discount)))
+        if as_offer > as_loose:
+            tier, basis = tier_rate(worth, settings), worth
     rate = min(tier + code_rate, settings.max_discount)
     off = 1 - rate
-    passed, upcoming = ladder(subtotal, settings)
+    passed, upcoming = ladder(basis, settings)
     if upcoming is not None and min(Decimal(upcoming["rate"]) + code_rate, settings.max_discount) <= rate:
         # con el tope ya alcanzado, el escalón siguiente no quita nada más: «Añade X para llegar al N %» prometía
         # un descuento que no llegaba (con un código del 30 % o más; 14-11-2026)

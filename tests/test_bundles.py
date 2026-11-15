@@ -79,8 +79,10 @@ def test_items_in_a_bundle_are_not_charged_twice(client):
 
 def test_code_adds_to_the_tier_with_bundles(client):
     r = quote(client, bundles=["duo", "duo"], code="spring20").json
-    assert r["subtotal"] == "150.00" and r["code_rate"] == "0.20" and r["tier_rate"] == "0"
-    assert r["total"] == "120.00" and r["code_status"] == "applied"
+    # «duo» (150 $) valdría 172 suelto: con el 15 % del escalón y el código, sueltas costarían 111,80, menos que el lote
+    # con sólo el código (120,00). Un lote nunca encarece (2026-11-15): el escalón cuenta lo que valen sueltas
+    assert r["subtotal"] == "150.00" and r["code_rate"] == "0.20" and r["tier_rate"] == "0.15"
+    assert r["total"] == "97.50" and r["code_status"] == "applied"
 
 
 def test_flat_price_code_is_for_loose_items_only(client):
@@ -188,9 +190,12 @@ def test_a_pack_of_the_cheapest_real_strategies(real_client):
 
 def test_the_ladder_comes_from_the_server(client, settings):
     settings.pack_size, settings.pack_price = 2, Decimal("160")
-    r = quote(client, pack=[AAPL, MSFT]).json            # subtotal exactly $160: not above it
-    assert (r["subtotal"], r["tier_rate"], r["tier_index"]) == ("160.00", "0", 0)
-    assert r["next_tier"] == {"over": "160", "rate": "0.15", "missing": "0.01"}
+    r = quote(client, pack=[AAPL, MSFT]).json            # $160, but worth $172 loose: the pack never costs more
+    assert (r["subtotal"], r["tier_rate"], r["tier_index"]) == ("160.00", "0.15", 1)
+    assert r["next_tier"] == {"over": "290", "rate": "0.20", "missing": "118.01"} and r["total"] == "136.00"
+    settings.pack_price = Decimal("172")
+    r = quote(client, pack=[AAPL, MSFT]).json            # at its worth: the tier of $172, as loose
+    assert (r["tier_rate"], r["total"]) == ("0.15", "146.20")
     r = quote(client, items=[TSLA]).json                  # $50
     assert r["tier_index"] == 0 and r["next_tier"] == {"over": "160", "rate": "0.15", "missing": "110.01"}
     r = quote(client, items=[AAPL, MSFT]).json            # $172: the 15% tier, the 20% one next

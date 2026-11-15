@@ -397,9 +397,9 @@ def test_a_single_strategy_the_account_has_is_not_sold_again(app, ids, settings,
         assert r.status_code == 409 and r.json == {"error": "errAlreadyOwned", "items": [ids[0], AAPL_ID]}, path
     assert len(paypal.orders) == made, "ningún pedido en PayPal"
     assert ana.post("/api/quote", json={"items": [ids[1]]}).json["total"] == "93.00"
-    assert ana.post("/api/quote", json={"bundles": ["duo"]}).json["total"] == "150.00"
+    assert ana.post("/api/quote", json={"bundles": ["duo"]}).json["total"] == "127.50"     # nunca más que sueltas
     both = ana.post("/api/quote", json={"items": [ids[0]], "bundles": ["duo"]})
-    assert both.status_code == 200 and both.json["items"] == [] and both.json["total"] == "150.00"
+    assert both.status_code == 200 and both.json["items"] == [] and both.json["total"] == "127.50"
     settings.pack_size = 2
     assert ana.post("/api/quote", json={"pack": [AAPL_ID, "TSLA_1Day_1C00_dddd4444"]}).json["total"] == "129.00"
     assert visitor(app).post("/api/quote", json={"items": [ids[0]]}).status_code == 200, "sin sesión, de nadie"

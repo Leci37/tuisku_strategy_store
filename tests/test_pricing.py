@@ -77,8 +77,23 @@ def test_a_bundle_never_makes_the_cart_dearer(settings):
 
 
 def test_flat_price_code(client, ids):
+    # 0,99 por cada suelta, pero nunca más del tope (MAX_DISCOUNT, 70 %): 79 → 23,70 y 93 → 27,90 (2026-11-15; antes,
+    # 1,98 las dos: un 98,8 % menos)
     r = client.post("/api/quote", json={"items": ids[:2], "code": "launch"})
-    assert r.json["total"] == "1.98" and r.json["code_status"] == "applied"
+    assert r.json["total"] == "51.60" and r.json["code_status"] == "applied"
+
+
+def test_a_flat_price_code_never_raises_the_total(settings):
+    # M8: con un código de precio fijo, los lotes pierden su escalón: una suelta y un lote grande costaban más con el
+    # código que sin él. Si sin él cuesta menos, se cobra como sin él.
+    from types import SimpleNamespace
+    from edgefolio.catalogue import Strategy
+    one = Strategy("T", "1Day", "K0", "id0", Decimal("69"), {})
+    many = [Strategy("T", "1Day", f"B{i}", f"b{i}", Decimal("99"), {}) for i in range(30)]
+    big = SimpleNamespace(key="big", price=Decimal("2600"), items=many)
+    plain = quote([one], "", settings, [big])
+    coded = quote([one], "launch", settings, [big])
+    assert plain.discount_rate == Decimal("0.70") and coded.total == plain.total and coded.code_status == "applied"
 
 
 def test_unknown_code_gives_no_discount(client, ids):

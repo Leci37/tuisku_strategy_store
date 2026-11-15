@@ -87,8 +87,9 @@ def test_code_adds_to_the_tier_with_bundles(client):
 
 def test_flat_price_code_is_for_loose_items_only(client):
     r = quote(client, items=[TSLA], bundles=["duo"], code="launch").json
-    assert r["items"] == [{"id": TSLA, "price": "0.99"}] and r["bundles"] == [{"key": "duo", "price": "150.00"}]
-    assert r["total"] == "150.99" and r["discount_rate"] == "0" and r["subtotal"] == "200.00"
+    # 0,99, pero no más del tope (70 %): 50 → 15,00 (2026-11-15)
+    assert r["items"] == [{"id": TSLA, "price": "15.00"}] and r["bundles"] == [{"key": "duo", "price": "150.00"}]
+    assert r["total"] == "165.00" and r["discount_rate"] == "0" and r["subtotal"] == "200.00"
 
 
 def test_pack(client, settings):

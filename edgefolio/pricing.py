@@ -9,7 +9,7 @@ se rechaza (overlap): cada uno la cobraría.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import ROUND_HALF_UP, Decimal
 
 from .settings import Settings
@@ -121,10 +121,15 @@ def quote(strategies: list, code: str, settings: Settings, bundles: list = (), p
     subtotal = (sum((s.price for s in loose), ZERO) + fixed).quantize(CENT)
     code = (code or "").strip().lower()
     if code and code in settings.flat_price_codes:
-        # un precio de lanzamiento para las sueltas: los lotes y el pack ya son una oferta, sin escalón encima
+        # un precio de lanzamiento para las sueltas: los lotes y el pack ya son una oferta, sin escalón encima. Con dos
+        # guardas (2026-11-15): ninguna suelta baja más que MAX_DISCOUNT (0,99 por una de 73 era un 98,6 % menos), y si
+        # sin el código el carrito costaría menos (los lotes pierden su escalón), se cobra como sin él
         flat = settings.flat_price_codes[code].quantize(CENT)
-        charged = [(s, min(flat, s.price)) for s in loose]
+        charged = [(s, max(min(flat, s.price), cents(s.price * (1 - settings.max_discount)))) for s in loose]
         total = (sum((p for _, p in charged), ZERO) + fixed).quantize(CENT)
+        plain = quote(strategies, "", settings, bundles, pack)
+        if plain.total < total:
+            return replace(plain, code=code, code_status="applied")
         return Quote(charged, subtotal, ZERO, total, code, "applied", [(b, b.price) for b in chosen],
                      (pack, pack_price, pack_price) if pack else None)
     code_rate = settings.discount_codes.get(code, ZERO) if code else ZERO

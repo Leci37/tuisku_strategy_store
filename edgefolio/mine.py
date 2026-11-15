@@ -67,15 +67,21 @@ def owned(user_id: int, emails: Iterable[str]) -> dict:
 
 
 def held(shop, user_id: int, emails: Iterable[str]) -> set:
-    """Las claves de lo que la cuenta tiene, para no vendérselo suelto (E8): lo de Mis estrategias. Una gratis que ya
-    es de pago, sólo mientras su enlace sirve: después no se renueva (errNoLongerFree) y se puede comprar."""
+    """Las claves de lo que la cuenta tiene, para no vendérselo suelto (E8): lo de Mis estrategias cuyo enlace sirve o
+    se puede renovar. No lo es (y se vende) lo que ya no se renueva (2026-11-15):
+    - una gratis que pasó a ser de pago, con su enlace caducado o gastado (errNoLongerFree);
+    - la v1 comprada de una estrategia caducada con una v2 publicada, que no va con la compra (errUpdateExpired).
+    Hasta entonces, las dos daban errAlreadyOwned: ni se renovaban ni se podían comprar."""
     items, settings, now = shop.catalogue.items, shop.settings, utcnow()
 
     def still_hers(key, links):
-        if any(link["kind"] == "paid" for link in links) or not (key in items and items[key].price > 0):
+        s, latest = items.get(key), links[-1]
+        if s is None:
             return True
-        latest = links[-1]
-        return latest["expires"] > now and latest["count"] < settings.max_downloads
+        if latest["expires"] > now and latest["count"] < settings.max_downloads and \
+                s.serves(latest["version"], latest["kind"] == "paid"):
+            return True                                        # su enlace sirve
+        return s.price == 0 if latest["kind"] == "free" else s.serves(latest["version"])
     return {key for key, links in owned(user_id, emails).items() if still_hers(key, links)}
 
 

@@ -356,6 +356,17 @@ def test_an_update_is_free_until_the_strategy_expires(app, client, settings, pay
     assert free["version"] == 2 and free["kind"] == "free", "una gratis, siempre"
 
 
+def test_the_new_version_of_an_expired_strategy_can_be_bought(app, settings, paypal):
+    # M9: quien tenía la v1 de una estrategia caducada con la v2 publicada no podía comprar la v2 suelta: «Ya es tuya»
+    # y errAlreadyOwned miraban la estrategia, no la versión. La v2 no va con su compra: se vende.
+    ana = signed(app, "ana@example.com")
+    buy(ana, [AAPL, MSFT])
+    published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2}, {"AAPL": "2099/01/01", "MSFT": "2020/01/01"})
+    assert ana.post("/api/quote", json={"items": [AAPL]}).status_code == 409, "sin caducar, la v2 va con la compra"
+    r = ana.post("/api/quote", json={"items": [MSFT]})
+    assert r.status_code == 200 and r.json["total"] == "93.00", r.get_data(as_text=True)
+
+
 def test_an_old_link_does_not_give_the_new_version_once_the_strategy_has_expired(app, settings, paypal):
     """La tienda guarda un script por estrategia, el de hoy: un enlace aún válido de la versión de antes da la nueva.
     Sin caducar, vale (la actualización es gratis); caducada, ni Mis estrategias lo da por válido (sin .pine: «Ya es

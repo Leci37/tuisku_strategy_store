@@ -218,7 +218,8 @@ def test_paying_does_not_refuse_what_was_just_bought(real_app):
 def test_an_update_is_offered_only_until_the_strategy_expires(real_app):
     """Con una v2 publicada, la v1 comprada: sin caducar, «Obtener la actualización» y «Actualización disponible»; caducada,
     ninguna de las dos, y su enlace de antes, aún válido, tampoco se ofrece (daría el script de hoy, la v2): ni el .pine
-    de Mis estrategias ni «Ya es tuya · Descargar», que lleva a Mis estrategias."""
+    de Mis estrategias ni «Ya es tuya». La v2 no va con su compra: se vende, con «Añadir al carrito» (M9, 2026-11-15;
+    antes, «Ya es tuya», y comprarla daba errAlreadyOwned)."""
     [sid] = first_paid_in_both(real_app, 1)
     get_update = say("getUpdate") + " · v2"
     with mobile.serve(real_app) as live, mobile.browser() as chromium:
@@ -235,10 +236,14 @@ def test_an_update_is_offered_only_until_the_strategy_expires(real_app):
                     assert (page.get_by_role("button", name=get_update).count() == 1) is offered, expiry
                     assert page.locator("#app a[href^='/api/download/']").count() == (2 if offered else 0), expiry
                     tab.goto(f"/s/{sid}")
-                    page.locator(OWNED).wait_for()
                     page.locator("#app strong", has_text=re.compile(r"^v2 · ")).wait_for()     # la v2 en «Versiones»
                     assert (page.get_by_text(say("updateAvail"), exact=True).count() == 1) is offered, expiry
-                    assert page.locator(OWNED).get_attribute("href") == "/mine", expiry
+                    if offered:
+                        page.locator(OWNED).wait_for()
+                        assert page.locator(OWNED).get_attribute("href") == "/mine", expiry
+                    else:
+                        page.get_by_role("button", name=say("addToCart")).first.wait_for()
+                        assert page.locator(OWNED).count() == 0, expiry
             assert tab.problems() == []
         finally:
             tab.close()

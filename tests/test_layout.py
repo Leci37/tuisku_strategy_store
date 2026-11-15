@@ -57,6 +57,15 @@ def test_production_runs_gunicorn_with_its_config(monkeypatch):
     assert conf["worker_class"] == "gthread" and conf["bind"] == "0.0.0.0:5105"
 
 
+def test_gunicorn_runs_one_process_with_the_fake_paypal(monkeypatch):
+    # B14: el PayPal simulado vive en la memoria de cada proceso; con varios, el cobro llegaba a otro y fallaba
+    monkeypatch.setenv("WEB_CONCURRENCY", "9")
+    monkeypatch.delenv("PAYPAL_MODE", raising=False)
+    assert runpy.run_path(str(ROOT / "gunicorn.conf.py"))["workers"] == 1
+    monkeypatch.setenv("PAYPAL_MODE", "live")
+    assert runpy.run_path(str(ROOT / "gunicorn.conf.py"))["workers"] == 9
+
+
 def test_gunicorn_does_not_preload_the_app(monkeypatch):
     """Con ``preload_app``, la app arrancaría en el proceso padre, y su reloj de las tareas (núcleo 0.25) con
     ella: sus hilos no pasan de un fork, y ningún proceso que atiende serviría «Tus datos» (núcleo 0.30) ni

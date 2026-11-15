@@ -5,6 +5,10 @@ renovaciones y sus favoritas.
 Es de la cuenta lo que hizo con la sesión abierta (``user_id``) y lo que se hizo sin cuenta con un
 correo que la cuenta ha demostrado que es suyo (``proofs``); nunca lo que sólo coincide con el correo con
 que se dio de alta, que el núcleo no comprueba.
+
+Una gratis es del correo al que se mandó, no de quien la pidió: sólo sale en la cuenta si ese correo es uno de los
+que ha demostrado, también si la pidió con la sesión abierta. Hasta el 2026-11-15, una cuenta veía (y renovaba) las
+que pedía para cualquier dirección, sin abrir ningún correo.
 """
 from __future__ import annotations
 
@@ -45,10 +49,8 @@ def links_of(user_id: int, emails: Iterable[str]) -> list:
         mine = or_(mine, (Order.user_id.is_(None) & or_(Order.email.in_(emails), func.lower(Order.payer).in_(emails))))
     paid = db.session.execute(select(Download, Order.created_at).join(Order, Order.paypal_id == Download.paypal_id)
                               .where(Order.status == "PAID", mine)).all()
-    free_mine = FreeClaim.user_id == user_id
-    if emails:
-        free_mine = or_(free_mine, FreeClaim.user_id.is_(None) & FreeClaim.email.in_(emails))
-    free = FreeClaim.query.filter(free_mine).all()
+    free = FreeClaim.query.filter(or_(FreeClaim.user_id == user_id, FreeClaim.user_id.is_(None)),
+                                  FreeClaim.email.in_(emails)).all() if emails else []
     out = [{"token": d.token, "item_key": d.item_key, "expires": d.expires_at, "count": d.count, "version": d.version,
             "paypal_id": d.paypal_id, "date": created, "kind": "paid"} for d, created in paid]
     out += [{"token": c.token, "item_key": c.item_key, "expires": c.expires_at, "count": c.count, "version": c.version,

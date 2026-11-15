@@ -368,7 +368,9 @@ def free_claim():
     if not isinstance(news, bool):
         raise Refusal("errRequest", 400, field="news")
     limited("free")
-    return jsonify(free.claim(shop(), s, email, news, request_language(), link, send_mail, user_id=user_id()))
+    uid = user_id()
+    who = f"u:{uid}" if uid is not None else f"ip:{client_key()}"
+    return jsonify(free.claim(shop(), s, email, news, request_language(), link, send_mail, user_id=uid, requester=who))
 
 
 @bp.get("/api/news/confirm")

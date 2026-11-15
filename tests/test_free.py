@@ -17,7 +17,7 @@ from edgefolio import downloads, free
 from edgefolio.catalogue import Strategy
 from edgefolio.models import FreeClaim, Subscriber
 from edgefolio.web import digest
-from tests.conftest import ROWS, outbox, signed, visitor
+from tests.conftest import ROWS, outbox, prove, signed, visitor
 from tests.test_formats import ONE_TREE
 
 FREE = ROWS[2]
@@ -204,8 +204,8 @@ def test_parallel_claims_never_pass_the_daily_limit(app, client, free_file, monk
     aquí, en la pausa que se mete justo después de contar."""
     count = free.claims_since
 
-    def slow(email, since):
-        n = count(email, since)
+    def slow(email, since, *by):
+        n = count(email, since, *by)
         time.sleep(0.05)
         return n
     monkeypatch.setattr(free, "claims_since", slow)
@@ -216,10 +216,30 @@ def test_parallel_claims_never_pass_the_daily_limit(app, client, free_file, monk
     assert len(outbox("ana@example.com")) == 10
 
 
-def test_a_claim_made_signed_in_belongs_to_the_account(app, free_file):
+def test_a_claim_made_signed_in_shows_once_its_address_is_proven(app, free_file):
+    # La gratis es del correo al que se mandó: hasta el 2026-11-15, la cuenta que la pedía la veía (y la renovaba) en
+    # Mis estrategias para cualquier dirección, sin abrir ningún correo.
     ana = signed(app, "ana@example.com")
     assert claim(ana, "ana.work@example.com").status_code == 200
     assert [r["user_id"] for r in rows(app, FreeClaim)] == [ana.user_id]
+    assert ana.get("/api/mine").json["items"] == []
+    prove(ana, "ana.work@example.com")
     assert [i["id"] for i in ana.get("/api/mine").json["items"]] == [FREE_ID]
     other = signed(app, "ana.work@example.com")        # el correo, sin demostrar: no es suya
     assert other.get("/api/mine").json["items"] == []
+
+
+def test_someone_else_cannot_use_up_an_address_free_claims(app, free_file):
+    # M5: cualquiera, sin cuenta, pedía 10 con el correo de otra persona, que se quedaba sin las suyas hasta el día
+    # siguiente. El tope del día se cuenta por quien pide; el del buzón, de todos.
+    stranger = visitor(app, ip="198.51.100.20")
+    for _ in range(free.DAILY_CLAIMS):
+        assert claim(stranger, "bea@example.com").status_code == 200
+    assert claim(stranger, "bea@example.com").status_code == 429
+    bea = visitor(app, ip="203.0.113.40")
+    assert claim(bea, "bea@example.com").status_code == 200
+    for n in range(free.ADDRESS_DAILY_CLAIMS - free.DAILY_CLAIMS - 1):
+        assert claim(visitor(app, ip=f"192.0.2.{n + 1}"), "bea@example.com").status_code == 200
+    assert len(outbox("bea@example.com")) == free.ADDRESS_DAILY_CLAIMS
+    assert claim(visitor(app, ip="192.0.2.200"), "bea@example.com").status_code == 429   # el buzón, lleno
+    assert len(outbox("bea@example.com")) == free.ADDRESS_DAILY_CLAIMS

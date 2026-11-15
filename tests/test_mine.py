@@ -334,6 +334,7 @@ def test_an_update_is_free_until_the_strategy_expires(app, client, settings, pay
     settings.download_days = -1                       # nacido caducado: el de TSLA se renueva
     buy(ana, [TSLA])
     assert claim(ana, "ana@example.com").json == {"sent": True}
+    prove(ana)                                        # la gratis es del correo: sale cuando la cuenta lo demuestra
     settings.download_days = 7
     published_again(app, settings, paypal, {"AAPL": 2, "MSFT": 2, "NVDA": 2},
                     {"AAPL": "2099/01/01", "MSFT": "2020/01/01", "TSLA": "2020/01/01", "NVDA": "2020/01/01"})

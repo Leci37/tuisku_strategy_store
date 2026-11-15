@@ -237,13 +237,14 @@ def test_an_update_is_offered_only_until_the_strategy_expires(real_app):
                     assert page.locator("#app a[href^='/api/download/']").count() == (2 if offered else 0), expiry
                     tab.goto(f"/s/{sid}")
                     page.locator("#app strong", has_text=re.compile(r"^v2 · ")).wait_for()     # la v2 en «Versiones»
-                    assert (page.get_by_text(say("updateAvail"), exact=True).count() == 1) is offered, expiry
+                    # lo de la cuenta ya leído antes de contar: «Actualización disponible» llega con ello
                     if offered:
                         page.locator(OWNED).wait_for()
                         assert page.locator(OWNED).get_attribute("href") == "/mine", expiry
                     else:
                         page.get_by_role("button", name=say("addToCart")).first.wait_for()
                         assert page.locator(OWNED).count() == 0, expiry
+                    assert (page.get_by_text(say("updateAvail"), exact=True).count() == 1) is offered, expiry
             assert tab.problems() == []
         finally:
             tab.close()

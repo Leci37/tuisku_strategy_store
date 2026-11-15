@@ -217,11 +217,15 @@ def test_parallel_claims_never_pass_the_daily_limit(app, client, free_file, monk
 
 
 def test_a_claim_made_signed_in_shows_once_its_address_is_proven(app, free_file):
-    # La gratis es del correo al que se mandó: hasta el 2026-11-15, la cuenta que la pedía la veía (y la renovaba) en
-    # Mis estrategias para cualquier dirección, sin abrir ningún correo.
+    # M5: hasta el 2026-11-15, la cuenta que la pedía la veía (y la renovaba) en Mis estrategias para cualquier
+    # dirección, sin abrir ningún correo. Ahora, la pedida para otra dirección sale cuando la demuestra; la pedida para
+    # el correo de la cuenta, al momento.
+    bo = signed(app, "bo@example.com")
+    assert claim(bo, "bo@example.com").status_code == 200
+    assert [i["id"] for i in bo.get("/api/mine").json["items"]] == [FREE_ID]
     ana = signed(app, "ana@example.com")
     assert claim(ana, "ana.work@example.com").status_code == 200
-    assert [r["user_id"] for r in rows(app, FreeClaim)] == [ana.user_id]
+    assert [r["user_id"] for r in rows(app, FreeClaim)][-1] == ana.user_id
     assert ana.get("/api/mine").json["items"] == []
     prove(ana, "ana.work@example.com")
     assert [i["id"] for i in ana.get("/api/mine").json["items"]] == [FREE_ID]

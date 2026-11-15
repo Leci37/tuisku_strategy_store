@@ -227,7 +227,7 @@ def owned_now() -> set:
     gratis y ya es de pago es suya mientras su enlace sirve; después, no (no se renueva: errNoLongerFree), y se puede
     comprar (2026-11-15; hasta entonces se quedaba sin poder comprarla)."""
     uid = user_id()
-    return mine.held(shop(), uid, proofs.proven(uid)) if uid is not None else set()
+    return mine.held(shop(), uid, proofs.proven(uid), own=current_user.email) if uid is not None else set()
 
 
 def _guarded(cart: dict, price):
@@ -409,12 +409,12 @@ def my_strategies():
 @bp.post("/api/mine/renew")
 def renew():
     item = text_field(body(), "id", 200)
-    return jsonify(mine.renew(shop(), current_user.id, _proven(), item))
+    return jsonify(mine.renew(shop(), current_user.id, _proven(), item, own=current_user.email))
 
 
 @bp.get("/api/mine/<item_id>/script")
 def script(item_id):
-    path = mine.script_path(shop(), current_user.id, _proven(), item_id)
+    path = mine.script_path(shop(), current_user.id, _proven(), item_id, own=current_user.email)
     return Response(path.read_text(encoding="utf-8", errors="replace"), mimetype="text/plain",
                     headers=PRIVATE)
 

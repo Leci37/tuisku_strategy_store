@@ -6,8 +6,8 @@ Es de la cuenta lo que hizo con la sesión abierta (``user_id``) y lo que se hiz
 correo que la cuenta ha demostrado que es suyo (``proofs``); nunca lo que sólo coincide con el correo con
 que se dio de alta, que el núcleo no comprueba.
 
-Una gratis es del correo al que se mandó, no de quien la pidió: sólo sale en la cuenta si ese correo es uno de los
-que ha demostrado, también si la pidió con la sesión abierta. Hasta el 2026-11-15, una cuenta veía (y renovaba) las
+Una gratis pedida con la sesión abierta sale en la cuenta si se mandó a su propio correo (``own``) o a uno de los
+que ha demostrado; no si se mandó a cualquier otra dirección. Hasta el 2026-11-15, una cuenta veía (y renovaba) las
 que pedía para cualquier dirección, sin abrir ningún correo.
 """
 from __future__ import annotations
@@ -40,7 +40,7 @@ def strategy_or_404(catalogue, item_id: str):
     return s
 
 
-def links_of(user_id: int, emails: Iterable[str]) -> list:
+def links_of(user_id: int, emails: Iterable[str], own: str = "") -> list:
     """Cada enlace que tiene la cuenta: los de pago de sus pedidos y sus descargas gratis. ``date`` es
     cuándo se hizo con la estrategia (el pedido o la primera descarga), no cuándo se hizo el enlace."""
     emails = sorted(set(emails))
@@ -49,8 +49,17 @@ def links_of(user_id: int, emails: Iterable[str]) -> list:
         mine = or_(mine, (Order.user_id.is_(None) & or_(Order.email.in_(emails), func.lower(Order.payer).in_(emails))))
     paid = db.session.execute(select(Download, Order.created_at).join(Order, Order.paypal_id == Download.paypal_id)
                               .where(Order.status == "PAID", mine)).all()
-    free = FreeClaim.query.filter(or_(FreeClaim.user_id == user_id, FreeClaim.user_id.is_(None)),
-                                  FreeClaim.email.in_(emails)).all() if emails else []
+    asked = FreeClaim.user_id == user_id
+    if own:
+        asked = asked & FreeClaim.email.in_(sorted(set(emails) | {own.strip().lower()}))
+    elif emails:
+        asked = asked & FreeClaim.email.in_(emails)
+    else:
+        asked = None
+    found = [asked] if asked is not None else []
+    if emails:
+        found.append(FreeClaim.user_id.is_(None) & FreeClaim.email.in_(emails))
+    free = FreeClaim.query.filter(or_(*found)).all() if found else []
     out = [{"token": d.token, "item_key": d.item_key, "expires": d.expires_at, "count": d.count, "version": d.version,
             "paypal_id": d.paypal_id, "date": created, "kind": "paid"} for d, created in paid]
     out += [{"token": c.token, "item_key": c.item_key, "expires": c.expires_at, "count": c.count, "version": c.version,
@@ -58,15 +67,15 @@ def links_of(user_id: int, emails: Iterable[str]) -> list:
     return out
 
 
-def owned(user_id: int, emails: Iterable[str]) -> dict:
+def owned(user_id: int, emails: Iterable[str], own: str = "") -> dict:
     """item_key -> cada enlace que tiene la cuenta para ella, el más nuevo el último."""
     groups = {}
-    for link in sorted(links_of(user_id, emails), key=lambda r: r["expires"]):
+    for link in sorted(links_of(user_id, emails, own), key=lambda r: r["expires"]):
         groups.setdefault(link["item_key"], []).append(link)
     return groups
 
 
-def held(shop, user_id: int, emails: Iterable[str]) -> set:
+def held(shop, user_id: int, emails: Iterable[str], own: str = "") -> set:
     """Las claves de lo que la cuenta tiene, para no vendérselo suelto (E8): lo de Mis estrategias cuyo enlace sirve o
     se puede renovar. No lo es (y se vende) lo que ya no se renueva (2026-11-15):
     - una gratis que pasó a ser de pago, con su enlace caducado o gastado (errNoLongerFree);
@@ -82,7 +91,7 @@ def held(shop, user_id: int, emails: Iterable[str]) -> set:
                 s.serves(latest["version"], latest["kind"] == "paid"):
             return True                                        # su enlace sirve
         return s.price == 0 if latest["kind"] == "free" else s.serves(latest["version"])
-    return {key for key, links in owned(user_id, emails).items() if still_hers(key, links)}
+    return {key for key, links in owned(user_id, emails, own).items() if still_hers(key, links)}
 
 
 def update_of(s, latest: dict):
@@ -114,7 +123,7 @@ def entry(settings, s, links: list) -> dict:
 
 def listing(shop, user_id: int, email: str, emails: list, proof_needed: bool) -> dict:
     catalogue, items = shop.catalogue, []
-    for key, links in owned(user_id, emails).items():
+    for key, links in owned(user_id, emails, email).items():
         s = catalogue.resolve(key)
         if s:  # una estrategia que salió del catálogo ya no tiene nada que enseñar ni que descargar
             items.append(entry(shop.settings, s, links))
@@ -128,13 +137,13 @@ def listing(shop, user_id: int, email: str, emails: list, proof_needed: bool) ->
             "favourites": favourites}
 
 
-def renew(shop, user_id: int, emails: list, item_id: str) -> dict:
+def renew(shop, user_id: int, emails: list, item_id: str, own: str = "") -> dict:
     """Un enlace nuevo si el de antes caducó o se gastó, o para una versión nueva; si no, la misma fila:
     el botón no sirve para reiniciar el límite de un enlace que funciona. Una versión nueva de una de pago que ya
     caducó no se da (403 ``errUpdateExpired``): la tienda guarda un script por estrategia, el de hoy, así que un
     enlace nuevo de la de antes también la daría."""
     s = strategy_or_404(shop.catalogue, item_id)
-    links = owned(user_id, emails).get(s.key)
+    links = owned(user_id, emails, own).get(s.key)
     if not links:
         raise Refusal("errNotOwned", 404)
     settings = shop.settings
@@ -160,14 +169,14 @@ def renew(shop, user_id: int, emails: list, item_id: str) -> dict:
         news = any(x.get("news") for x in links if x["kind"] == "free")
         add_claim(latest["email"], s.key, news, "", settings.download_days, s.version, consent_at=first,
                   user_id=user_id)
-    return entry(settings, s, owned(user_id, emails)[s.key])
+    return entry(settings, s, owned(user_id, emails, own)[s.key])
 
 
-def script_path(shop, user_id: int, emails: list, item_id: str):
+def script_path(shop, user_id: int, emails: list, item_id: str, own: str = ""):
     """El script completo para quien lo tiene (la vista de propietario del árbol). Es el de hoy: a quien tiene una versión
     de antes de una que ya caducó, no (sería la versión nueva, como su enlace: ``Strategy.serves``)."""
     s = strategy_or_404(shop.catalogue, item_id)
-    links = owned(user_id, emails).get(s.key)
+    links = owned(user_id, emails, own).get(s.key)
     if not links:
         raise Refusal("errNotOwned", 404)
     if not s.serves(links[-1]["version"], links[-1]["kind"] == "paid"):

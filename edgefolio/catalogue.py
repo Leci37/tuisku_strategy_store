@@ -117,6 +117,12 @@ def thumb_url(stem: str, version) -> str:
     return f"/thumbs/{stem}.webp" + (f"?v={version}" if version else "")
 
 
+def utc_today() -> date:
+    """El día de hoy en UTC, el de la caducidad de los scripts: «Novedades» cambia a la misma hora en todos los
+    servidores (2026-11-15; antes, a medianoche de donde estuviera el servidor)."""
+    return datetime.now(timezone.utc).date()
+
+
 def read_release(path: Path) -> dict:
     """release.json, o {} sin él (un catálogo publicado con la forma de antes de los paquetes) o roto."""
     try:
@@ -200,7 +206,8 @@ class Strategy:
     @property
     def is_new(self) -> bool:
         d = self.release_date
-        return bool(d) and date.today() - timedelta(days=self.new_days) <= d <= date.today()
+        today = utc_today()
+        return bool(d) and today - timedelta(days=self.new_days) <= d <= today
 
     @property
     def expired(self) -> bool:

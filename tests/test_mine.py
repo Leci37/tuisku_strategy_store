@@ -421,6 +421,29 @@ def test_a_strategy_expires_at_midnight_utc_as_its_script(monkeypatch):
         assert (s.expired, s.serves(1), s.serves(2), s.serves(1, paid=False)) == (expired, not expired, True, False), moment
 
 
+def test_news_counts_with_the_utc_day(monkeypatch):
+    # B12: «Novedades» usaba la fecha local del servidor y la caducidad, la UTC: la pestaña cambiaba a medianoche de
+    # donde estuviera el servidor (2026-11-15). Ahora, las dos en UTC.
+    from datetime import date, datetime, timedelta, timezone
+    from decimal import Decimal
+    from edgefolio import catalogue
+    from edgefolio.catalogue import Strategy
+
+    class At(datetime):
+        moment = None
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.moment.astimezone(tz) if tz else (cls.moment + timedelta(hours=14)).replace(tzinfo=None)
+
+    monkeypatch.setattr(catalogue, "datetime", At)
+    s = Strategy("AAPL", "1Day", "1ADX", "aaaa1111", Decimal("79"), {"Release date": "2026-10-13"}, new_days=30)
+    for moment, new in (((2026, 11, 12, 23, 30), True), ((2026, 11, 13, 0, 30), False)):
+        At.moment = datetime(*moment, tzinfo=timezone.utc)
+        assert s.is_new is new, moment
+    assert catalogue.utc_today() == date(2026, 11, 13)
+
+
 def test_every_published_strategy_says_when_it_expires(real_app):
     """La caducidad de cada estrategia del catálogo publicado sale de la cabecera de su vista previa (el generador la
     escribe en cada script): todas la dicen, y es después de su publicación."""

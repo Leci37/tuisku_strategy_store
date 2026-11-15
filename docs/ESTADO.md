@@ -39,6 +39,6 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
    arrancar, el `Debugger PIN` de werkzeug. Con gunicorn, el `accesslog = "-"` de `gunicorn.conf.py`, en su formato por
    defecto (IP, petición con su consulta, referer y agente), lo lleva a la salida estándar. La 0.36 la resuelve: la
    línea de cada petición es suya (`zlecitool.requests`, por la regla, con la cuenta por su id, el resultado, el tiempo
-   y `error=errAlgo` en un rechazo; sin IP ni consulta) y la de werkzeug se quita. **Pregunta**: ¿el CONTRATO de la 0.36
-   dice que cada herramienta quite el `accesslog = "-"` de su `gunicorn.conf.py`? Con la línea del núcleo sobra, y
-   sigue llevando la IP y la consulta a la salida estándar. Aquí no se toca hasta saberlo.
+   y `error=errAlgo` en un rechazo; sin IP ni consulta) y la de werkzeug se quita. Y al subir a la 0.36, en el mismo
+   cambio, `accesslog = "-"` pasa a `accesslog = None` en `gunicorn.conf.py`, como la plantilla (decidido el
+   15-11-2026; el núcleo lo dirá en «Para las herramientas» de su CHANGELOG). Hasta entonces no se toca.

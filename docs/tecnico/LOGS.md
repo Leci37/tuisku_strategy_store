@@ -307,8 +307,8 @@ solo, y por eso van en la tabla. El nombre sale de la clave del estado, no del `
   `accesslog = "-"` de `gunicorn.conf.py` (su formato por defecto: IP, petición con su consulta, referer y agente) lo
   manda a la salida estándar. Es de toda la familia y del núcleo: va a «Para el núcleo» de `ESTADO.md`; aquí no se
   parchea. La 0.36 la cambia por la suya (`zlecitool.requests`, por la regla, sin IP ni consulta) y quita la de
-  werkzeug; el `accesslog` de `gunicorn.conf.py` es de la tienda, y con la 0.36 se mira si se quita (pregunta en
-  `ESTADO.md`).
+  werkzeug; el `accesslog` de `gunicorn.conf.py` es de la tienda, y al subir a la 0.36 pasa a `accesslog = None`,
+  como la plantilla (decidido el 15-11-2026; abajo, «Lo que depende de la 0.36», 5).
 - Las líneas de la tienda nombran las cuentas por su id y lo demás por su clave; nunca un correo (las de los pedidos y
   las pruebas sin él), un código de descuento (sólo si se aplicó) ni un token de enlace.
 
@@ -330,8 +330,9 @@ Al subir la etiqueta de `requirements.txt` a la 0.36 (CONTRATO §27, «Los logs�
    de una dirección, la miniatura) se quedan.
 4. **Las comprobaciones de `check_tool()`** (sin salidas propias ni `print`; con `privacy_sample`, que el correo y el
    nombre de la cuenta de prueba no salgan en los logs): `tests/test_privacy.py` ya pasa `privacy_sample`.
-5. **El `accesslog` de gunicorn**: con la línea del núcleo, sobra y lleva la IP y la consulta; se quita de
-   `gunicorn.conf.py` si el CONTRATO de la 0.36 lo dice (pregunta en «Para el núcleo»).
+5. **El `accesslog` de gunicorn**: con la línea del núcleo, sobra y lleva la IP y la consulta. En el mismo cambio que
+   sube la etiqueta, `accesslog = "-"` pasa a `accesslog = None` en `gunicorn.conf.py`, como la plantilla (decidido el
+   15-11-2026; el núcleo lo dirá en «Para las herramientas» de su CHANGELOG). Hasta entonces no se toca.
 
 ## Lo añadido (F3, 15-11-2026)
 

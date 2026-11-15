@@ -552,7 +552,9 @@ def build(df: pd.DataFrame, assets_src: Path, out: Path, assets: Path, stage: St
             public = data
             if col == PREVIEW_COLUMN:  # only its public part ever reaches static/
                 public = cut_preview(data.decode("utf-8")).encode("utf-8")
-            if dest.is_file() and dest.read_bytes() == public:
+            # una vista previa igual salvo el fin de línea (un clon de Windows) no se reescribe
+            if dest.is_file() and (dest.read_bytes() == public or (col == PREVIEW_COLUMN and
+                                                                  dest.read_bytes().replace(b"\r\n", b"\n") == public)):
                 continue
             stage.write(dest, public)
             copied += 1

@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Los scripts de Pine, con \n también en un clon de Windows (core.autocrlf): los manifiestos del generador dan su sha256
+# con \n, y con \r\n el import reescribía las 94 vistas previas sin que cambiaran (2026-11-15)
+*.pine text eol=lf

@@ -255,6 +255,9 @@ def test_a_package_is_published(publish, tmp_path, shop):
 
     again = publish.publish_package(package, **into(shop))
     assert again.attrs["published"]["copied"] == 0, "lo que no cambió no se vuelve a copiar"
+    # una vista previa con \r\n (un clon de Windows): la misma, no se vuelve a copiar (2026-11-15: se reescribían todas)
+    preview.write_bytes(preview.read_bytes().replace(b"\n", b"\r\n"))
+    assert publish.publish_package(package, **into(shop)).attrs["published"]["copied"] == 0
     (shop / "static" / "assets" / "charts" / "OLD_profit.png").write_bytes(b"png")
     chart.write_bytes(b"un grafico de antes")
     pruned = publish.publish_package(package, prune=True, **into(shop))

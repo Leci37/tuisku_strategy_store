@@ -126,3 +126,6 @@ def test_one_chromium_for_the_whole_test_session():
                         fixtures.append((path.name, node.name, scope))
     assert len(launches) == 1 and launches[0].startswith("conftest.py:"), launches   # el de la fixture, y nada más
     assert fixtures and all(scope == "session" for _, _, scope in fixtures), fixtures
+    # y la regla, escrita donde la leen las sesiones (CLAUDE.md, regla 24), con su porqué
+    rules = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "Un solo Chromium para toda la sesión de pytest" in rules and "los minutos de la CI se pagan" in rules

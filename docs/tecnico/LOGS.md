@@ -387,3 +387,112 @@ tecleado, ni un código, ni un token salen en ninguna línea, de la tienda ni de
   (`GET /api/strategies?q=Zelda%20Logsprueba`), una por recorrido: es el punto 4 de «Para el núcleo» de
   [../ESTADO.md](../ESTADO.md). En las líneas de la tienda, ninguna.
 
+## Segunda vuelta (+25 %), 16-11-2026
+
+El dueño ve pocas líneas: cada capa sube un 25 %, y ninguna se queda por debajo de 30. Partimos del recuento del
+orquestador sobre `_ztool_dev` (e682d91d). En Python cuenta cada `….debug/info/warning/error/exception/critical(`, y va al
+endpoint si el fichero es de rutas (aquí, sólo `routes.py`). En JS cuenta cada `console.*(`, `zt.log…(` y
+`log.debug/info/warn/error/view(`.
+
+| Capa | Hoy | Objetivo | Previstas |
+|---|---|---|---|
+| Cliente | 1 | ≥ 30 | 37 |
+| Servidor | 52 | ≥ 65 | 71 |
+| Endpoint | 5 | ≥ 30 | 17 |
+
+**Dos líneas que el recuento no veía.** `Catálogo cargado` (`catalogue.py`) y `Rechazo` (`routes.py`) se escriben
+con `(log.warning if … else log.info)(…)`, y el recuento no las cuenta. Pasan a un `if` con sus dos llamadas: no son
+sucesos nuevos, pero ahora suman (2 en el servidor y 2 en el endpoint).
+
+### Cliente: el ayudante `static/js/lib/log.js`
+
+Hasta la 0.36 no hay `zt.log`, así que la tienda trae un ayudante mínimo, en su propio módulo:
+`log = (window.zt && zt.log) || <respaldo>`, mirado en cada llamada. El respaldo escribe sólo en la consola,
+«[edgefolio] nivel Qué | k=v k=v», con `debug`, `info`, `warn`, `error` y `view(tipo, nombre)`; nada va al servidor.
+Al subir a la 0.36 usará `zt.log` sin cambiar nada más. Sus cuatro `console.*` cuentan (4). En los datos sólo van
+ids y referencias (la estrategia, el pedido, un estado HTTP, cuántas): ni un correo, ni lo buscado, ni un código.
+
+| Fichero, función | Línea | Nivel |
+|---|---|---|
+| `lib/log.js` (el respaldo) | sus `console.debug/info/warn/error` | — (4) |
+| `app.js` `componentDidUpdate` → `views(prev)` | `view('screen', page)`: `shop`, `detail`, `mine`, `thanks` | view |
+| ″ | `view('tab', 'detail.overview'\|'detail.tree')`, si la pantalla sigue siendo la ficha | view |
+| ″ | `view('tab', 'lite'\|'pro')` (`mode`) | view |
+| ″ | `view('tab', 'lite.<pestaña>')` (`liteTab`: `hot`, `new`, `free`…) | view |
+| ″ | `view('tab', 'pro.<vista>')` (`pview`: `table`, `rows`, `cards`) | view |
+| ″ | `view('dialog', 'free'\|'tour'\|'install'\|'compare'\|'pack')`, al abrirse cada uno (5) | view |
+| `app.js` `fail` | un fallo de la página (sin código, no de red), con el `Error` (en lugar del `console.error`) | error |
+| ″ | un fallo de red | info |
+| ″ | un 5xx (el servidor ya lo apuntó) | info |
+| `app.js` `componentDidMount`, `/api/fx` | los cambios de moneda no llegan: precios en dólares | warn |
+| ″, `/api/me` | la cuenta no llega: la página sigue como sin cuenta | warn |
+| `app.js` `fetchPreview` | la vista previa de un script no llega (con su estado) | warn |
+| `app.js` `fetchOne` | una estrategia que ya no está (404): olvidada del carrito, Comparar y las favoritas | info |
+| `app.js` `loadQuote` | el servidor ya no vende algo del carrito: fuera (cuántas) | warn |
+| `app.js` `dropOwned` | lo que ya es de la cuenta sale del carrito (cuántas) | info |
+| `app.js` `checkout` | el pedido está hecho: a PayPal (`pedido`) | info |
+| `app.js` `capture` | el recibo, de vuelta de PayPal (`pedido`, `pagado_ahora`, `enlaces`) | info |
+| ″ | un cobro sin confirmar o pendiente: la página se queda con su pedido | warn |
+| `app.js` `afterSignIn` | las favoritas del navegador pasan a la cuenta (cuántas, cuántas no) | info |
+| `app.js` `renew` | un enlace nuevo en Mis estrategias (`estrategia`) | info |
+| `app.js` `setFav` | una favorita guardada o quitada en la cuenta (`estrategia`, `on`) | info |
+| ″ | el servidor no la guardó: vuelve a como estaba | warn |
+| `app.js` `askProof` | la prueba de un correo, pedida (sin el correo) | info |
+| `app.js` `peekProof` | el enlace de la prueba ya no vale | info |
+| `app.js` `confirmProof` | el correo, demostrado | info |
+| `app.js` `sendFree` | la gratis, pedida (`estrategia`) | info |
+| `tree.js` `sharedData` | los textos del árbol (`trees/ui.json`) no llegan | warn |
+| `tree.js` `load` | el árbol no se monta (`estrategia`, con el `Error`) | error |
+| ″ | el bosque del propietario no llega | warn |
+
+Son 37: 4 del respaldo, 10 cambios de ventana, 3 de `fail` (antes, 1) y 20 sucesos. `scrollTo`, `setPointerCapture`,
+`localStorage`, `decodeURIComponent` y `signDisplay` siguen sin escribir nada, con el porqué de la primera vuelta.
+Nada por pintura: los cambios de ventana sólo cuando cambia su clave; el presupuesto (que corre con cada cambio del
+carrito) sólo cuando quita algo.
+
+### Servidor (+17 sucesos y la línea que no se veía)
+
+| Fichero, función | Línea | Nivel |
+|---|---|---|
+| `catalogue.py` `Catalogue.__init__` | `Catálogo cargado`, en un `if` (ya existía) | info / warning |
+| `search.py` `index_of` | `Índice de búsqueda hecho \| estrategias= ms=` (uno por catálogo) | debug |
+| `downloads.py` `_tokens` (de `usable` y `all_in_one`) | más de 100 enlaces en una petición: se miran los 100 primeros | warning |
+| `downloads.py` `spend` | otra petición a la vez se llevó la última descarga | info |
+| `downloads.py` `checked` | el script de pago que no está en `STRATEGIES_DIR` (`errFileMissing`) | warning |
+| `free.py` `claim` | el script de una gratis que no está | warning |
+| `free.py` `add_claim` | el tope del día: `por=quien_pide\|buzón` (el rechazo no dice cuál) | info |
+| ″ | renovar cuando otra petición ya dio uno que sirve (un doble clic) | debug |
+| `mine.py` `script_path` | el script del propietario que no está | warning |
+| `mine.py` `listing` | lo comprado que ya no está en el catálogo, sin enseñar (cuántas) | debug |
+| `orders.py` `capture` | un cobro repetido: el pedido ya estaba pagado | info |
+| ″ | un pedido de una cuenta borrada: no se cobra (`user_id` del pedido) | info |
+| ″ | una estrategia salió del catálogo mientras se pagaba: no se cobra (cuántas) | warning |
+| `your_data.py` `export` | lo de la tienda, exportado (cuántas partes) | info |
+| ″ | partes que no caben en el zip, fuera (cuáles) | warning |
+| `release.py` `import_package` | `Importación empieza \| paquete= scripts= prune=` | info |
+| ″ | `Importación: paquete comprobado \| contrato= filas= scripts= faltan= distintos=` | info |
+| `cli.py` `restore-scripts` | la carpeta ya tiene scripts: no se toca | info |
+
+### Endpoint (+10 sucesos y la línea que no se veía)
+
+| Fichero, función | Línea | Nivel |
+|---|---|---|
+| `routes.py` `_log_refusal` | `Rechazo`, en un `if` (ya existía) | info / warning |
+| `routes.py` `_start` | PayPal de verdad (`sandbox`, `live`) sin `ZLECITOOL_PUBLIC_URL`: no hay vuelta de PayPal | warning |
+| `routes.py` `_strategy_page` | una ficha que no existe: a la tienda (sin el id tecleado) | info |
+| ″ | una ficha por su dirección de antes (el base64 de la tienda vieja): a la nueva | info |
+| `routes.py` `_guarded` | una red llega al tope de códigos de descuento que no valen (¿alguien probándolos?), una vez por ventana | warning |
+| `routes.py` `create_order` | la cookie de quien compra, nueva en este navegador | debug |
+| `routes.py` `capture` | el recibo sin enlaces: ni el navegador que compró ni su cuenta | info |
+| `routes.py` `_looked_at` | un enlace mirado con HEAD (un escáner de correo), sin gastar | info |
+| `routes.py` `my_strategies` | sin lo hecho sin cuenta: el correo de la cuenta no está demostrado | debug |
+| `routes.py` `script` | el script completo, enseñado a su dueño (el árbol del propietario) | info |
+| `routes.py` `peek_proof` | un enlace de prueba que no vale para esta cuenta (de otra, usado o caducado) | info |
+
+**Por qué el endpoint se queda en 17 y no llega a 30.** Las rutas de la tienda son finas, a propósito (regla 5 del
+`CLAUDE.md`): `routes.py` recibe y responde, y lo que se decide pasa en los módulos de al lado, que el recuento suma al
+servidor. Por ejemplo, el permiso de una descarga (`downloads.checked`), el de Mis estrategias (`mine`) o el cobro
+(`orders.capture`). Quedan 22 rutas, y la línea de cada petición es del núcleo (0.36: `zlecitool.requests`, con
+`error=errAlgo` en un rechazo). Para llegar a 30 habría que escribir una línea por petición o repetir en la ruta lo
+que ya dice su módulo, y las dos cosas son relleno. Las 17 son decisiones que la línea del núcleo no ve.
+

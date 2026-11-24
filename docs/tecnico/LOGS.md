@@ -478,7 +478,7 @@ carrito) sólo cuando quita algo.
 | Fichero, función | Línea | Nivel |
 |---|---|---|
 | `routes.py` `_log_refusal` | `Rechazo`, en un `if` (ya existía) | info / warning |
-| `routes.py` `_start` | PayPal de verdad (`sandbox`, `live`) sin `ZLECITOOL_PUBLIC_URL`: no hay vuelta de PayPal | warning |
+| `routes.py` `confirm_news` | un enlace de confirmar las novedades sin la forma de los nuestros (`free.confirm_news` ni se llama) | info |
 | `routes.py` `_strategy_page` | una ficha que no existe: a la tienda (sin el id tecleado) | info |
 | ″ | una ficha por su dirección de antes (el base64 de la tienda vieja): a la nueva | info |
 | `routes.py` `_guarded` | una red llega al tope de códigos de descuento que no valen (¿alguien probándolos?), una vez por ventana | warning |
@@ -495,4 +495,35 @@ servidor. Por ejemplo, el permiso de una descarga (`downloads.checked`), el de M
 (`orders.capture`). Quedan 22 rutas, y la línea de cada petición es del núcleo (0.36: `zlecitool.requests`, con
 `error=errAlgo` en un rechazo). Para llegar a 30 habría que escribir una línea por petición o repetir en la ruta lo
 que ya dice su módulo, y las dos cosas son relleno. Las 17 son decisiones que la línea del núcleo no ve.
+
+### Lo añadido (segunda vuelta, 16-11-2026)
+
+| Capa | Antes | Después | Objetivo |
+|---|---|---|---|
+| Cliente | 1 | 37 | ≥ 30 |
+| Servidor | 52 | 71 | ≥ 65 |
+| Endpoint | 5 | 17 | ≥ 30: no llega, y arriba se dice por qué |
+
+Lo de la tabla del plan, con un cambio en el endpoint. La línea de `_start` (PayPal de verdad sin
+`ZLECITOOL_PUBLIC_URL`) no hacía falta: `Settings.from_env` ya no deja arrancar así, con su explicación. En su lugar
+entra la de `confirm_news`, el enlace de novedades sin la forma de los nuestros, que hasta ahora redirigía sin dejar
+rastro.
+
+- **El ayudante**, `static/js/lib/log.js`: `log.debug/info/warn/error/view`, con las firmas de `zt.log`. Mira
+  `window.zt.log` en cada llamada; sin él, escribe en la consola «[edgefolio] nivel Qué | k=v». Lo importan `app.js` y
+  `tree.js`. `App.fail` ya no usa `console.error`.
+- **Las pruebas** (en `tests/test_logs.py`, más una en `tests/test_release.py`):
+  - un cobro repetido, y otro desde un navegador sin la cookie de quien compró (el recibo sin enlaces);
+  - una estrategia que sale del catálogo mientras se paga (WARNING, no se cobra);
+  - un script de pago que falta en el servidor (WARNING);
+  - un HEAD que sólo mira, y más de 100 enlaces en una petición;
+  - el tope del día de las gratis, que dice cuál de los dos;
+  - una ficha por su dirección de antes, y una que no existe, sin lo tecleado;
+  - el tope de códigos de descuento que no valen (un solo WARNING, y nunca el código);
+  - un enlace de prueba del correo que no es de nadie, Mis estrategias sin el correo demostrado y el script del
+    propietario;
+  - la exportación de «Tus datos»;
+  - los tres pasos de la importación;
+  - y, en el Chromium de la sesión, la página: un `/api/fx` que falla da su `warn`, y la pestaña «Cómo decide», la
+    vuelta a la tienda y Pro dan sus tres `Vista`, con su nombre fijo y sin la estrategia.
 

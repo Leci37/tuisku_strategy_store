@@ -344,3 +344,16 @@ def test_the_import_says_among_how_many_tried_and_brings_the_results_since_relea
     assert "elegidas entre 1531" in result.output and since.is_file()
     result = run(app, package, "--scripts", scripts, "--prune")
     assert "catalogue/since_release.csv borrado" in result.output and not since.exists()
+
+
+def test_the_import_says_where_it_starts_what_it_checked_and_what_it_did(app, settings, made, caplog):
+    """La ronda de logs (16-11-2026): los pasos de la importación, en el log, con cuántos y nunca el contenido."""
+    caplog.set_level("INFO")
+    d_result, package = made
+    assert run(app, package, "--scripts", d_result / "pine_TW_b").exit_code == 0
+    said = [r.getMessage() for r in caplog.records if r.name == "edgefolio.release"]
+    assert said[0] == f"Importación empieza | paquete={Path(package).name} scripts=copiar prune=no"
+    # en la carpeta, los tres de pago de conftest con otro contenido; la gratis, no
+    assert said[1] == "Importación: paquete comprobado | contrato=1 filas=4 scripts=4 faltan=1 distintos=3"
+    assert said[2].startswith("Catálogo importado | contrato=1 estrategias=4 ficheros=") and "scripts=4" in said[2]
+

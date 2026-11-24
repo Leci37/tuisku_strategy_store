@@ -6,6 +6,7 @@
 // forest from GET /api/mine/<id>/script, which needs the session cookie.
 import { Component, createRef } from '../vendor/preact.module.js';
 import TreeRoot from './views/tree/tree_root.js';
+import { log } from './lib/log.js';
 
 // The base texts live here for en and es as in the design; trees/ui.json adds the newer keys for
 // both and every text of the other six languages (a missing key falls back to English).
@@ -115,7 +116,7 @@ const TEXT = {
 let shared = null;
 const sharedData = () => shared || (shared = Promise.all([
   fetch('/static/trees/features.json').then(r => (r.ok ? r.json() : r.text().then(() => { throw new Error('/static/trees/features.json'); }))),
-  fetch('/static/trees/ui.json').then(r => r.json()).catch(() => ({}))
+  fetch('/static/trees/ui.json').then(r => r.json()).catch(() => { log.warn('Textos del árbol sin cargar: sólo los de base'); return {}; })
 ]).catch(e => { shared = null; throw e; }));
 
 // La respuesta de un fallo también se lee: Chromium no da por acabada una no-store que nadie lee (núcleo 0.28).
@@ -212,7 +213,11 @@ export class StrategyTree extends Component {
     if (!row || !row.preview) { this.setState({ err: String((row && row.id) || '') }); return; }
     sharedData()
       .then(([fx, ui]) => text(row.preview).then(src => { if (tok !== this._tok) return; this._fx = fx; this._ui = ui; this.setState({ trees: this.forest(src, row).slice(0, 1), sel: 0 }, () => this.example('buy')); }))
-      .catch(e => { if (tok === this._tok) this.setState({ err: String((e && e.message) || e) }); });
+      .catch(e => {
+        if (tok !== this._tok) return;
+        log.error('Árbol sin montar', { estrategia: row.id, motivo: (e && e.name) || 'error' });
+        this.setState({ err: String((e && e.message) || e) });
+      });
     if (!owned) return;
     // Owners only: the server answers 401 without the session cookie, and then the switch explains how to sign in.
     sharedData()
@@ -223,7 +228,11 @@ export class StrategyTree extends Component {
         if (!full.length) throw new Error('no tree');
         this.setState(st => (st.owner ? { full, fullLv, sel: 0, vals: {}, tip: null } : { full, fullLv }), () => { if (this.state.owner) this.example('buy'); });
       })
-      .catch(() => { if (tok === this._tok) this.setState({ fullFail: true }); });
+      .catch(() => {
+        if (tok !== this._tok) return;
+        log.warn('Bosque del propietario sin cargar', { estrategia: row.id });
+        this.setState({ fullFail: true });
+      });
   }
 
   // Switching between the preview and the forest starts again from the strongest buy of tree 1.

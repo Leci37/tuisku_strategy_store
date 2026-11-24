@@ -346,9 +346,12 @@ class Catalogue:
         self.tried = tried if type(tried) is int and tried >= len(self.items) > 0 else None
         self.bundles = self._bundles(source.bundles)
         self.levels = load_levels(source.levels)
-        (log.warning if previews_missing or charts_missing else log.info)(
-            "Catálogo cargado | estrategias=%s lotes=%s niveles=%s vistas_previas_ausentes=%s gráficos_ausentes=%s",
-            len(self.items), len(self.bundles), len(self.levels), previews_missing, charts_missing)
+        counts = (len(self.items), len(self.bundles), len(self.levels), previews_missing, charts_missing)
+        said = "Catálogo cargado | estrategias=%s lotes=%s niveles=%s vistas_previas_ausentes=%s gráficos_ausentes=%s"
+        if previews_missing or charts_missing:
+            log.warning(said, *counts)   # lo publicado nombra ficheros que no están: sus fichas salen sin ellos
+        else:
+            log.info(said, *counts)
 
     def _bundles(self, path: Path) -> dict:
         """Los lotes de bundles.json que siguen siendo lo que prometen. Uno que perdió una estrategia, o que ya

@@ -180,6 +180,8 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
     cuántos ficheros ya estaban en su sitio). Devuelve el resumen."""
     if scripts is not None and skip_scripts:
         raise ValueError("scripts y skip_scripts no van juntos")
+    log.info("Importación empieza | paquete=%s scripts=%s prune=%s", Path(package).name,
+             "copiar" if scripts is not None else "saltar" if skip_scripts else "ya_están", "sí" if prune else "no")
     pub = publisher()
     assets = Path(settings.static) / "assets"
     try:
@@ -196,6 +198,8 @@ def import_package(package: Path, settings, scripts: Optional[Path] = None, skip
     # los que no están, y los que están con otro contenido: la tienda entregaría ese, el de antes
     outdated = sorted(name for name in wanted if name not in have and regular(target / name))
     absent = sorted(set(wanted) - have - set(outdated))
+    log.info("Importación: paquete comprobado | contrato=%s filas=%s scripts=%s faltan=%s distintos=%s",
+             manifest["contract"], len(df), len(wanted), len(absent), len(outdated))
     copy = {}
     if scripts is not None:
         copy = check_scripts(wanted, Path(scripts), have)

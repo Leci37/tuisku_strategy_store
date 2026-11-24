@@ -8,13 +8,17 @@ popcount, nunca una vuelta por las filas.
 """
 from __future__ import annotations
 
+import logging
 import math
+import time
 import weakref
 from datetime import date, timedelta
 from typing import Optional
 
 from .catalogue import utc_today
 from .web import Refusal, invalid
+
+log = logging.getLogger(__name__)
 
 # clave -> (campo de la fila, mínimo y máximo de la barra, escala logarítmica, barras): los deslizadores
 # del panel Pro del diseño (§12). El mínimo y el máximo de cada barra los pone el catálogo (track()); los de
@@ -171,7 +175,10 @@ _indexes = weakref.WeakKeyDictionary()
 
 def index_of(catalogue) -> Index:
     if catalogue not in _indexes:
+        began = time.monotonic()
         _indexes[catalogue] = Index(catalogue)
+        log.debug("Índice de búsqueda hecho | estrategias=%s ms=%s", _indexes[catalogue].n,
+                  round((time.monotonic() - began) * 1000))
     return _indexes[catalogue]
 
 

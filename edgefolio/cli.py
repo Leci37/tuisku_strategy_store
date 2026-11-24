@@ -176,6 +176,7 @@ def register(bp):
         target = shop().settings.strategies_dir
         n = restore(target, commit=commit, force=force)
         if n < 0:
+            log.info("Scripts de pago: la carpeta ya los tiene, no se tocan (--force los copia)")
             click.echo(f"{target} ya tiene scripts: no se toca (--force para copiarlos otra vez)")
             return
         if n == 0:

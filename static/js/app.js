@@ -14,6 +14,7 @@ import { renderVals } from './lib/vals.js';
 import { PRO_SIZE } from './lib/vals_shop.js';
 import { withoutOverlap } from './lib/vals_cart.js';
 import { topDialog, shield, unshield, focusIn, giveBack, keepTab } from './lib/modal.js';
+import { log } from './lib/log.js';
 
 const LITE_SIZE = 24;
 const PACK_FIND = 40;
@@ -104,9 +105,13 @@ export class App extends Component {
     });
     api('/api/config').then(cfg => this.setState({ cfg })).catch(e => this.fail(e));
     api('/api/bundles').then(bundleDefs => this.setState(st => ({ bundleDefs, ...withoutOverlap(st, bundleDefs) }))).catch(e => this.fail(e));
-    api('/api/fx').then(fx => this.setState({ fx })).catch(() => { /* prices then stay in USD */ });
+    api('/api/fx').then(fx => this.setState({ fx }))
+      .catch(e => log.warn('Cambios de moneda sin cargar: los precios, en dólares', { estado: e && e.status }));
     api(this.inLang('/api/strategies?paid=1&sort=hot&size=12')).then(d => { this.keep(d.rows); this.setState({ tape: d.rows }); }).catch(e => this.fail(e));
-    if (this.props.signedIn) api('/api/me').then(me => { this.setState({ me }); if (me.email) this.afterSignIn(); }).catch(() => this.setState({ me: { email: null } }));
+    if (this.props.signedIn) api('/api/me').then(me => { this.setState({ me }); if (me.email) this.afterSignIn(); }).catch(e => {
+      log.warn('Cuenta sin cargar: la página sigue como sin cuenta', { estado: e && e.status });
+      this.setState({ me: { email: null } });
+    });
 
     const qs = new URLSearchParams(location.search);
     if (this.state.page === 'thanks') this.capture(qs.get('token'));
@@ -143,8 +148,28 @@ export class App extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     this.sync(prevState);
+    this.views(prevState);
     this.measureDock();
     this.syncModal();
+  }
+
+  // Los cambios de ventana (docs/tecnico/LOGS.md): una línea cuando cambia su clave, nunca por pintura, con un nombre
+  // fijo de la tienda y nunca un dato (ni la estrategia de la ficha, ni lo buscado). Llegar a la página ya lo apunta el
+  // servidor (la línea de la petición); moverse dentro no recarga, y lo dice esto. Los diálogos de la tienda son capas
+  // del diseño (lib/modal.js), no zt.openDialog: el núcleo no los ve abrirse.
+  views(prev) {
+    const s = this.state;
+    if (!prev) return;
+    if (prev.page !== s.page) log.view('screen', s.page);
+    else if (s.page === 'detail' && prev.detTab !== s.detTab) log.view('tab', 'detail.' + s.detTab);
+    if (prev.mode !== s.mode) log.view('tab', s.mode);
+    if (prev.liteTab !== s.liteTab) log.view('tab', 'lite.' + s.liteTab);
+    if (prev.pview !== s.pview) log.view('tab', 'pro.' + s.pview);
+    if (!prev.freeFor && s.freeFor) log.view('dialog', 'free');
+    if (prev.tourStep < 0 && s.tourStep >= 0) log.view('dialog', 'tour');
+    if (prev.instStep < 0 && s.instStep >= 0) log.view('dialog', 'install');
+    if (!prev.cmpOpen && s.cmpOpen) log.view('dialog', 'compare');
+    if (!prev.packOpen && s.packOpen) log.view('dialog', 'pack');
   }
 
   // Un diálogo abierto se queda con el teclado (lib/modal.js), sea cual sea el camino que lo abre o lo
@@ -266,9 +291,14 @@ export class App extends Component {
   // si el diccionario la tiene; si no, un texto según el tipo de fallo. Sólo una petición sin respuesta
   // es un error de red; cualquier otra cosa sin código es un fallo de la página: a la consola, y a quien
   // mira se le pide que lo intente más tarde.
+  // En el log: un fallo de la página, error (con 0.36 llega al servidor: la página pide con lib/api.js, no con
+  // zt.fetchJSON, y el núcleo no ve sus fallos); uno de red, info (no llegó al servidor, y mandárselo fallaría igual);
+  // un 5xx, info (el servidor ya lo apuntó); un rechazo con su clave, nada (lo apunta el servidor).
   fail(e) {
     const st = e && e.status;
-    if (!st && !(e && e.network)) console.error(e);
+    if (e && e.network) log.info('Sin respuesta del servidor (la red)');
+    else if (!st) log.error('Fallo de la página', e instanceof Error ? e : undefined);
+    else if (st >= 500) log.info('El servidor falló', { estado: st });
     const own = e && e.key && this.state.dict && this.state.dict[e.key] ? e.key : '';
     const key = own || (e && e.network ? 'errShopNetwork' : !st ? 'errLater' : st === 402 ? 'errPayment' : st === 404 || st === 410 ? 'errLinkNotFound'
       : st === 429 ? 'errTooMany' : st >= 500 ? 'errLater' : 'errRequest');
@@ -318,6 +348,7 @@ export class App extends Component {
     }).catch(e => {
       if (e.status !== 404) { this.fail(e); return; }
       // gone from the catalogue: drop it from what the browser remembers
+      log.info('Estrategia que ya no está: olvidada en este navegador', { estrategia: id });
       const drop = arr => arr.filter(x => x !== id);
       this.setState(st => ({ cart: drop(st.cart), packIds: drop(st.packIds), compare: drop(st.compare), favs: drop(st.favs),
         freeFor: st.freeFor === id ? '' : st.freeFor }));
@@ -362,7 +393,8 @@ export class App extends Component {
   fetchPreview(url) {
     this.asked.add(url);
     // la respuesta de un fallo también se lee: Chromium no da por acabada una no-store que nadie lee (núcleo 0.28)
-    fetch(url).then(r => (r.ok ? r.text() : r.text().then(() => ''))).catch(() => '')
+    const failed = estado => { log.warn('Vista previa del script sin cargar', { estado }); return ''; };
+    fetch(url).then(r => (r.ok ? r.text() : r.text().then(() => failed(r.status)))).catch(() => failed(0))
       .then(text => this.setState(st => ({ pine: { ...st.pine, [url]: text } })));
   }
 
@@ -455,6 +487,7 @@ export class App extends Component {
       // otro rechazo (una estrategia dos veces, un pack que no vale) se enseña, nunca se repite.
       const d = e.detail || {}, gone = d.error === 'errUnknownItems' || d.error === 'errUnknownBundles' ? d.items || d.bundles || [] : [];
       if (e.status === 400 && gone.length) {
+        log.warn('Carrito: fuera lo que el servidor ya no vende', { n: gone.length });
         this.setState(st => ({ cart: st.cart.filter(x => !gone.includes(x)), bundles: st.bundles.filter(x => !gone.includes(x)), packIds: st.packIds.filter(x => !gone.includes(x)) }));
       } else if (!this.dropOwned(e)) this.fail(e);
     });
@@ -466,6 +499,7 @@ export class App extends Component {
   dropOwned(e) {
     const d = (e && e.detail) || {}, own = Array.isArray(d.items) ? d.items : [];
     if (e.status !== 409 || d.error !== 'errAlreadyOwned' || !own.length) return false;
+    log.info('Carrito: fuera lo que ya es de la cuenta', { n: own.length });
     this.setState(st => ({ cart: st.cart.filter(x => !own.includes(x)), error: '', notice: 'cartUpdated' }));
     // lo que la página sabía de la cuenta era de antes (una compra en otra pestaña): otra vez, para que sus fichas digan
     // «Ya es tuya»
@@ -492,7 +526,7 @@ export class App extends Component {
     if (this.paying || (!body.items.length && !body.bundles.length && !body.pack.length)) return;
     this.paying = true;
     this.setState({ paying: true });
-    post('/api/orders', body).then(o => window.location.assign(o.approve_url))
+    post('/api/orders', body).then(o => { log.info('Pedido hecho: a PayPal', { pedido: o.id }); window.location.assign(o.approve_url); })
       .catch(e => { this.paying = false; this.setState({ paying: false }); if (!this.dropOwned(e)) this.fail(e); });
   }
 
@@ -503,6 +537,7 @@ export class App extends Component {
   capture(token) {
     if (!token) { this.go({ page: 'shop' }, { replace: true }); return; }
     post('/api/orders/' + encodeURIComponent(token) + '/capture').then(rc => {
+      log.info('Recibo', { pedido: rc.order_id, pagado_ahora: !!rc.paid_now, enlaces: (rc.downloads || []).length });
       this.keep(rc.downloads);
       const first = (rc.downloads || [])[0];
       // another browser than the one that paid gets no links (they are in My strategies): the
@@ -515,8 +550,10 @@ export class App extends Component {
       // Un cobro que PayPal no ha confirmado (o tiene pendiente) puede estar hecho: se ve la tienda, pero la dirección
       // se queda con su pedido (/thanks?token=…), para que recargar lo vuelva a preguntar, y el aviso pide no pagar
       // otra vez. Hasta el 14-11-2026 volvía a la tienda sin el pedido, con «No se te ha cobrado nada».
-      if (e && (e.network || e.key === 'errPayPalCapture' || e.key === 'errPaymentPending')) this.setState({ page: 'shop', tip: '' });
-      else this.go({ page: 'shop' }, { replace: true });
+      if (e && (e.network || e.key === 'errPayPalCapture' || e.key === 'errPaymentPending')) {
+        log.warn('Cobro sin confirmar: la dirección se queda con su pedido', { clave: e.key || 'red' });
+        this.setState({ page: 'shop', tip: '' });
+      } else this.go({ page: 'shop' }, { replace: true });
     });
   }
 
@@ -553,7 +590,10 @@ export class App extends Component {
     if (err) { this.setState({ proofErr: err }); return; }
     if (((s.mine && s.mine.emails) || []).includes(email.toLowerCase())) { this.setState({ proofErr: '', error: '', notice: 'proofProven' }); return; }
     this.proofBusy = true;
-    post('/api/mine/proofs', { email }).then(() => this.setState({ proofSent: true, proofExpired: false, proofErr: '' }))
+    post('/api/mine/proofs', { email }).then(() => {
+      log.info('Prueba de correo pedida');   // sin el correo
+      this.setState({ proofSent: true, proofExpired: false, proofErr: '' });
+    })
       .catch(e => {
         const d = e.detail || {};
         if (e.status === 400 && d.field === 'email' && e.key && this.state.dict && this.state.dict[e.key]) this.setState({ proofErr: e.key });
@@ -566,7 +606,10 @@ export class App extends Component {
   // correo también abren los enlaces); lo gasta el clic de la persona.
   peekProof(token) {
     post('/api/mine/proofs/peek', { token }).then(r => {
-      if (!r.email) { this.setState({ proofExpired: true, proofToken: '', proofAs: '' }); dropParams('proof'); return; }
+      if (!r.email) {
+        log.info('Enlace de prueba del correo que ya no vale');
+        this.setState({ proofExpired: true, proofToken: '', proofAs: '' }); dropParams('proof'); return;
+      }
       this.setState({ proofToken: token, proofAs: r.email, proofExpired: false });
     }).catch(e => { if (e.status === 401) toLogin(); else this.fail(e); });
   }
@@ -576,6 +619,7 @@ export class App extends Component {
     if (!token || this.proofBusy) return;
     this.proofBusy = true;
     post('/api/mine/proofs/confirm', { token }).then(() => {
+      log.info('Correo demostrado');
       dropParams('proof');
       this.mineChanged();
       this.setState({ proofToken: '', proofAs: '', proofSent: false, proofExpired: false, mine: null });
@@ -597,6 +641,7 @@ export class App extends Component {
       .then(() => null, e => (e.status === 404 ? null : { id, e }))))
       .then(res => {
         const failed = res.filter(Boolean), left = failed.map(x => x.id);
+        if (favs.length) log.info('Favoritas de este navegador, a la cuenta', { n: favs.length - left.length, sin_guardar: left.length });
         if (left.length) {
           const keep = {};
           left.forEach(id => { if (alerts[id]) keep[id] = alerts[id]; });
@@ -637,9 +682,10 @@ export class App extends Component {
   }
 
   renew(id) {
-    post('/api/mine/renew', { id }).then(entry => this.setState(st => ({
-      mine: { ...st.mine, items: st.mine.items.map(x => (x.id === id ? entry : x)) }
-    }))).catch(e => this.fail(e));
+    post('/api/mine/renew', { id }).then(entry => {
+      log.info('Enlace renovado', { estrategia: id });
+      this.setState(st => ({ mine: { ...st.mine, items: st.mine.items.map(x => (x.id === id ? entry : x)) } }));
+    }).catch(e => this.fail(e));
   }
 
   // Una favorita y sus alertas cambian en la página al pulsarlas, y después en la cuenta (API #21 y #22). Si el
@@ -655,10 +701,12 @@ export class App extends Component {
     if (!signedIn) return;
     const last = this.ticket('fav:' + id), url = '/api/favourites/' + encodeURIComponent(id);
     (on ? api(url, { method: 'PUT', body: { alerts: alerts || {} } }) : api(url, { method: 'DELETE' })).then(() => {
+      log.info(on ? 'Favorita guardada en la cuenta' : 'Favorita quitada de la cuenta', { estrategia: id });
       if (last()) saved.delete(id);
       else if (saved.has(id)) saved.set(id, { ...saved.get(id), on, alerts });
     }, e => {
       const was = last() && saved.get(id);
+      log.warn('Favorita sin guardar en la cuenta', { estrategia: id, estado: e && e.status, vuelve: !!was });
       if (was) {
         saved.delete(id);
         this.setState(st => {
@@ -701,7 +749,10 @@ export class App extends Component {
     if (err) { this.setState({ freeErr: err }); return; }
     this.freeBusy = true;
     post('/api/free', { id: s.freeFor, email, news: s.freeNews })
-      .then(() => { this.mineChanged(); this.setState({ freeSent: true, freeErr: '', mine: null }); })
+      .then(() => {
+        log.info('Gratis pedida', { estrategia: s.freeFor });   // sin el correo
+        this.mineChanged(); this.setState({ freeSent: true, freeErr: '', mine: null });
+      })
       .catch(e => {
         const d = e.detail || {};
         if (e.status === 400 && d.field === 'email' && e.key && this.state.dict && this.state.dict[e.key]) this.setState({ freeErr: e.key });

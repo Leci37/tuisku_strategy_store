@@ -76,12 +76,18 @@ def add_claim(email: str, key: str, news: bool, lang: str, days: int, version: i
                                        FreeClaim.count < unless_valid, FreeClaim.version >= version).first()
         if fresh is not None:
             db.session.commit()
+            log.debug("Gratis renovada: otra petición ya dio un enlace que sirve (un doble clic)")
             return fresh.token
     day = now - timedelta(days=1)
-    if daily_limit is not None and (claims_since(email, day, who if who else None) >= daily_limit
-                                    or claims_since(email, day) >= ADDRESS_DAILY_CLAIMS):
-        db.session.rollback()
-        return None
+    if daily_limit is not None:
+        # el rechazo (errFreeDaily) es el mismo; cuál de los dos topes, sólo aquí
+        by = ("quien_pide" if claims_since(email, day, who if who else None) >= daily_limit
+              else "buzón" if claims_since(email, day) >= ADDRESS_DAILY_CLAIMS else "")
+        if by:
+            db.session.rollback()
+            log.info("Gratis: tope del día | por=%s tope=%s", by,
+                     daily_limit if by == "quien_pide" else ADDRESS_DAILY_CLAIMS)
+            return None
     db.session.add(FreeClaim(token=token, user_id=user_id, email=email, item_key=key, news=bool(news),
                              consent_at=consent_at or now, expires_at=now + timedelta(days=days), count=0,
                              version=version, lang=lang, requester_hash=who))
@@ -97,6 +103,7 @@ def claim(shop, strategy, email: str, news: bool, lang: str, links, mail, user_i
     if strategy.price != 0:
         raise Refusal("errNotFree", 400)
     if not (shop.settings.strategies_dir / strategy.private_file).is_file():
+        log.warning("Script de una gratis que no está en STRATEGIES_DIR | estrategia=%s", strategy.id)
         raise Refusal("errFileMissing", 404, item=strategy.key)
     settings, texts = shop.settings, shop.texts
     days = settings.download_days

@@ -59,14 +59,24 @@ def checked(shop, token: str):
         raise Refusal("errUpdateExpired", 403)
     path = settings.strategies_dir / strategy.private_file
     if not path.is_file():
+        # lo vendido no se puede entregar: falta en el servidor (restore-scripts, o import --scripts)
+        log.warning("Script de pago que no está en STRATEGIES_DIR | estrategia=%s", strategy.id)
         raise Refusal("errFileMissing", 404, item=strategy.key)
     return strategy, path
+
+
+def _tokens(tokens: list) -> list:
+    """Los enlaces de una petición, sin repetir y como mucho MAX_TOKENS (la página de gracias manda los de un pedido)."""
+    unique = list(dict.fromkeys(tokens))
+    if len(unique) > MAX_TOKENS:
+        log.warning("Más enlaces de los que se miran: los %s primeros | enlaces=%s", MAX_TOKENS, len(unique))
+    return unique[:MAX_TOKENS]
 
 
 def usable(shop, tokens: list) -> None:
     """Para un HEAD: nada si alguno de los enlaces vale; si no, el primer rechazo, como el GET. No gasta."""
     first_error = None
-    for token in list(dict.fromkeys(tokens))[:MAX_TOKENS]:
+    for token in _tokens(tokens):
         try:
             checked(shop, token)
             return
@@ -99,6 +109,7 @@ def spend(shop, token: str) -> str:
     enlace era (``"paid"`` o ``"free"``)."""
     kind = claim_download(token, shop.settings.max_downloads)
     if not kind:
+        log.info("Descarga sin gastar: otra petición a la vez se llevó la última o el enlace caducó")
         checked(shop, token)  # puede haber caducado entretanto: 410
         raise Refusal("errDownloadLimit", 429)
     return kind
@@ -123,7 +134,7 @@ def all_in_one(shop, tokens: list):
     """(bytes, nombre) del zip con el .pine de cada enlace que vale. El mismo script por dos enlaces se
     manda (y se gasta) una vez. Sin ninguno, el primer rechazo."""
     files, first_error, refused = {}, None, 0
-    for token in list(dict.fromkeys(tokens))[:MAX_TOKENS]:
+    for token in _tokens(tokens):
         try:
             strategy, path = checked(shop, token)
             if strategy.download_name in files:

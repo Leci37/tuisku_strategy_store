@@ -58,9 +58,12 @@ def _log_refusal(refusal: Refusal) -> None:
     WARNING si es un 5xx (PayPal o la dirección pública fallan: lo arregla quien la lleva)."""
     rule = request.url_rule.rule if request.url_rule is not None else "-"
     field = refusal.extra.get("field")
-    (log.warning if refusal.status >= 500 else log.info)(
-        "Rechazo | método=%s ruta=%s clave=%s estado=%s user_id=%s%s", request.method, rule, refusal.key, refusal.status,
-        user_id() or "-", f" campo={field}" if isinstance(field, str) else "")
+    said = ("Rechazo | método=%s ruta=%s clave=%s estado=%s user_id=%s%s", request.method, rule, refusal.key,
+            refusal.status, user_id() or "-", f" campo={field}" if isinstance(field, str) else "")
+    if refusal.status >= 500:
+        log.warning(*said)
+    else:
+        log.info(*said)
 
 
 @bp.errorhandler(Refusal)
@@ -145,8 +148,11 @@ def _strategy_page(strategy_id: str, tail: str = ""):
     404); un alias (el base64 de la tienda de antes), a la dirección de su id."""
     s = shop().catalogue.resolve(strategy_id)
     if s is None:
+        # sin el id: es lo que trae la dirección, y puede ser cualquier cosa
+        log.info("Ficha que no existe: a la tienda | pestaña=%s", "tree" if tail else "overview")
         return redirect("/", code=302)
     if s.id != strategy_id:
+        log.info("Ficha por su dirección de antes (el base64 de la tienda vieja): a la nueva | estrategia=%s", s.id)
         return redirect(f"/s/{s.id}{tail}", code=301)
     return _page(s, tree=bool(tail))
 
@@ -259,6 +265,10 @@ def _guarded(cart: dict, price):
     status = out.code_status if hasattr(out, "code_status") else out.get("code_status")
     if status == "invalid":
         shop().limits["code"].hit(ip)
+        if shop().limits["code"].full(ip):
+            # una vez por ventana (después, el 429 de arriba): sin la IP, y nunca el código
+            log.warning("Códigos de descuento: una red llega al tope de los que no valen (¿probándolos?) | tope=%s "
+                        "ventana_s=%s", shop().limits["code"].limit, shop().limits["code"].window)
     return out
 
 
@@ -276,6 +286,8 @@ def create_order():
     enlaces del recibo, además de la cuenta que compra con la sesión abierta."""
     cart = orders.cart_of(request.get_json(silent=True))
     buyer = orders.buyer_token(request.cookies.get(BUYER_COOKIE))
+    if buyer != request.cookies.get(BUYER_COOKIE):
+        log.debug("Cookie de quien compra, nueva en este navegador")
     user = signed_in()
     created = _guarded(cart, lambda: orders.create(
         shop(), cart, buyer, return_url=link("edgefolio.thanks"), cancel_url=link("edgefolio.index", checkout="cancel"),
@@ -300,6 +312,10 @@ def capture(paypal_id):
     order = orders.capture(shop(), paypal_id, on_paid=on_paid)
     uid = user_id()
     see = orders.may_see_links(order, request.cookies.get(BUYER_COOKIE), uid, proofs.proven(uid))
+    if not see:
+        # quien tiene el id del pedido (va en la dirección de vuelta de PayPal) ve el recibo, no los enlaces
+        log.info("Recibo sin enlaces: ni el navegador que compró ni su cuenta | pedido=%s user_id=%s", paypal_id,
+                 uid or "-")
     return jsonify({**orders.receipt(shop(), order, see), "paid_now": bool(paid_now)})
 
 
@@ -345,6 +361,7 @@ def _looked_at(tokens: list):
     """Un HEAD: Flask lo contesta con la vista del GET, que gasta una descarga, y los escáneres de correo y las
     vistas previas de un enlace piden así: tres HEAD dejaban 7 de las 10 antes del primer clic. Sólo mira."""
     downloads.usable(shop(), tokens)
+    log.info("Enlace mirado sin gastar (HEAD: un escáner de correo, una vista previa) | enlaces=%s", len(tokens))
     response = current_app.response_class(status=200)
     response.headers["Cache-Control"] = "private, no-store"
     return response
@@ -400,6 +417,8 @@ def free_claim():
 def confirm_news():
     """El enlace del correo de la descarga gratis: desde ahora, a esa dirección se le pueden mandar novedades."""
     token = request.args.get("token", "")
+    if not 0 < len(token) <= 200:
+        log.info("Novedades sin confirmar: el enlace no tiene la forma de los nuestros")
     done = free.confirm_news(token) if 0 < len(token) <= 200 else None
     return redirect("/?news=confirmed" if done else "/?news=expired", code=303)
 
@@ -431,6 +450,10 @@ def _proven():
 @bp.get("/api/mine")
 def my_strategies():
     emails = _proven()
+    if current_user.email not in emails:
+        # regla 11: lo hecho sin cuenta con ese correo no sale hasta demostrarlo (la página ofrece hacerlo)
+        log.debug("Mis estrategias sin lo hecho sin cuenta: el correo de la cuenta, sin demostrar | user_id=%s",
+                  current_user.id)
     return jsonify(mine.listing(shop(), current_user.id, current_user.email, emails,
                                 proof_needed=current_user.email not in emails))
 
@@ -444,6 +467,9 @@ def renew():
 @bp.get("/api/mine/<item_id>/script")
 def script(item_id):
     path = mine.script_path(shop(), current_user.id, _proven(), item_id, own=current_user.email)
+    # el script de pago entero, como una descarga (sin gastar ninguna): el árbol del propietario
+    log.info("Script completo, a su dueño | user_id=%s estrategia=%s", current_user.id,
+             shop().catalogue.resolve(item_id).id)
     return Response(path.read_text(encoding="utf-8", errors="replace"), mimetype="text/plain",
                     headers=PRIVATE)
 
@@ -480,7 +506,11 @@ def peek_proof():
     """De qué correo es el enlace, para que la página pregunte; el enlace sigue valiendo. Uno usado,
     caducado o de otra cuenta no es de nadie ({"email": null}): una respuesta, no un error."""
     token = text_field(body(), "token", 200, default="")
-    return jsonify({"email": proofs.peek(current_user.id, token)})
+    email = proofs.peek(current_user.id, token)
+    if email is None:
+        # la respuesta es {"email": null}, no un error: de otra cuenta, usado o caducado
+        log.info("Prueba de correo: el enlace no vale para esta cuenta | user_id=%s", current_user.id)
+    return jsonify({"email": email})
 
 
 @bp.post("/api/mine/proofs/confirm")

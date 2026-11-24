@@ -125,17 +125,24 @@ def entry(settings, s, links: list) -> dict:
 
 
 def listing(shop, user_id: int, email: str, emails: list, proof_needed: bool) -> dict:
-    catalogue, items = shop.catalogue, []
+    catalogue, items, gone = shop.catalogue, [], 0
     for key, links in owned(user_id, emails, email).items():
         s = catalogue.resolve(key)
         if s:  # una estrategia que salió del catálogo ya no tiene nada que enseñar ni que descargar
             items.append(entry(shop.settings, s, links))
+        else:
+            gone += 1
     items.sort(key=lambda e: e["at"], reverse=True)  # lo último, arriba (también del mismo día)
-    favourites = []
+    favourites, gone_favs = [], 0
     for fav in Favourite.query.filter_by(user_id=user_id).order_by(Favourite.created_at):
         s = catalogue.resolve(fav.item_key)
         if s:
             favourites.append({"id": s.id, "alerts": fav.alerts, "row": s.as_row()})
+        else:
+            gone_favs += 1
+    if gone or gone_favs:   # debug: sale en cada visita mientras dure, y no es un fallo
+        log.debug("Mis estrategias: lo que ya no está en el catálogo, sin enseñar | user_id=%s estrategias=%s "
+                  "favoritas=%s", user_id, gone, gone_favs)
     return {"email": email, "emails": emails, "proof_needed": proof_needed, "items": items,
             "favourites": favourites}
 
@@ -200,6 +207,7 @@ def script_path(shop, user_id: int, emails: list, item_id: str, own: str = ""):
         raise Refusal("errUpdateExpired", 403)
     path = shop.settings.strategies_dir / s.private_file
     if not path.is_file():
+        log.warning("Script del propietario que no está en STRATEGIES_DIR | user_id=%s estrategia=%s", user_id, s.id)
         raise Refusal("errFileMissing", 404, item=s.key)
     return path
 

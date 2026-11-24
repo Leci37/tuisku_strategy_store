@@ -16,9 +16,10 @@ from zlecitool_core import testing
 from edgefolio import fx
 from edgefolio.paypal import PayPalError
 from edgefolio.shop import install
-from tests.conftest import ROWS, outbox, prove, signed, strategy_id
+from tests.conftest import ROWS, cart_id, outbox, prove, signed, strategy_id, visitor
 from tests.test_alerts import follow, republish
 from tests.test_free import FREE_ID, claim, emailed_link, free_file  # noqa: F401  (la fixture)
+from tests.test_mine import buy
 from tests.test_tasks import TUESDAY_9, TUESDAY_17, Answer
 
 AAPL, MSFT, TSLA = strategy_id(ROWS[0]), strategy_id(ROWS[1]), strategy_id(ROWS[3])
@@ -29,6 +30,7 @@ NAME = "Zelda Logsprueba"                 # lo que teclea la persona
 @pytest.fixture(autouse=True)
 def _everything(caplog):
     caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.DEBUG, logger="edgefolio")   # el núcleo pone el de la herramienta en INFO al arrancar
 
 
 def said(caplog, level=None) -> list:
@@ -243,3 +245,126 @@ def test_every_line_of_the_shop_follows_the_format(app, client, free_file, caplo
     for line in said(caplog):
         assert re.fullmatch(rf"[^|]+(\| {pair}( {pair})*( \| .+)?)?", line), line
     assert json.dumps(said(caplog), ensure_ascii=False).count(EMAIL) == 0
+
+
+# ── la segunda vuelta (+25 %, 16-11-2026) ────────────────────────────────────
+
+def test_capturing_again_and_from_another_browser_says_so(app, client, caplog):
+    order = client.post("/api/orders", json={"items": [AAPL]}).json["id"]
+    client.post(f"/api/orders/{order}/capture")
+    other = visitor(app)                                            # con el id del pedido, sin su cookie
+    r = other.post(f"/api/orders/{order}/capture").json
+    assert r["links_hidden"] is True
+    assert one(caplog, "Cobro repetido") == f"Cobro repetido: el pedido ya estaba pagado | pedido={order}"
+    assert one(caplog, "Recibo sin enlaces") == (
+        f"Recibo sin enlaces: ni el navegador que compró ni su cuenta | pedido={order} user_id=-")
+
+
+def test_a_strategy_leaving_the_catalogue_while_paying_is_not_charged_and_says_so(app, client, settings, paypal,
+                                                                                    caplog):
+    order = client.post("/api/orders", json={"items": [AAPL, TSLA]}).json["id"]
+    republish(app, settings, paypal, [r for r in ROWS if r is not ROWS[0]], [])
+    assert client.post(f"/api/orders/{order}/capture").status_code == 409
+    assert one(caplog, "Pedido sin cobrar", "WARNING") == (
+        f"Pedido sin cobrar: estrategias que salieron del catálogo mientras se pagaba | pedido={order} faltan=1 de=2")
+
+
+def test_a_paid_script_missing_on_the_server_is_a_warning(app, client, settings, caplog):
+    first = buy(client, [AAPL])["downloads"][0]
+    for script in settings.strategies_dir.glob("*.pine"):
+        script.unlink()
+    assert client.get(first["url"], headers={"Accept": "application/json"}).status_code == 404
+    assert one(caplog, "Script de pago que no está", "WARNING") == (
+        f"Script de pago que no está en STRATEGIES_DIR | estrategia={AAPL}")
+
+
+def test_a_head_only_looks_and_too_many_links_are_cut(client, caplog):
+    first = buy(client, [AAPL])["downloads"][0]
+    assert client.head(first["url"]).status_code == 200
+    assert one(caplog, "Enlace mirado sin gastar") == (
+        "Enlace mirado sin gastar (HEAD: un escáner de correo, una vista previa) | enlaces=1")
+    many = "&".join(f"t=nada{i}" for i in range(101))
+    assert client.get(f"/api/download/all?{many}", headers={"Accept": "application/json"}).status_code == 404
+    assert one(caplog, "Más enlaces de los que se miran", "WARNING") == (
+        "Más enlaces de los que se miran: los 100 primeros | enlaces=101")
+
+
+def test_the_free_daily_limit_says_which_one(client, free_file, caplog):  # noqa: F811
+    for _ in range(10):
+        assert claim(client, EMAIL).status_code == 200
+    assert claim(client, EMAIL).status_code == 429
+    assert one(caplog, "Gratis: tope del día") == "Gratis: tope del día | por=quien_pide tope=10"
+
+
+def test_an_old_or_unknown_strategy_address_leaves_its_line_without_what_was_typed(client, caplog):
+    assert client.get(f"/s/{cart_id(ROWS[0])}").status_code == 301
+    assert one(caplog, "Ficha por su dirección de antes") == (
+        f"Ficha por su dirección de antes (el base64 de la tienda vieja): a la nueva | estrategia={AAPL}")
+    assert client.get(f"/s/{NAME.replace(' ', '_')}/tree").status_code == 302
+    assert one(caplog, "Ficha que no existe") == "Ficha que no existe: a la tienda | pestaña=tree"
+    assert NAME.replace(" ", "_") not in everything(caplog)
+
+
+def test_reaching_the_limit_of_wrong_codes_is_a_warning_once(client, caplog):
+    for i in range(20):
+        assert client.post("/api/quote", json={"items": [AAPL], "code": f"nope{i}"}).json["code_status"] == "invalid"
+    assert one(caplog, "Códigos de descuento", "WARNING") == (
+        "Códigos de descuento: una red llega al tope de los que no valen (¿probándolos?) | tope=20 ventana_s=3600")
+    assert client.post("/api/quote", json={"items": [AAPL], "code": "nope20"}).status_code == 429
+    assert len([m for m in said(caplog, "WARNING") if m.startswith("Códigos de descuento")]) == 1
+    assert "nope1" not in everything(caplog)
+
+
+def test_a_proof_link_of_nobody_and_the_owner_s_script_leave_their_lines(app, caplog):
+    ana = signed(app, EMAIL)
+    ana.post("/api/mine/proofs/peek", json={"token": "no-es-de-nadie"})
+    assert one(caplog, "Prueba de correo: el enlace no vale") == (
+        f"Prueba de correo: el enlace no vale para esta cuenta | user_id={ana.user_id}")
+    ana.get("/api/mine")                                             # sin demostrar su correo
+    assert one(caplog, "Mis estrategias sin lo hecho sin cuenta", "DEBUG").endswith(f"user_id={ana.user_id}")
+    buy(ana, [AAPL])
+    assert ana.get(f"/api/mine/{AAPL}/script").status_code == 200
+    assert one(caplog, "Script completo") == f"Script completo, a su dueño | user_id={ana.user_id} estrategia={AAPL}"
+
+
+def test_exporting_an_account_says_how_many_parts(app, free_file, caplog):  # noqa: F811
+    ana = signed(app, EMAIL)
+    prove(ana)
+    claim(ana, EMAIL)
+    testing.export_account(app, ana.user_id)
+    assert one(caplog, "Tus datos: lo de la tienda, exportado") == (
+        f"Tus datos: lo de la tienda, exportado | user_id={ana.user_id} partes=7 fuera=0")
+    assert EMAIL not in everything(caplog)
+
+
+def test_the_page_logs_its_views_and_its_failures_with_fixed_names(real_app, chromium):
+    """Cliente (static/js/lib/log.js): sin zt.log (la 0.36), a la consola, «[edgefolio] nivel Qué | k=v»; los cambios
+    de pantalla, de pestaña y de diálogo, sólo cuando cambian y con su nombre fijo; un servicio que falla, warn."""
+    from zlecitool_core.testing import mobile
+
+    from tests.test_strategy_page import TOUR_SEEN, UI, pick
+    _, paid, _ = pick(real_app)
+    with mobile.serve(real_app) as live:
+        tab = mobile.open_page(chromium, live, "laptop")
+        page = tab.page
+        try:
+            lines = []
+            page.on("console", lambda m: lines.append(m.text) if m.text.startswith("[edgefolio]") else None)
+            page.add_init_script(TOUR_SEEN + "try { localStorage.setItem('tuisku-sf-mode', 'lite'); } catch (e) {}")
+            page.route("**/api/fx", lambda route: route.fulfill(status=500, content_type="application/json",
+                                                               body='{"error": "errLater"}'))
+            tab.goto(f"/s/{paid['id']}")
+            page.get_by_role("tab", name=UI["howItDecides"]["es"]).click()
+            page.wait_for_function("() => location.pathname.endsWith('/tree')")
+            page.get_by_role("radio", name="Pro").click()
+            page.wait_for_function("() => location.pathname === '/'")
+            page.wait_for_timeout(300)
+            assert "[edgefolio] warn Cambios de moneda sin cargar: los precios, en dólares | estado=500" in lines
+            views = [x for x in lines if " Vista " in x]
+            assert views == ["[edgefolio] info Vista | tipo=tab nombre=detail.tree",
+                             "[edgefolio] info Vista | tipo=screen nombre=shop",
+                             "[edgefolio] info Vista | tipo=tab nombre=pro"], lines
+            assert not [x for x in lines if paid["id"] in x and " Vista " in x], "una vista no lleva la estrategia"
+        finally:
+            tab.close()
+

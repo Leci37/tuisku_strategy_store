@@ -74,16 +74,29 @@ def export(subject, out) -> None:
     (``buyer_hash``) y los de los enlaces de confirmar (``token_hash``)."""
     emails = proven_emails(subject)
     orders = _orders_of(subject.user_id, emails)
-    out.rows("orders", Order.query.filter(orders).order_by(Order.created_at, Order.paypal_id))
     paid_links = Download.paypal_id.in_(select(Order.paypal_id).where(orders))
-    out.rows("downloads", Download.query.filter(paid_links).order_by(Download.created_at, Download.item_key))
-    out.rows("free_downloads", FreeClaim.query.filter(_claims_of(subject.user_id, emails))
-             .order_by(FreeClaim.consent_at, FreeClaim.item_key))
-    out.rows("favourites", Favourite.query.filter_by(user_id=subject.user_id).order_by(Favourite.created_at))
-    out.rows("email_proofs", EmailProof.query.filter_by(user_id=subject.user_id).order_by(EmailProof.requested_at),
-             exclude=("id",))
-    out.rows("news", Subscriber.query.filter(func.lower(Subscriber.email).in_(emails)).order_by(Subscriber.email))
-    out.rows("mailboxes", Mailbox.query.filter(func.lower(Mailbox.email).in_(emails)).order_by(Mailbox.email))
+    parts = {
+        "orders": out.rows("orders", Order.query.filter(orders).order_by(Order.created_at, Order.paypal_id)),
+        "downloads": out.rows("downloads", Download.query.filter(paid_links)
+                              .order_by(Download.created_at, Download.item_key)),
+        "free_downloads": out.rows("free_downloads", FreeClaim.query.filter(_claims_of(subject.user_id, emails))
+                                   .order_by(FreeClaim.consent_at, FreeClaim.item_key)),
+        "favourites": out.rows("favourites", Favourite.query.filter_by(user_id=subject.user_id)
+                               .order_by(Favourite.created_at)),
+        "email_proofs": out.rows("email_proofs", EmailProof.query.filter_by(user_id=subject.user_id)
+                                 .order_by(EmailProof.requested_at), exclude=("id",)),
+        "news": out.rows("news", Subscriber.query.filter(func.lower(Subscriber.email).in_(emails))
+                         .order_by(Subscriber.email)),
+        "mailboxes": out.rows("mailboxes", Mailbox.query.filter(func.lower(Mailbox.email).in_(emails))
+                              .order_by(Mailbox.email)),
+    }
+    # out.rows da None a la parte que no cabe en el zip: el núcleo la deja fuera y lo cuenta; cuál, sólo aquí
+    left_out = [name for name, written in parts.items() if written is None]
+    if left_out:
+        log.warning("Tus datos: partes de la tienda que no caben en el zip, fuera | user_id=%s partes=%s",
+                    subject.user_id, ",".join(left_out))
+    log.info("Tus datos: lo de la tienda, exportado | user_id=%s partes=%s fuera=%s", subject.user_id,
+             len(parts) - len(left_out), len(left_out))
 
 
 def erase(subject) -> None:

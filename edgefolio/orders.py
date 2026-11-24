@@ -154,14 +154,20 @@ def capture(shop, paypal_id: str, on_paid: Optional[Callable[[Order], None]] = N
     if order is None:
         raise Refusal("errUnknownOrder", 404)
     if order.status == "PAID":
+        # abrir otra vez la página de gracias (el historial, otro navegador): no se cobra otra vez
+        log.info("Cobro repetido: el pedido ya estaba pagado | pedido=%s", paypal_id)
         return order
     if order.user_id is not None and closed([order.user_id]):
         # La cuenta que lo pidió se borró mientras pagaba en PayPal: no se cobra (el dinero no se mueve y
         # PayPal deja caducar lo aprobado), y su pedido, que se queda sin correo, no vuelve a tenerlo.
+        log.info("Pedido sin cobrar: la cuenta que lo pidió se borró | pedido=%s user_id=%s", paypal_id, order.user_id)
         raise Refusal("errAccountClosed", 409)
-    if order.status == "CREATED" and any(k not in shop.catalogue.items for k in order.items):
+    gone = [k for k in order.items if k not in shop.catalogue.items] if order.status == "CREATED" else []
+    if gone:
         # Una estrategia del pedido salió del catálogo mientras se pagaba en PayPal: no hay script que entregar, así
         # que no se cobra (lo aprobado caduca en PayPal). Hasta el 14-11-2026 se cobraba el total y no se entregaba.
+        log.warning("Pedido sin cobrar: estrategias que salieron del catálogo mientras se pagaba | pedido=%s faltan=%s "
+                    "de=%s", paypal_id, len(gone), len(order.items))
         raise Refusal("errStrategyGone", 409)
     try:
         cap = shop.paypal.capture(paypal_id)

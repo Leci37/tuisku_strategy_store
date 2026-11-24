@@ -360,11 +360,12 @@ def test_the_page_logs_its_views_and_its_failures_with_fixed_names(real_app, chr
             page.wait_for_function("() => location.pathname === '/'")
             page.wait_for_timeout(300)
             assert "[edgefolio] warn Cambios de moneda sin cargar: los precios, en dólares | estado=500" in lines
-            views = [x for x in lines if " Vista " in x]
-            assert views == ["[edgefolio] info Vista | tipo=tab nombre=detail.tree",
-                             "[edgefolio] info Vista | tipo=screen nombre=shop",
-                             "[edgefolio] info Vista | tipo=tab nombre=pro"], lines
-            assert not [x for x in lines if paid["id"] in x and " Vista " in x], "una vista no lleva la estrategia"
+            # con el núcleo de la etiqueta (0.35), el respaldo: «[edgefolio] info Vista | tipo=tab nombre=pro»; con uno
+            # que ya trae zt.log (la CI prueba contra el _ztool_dev del núcleo), el suyo: «[edgefolio] debug tab pro»
+            view = re.compile(r"^\[edgefolio\] \w+ (?:Vista \| tipo=)?(screen|tab|dialog)(?: nombre=| )(\S+)$")
+            views = [m.groups() for m in map(view.match, lines) if m]
+            assert views == [("tab", "detail.tree"), ("screen", "shop"), ("tab", "pro")], lines
+            assert not [x for x in lines if paid["id"] in x and view.match(x)], "una vista no lleva la estrategia"
         finally:
             tab.close()
 

@@ -347,7 +347,7 @@ class Catalogue:
         self.bundles = self._bundles(source.bundles)
         self.levels = load_levels(source.levels)
         counts = (len(self.items), len(self.bundles), len(self.levels), previews_missing, charts_missing)
-        said = "Catálogo cargado | estrategias=%s lotes=%s niveles=%s vistas_previas_ausentes=%s gráficos_ausentes=%s"
+        said = "Catálogo cargado | estrategias=%s lotes=%s niveles=%s vistas_previas_ausentes=%s graficos_ausentes=%s"
         if previews_missing or charts_missing:
             log.warning(said, *counts)   # lo publicado nombra ficheros que no están: sus fichas salen sin ellos
         else:

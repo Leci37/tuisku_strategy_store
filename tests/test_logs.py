@@ -56,7 +56,7 @@ def test_an_order_says_it_was_created_paid_and_downloaded_without_the_code_or_th
     order = client.post("/api/orders", json={"items": [AAPL], "code": "spring20"}).json
     created = one(caplog, "Pedido creado")
     assert re.fullmatch(rf"Pedido creado \| pedido={order['id']} user_id=- estrategias=1 lotes=0 pack=no "
-                        r"total=\d+\.\d\d moneda=USD código=sí", created), created
+                        r"total=\d+\.\d\d moneda=USD codigo=sí", created), created
     first = client.post(f"/api/orders/{order['id']}/capture").json
     client.post(f"/api/orders/{order['id']}/capture")              # otra vez: ni otro cobro ni otros enlaces
     assert one(caplog, "Pedido cobrado").startswith(f"Pedido cobrado | pedido={order['id']} user_id=- estrategias=1")
@@ -111,7 +111,7 @@ def test_deleting_an_account_says_how_many_rows_went(app, free_file, caplog):  #
     follow(ana, AAPL, nv=True)
     assert not testing.close_account(app, ana.user_id)
     line = one(caplog, "Tus datos: lo de la tienda, borrado")
-    assert line.startswith(f"Tus datos: lo de la tienda, borrado | user_id={ana.user_id} pedidos_sin_dueño=0 gratis=1 "
+    assert line.startswith(f"Tus datos: lo de la tienda, borrado | user_id={ana.user_id} pedidos_anonimos=0 gratis=1 "
                            "favoritas=1 "), line
     assert EMAIL not in everything(caplog)
 
@@ -121,10 +121,10 @@ def test_deleting_an_account_says_how_many_rows_went(app, free_file, caplog):  #
 def test_a_refusal_leaves_one_line_with_the_route_rule_and_not_its_token(client, caplog):
     secret = "UnTokenQueNoEsDeNadie1234567890ab"
     assert client.get(f"/api/download/{secret}", headers={"Accept": "application/json"}).status_code == 404
-    assert one(caplog, "Rechazo") == ("Rechazo | método=GET ruta=/api/download/<token> clave=errLinkNotFound estado=404 "
+    assert one(caplog, "Rechazo") == ("Rechazo | metodo=GET ruta=/api/download/<token> clave=errLinkNotFound estado=404 "
                                       "user_id=-")
     assert client.get("/api/strategies?size=abc").status_code == 400
-    assert said(caplog)[-1] == "Rechazo | método=GET ruta=/api/strategies clave=errRequest estado=400 user_id=- campo=size"
+    assert said(caplog)[-1] == "Rechazo | metodo=GET ruta=/api/strategies clave=errRequest estado=400 user_id=- campo=size"
     assert client.get(f"/api/strategies?q={NAME}").status_code == 200   # una búsqueda no es un rechazo
     text = everything(caplog)
     assert secret not in text and NAME not in text
@@ -133,7 +133,7 @@ def test_a_refusal_leaves_one_line_with_the_route_rule_and_not_its_token(client,
 def test_a_refusal_opened_in_the_tab_is_logged_before_going_back_to_the_shop(client, caplog):
     r = client.get("/api/download/no-es-de-nadie", headers={"Sec-Fetch-Dest": "document"})
     assert r.status_code == 303
-    assert one(caplog, "Rechazo").startswith("Rechazo | método=GET ruta=/api/download/<token> clave=errLinkNotFound")
+    assert one(caplog, "Rechazo").startswith("Rechazo | metodo=GET ruta=/api/download/<token> clave=errLinkNotFound")
 
 
 # ── un error deja su línea ───────────────────────────────────────────────────
@@ -146,7 +146,7 @@ def test_paypal_failing_to_create_the_order_is_a_warning(client, paypal, monkeyp
     assert client.post("/api/orders", json={"items": [AAPL]}).status_code == 502
     assert one(caplog, "PayPal no creó el pedido", "WARNING").startswith(
         "PayPal no creó el pedido | estrategias=1 total=")
-    assert one(caplog, "Rechazo", "WARNING").startswith("Rechazo | método=POST ruta=/api/orders clave=errPayPal estado=502")
+    assert one(caplog, "Rechazo", "WARNING").startswith("Rechazo | metodo=POST ruta=/api/orders clave=errPayPal estado=502")
     assert not [m for m in said(caplog) if m.startswith("Pedido creado")]
 
 
@@ -176,7 +176,7 @@ def test_the_catalogue_says_what_it_loaded_and_what_it_misses(app, settings, pay
     rows[0]["path_stra"] = "assets/charts/NO_ESTA.png"
     republish(app, settings, paypal, rows, [])
     line = one(caplog, "Catálogo cargado", "WARNING")
-    assert line == "Catálogo cargado | estrategias=4 lotes=0 niveles=0 vistas_previas_ausentes=0 gráficos_ausentes=1"
+    assert line == "Catálogo cargado | estrategias=4 lotes=0 niveles=0 vistas_previas_ausentes=0 graficos_ausentes=1"
     assert one(caplog, "Tienda en marcha") == "Tienda en marcha | paypal=fake estrategias=4 lotes=0"
 
 
@@ -185,7 +185,7 @@ def test_the_catalogue_says_what_it_loaded_and_what_it_misses(app, settings, pay
 def test_fx_update_says_which_day_and_how_many_and_a_repeat_says_it_did_nothing(app, monkeypatch, caplog):
     monkeypatch.setattr(fx.httpx, "get", lambda *a, **k: Answer())
     testing.run_task(app, "fx_update", at=TUESDAY_17)
-    assert one(caplog, "Cambios del BCE guardados") == "Cambios del BCE guardados | día=2026-11-03 cambios=4"
+    assert one(caplog, "Cambios del BCE guardados") == "Cambios del BCE guardados | dia=2026-11-03 cambios=4"
     testing.run_task(app, "fx_update", at=TUESDAY_17)
     assert one(caplog, "Tarea ya hecha") == "Tarea ya hecha: nada que hacer | tarea=fx_update vez=edgefolio:fx_update:2026-11-03"
 
@@ -301,7 +301,7 @@ def test_an_old_or_unknown_strategy_address_leaves_its_line_without_what_was_typ
     assert one(caplog, "Ficha por su dirección de antes") == (
         f"Ficha por su dirección de antes (el base64 de la tienda vieja): a la nueva | estrategia={AAPL}")
     assert client.get(f"/s/{NAME.replace(' ', '_')}/tree").status_code == 302
-    assert one(caplog, "Ficha que no existe") == "Ficha que no existe: a la tienda | pestaña=tree"
+    assert one(caplog, "Ficha que no existe") == "Ficha que no existe: a la tienda | pestana=tree"
     assert NAME.replace(" ", "_") not in everything(caplog)
 
 
@@ -382,7 +382,7 @@ def test_a_receipt_says_why_it_shows_its_links_and_that_it_was_mailed(client, ca
 
 def test_a_list_says_how_many_and_never_what_was_searched(client, caplog):
     assert client.get(f"/api/strategies?free=1&q={NAME}").status_code == 200
-    assert one(caplog, "Lista |", "DEBUG") == "Lista | resultados=0 filas=0 página=1 tamaño=25 filtros=1 búsqueda=sí"
+    assert one(caplog, "Lista |", "DEBUG") == "Lista | resultados=0 filas=0 pagina=1 por_pagina=25 filtros=1 busqueda=sí"
     client.get("/api/strategies?ind_lang=xx")
     assert one(caplog, "Explicaciones en un idioma que no tenemos", "DEBUG")
     client.get(f"/api/strategies/{cart_id(ROWS[0])}")
@@ -393,7 +393,7 @@ def test_a_list_says_how_many_and_never_what_was_searched(client, caplog):
 
 def test_a_quote_says_what_it_priced_without_the_code(client, caplog):
     client.post("/api/quote", json={"items": [AAPL, TSLA], "code": "spring20"})
-    assert one(caplog, "Presupuesto", "DEBUG").startswith("Presupuesto | estrategias=2 lotes=0 pack=no código=applied total=")
+    assert one(caplog, "Presupuesto", "DEBUG").startswith("Presupuesto | estrategias=2 lotes=0 pack=no codigo=applied total=")
     assert "spring20" not in everything(caplog)
 
 
@@ -410,7 +410,7 @@ def test_the_route_limit_says_which_one(client, free_file, caplog):  # noqa: F81
     for i in range(20):
         claim(client, f"otra{i}@example.test")
     assert claim(client, EMAIL).status_code == 429
-    assert one(caplog, "Tope de peticiones") == "Tope de peticiones | límite=free tope=20 ventana_s=3600"
+    assert one(caplog, "Tope de peticiones") == "Tope de peticiones | limite=free tope=20 ventana_s=3600"
 
 
 def test_an_unknown_download_format_gets_the_pine_and_says_so(client, caplog):

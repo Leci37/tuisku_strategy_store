@@ -184,7 +184,7 @@ def renew(shop, user_id: int, emails: list, item_id: str, own: str = "") -> dict
                                     version=s.version))
         db.session.commit()
         if fresh is None:   # si otra petición (un doble clic) ya lo hizo, ella lo dijo
-            log.info("Enlace renovado | user_id=%s estrategia=%s tipo=pago pedido=%s versión=%s", user_id, s.id,
+            log.info("Enlace renovado | user_id=%s estrategia=%s tipo=pago pedido=%s version=%s", user_id, s.id,
                      latest["paypal_id"], s.version)
     else:
         # La renovada guarda la hora de la primera petición: no cuenta para el límite del día.
@@ -192,7 +192,7 @@ def renew(shop, user_id: int, emails: list, item_id: str, own: str = "") -> dict
         news = any(x.get("news") for x in links if x["kind"] == "free")
         add_claim(latest["email"], s.key, news, "", settings.download_days, s.version, consent_at=first,
                   user_id=user_id, unless_valid=settings.max_downloads)
-        log.info("Enlace renovado | user_id=%s estrategia=%s tipo=gratis versión=%s", user_id, s.id, s.version)
+        log.info("Enlace renovado | user_id=%s estrategia=%s tipo=gratis version=%s", user_id, s.id, s.version)
     return entry(settings, s, owned(user_id, emails, own)[s.key])
 
 

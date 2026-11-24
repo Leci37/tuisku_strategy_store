@@ -119,7 +119,7 @@ def create(shop, cart: dict, buyer: str, return_url: str, cancel_url: str, user_
                          lines=q.lines(), buyer_hash=digest(buyer)))
     db.session.commit()
     # el código, nunca: sólo si se aplicó
-    log.info("Pedido creado | pedido=%s user_id=%s estrategias=%s lotes=%s pack=%s total=%s moneda=%s código=%s",
+    log.info("Pedido creado | pedido=%s user_id=%s estrategias=%s lotes=%s pack=%s total=%s moneda=%s codigo=%s",
              created.id, user_id or "-", len(keys), len(cart["bundles"]), "sí" if cart["pack"] else "no", q.total,
              shop.settings.currency, "sí" if q.code_status == "applied" else "no")
     return {"id": created.id, "approve_url": created.approve_url, **q.as_dict()}

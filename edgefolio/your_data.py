@@ -115,5 +115,5 @@ def erase(subject) -> None:
     # Las pruebas, lo último: hasta aquí dicen qué correos son suyos.
     proofs = EmailProof.query.filter_by(user_id=subject.user_id).delete(synchronize_session=False)
     # sin confirmar aún (lo confirma el núcleo, que dice «hecha»): cuántas filas, nunca de quién eran
-    log.info("Tus datos: lo de la tienda, borrado | user_id=%s pedidos_sin_dueño=%s gratis=%s favoritas=%s "
+    log.info("Tus datos: lo de la tienda, borrado | user_id=%s pedidos_anonimos=%s gratis=%s favoritas=%s "
              "novedades=%s buzones=%s pruebas=%s", subject.user_id, orders, claims, favourites, news, mailboxes, proofs)

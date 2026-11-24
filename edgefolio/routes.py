@@ -59,7 +59,7 @@ def _log_refusal(refusal: Refusal) -> None:
     WARNING si es un 5xx (PayPal o la dirección pública fallan: lo arregla quien la lleva)."""
     rule = request.url_rule.rule if request.url_rule is not None else "-"
     field = refusal.extra.get("field")
-    said = ("Rechazo | método=%s ruta=%s clave=%s estado=%s user_id=%s%s", request.method, rule, refusal.key,
+    said = ("Rechazo | metodo=%s ruta=%s clave=%s estado=%s user_id=%s%s", request.method, rule, refusal.key,
             refusal.status, user_id() or "-", f" campo={field}" if isinstance(field, str) else "")
     if refusal.status >= 500:
         log.warning(*said)
@@ -114,7 +114,7 @@ def limited(name: str):
     limit = shop().limits[name]
     if not limit.hit(client_key()):
         # el rechazo dice errTooMany; cuál de los topes y cuánto es, sólo aquí (sin la IP)
-        log.info("Tope de peticiones | límite=%s tope=%s ventana_s=%s", name, limit.limit, limit.window)
+        log.info("Tope de peticiones | limite=%s tope=%s ventana_s=%s", name, limit.limit, limit.window)
         raise Refusal("errTooMany", 429)
 
 
@@ -153,7 +153,7 @@ def _strategy_page(strategy_id: str, tail: str = ""):
     s = shop().catalogue.resolve(strategy_id)
     if s is None:
         # sin el id: es lo que trae la dirección, y puede ser cualquier cosa
-        log.info("Ficha que no existe: a la tienda | pestaña=%s", "tree" if tail else "overview")
+        log.info("Ficha que no existe: a la tienda | pestana=%s", "tree" if tail else "overview")
         return redirect("/", code=302)
     if s.id != strategy_id:
         log.info("Ficha por su dirección de antes (el base64 de la tienda vieja): a la nueva | estrategia=%s", s.id)
@@ -214,7 +214,7 @@ def strategies():
     out = search.strategies(shop().catalogue, shop().settings, request.args, text_language())
     # cuántos y con cuántos filtros, nunca cuáles ni lo buscado (debug: es cada lista que pide la página)
     filters = {k for k in request.args if k not in ("page", "size", "sort", "ind_lang", "facets", "q")}
-    log.debug("Lista | resultados=%s filas=%s página=%s tamaño=%s filtros=%s búsqueda=%s", out.get("total"),
+    log.debug("Lista | resultados=%s filas=%s pagina=%s por_pagina=%s filtros=%s busqueda=%s", out.get("total"),
               len(out.get("rows") or ()), out.get("page"), out.get("size"), len(filters),
               "sí" if request.args.get("q", "").strip() else "no")
     return jsonify(out)
@@ -256,7 +256,7 @@ def thumb(stem):
         return jsonify({"error": "errNotFound"}), 404
     except OSError as e:
         # su gráfico ya no está (un import --prune con la tienda en marcha) o está roto: hasta el 14-11-2026, un 500
-        log.warning("Miniatura sin hacer | gráfico=%s | %s: %s", stem, type(e).__name__, e.strerror or e)
+        log.warning("Miniatura sin hacer | grafico=%s | %s: %s", stem, type(e).__name__, e.strerror or e)
         return jsonify({"error": "errNotFound"}), 404
     if path is None:
         return redirect(f"/static/assets/charts/{stem}.png", code=307)
@@ -300,7 +300,7 @@ def quote():
     cart = orders.cart_of(request.get_json(silent=True))
     out = _guarded(cart, lambda: orders.priced(shop(), cart, owned_now())).as_dict()
     # debug: corre con cada cambio del carrito; el código, nunca (sólo si se aplicó)
-    log.debug("Presupuesto | estrategias=%s lotes=%s pack=%s código=%s total=%s", len(out.get("items") or ()),
+    log.debug("Presupuesto | estrategias=%s lotes=%s pack=%s codigo=%s total=%s", len(out.get("items") or ()),
               len(out.get("bundles") or ()), "sí" if out.get("pack") else "no", out.get("code_status") or "sin",
               out.get("total"))
     return jsonify(out)

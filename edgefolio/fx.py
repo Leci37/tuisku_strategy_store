@@ -53,5 +53,5 @@ def update(out: Path) -> dict:
         log.warning("BCE sin cambios nuevos: %s sigue como estaba | error=%s: %s", Path(out).name, type(e).__name__, e)
         raise
     write(data, out)
-    log.info("Cambios del BCE guardados | día=%s cambios=%s", data["date"], len(data["rates"]))
+    log.info("Cambios del BCE guardados | dia=%s cambios=%s", data["date"], len(data["rates"]))
     return data

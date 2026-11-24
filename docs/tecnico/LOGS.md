@@ -81,7 +81,7 @@ núcleo, abajo). De los 35 de esta ronda, 19 vuelven a lanzar o escriben y 16 ca
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| traer los cambios | `fetch()` sin una línea | `update(out)`, que usan la tarea y el comando: INFO `Cambios del BCE guardados \| día= cambios=`; con `fx.FAILURES`, WARNING `BCE sin cambios nuevos: <fichero> sigue como estaba \| error=` y relanza |
+| traer los cambios | `fetch()` sin una línea | `update(out)`, que usan la tarea y el comando: INFO `Cambios del BCE guardados \| dia= cambios=`; con `fx.FAILURES`, WARNING `BCE sin cambios nuevos: <fichero> sigue como estaba \| error=` y relanza |
 | la traza de la llamada (`API → / API ←`) | — | **0.36**: `external_call` del núcleo, cuando esté en su CONTRATO |
 
 ### `edgefolio/alerts.py` — los avisos de las favoritas
@@ -108,7 +108,7 @@ núcleo, abajo). De los 35 de esta ronda, 19 vuelven a lanzar o escriben y 16 ca
 | Sitio | Hoy | Decisión |
 |---|---|---|
 | `create`: `except PayPalError` | relanza `errPayPal` 502, sin línea | WARNING `PayPal no creó el pedido \| estrategias= total= moneda= \| <error>`; la línea del rechazo, también (5xx: WARNING) |
-| `create`: el pedido | nada | INFO `Pedido creado \| pedido= user_id= estrategias= lotes= pack= total= moneda= código=sí\|no` (el código, nunca) |
+| `create`: el pedido | nada | INFO `Pedido creado \| pedido= user_id= estrategias= lotes= pack= total= moneda= codigo=sí\|no` (el código, nunca) |
 | `settled`: `except PayPalError` | WARNING `PayPal no dio el pedido \| pedido= \| <error>` | se queda |
 | `capture`: `except PayPalError` | pregunta a PayPal; sin respuesta, WARNING `Cobro sin confirmar` y relanza 502 | se queda; si PayPal ya lo había cobrado, INFO `Cobro que PayPal ya había hecho: se toma ese \| pedido= estado=` |
 | `capture`: pendiente en PayPal | `PENDING`, 402, sin línea | INFO `Cobro pendiente en PayPal \| pedido=` |
@@ -134,8 +134,8 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `renew`: enlace nuevo de pago | nada | INFO `Enlace renovado \| user_id= estrategia= tipo=pago pedido= versión=` (si otra petición ya lo hizo, nada) |
-| `renew`: enlace nuevo gratis | nada | INFO `Enlace renovado \| user_id= estrategia= tipo=gratis versión=` |
+| `renew`: enlace nuevo de pago | nada | INFO `Enlace renovado \| user_id= estrategia= tipo=pago pedido= version=` (si otra petición ya lo hizo, nada) |
+| `renew`: enlace nuevo gratis | nada | INFO `Enlace renovado \| user_id= estrategia= tipo=gratis version=` |
 | `set_favourite` | nada | INFO `Favorita guardada \| user_id= estrategia= nueva=sí\|no avisos=nv,pd` |
 | `delete_favourite` | nada | INFO `Favorita quitada \| user_id= estrategia= borradas=` |
 | `strategy_or_404`, `errNotOwned`, `errUpdateExpired`, `errNoLongerFree` | `Refusal` | la línea del rechazo |
@@ -153,21 +153,21 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `erase` | nada (el núcleo dice «hecha en 0.1 s») | INFO `Tus datos: lo de la tienda, borrado \| user_id= pedidos_sin_dueño= gratis= favoritas= novedades= buzones= pruebas=` |
+| `erase` | nada (el núcleo dice «hecha en 0.1 s») | INFO `Tus datos: lo de la tienda, borrado \| user_id= pedidos_anonimos= gratis= favoritas= novedades= buzones= pruebas=` |
 | `export` | nada | nada: es una lectura, y el núcleo apunta la exportación (`exportada en …`) |
 
 ### `edgefolio/routes.py` — el endpoint
 
 | Sitio | Hoy | Decisión |
 |---|---|---|
-| `_refused`: cada `Refusal` | la respuesta, sin línea | INFO `Rechazo \| método= ruta=<regla> clave= estado= user_id= [campo=]` (WARNING si es 5xx); la regla (`/api/download/<token>`), nunca la ruta con su token |
+| `_refused`: cada `Refusal` | la respuesta, sin línea | INFO `Rechazo \| metodo= ruta=<regla> clave= estado= user_id= [campo=]` (WARNING si es 5xx); la regla (`/api/download/<token>`), nunca la ruta con su token |
 | `_download`: un rechazo abierto en la pestaña | redirige a la tienda | la misma línea del rechazo, antes de redirigir |
 | `link`: sin `ZLECITOOL_PUBLIC_URL` | `errLater` 503 | WARNING `Enlace sin hacer: falta ZLECITOOL_PUBLIC_URL \| destino=`, y la línea del rechazo |
 | `_email_receipt` sin dirección pública | WARNING `Recibo sin mandar: falta ZLECITOOL_PUBLIC_URL \| pedido=` | se queda (con el logger del módulo, `edgefolio.routes`) |
 | `ask_proof`: tope de la dirección (`proof_to`) | no manda, la misma respuesta | INFO `Prueba de correo sin mandar \| user_id= motivo=tope_de_la_dirección` |
 | `ask_proof`: sin dirección pública | `forget` y `errLater` 503 | WARNING `Prueba de correo sin mandar: falta ZLECITOOL_PUBLIC_URL \| user_id=`, y la del rechazo |
 | `thumb`: `except KeyError` | 404 | nada: una raíz que no es de un gráfico del catálogo (un enlace viejo, un robot); la respuesta lo dice |
-| `thumb`: `except OSError` | 404 | WARNING `Miniatura sin hacer \| gráfico= \| <error>`: el gráfico estaba al arrancar y ya no (un `import --prune` con la tienda en marcha) o está roto |
+| `thumb`: `except OSError` | 404 | WARNING `Miniatura sin hacer \| grafico= \| <error>`: el gráfico estaba al arrancar y ya no (un `import --prune` con la tienda en marcha) o está roto |
 | `client_key`: `except ValueError` | la clave es `remote_addr` tal cual | nada: no es una IP (un socket), y la clave del límite sigue valiendo |
 | `_guarded`: un código que no vale | cuenta para el tope | nada: lo dice la respuesta (`code_status`), y pasar el tope es un rechazo con su línea |
 | la línea de cada petición (regla, cuenta, resultado, tiempo) | la de werkzeug o gunicorn | **0.36**: el núcleo, con `zlecitool.requests` (`GET /s/<strategy_id> 200 \| ms=12 user=42`, con `error=errAlgo` en un rechazo), sin IP ni consulta; la de werkzeug se va. La tienda no escribe líneas de petición |
@@ -177,10 +177,10 @@ El texto de `PayPalError` (`paypal.py`) lleva hasta 200 caracteres de la respues
 | Sitio | Hoy | Decisión |
 |---|---|---|
 | `_bundles`: un lote fuera | 2 × ERROR, con otro formato | ERROR `Lote fuera: nombra estrategias que el catálogo no trae \| lote= ausentes=`, `Lote fuera: no tiene estrategias \| lote=` y `Lote fuera: no cuesta menos que sus estrategias sueltas \| lote= precio= sueltas=` |
-| el catálogo, cargado | nada | INFO `Catálogo cargado \| estrategias= lotes= niveles= vistas_previas_ausentes= gráficos_ausentes=`, una por carga; WARNING si falta alguno |
+| el catálogo, cargado | nada | INFO `Catálogo cargado \| estrategias= lotes= niveles= vistas_previas_ausentes= graficos_ausentes=`, una por carga; WARNING si falta alguno |
 | `Shop`: la tienda montada | nada | INFO `Tienda en marcha \| paypal=fake\|sandbox\|live estrategias= lotes=` |
 | `number`: `except (TypeError, ValueError)` | `None` | nada: una celda vacía o que no es un número es «sin dato»; corre por cada celda |
-| `forest_size`, `script_expiry`, `chart_version`: `except OSError` | 0, `None`, `""` | nada en cada una: lo cuenta la línea de la carga (`vistas_previas_ausentes=`, `gráficos_ausentes=`) |
+| `forest_size`, `script_expiry`, `chart_version`: `except OSError` | 0, `None`, `""` | nada en cada una: lo cuenta la línea de la carga (`vistas_previas_ausentes=`, `graficos_ausentes=`) |
 | `script_expiry`: `except ValueError` | `None` | WARNING `Caducidad que no es una fecha \| fichero=` (una cabecera rota; raro) |
 | `read_release`: `except (OSError, ValueError)` | `{}` | sin el fichero, nada (un catálogo de antes de los paquetes); roto, WARNING `release.json sin leer \| fichero=` |
 | `release_date`: `except ValueError` | `None` | nada: una fila sin fecha de publicación; corre en cada petición |
@@ -537,12 +537,12 @@ no dirá (ella dice la regla, el estado, el tiempo y la cuenta), y ninguna la co
 
 | Fichero, función | Línea | Nivel |
 |---|---|---|
-| `routes.py` `limited` | `Tope de peticiones \| límite=free\|proof tope= ventana_s=`: cuál de los topes saltó (el rechazo sólo dice `errTooMany`) | info |
+| `routes.py` `limited` | `Tope de peticiones \| limite=free\|proof tope= ventana_s=`: cuál de los topes saltó (el rechazo sólo dice `errTooMany`) | info |
 | `routes.py` `text_language` | `ind_lang` que no es de los nuestros: las explicaciones, en el idioma de la petición (sin el valor) | debug |
-| `routes.py` `strategies` | `Lista \| resultados= filas= página= tamaño= filtros= búsqueda=sí\|no`: cuántos y con cuántos filtros, nunca cuáles ni lo buscado | debug |
+| `routes.py` `strategies` | `Lista \| resultados= filas= pagina= por_pagina= filtros= busqueda=sí\|no`: cuántos y con cuántos filtros, nunca cuáles ni lo buscado | debug |
 | `routes.py` `strategy` | la ficha pedida por su alias de antes (un carrito viejo): se da la de su id | debug |
 | `routes.py` `fx` | los cambios de ejemplo del repo, aún sin los del día (una vez por proceso) | info |
-| `routes.py` `quote` | `Presupuesto \| estrategias= lotes= pack= código=applied\|invalid\|sin total=` (el código, nunca) | debug |
+| `routes.py` `quote` | `Presupuesto \| estrategias= lotes= pack= codigo=applied\|invalid\|sin total=` (el código, nunca) | debug |
 | `routes.py` `capture` | `Recibo con enlaces \| pedido= por=cookie\|cuenta\|correo`: por qué los ve (`orders.link_access`, nueva; `may_see_links` la usa) | info |
 | `routes.py` `_email_receipt` | `Recibo por correo \| pedido= idioma=` (sólo si el pedido tiene correo) | info |
 | `routes.py` `download` | `?format=` que no es `pine` ni `zip`: se da el `.pine` (sin el valor) | info |
@@ -571,3 +571,12 @@ Las pruebas, en `tests/test_logs.py`:
 - una cuenta que pide una gratis y una prueba para otra dirección, y que abre el enlace, sin ninguna de las dos
   direcciones.
 
+### Claves sin tildes (24-11-2026)
+
+La regla 25 de `CLAUDE.md` (y el PLAN §12 del núcleo) pide las claves en minúsculas y sin tildes, para buscarlas
+sin dudar. Las que las llevaban cambian: `método=` → `metodo=`, `límite=` → `limite=`, `pestaña=` → `pestana=`,
+`página=` → `pagina=`, `tamaño=` → `por_pagina=`, `búsqueda=` → `busqueda=`, `código=` → `codigo=`, `día=` →
+`dia=`, `gráfico=` → `grafico=`, `gráficos_ausentes=` → `graficos_ausentes=`, `versión=` → `version=` y
+`pedidos_sin_dueño=` → `pedidos_anonimos=` (los pedidos que se quedan sin quién los hizo). Las tablas de arriba ya
+van con las nuevas; «Verificado (F4)» cuenta lo que se vio el 15-11-2026, con las de entonces. Los valores fijos
+(`sí`, `buzón`, `ya_están`) no son claves y se quedan.

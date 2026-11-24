@@ -59,7 +59,7 @@ def make_thumb(src: Path, dest: Path):
         except BaseException:
             os.unlink(tmp)
             raise
-    log.debug("Miniatura hecha | gráfico=%s", src.stem)
+    log.debug("Miniatura hecha | grafico=%s", src.stem)
 
 
 def thumb(settings, stem: str) -> Optional[Path]:

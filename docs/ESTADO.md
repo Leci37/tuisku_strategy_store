@@ -12,6 +12,10 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
   favoritas, «Tus datos»), con los ids y cuántos, nunca un correo, un código ni un token; cada rechazo, una sola, con la
   regla de la ruta; cada tarea dice lo que hizo; el BCE y PayPal que fallan, un WARNING; lo que no se esperaba, con su
   traza. Fichero a fichero, en [tecnico/LOGS.md](tecnico/LOGS.md); las pruebas, en `tests/test_logs.py`.
+- La segunda vuelta (16 y 24-11-2026, el dueño pidió un 25 % más y 30 como mínimo por capa): cliente de 1 a 37 líneas,
+  servidor de 52 a 71 y endpoint de 5 a 30. El cliente tiene su propio ayudante, `static/js/lib/log.js`: escribe en la
+  consola hasta la 0.36 y después usará `zt.log` sin más cambios. En el endpoint va lo que la ruta decide y la línea de
+  cada petición no dice. En [tecnico/LOGS.md](tecnico/LOGS.md), «Segunda vuelta».
 
 ## Lo que falta
 
@@ -35,10 +39,12 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
 ## Para el núcleo
 
 1. **El frontal: `zt.log`** (0.36, CONTRATO §27: `debug`/`info` a la consola, `warn`/`error` también al servidor por
-   `POST /zt/log`, y `zt.log.view(tipo, nombre)`). La tienda lo usará en `App.fail` (hoy un `console.error`; pide con su
-   `lib/api.js`, no con `zt.fetchJSON`, así que el núcleo no ve sus fallos de red), en 6 `catch` que hoy callan y en
-   `App.componentDidUpdate` para sus pantallas, pestañas y diálogos (los suyos no son `zt.openDialog`). El plan, en
-   [tecnico/LOGS.md](tecnico/LOGS.md). Espera a subir a la 0.36.
+   `POST /zt/log`, y `zt.log.view(tipo, nombre)`). Desde la segunda vuelta, la tienda ya escribe en su sitio con su
+   ayudante, `static/js/lib/log.js`, con las mismas firmas: en `App.fail` (la tienda pide con su `lib/api.js`, no con
+   `zt.fetchJSON`, así que el núcleo no ve sus fallos de red), en los `catch` que callaban y en
+   `App.componentDidUpdate` para sus pantallas, pestañas y diálogos (los suyos no son `zt.openDialog`). Hasta la 0.36
+   sólo escribe en la consola; al subir, el ayudante usa `zt.log` y `warn` y `error` llegan al servidor, sin tocar nada
+   más.
 2. **`external_call`** (0.36: `from zlecitool_core.observability.trace import external_call`): la traza de la llamada al
    BCE (`edgefolio/fx.py`). Espera a subir a la 0.36.
 3. **Las comprobaciones de `check_tool()`**: sin salidas propias ni `print` en el paquete, y con `privacy_sample`, que

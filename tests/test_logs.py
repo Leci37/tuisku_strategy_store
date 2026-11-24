@@ -368,3 +368,71 @@ def test_the_page_logs_its_views_and_its_failures_with_fixed_names(real_app, chr
         finally:
             tab.close()
 
+
+# ── el endpoint hasta 30 (24-11-2026): lo que la ruta sabe y el servicio no ───
+
+def test_a_receipt_says_why_it_shows_its_links_and_that_it_was_mailed(client, caplog):
+    r = buy(client, [AAPL])
+    order = r["order_id"]
+    assert one(caplog, "Recibo con enlaces") == f"Recibo con enlaces | pedido={order} por=cookie user_id=-"
+    assert one(caplog, "Recibo por correo").startswith(f"Recibo por correo | pedido={order} idioma=")
+    assert "buyer@example.com" not in everything(caplog)
+
+
+def test_a_list_says_how_many_and_never_what_was_searched(client, caplog):
+    assert client.get(f"/api/strategies?free=1&q={NAME}").status_code == 200
+    assert one(caplog, "Lista |", "DEBUG") == "Lista | resultados=0 filas=0 página=1 tamaño=25 filtros=1 búsqueda=sí"
+    client.get("/api/strategies?ind_lang=xx")
+    assert one(caplog, "Explicaciones en un idioma que no tenemos", "DEBUG")
+    client.get(f"/api/strategies/{cart_id(ROWS[0])}")
+    assert one(caplog, "Ficha pedida por su alias", "DEBUG") == (
+        f"Ficha pedida por su alias de antes: la de su id | estrategia={AAPL}")
+    assert NAME not in everything(caplog) and "xx" not in " ".join(said(caplog))
+
+
+def test_a_quote_says_what_it_priced_without_the_code(client, caplog):
+    client.post("/api/quote", json={"items": [AAPL, TSLA], "code": "spring20"})
+    assert one(caplog, "Presupuesto", "DEBUG").startswith("Presupuesto | estrategias=2 lotes=0 pack=no código=applied total=")
+    assert "spring20" not in everything(caplog)
+
+
+def test_the_example_rates_are_said_once_per_process(client, caplog):
+    from edgefolio import routes
+    routes._said.pop("fx_example", None)
+    client.get("/api/fx")
+    client.get("/api/fx")
+    assert one(caplog, "Cambios de moneda: los de ejemplo") == (
+        "Cambios de moneda: los de ejemplo del repo, aún sin los del día (la tarea fx_update)")
+
+
+def test_the_route_limit_says_which_one(client, free_file, caplog):  # noqa: F811
+    for i in range(20):
+        claim(client, f"otra{i}@example.test")
+    assert claim(client, EMAIL).status_code == 429
+    assert one(caplog, "Tope de peticiones") == "Tope de peticiones | límite=free tope=20 ventana_s=3600"
+
+
+def test_an_unknown_download_format_gets_the_pine_and_says_so(client, caplog):
+    first = buy(client, [AAPL])["downloads"][0]
+    assert client.get(first["url"] + "?format=docx").status_code == 200
+    assert one(caplog, "Descarga: un formato que no es pine ni zip") == (
+        "Descarga: un formato que no es pine ni zip, va el .pine")
+    assert "docx" not in " ".join(said(caplog))
+
+
+def test_an_account_asking_for_another_address_and_opening_its_link(app, free_file, caplog):  # noqa: F811
+    ana = signed(app, EMAIL)
+    claim(ana, "compras@example.test")
+    assert one(caplog, "Gratis para otra dirección") == (
+        f"Gratis para otra dirección que la de la cuenta | user_id={ana.user_id} estrategia={FREE_ID}")
+    prove(ana, "compras@example.test")
+    assert one(caplog, "Prueba de correo para otra dirección") == (
+        f"Prueba de correo para otra dirección que la de la cuenta | user_id={ana.user_id}")
+    assert one(caplog, "Prueba de correo: enlace abierto") == (
+        f"Prueba de correo: enlace abierto, falta confirmar | user_id={ana.user_id}")
+    ana.get("/api/mine")
+    assert one(caplog, "Mis estrategias |", "DEBUG") == (
+        f"Mis estrategias | user_id={ana.user_id} estrategias=1 favoritas=0 correos_demostrados=1")
+    text = everything(caplog)
+    assert "compras@example.test" not in text and EMAIL not in text
+

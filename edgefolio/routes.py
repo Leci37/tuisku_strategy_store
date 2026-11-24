@@ -36,6 +36,7 @@ cli.register(bp)
 
 BUYER_COOKIE = "edgefolio_buyer"
 PRIVATE = {"Cache-Control": "private, no-store"}
+_said = {}   # lo que se dice una vez por proceso
 FOREVER = {"Cache-Control": "public, max-age=31536000, immutable"}
 
 
@@ -110,7 +111,10 @@ def client_key() -> str:
 
 def limited(name: str):
     """429 cuando esta IP ha gastado el límite ``name`` (shop.limits)."""
-    if not shop().limits[name].hit(client_key()):
+    limit = shop().limits[name]
+    if not limit.hit(client_key()):
+        # el rechazo dice errTooMany; cuál de los topes y cuánto es, sólo aquí (sin la IP)
+        log.info("Tope de peticiones | límite=%s tope=%s ventana_s=%s", name, limit.limit, limit.window)
         raise Refusal("errTooMany", 429)
 
 
@@ -197,19 +201,32 @@ def text_language() -> str:
     suyo) o, sin él, el de la petición. No ?lang=: el núcleo lo toma por la dirección de una página en un idioma y lo
     guarda en la cookie zt_lang, y cada lista que pedía una pestaña en otro idioma cambiaba el de la próxima visita."""
     asked = request.args.get("ind_lang", "")
-    return asked if asked in shop().texts.data.get("_languages", ()) else request_language()
+    if asked in shop().texts.data.get("_languages", ()):
+        return asked
+    if asked:   # sin el valor: es de la dirección
+        log.debug("Explicaciones en un idioma que no tenemos: las del idioma de la petición")
+    return request_language()
 
 
 @bp.get("/api/strategies")
 @public
 def strategies():
-    return jsonify(search.strategies(shop().catalogue, shop().settings, request.args, text_language()))
+    out = search.strategies(shop().catalogue, shop().settings, request.args, text_language())
+    # cuántos y con cuántos filtros, nunca cuáles ni lo buscado (debug: es cada lista que pide la página)
+    filters = {k for k in request.args if k not in ("page", "size", "sort", "ind_lang", "facets", "q")}
+    log.debug("Lista | resultados=%s filas=%s página=%s tamaño=%s filtros=%s búsqueda=%s", out.get("total"),
+              len(out.get("rows") or ()), out.get("page"), out.get("size"), len(filters),
+              "sí" if request.args.get("q", "").strip() else "no")
+    return jsonify(out)
 
 
 @bp.get("/api/strategies/<strategy_id>")
 @public
 def strategy(strategy_id):
-    return jsonify(search.strategy(shop().catalogue, strategy_id, text_language()))
+    out = search.strategy(shop().catalogue, strategy_id, text_language())
+    if out.get("id") != strategy_id:   # un carrito o una dirección de la tienda de antes: la página la cambia
+        log.debug("Ficha pedida por su alias de antes: la de su id | estrategia=%s", out.get("id"))
+    return jsonify(out)
 
 
 @bp.get("/api/bundles")
@@ -221,7 +238,12 @@ def bundles():
 @bp.get("/api/fx")
 @public
 def fx():
-    return jsonify(media.fx(shop().settings))
+    out = media.fx(shop().settings)
+    if out.get("source") == "example" and not _said.get("fx_example"):
+        # una vez por proceso: el «≈» sale con los de ejemplo del repo hasta que corra la tarea fx_update
+        _said["fx_example"] = True
+        log.info("Cambios de moneda: los de ejemplo del repo, aún sin los del día (la tarea fx_update)")
+    return jsonify(out)
 
 
 @bp.get("/thumbs/<stem>.webp")
@@ -276,7 +298,12 @@ def _guarded(cart: dict, price):
 @public
 def quote():
     cart = orders.cart_of(request.get_json(silent=True))
-    return jsonify(_guarded(cart, lambda: orders.priced(shop(), cart, owned_now())).as_dict())
+    out = _guarded(cart, lambda: orders.priced(shop(), cart, owned_now())).as_dict()
+    # debug: corre con cada cambio del carrito; el código, nunca (sólo si se aplicó)
+    log.debug("Presupuesto | estrategias=%s lotes=%s pack=%s código=%s total=%s", len(out.get("items") or ()),
+              len(out.get("bundles") or ()), "sí" if out.get("pack") else "no", out.get("code_status") or "sin",
+              out.get("total"))
+    return jsonify(out)
 
 
 @bp.post("/api/orders")
@@ -311,8 +338,11 @@ def capture(paypal_id):
 
     order = orders.capture(shop(), paypal_id, on_paid=on_paid)
     uid = user_id()
-    see = orders.may_see_links(order, request.cookies.get(BUYER_COOKIE), uid, proofs.proven(uid))
-    if not see:
+    why = orders.link_access(order, request.cookies.get(BUYER_COOKIE), uid, proofs.proven(uid))
+    see = bool(why)
+    if see:
+        log.info("Recibo con enlaces | pedido=%s por=%s user_id=%s", paypal_id, why, uid or "-")
+    else:
         # quien tiene el id del pedido (va en la dirección de vuelta de PayPal) ve el recibo, no los enlaces
         log.info("Recibo sin enlaces: ni el navegador que compró ni su cuenta | pedido=%s user_id=%s", paypal_id,
                  uid or "-")
@@ -327,6 +357,8 @@ def _email_receipt(order):
         log.warning("Recibo sin mandar: falta ZLECITOOL_PUBLIC_URL | pedido=%s", order.paypal_id)
         return
     orders.email_receipt(shop(), order, request_language(), mine, send_mail)
+    if order.email:   # sin correo en el pedido no sale ninguno (orders.email_receipt)
+        log.info("Recibo por correo | pedido=%s idioma=%s", order.paypal_id, request_language())
 
 
 # ── descargar ────────────────────────────────────────────────────────────────
@@ -384,7 +416,10 @@ def download(token):
     def make():
         if request.method == "HEAD":
             return _looked_at([token])
-        data, mimetype, name = downloads.one(shop(), token, request.args.get("format", "pine"))
+        fmt = request.args.get("format", "pine")
+        if fmt not in ("pine", "zip"):   # sin el valor: es de la dirección
+            log.info("Descarga: un formato que no es pine ni zip, va el .pine")
+        data, mimetype, name = downloads.one(shop(), token, fmt)
         return _attachment(data, mimetype, name)
     return _download(make)
 
@@ -407,6 +442,9 @@ def free_claim():
         raise Refusal("errRequest", 400, field="news")
     limited("free")
     uid = user_id()
+    if uid is not None and email != (current_user.email or "").strip().lower():
+        # regla 11: no sale en Mis estrategias hasta que la cuenta demuestre esa dirección (sin ella en el log)
+        log.info("Gratis para otra dirección que la de la cuenta | user_id=%s estrategia=%s", uid, s.id)
     who = f"u:{uid}" if uid is not None else f"ip:{client_key()}"
     return jsonify(free.claim(shop(), s, email, news, request_language(), link, send_mail, user_id=uid, requester=who,
                               secret=current_app.secret_key))
@@ -454,8 +492,11 @@ def my_strategies():
         # regla 11: lo hecho sin cuenta con ese correo no sale hasta demostrarlo (la página ofrece hacerlo)
         log.debug("Mis estrategias sin lo hecho sin cuenta: el correo de la cuenta, sin demostrar | user_id=%s",
                   current_user.id)
-    return jsonify(mine.listing(shop(), current_user.id, current_user.email, emails,
-                                proof_needed=current_user.email not in emails))
+    out = mine.listing(shop(), current_user.id, current_user.email, emails,
+                       proof_needed=current_user.email not in emails)
+    log.debug("Mis estrategias | user_id=%s estrategias=%s favoritas=%s correos_demostrados=%s", current_user.id,
+              len(out["items"]), len(out["favourites"]), len(emails))
+    return jsonify(out)
 
 
 @bp.post("/api/mine/renew")
@@ -481,6 +522,9 @@ def ask_proof():
     b = body()
     email = email_of(b.get("email") or current_user.email)
     limited("proof")
+    if email != (current_user.email or "").strip().lower():
+        # la de una compra sin cuenta, normalmente; sin ninguna de las dos en el log
+        log.info("Prueba de correo para otra dirección que la de la cuenta | user_id=%s", current_user.id)
     # y por dirección, de cualquier cuenta: la misma respuesta, sin correo, si esa dirección ya recibió los suyos
     capped = shop().limits["proof_to"].full(email)
     token = proofs.request(current_user.id, email) if not capped else None
@@ -510,6 +554,9 @@ def peek_proof():
     if email is None:
         # la respuesta es {"email": null}, no un error: de otra cuenta, usado o caducado
         log.info("Prueba de correo: el enlace no vale para esta cuenta | user_id=%s", current_user.id)
+    else:
+        # abrir el enlace no lo gasta: lo gasta «Sí, es mío» (un lector de correo también lo abre)
+        log.info("Prueba de correo: enlace abierto, falta confirmar | user_id=%s", current_user.id)
     return jsonify({"email": email})
 
 

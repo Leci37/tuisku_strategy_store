@@ -263,15 +263,22 @@ def masked(email: str) -> str:
     return f"{local[0]}•••@{domain}" if at and local and domain else ""
 
 
-def may_see_links(order: Order, buyer_cookie: Optional[str], user_id: Optional[int], proven: Iterable[str]) -> bool:
+def link_access(order: Order, buyer_cookie: Optional[str], user_id: Optional[int], proven: Iterable[str]) -> str:
+    """Por qué se pueden ver los enlaces del recibo: ``"cookie"`` (el navegador que compró), ``"cuenta"`` (la cuenta
+    que lo pidió con la sesión abierta) o ``"correo"`` (una cuenta que demostró el correo de un pedido sin cuenta); o
+    ``""``, no se pueden ver."""
     if buyer_cookie and order.buyer_hash and hmac.compare_digest(digest(buyer_cookie), order.buyer_hash):
-        return True
+        return "cookie"
     if user_id is None:
-        return False
+        return ""
     if order.user_id is not None:
-        return order.user_id == user_id
+        return "cuenta" if order.user_id == user_id else ""
     emails = set(proven)
-    return bool(emails) and bool({order.email, norm(order.payer)} & emails)
+    return "correo" if emails and {order.email, norm(order.payer)} & emails else ""
+
+
+def may_see_links(order: Order, buyer_cookie: Optional[str], user_id: Optional[int], proven: Iterable[str]) -> bool:
+    return bool(link_access(order, buyer_cookie, user_id, proven))
 
 
 def receipt(shop, order: Order, may_see: bool) -> dict:

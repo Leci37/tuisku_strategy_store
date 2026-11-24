@@ -398,7 +398,7 @@ endpoint si el fichero es de rutas (aquí, sólo `routes.py`). En JS cuenta cada
 |---|---|---|---|
 | Cliente | 1 | ≥ 30 | 37 |
 | Servidor | 52 | ≥ 65 | 71 |
-| Endpoint | 5 | ≥ 30 | 17 |
+| Endpoint | 5 | ≥ 30 | 17; 30 con la decisión del 24-11-2026 (abajo) |
 
 **Dos líneas que el recuento no veía.** `Catálogo cargado` (`catalogue.py`) y `Rechazo` (`routes.py`) se escriben
 con `(log.warning if … else log.info)(…)`, y el recuento no las cuenta. Pasan a un `if` con sus dos llamadas: no son
@@ -489,7 +489,8 @@ carrito) sólo cuando quita algo.
 | `routes.py` `script` | el script completo, enseñado a su dueño (el árbol del propietario) | info |
 | `routes.py` `peek_proof` | un enlace de prueba que no vale para esta cuenta (de otra, usado o caducado) | info |
 
-**Por qué el endpoint se queda en 17 y no llega a 30.** Las rutas de la tienda son finas, a propósito (regla 5 del
+**Por qué el endpoint se quedaba en 17** (el plan del 16-11-2026; el 24-11-2026 el dueño decidió que llegue a 30, en
+«Endpoint hasta 30», más abajo). Las rutas de la tienda son finas, a propósito (regla 5 del
 `CLAUDE.md`): `routes.py` recibe y responde, y lo que se decide pasa en los módulos de al lado, que el recuento suma al
 servidor. Por ejemplo, el permiso de una descarga (`downloads.checked`), el de Mis estrategias (`mine`) o el cobro
 (`orders.capture`). Quedan 22 rutas, y la línea de cada petición es del núcleo (0.36: `zlecitool.requests`, con
@@ -502,7 +503,7 @@ que ya dice su módulo, y las dos cosas son relleno. Las 17 son decisiones que l
 |---|---|---|---|
 | Cliente | 1 | 37 | ≥ 30 |
 | Servidor | 52 | 71 | ≥ 65 |
-| Endpoint | 5 | 17 | ≥ 30: no llega, y arriba se dice por qué |
+| Endpoint | 5 | 17 (30 el 24-11-2026: abajo) | ≥ 30 |
 
 Lo de la tabla del plan, con un cambio en el endpoint. La línea de `_start` (PayPal de verdad sin
 `ZLECITOOL_PUBLIC_URL`) no hacía falta: `Settings.from_env` ya no deja arrancar así, con su explicación. En su lugar
@@ -526,4 +527,47 @@ rastro.
   - los tres pasos de la importación;
   - y, en el Chromium de la sesión, la página: un `/api/fx` que falla da su `warn`, y la pestaña «Cómo decide», la
     vuelta a la tienda y Pro dan sus tres `Vista`, con su nombre fijo y sin la estrategia.
+
+### Endpoint hasta 30 (24-11-2026)
+
+El dueño decide que el endpoint también llegue a 30, aunque las rutas sean finas. Para llegar sin meter lógica en
+`routes.py` ni relleno, se escribe lo que la ruta sabe y el servicio no: qué recibió y qué no valía antes de llamarlo,
+qué respuesta eligió y por qué, y cuántos resultados, nunca lo buscado. Es lo que la línea de cada petición del núcleo
+no dirá (ella dice la regla, el estado, el tiempo y la cuenta), y ninguna la copia.
+
+| Fichero, función | Línea | Nivel |
+|---|---|---|
+| `routes.py` `limited` | `Tope de peticiones \| límite=free\|proof tope= ventana_s=`: cuál de los topes saltó (el rechazo sólo dice `errTooMany`) | info |
+| `routes.py` `text_language` | `ind_lang` que no es de los nuestros: las explicaciones, en el idioma de la petición (sin el valor) | debug |
+| `routes.py` `strategies` | `Lista \| resultados= filas= página= tamaño= filtros= búsqueda=sí\|no`: cuántos y con cuántos filtros, nunca cuáles ni lo buscado | debug |
+| `routes.py` `strategy` | la ficha pedida por su alias de antes (un carrito viejo): se da la de su id | debug |
+| `routes.py` `fx` | los cambios de ejemplo del repo, aún sin los del día (una vez por proceso) | info |
+| `routes.py` `quote` | `Presupuesto \| estrategias= lotes= pack= código=applied\|invalid\|sin total=` (el código, nunca) | debug |
+| `routes.py` `capture` | `Recibo con enlaces \| pedido= por=cookie\|cuenta\|correo`: por qué los ve (`orders.link_access`, nueva; `may_see_links` la usa) | info |
+| `routes.py` `_email_receipt` | `Recibo por correo \| pedido= idioma=` (sólo si el pedido tiene correo) | info |
+| `routes.py` `download` | `?format=` que no es `pine` ni `zip`: se da el `.pine` (sin el valor) | info |
+| `routes.py` `free_claim` | una gratis, con la sesión abierta, para otra dirección que la de la cuenta: no sale en Mis estrategias hasta demostrarla | info |
+| `routes.py` `my_strategies` | `Mis estrategias \| user_id= estrategias= favoritas= correos_demostrados=` | debug |
+| `routes.py` `ask_proof` | la prueba de un correo para otra dirección que la de la cuenta (sin ninguna de las dos) | info |
+| `routes.py` `peek_proof` | el enlace de una prueba, abierto y sin confirmar (abrirlo no lo gasta) | info |
+
+Las de `debug` son de lo que la página pide a menudo (cada lista, cada presupuesto, cada visita a Mis estrategias): en
+desarrollo, en el fichero del día; en producción, el núcleo deja el paquete en INFO y no salen.
+
+| Capa | Antes | Después | Objetivo |
+|---|---|---|---|
+| Cliente | 1 | 37 | ≥ 30 |
+| Servidor | 52 | 71 | ≥ 65 |
+| Endpoint | 5 | 30 | ≥ 30 |
+
+Las pruebas, en `tests/test_logs.py`:
+
+- el recibo dice por qué lleva enlaces y que se mandó por correo, sin el correo;
+- una lista dice cuántos sin lo buscado, y lo mismo un idioma que no tenemos y la ficha por su alias;
+- el presupuesto, sin el código;
+- los cambios de ejemplo, una sola vez;
+- el tope de la ruta dice cuál;
+- un formato de descarga que no existe da el `.pine`, sin el valor;
+- una cuenta que pide una gratis y una prueba para otra dirección, y que abre el enlace, sin ninguna de las dos
+  direcciones.
 

@@ -17,7 +17,17 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
 
 - **Los pagos, del núcleo.** `edgefolio/paypal.py` es un cliente de PayPal propio, y desde la 0.35 los pagos son del
   núcleo (CONTRATO §10, «Pagar: Stripe y PayPal»). Su migración estaba pendiente antes de la ronda de logs, y sus logs
-  se van con ella.
+  se van con ella. Las decisiones del dueño para ella (Luis, 24-11-2026):
+  1. **El IVA va incluido en el precio.**
+  2. **Pasarela: PayPal y Stripe, las dos**; no nos cerramos a una.
+  3. **Recibo: uno solo, el del núcleo**, que ya lleva el IVA desglosado; la tienda lo enseña y lo enlaza (deja de
+     mandar el suyo, `mailReceiptBody`).
+  4. **Sus pruebas no esperan a nada:** la pasarela de pruebas del núcleo existe desde la 0.35
+     (`testing.fake_payments`, `testing.FakeGateway`; CONTRATO).
+
+  El trabajo se definió como WP1, WP2 y WP3 en el chat «trade» de claude.ai, que no está escrito en este repo: hace
+  falta traer aquí qué es cada uno antes de empezarlos. Las claves de Alpaca, sólo por el formulario seguro, nunca por
+  un chat.
 - **Lo de los logs que espera a la 0.36** (abajo, «Para el núcleo»): el frontal, los cambios de pantalla, la traza de
   la llamada al BCE y las comprobaciones de `check_tool()`. Lo que hará la tienda con cada cosa, en
   [tecnico/LOGS.md](tecnico/LOGS.md).

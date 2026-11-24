@@ -152,6 +152,23 @@ README de aquí: la base de datos, las compras, la prueba de un correo.
     por prueba se comía 20 de sus 82 minutos). `tests/test_layout.py` lo
     vigila. Regla del dueño, 15-11-2026: que no se repita en ninguna
     herramienta.
+25. **Los logs.** Cada cambio trae sus líneas en el mismo commit: una ruta, una
+    pantalla, un servicio, una tarea o un trabajo nuevos, con las suyas; un
+    `except` o un `catch` nuevo, con su decisión (su línea, o un comentario que
+    diga por qué calla). `docs/tecnico/LOGS.md` se queda al día, capa a capa y
+    con su cuenta. **Ninguna capa por debajo de 30**: cliente, servidor y
+    endpoint (el 24-11-2026, 37, 71 y 30). En el endpoint (`edgefolio/routes.py`)
+    va lo que sólo sabe la ruta: lo que rechaza antes de llamar al servicio, qué
+    respuesta elige y por qué, cuántos resultados; nunca una copia de la línea
+    de cada petición del núcleo ni lo buscado. En el navegador, hasta la 0.36,
+    el ayudante de la tienda, `static/js/lib/log.js` (`log.debug`, `info`,
+    `warn`, `error` y `log.view(tipo, nombre)`, éste sólo al cambiar de
+    pantalla, pestaña o diálogo). Claves en minúsculas y sin tildes; nada
+    personal (ni correo, ni nombre, ni lo que tecleó la persona, ni la IP, ni
+    tokens, códigos o PIN: las cuentas, por su id; las estrategias, por el suyo);
+    y sin relleno: cada línea, un suceso de verdad; lo repetido, a DEBUG. Lo
+    nuevo que importa, con su prueba con `caplog` en `tests/test_logs.py`. La
+    pauta entera, en el PLAN §12 y el CONTRATO §27 del núcleo.
 
 ## La aplicación gemela
 

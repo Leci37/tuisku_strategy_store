@@ -1,0 +1,28 @@
+1
+00:00:00,150 --> 00:00:07,950
+Si administras tuisku, el panel de Edgefolio está en el menú de tu cuenta: Métricas.
+
+2
+00:00:08,200 --> 00:00:17,760
+Aquí ves las cuentas y los mensajes de cada herramienta. Las ventas con PayPal de la tienda todavía no salen aquí.
+
+3
+00:00:18,010 --> 00:00:28,370
+En Sistema están las tareas de la tienda: los cambios de moneda, los avisos de las favoritas y la limpieza de cada noche.
+
+4
+00:00:28,620 --> 00:00:35,880
+Más abajo, quién administra y qué pasa cuando alguien borra su cuenta.
+
+5
+00:00:36,130 --> 00:00:42,340
+En Registro, lo importante que ha pasado: quién y cuándo.
+
+6
+00:00:42,590 --> 00:00:47,350
+Y aquí contestas los mensajes que llegan por Contacto.
+
+7
+00:00:47,600 --> 00:00:55,280
+Y con Volver a la app, estás otra vez en la tienda.
+

@@ -1,0 +1,113 @@
+{
+  "video": "edgefolio_d920601_usuario_escritorio.mp4",
+  "duration": 109.29,
+  "language": "es-ES",
+  "how": "Una pista de audio por frase; cada una empieza en 'start' y no debe pasar de 'slot' segundos (hasta la frase siguiente). Si una pasa, se acorta el texto o se graba otra vez el vídeo con más pausa; el vídeo no se acelera.",
+  "segments": [
+    {
+      "id": "U1",
+      "start": 0.0,
+      "slot": 7.44,
+      "text": "Esto es Edgefolio: estrategias para TradingView, con su backtest, listas para descargar.",
+      "sees": "La tienda, la primera vez: el recorrido de bienvenida, paso 1, «Elige un mercado»"
+    },
+    {
+      "id": "U2",
+      "start": 7.44,
+      "slot": 9.46,
+      "text": "Cada curva es el backtest de la estrategia. Y ten presente el aviso: el pasado no promete el futuro.",
+      "sees": "Paso 2, «Lee la curva»"
+    },
+    {
+      "id": "U3",
+      "start": 16.9,
+      "slot": 5.35,
+      "text": "Pagas con PayPal, descargas el script y lo pegas en TradingView.",
+      "sees": "Paso 3, «Compra y cárgala en TradingView»; pulsa «Empezar»"
+    },
+    {
+      "id": "U4",
+      "start": 22.25,
+      "slot": 8.53,
+      "text": "En Lite tienes las destacadas, los packs y un aviso claro de entre cuántas estrategias probadas se eligieron estas.",
+      "sees": "Lite: la cabecera, las pestañas y el aviso de sobreajuste"
+    },
+    {
+      "id": "U5",
+      "start": 30.78,
+      "slot": 6.12,
+      "text": "Busca un mercado que conozcas, por ejemplo NVIDIA.",
+      "sees": "Escribe «NVDA» en el buscador"
+    },
+    {
+      "id": "U6",
+      "start": 36.9,
+      "slot": 8.54,
+      "text": "Cada tarjeta enseña su curva, su tasa de acierto, sus operaciones y una nota: cuánta prueba respalda el backtest.",
+      "sees": "Las dos estrategias de NVDA: su curva, su acierto, sus operaciones, su nota y su precio"
+    },
+    {
+      "id": "U7",
+      "start": 45.44,
+      "slot": 5.31,
+      "text": "Abre su ficha técnica para ver los resultados completos.",
+      "sees": "Pulsa «Ficha técnica» en la primera"
+    },
+    {
+      "id": "U8",
+      "start": 50.75,
+      "slot": 6.9,
+      "text": "Aquí están su precio, los gráficos, los resultados del backtest y el principio del script.",
+      "sees": "La ficha: el precio, «Añadir al carrito», el aviso y, más abajo, los gráficos y los resultados"
+    },
+    {
+      "id": "U9",
+      "start": 57.65,
+      "slot": 9.3,
+      "text": "En Cómo decide ves su árbol de decisión: qué mira para comprar o vender. Al comprarla, lo ves entero.",
+      "sees": "La pestaña «Cómo decide»: el árbol de decisión"
+    },
+    {
+      "id": "U10",
+      "start": 66.95,
+      "slot": 4.14,
+      "text": "¿Te convence? Añádela al carrito.",
+      "sees": "Pulsa «Añadir al carrito»"
+    },
+    {
+      "id": "U11",
+      "start": 71.09,
+      "slot": 8.63,
+      "text": "En el carrito ves el total, lo que pagas con PayPal y cuánto valen los enlaces de descarga.",
+      "sees": "Vuelve a la tienda: el carrito, abajo, con lo que se paga con PayPal y la fila de confianza"
+    },
+    {
+      "id": "U12",
+      "start": 79.72,
+      "slot": 5.34,
+      "text": "Pulsa Pagar y paga con PayPal.",
+      "sees": "Pulsa «Pagar» (el PayPal de prueba lleva directo a Gracias)"
+    },
+    {
+      "id": "U13",
+      "start": 85.06,
+      "slot": 8.2,
+      "text": "Pagado. Tus descargas están listas, y este tutorial te enseña a instalarla en TradingView paso a paso.",
+      "sees": "Gracias: el pago hecho y el tutorial de instalación, paso 1 «Descarga y copia el script»"
+    },
+    {
+      "id": "U14",
+      "start": 93.26,
+      "slot": 6.91,
+      "text": "Cuando quieras, cierra el tutorial: aquí tienes el script y un zip con sus reglas.",
+      "sees": "Cierra el tutorial: las descargas (.pine, .zip) y «Ir a Mis estrategias»"
+    },
+    {
+      "id": "U15",
+      "start": 100.17,
+      "slot": 9.12,
+      "text": "Y todo queda en Mis estrategias, con su enlace, por si lo vuelves a necesitar.",
+      "sees": "Pulsa «Ir a Mis estrategias»: la estrategia comprada, con su .pine, su .zip y su enlace"
+    }
+  ]
+}

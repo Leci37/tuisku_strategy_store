@@ -1,0 +1,57 @@
+{
+  "video": "edgefolio_d920601_admin_escritorio.mp4",
+  "duration": 56.45,
+  "language": "es-ES",
+  "how": "Una pista de audio por frase; cada una empieza en 'start' y no debe pasar de 'slot' segundos (hasta la frase siguiente). Si una pasa, se acorta el texto o se graba otra vez el vídeo con más pausa; el vídeo no se acelera.",
+  "segments": [
+    {
+      "id": "A1",
+      "start": 0.0,
+      "slot": 8.05,
+      "text": "Si administras tuisku, el panel de Edgefolio está en el menú de tu cuenta: Métricas.",
+      "sees": "La tienda con la sesión de quien administra; abre «Métricas» en el menú de la cuenta"
+    },
+    {
+      "id": "A2",
+      "start": 8.05,
+      "slot": 9.81,
+      "text": "Aquí ves las cuentas y los mensajes de cada herramienta. Las ventas con PayPal de la tienda todavía no salen aquí.",
+      "sees": "«Métricas»: elige la herramienta «edgefolio»; las cuentas y los mensajes de contacto"
+    },
+    {
+      "id": "A3",
+      "start": 17.86,
+      "slot": 10.61,
+      "text": "En Sistema están las tareas de la tienda: los cambios de moneda, los avisos de las favoritas y la limpieza de cada noche.",
+      "sees": "«Sistema»: las tres tareas de la tienda, con su hora y su próxima vez"
+    },
+    {
+      "id": "A4",
+      "start": 28.47,
+      "slot": 7.51,
+      "text": "Más abajo, quién administra y qué pasa cuando alguien borra su cuenta.",
+      "sees": "«Sistema», más abajo: quién administra y lo que pasa al borrar una cuenta"
+    },
+    {
+      "id": "A5",
+      "start": 35.98,
+      "slot": 6.46,
+      "text": "En Registro, lo importante que ha pasado: quién y cuándo.",
+      "sees": "«Registro»: lo sensible, con quién y cuándo"
+    },
+    {
+      "id": "A6",
+      "start": 42.44,
+      "slot": 5.01,
+      "text": "Y aquí contestas los mensajes que llegan por Contacto.",
+      "sees": "«Mensajes de contacto»"
+    },
+    {
+      "id": "A7",
+      "start": 47.45,
+      "slot": 9.0,
+      "text": "Y con Volver a la app, estás otra vez en la tienda.",
+      "sees": "«Volver a la app»: otra vez la tienda"
+    }
+  ]
+}

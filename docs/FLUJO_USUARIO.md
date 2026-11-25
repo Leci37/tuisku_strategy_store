@@ -4,6 +4,7 @@
 - **Documentos hermanos,** con la misma numeración de pantallas (1–9):
   - `docs/PANTALLAS.md`: qué contiene cada pantalla;
   - `docs/API_ENDPOINTS.md`: qué manda y qué recibe cada pantalla.
+  - Lo de quien administra (el panel del núcleo), en `docs/FLUJO_ADMINISTRADOR.md` (2026-11-25).
 - **Llamadas al servidor:** cada paso dice cuál hace. El número (API #7) es el de `docs/API_ENDPOINTS_referencia.md` y `docs/API_ENDPOINTS.md`.
 - **Repositorio:** `Leci37/tuisku_strategy_store` (antes `tuisku_Web_selling`), rama `_ztool_dev`, núcleo zlecitool-core 0.31.2.
 - **Catálogo:** el de 2026-10, 94 estrategias (84 de pago y 10 gratis) de 36 tickers, todas publicadas el 13 oct 2026: 88 de 1Day y 6 de cripto de 1Hour. Las 49 horarias de acciones salieron el 26 oct 2026 (`catalogue/release.json` dice cuáles y por qué).

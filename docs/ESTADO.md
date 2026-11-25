@@ -6,6 +6,14 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
 
 ## Lo hecho
 
+### Núcleo 0.35.0 — el ciclo de la 0.36 en los documentos (25-11-2026)
+
+Sin tocar el código: `docs/` en los cuatro bloques del núcleo (`README.md` nuevo; `VISION.md`,
+`DECISIONES.md`, `COSTES.md`, `DATOS.md` y `FLUJO_ADMINISTRADOR.md`, escritos desde el código y lo que ya
+había; el índice de antes y las notas de la tienda de 2024, a `historico/`), los enlaces a las rutas nuevas
+del núcleo, `market/` (cómo se vende) y los vídeos de los dos flujos (`market/videos/VIDEOS.md`). Lo que el
+código ya pide de la 0.36 sigue esperando: abajo, «Con la 0.36».
+
 ### Núcleo 0.35.0 — la ronda de logs (15-11-2026)
 
 - Cada cambio de estado deja su línea (pedidos y cobros, enlaces y descargas, gratis y novedades, pruebas de correo,
@@ -35,6 +43,24 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
 - **Lo de los logs que espera a la 0.36** (abajo, «Para el núcleo»): el frontal, los cambios de pantalla, la traza de
   la llamada al BCE y las comprobaciones de `check_tool()`. Lo que hará la tienda con cada cosa, en
   [tecnico/LOGS.md](tecnico/LOGS.md).
+- **Lo que sigue abierto de octubre**, de decidir por el dueño (las condiciones de TradingView para vender scripts,
+  lo caducado que se sigue vendiendo, los niveles en el servidor…): en «Lo que sigue abierto» de
+  [handoff/2026-10-06/CAMBIOS.md](handoff/2026-10-06/CAMBIOS.md). Lo ya decidido, en [DECISIONES.md](DECISIONES.md).
+
+## Con la 0.36
+
+Cuando el núcleo etiquete la 0.36 y la tienda suba (`docs/estandar/ESTRUCTURA.md` §12 del núcleo), en el mismo
+cambio, y nada de ello antes:
+
+- **El pin**, en `requirements.txt`.
+- **`docs/DATOS.md`, sus «Tablas»** generadas (`flask --app app zt tables --write docs/DATOS.md`): los docstrings de
+  las nueve tablas ya están.
+- **`tests/test_flow.py`** con `testing.flow` y `flow.assert_walked` (hoy el recorrido de compra es
+  `tests/test_walkthrough.py`); las marcas `<!-- zt:paso … -->` en los dos flujos, sus capturas (`FLOW_SHOTS=1`, en
+  `docs/img/flujo/`) y `tests/test_docs.py` con `flow.doc_problems`.
+- **`check_tool()` con `logs_check`**, y lo de los logs que ya esperaba: `zt.log` en lugar del ayudante
+  `static/js/lib/log.js`, `external_call` para el BCE, la línea de cada petición y `accesslog = None` (abajo,
+  «Para el núcleo»; el plan, en [tecnico/LOGS.md](tecnico/LOGS.md)).
 
 ## Para el núcleo
 

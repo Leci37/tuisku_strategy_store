@@ -17,8 +17,8 @@ Lo que hay de verdad, el 2026-11-25.
 on-premise) y `stores/`.
 
 **La ronda en curso:** ninguna. Las de diseño de la tienda (v2 a v7 y el «Improvements Lab», de Claude
-Design, 2026-10-06) están en `docs/design/` y `docs/handoff/` ([README.md](README.md), «Las rondas de la
-tienda»). El encargo de la próxima con Artifacts, en [artifacts/BRIEF.md](artifacts/BRIEF.md).
+Design, 2026-10-06) están en `docs/design/` y `docs/handoff/`, y las enlaza
+[artifacts/README.md](artifacts/README.md). El encargo de la próxima con Artifacts, en [artifacts/BRIEF.md](artifacts/BRIEF.md).
 
 **Lo que frena la venta** (de `docs/handoff/2026-10-06/CAMBIOS.md`, «Lo que sigue abierto», y de
 `docs/ESTADO.md`; lo decide el dueño):

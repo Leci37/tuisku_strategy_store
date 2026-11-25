@@ -22,6 +22,7 @@ de la tienda (regla 17 de `CLAUDE.md`: las vistas son las del diseño).
 | [IDEAS.md](IDEAS.md) | las ideas, con su fecha, de dónde salen y su estado |
 | [web/PAGES.md](web/PAGES.md) | la parte de la tienda que vende, sección a sección |
 | [videos/VIDEOS.md](videos/VIDEOS.md) | cada vídeo (guía de usuario, de administración y comercial): su guion y su enlace de YouTube |
+| [artifacts/README.md](artifacts/README.md) | las rondas de diseño de la tienda y dónde está cada una |
 | [artifacts/BRIEF.md](artifacts/BRIEF.md) | el encargo de una ronda con Artifacts: qué leer y qué reglas cumplir |
 
 No tocan (MARKET.md §1, «cuando tocan»): `OFFER.md` (no se vende a empresas ni on-premise) y `stores/` (no va
@@ -41,21 +42,11 @@ Se queda donde está, porque lo lee el código o es de `docs/`:
 
 ## Las rondas de la tienda
 
-MARKET.md §7 del núcleo pide moverlas aquí, a `artifacts/<fecha>/`. **No se mueven**: son la base de la mezcla a
-tres con la que entra cada exportación nueva del diseño (`tools/design_update.py`, que comprueba
-`tests/test_design_update.py`), y el zip lo lee `tests/test_site.py`. Moverlas sería cambiar el código, y
-`docs/estandar/DOCS.md` §4 del núcleo ya dice que `design/` se queda donde está (el informe del ciclo 0.36 lo
-lleva a «Para el dueño»). Están aquí:
-
-| Ronda | Qué | Dónde |
-|---|---|---|
-| Storefront v7 (2026-10-06) | la tienda que hay: Lite, Pro, la ficha, Gracias, Mis estrategias y los diálogos | `docs/design/Storefront v7.dc.html` (`python docs/design/serve.py` la abre), sus notas en `docs/design/` y `docs/design/handoff/` |
-| Storefront v2 a v6 y «Storefront Redesign» | las rondas de antes | dentro del zip `docs/handoff/2026-10-06/edgefolio-design-2026-10-06.zip`, en `versions/` |
-| «Improvements Lab» | las 10 ideas que se probaron antes de pasar a la tienda | en el mismo zip, `versions/Improvements Lab.dc.html`; su estado, en [IDEAS.md](IDEAS.md) |
-| La tienda en un fichero | la maqueta v7 sin servidor | en el mismo zip, `offline/storefront-offline.html` |
-
-Lo que la tienda hace distinto del diseño, a propósito, y lo que se decidió de cada ronda: en
-`docs/handoff/2026-10-06/CAMBIOS.md`.
+**Se quedan en `docs/`** y se enlazan desde [artifacts/README.md](artifacts/README.md), con dónde está cada una
+(la v7 en `docs/design/`; de la v2 a la v6, «Storefront Redesign» y el «Improvements Lab», dentro del zip de
+`docs/handoff/2026-10-06/`). MARKET.md §7 del núcleo pedía moverlas a `artifacts/`, pero son la base de la mezcla
+a tres de `tools/design_update.py` y las leen `tests/test_design_update.py` y `tests/test_site.py`; decidido con
+la coordinadora del ciclo 0.36 el 2026-11-25.
 
 ## Antes de escribir aquí
 

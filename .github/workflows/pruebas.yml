@@ -15,7 +15,10 @@ on:
   push:
     # _ztool_dev: donde se trabaja; _ztool_main: lo que el dueño fusiona.
     branches: [_ztool_dev, _ztool_main]
+    # (0.36) Un cambio sólo de market/ (cómo se vende) no prueba nada: no gasta minutos.
+    paths-ignore: ["market/**"]
   pull_request:
+    paths-ignore: ["market/**"]
 
 concurrency:
   group: pruebas-${{ github.ref }}

@@ -14,6 +14,12 @@ Antes de escribir código, lee lo que el núcleo ofrece: su **CONTRATO.md**
 `Leci37/zlecitool-core`, en la etiqueta de `requirements.txt`). Y el
 README de aquí: la base de datos, las compras, la prueba de un correo.
 
+El orden de trabajo, `docs/estandar/CICLO.md` del núcleo: de la idea a la
+web publicada, qué documento va antes de cada cosa. Los de aquí, en
+`docs/` (su índice, `docs/README.md`, en los cuatro bloques de
+`docs/estandar/DOCS.md`); cómo se vende, en `market/`
+(`docs/estandar/MARKET.md`).
+
 ## Reglas
 
 1. **Lo común no se escribe aquí.** Cuentas, seguridad, estética, idiomas,
@@ -168,7 +174,7 @@ README de aquí: la base de datos, las compras, la prueba de un correo.
     tokens, códigos o PIN: las cuentas, por su id; las estrategias, por el suyo);
     y sin relleno: cada línea, un suceso de verdad; lo repetido, a DEBUG. Lo
     nuevo que importa, con su prueba con `caplog` en `tests/test_logs.py`. La
-    pauta entera, en el PLAN §12 y el CONTRATO §27 del núcleo.
+    pauta entera, en `docs/estandar/LOGS.md` y el CONTRATO §27 del núcleo.
 
 ## La aplicación gemela
 

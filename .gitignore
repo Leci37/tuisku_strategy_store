@@ -23,3 +23,9 @@ cache/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# --- market/: los vídeos van al canal de YouTube, nunca al repo (sólo su guion y su enlace) ---
+market/**/*.mp4
+market/**/*.mov
+market/**/*.webm
+market/**/*.mkv

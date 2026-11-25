@@ -1,6 +1,6 @@
 # Estado de Edgefolio
 
-Lo hecho, lo que falta y lo que se pide al núcleo (`ESTANDAR_DOCS.md` del núcleo, §1). Empieza el 15-11-2026, con la
+Lo hecho, lo que falta y lo que se pide al núcleo (`docs/estandar/DOCS.md` del núcleo, §1). Empieza el 15-11-2026, con la
 ronda de logs; lo de antes está en el README («Qué cambió desde la versión FastAPI» y «Antes de volver a vender»), en
 `design/STATUS.md` (el del diseño) y en la historia del repo.
 

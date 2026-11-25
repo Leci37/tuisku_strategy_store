@@ -573,7 +573,7 @@ Las pruebas, en `tests/test_logs.py`:
 
 ### Claves sin tildes (24-11-2026)
 
-La regla 25 de `CLAUDE.md` (y el PLAN §12 del núcleo) pide las claves en minúsculas y sin tildes, para buscarlas
+La regla 25 de `CLAUDE.md` (y `docs/estandar/LOGS.md` del núcleo) pide las claves en minúsculas y sin tildes, para buscarlas
 sin dudar. Las que las llevaban cambian: `método=` → `metodo=`, `límite=` → `limite=`, `pestaña=` → `pestana=`,
 `página=` → `pagina=`, `tamaño=` → `por_pagina=`, `búsqueda=` → `busqueda=`, `código=` → `codigo=`, `día=` →
 `dia=`, `gráfico=` → `grafico=`, `gráficos_ausentes=` → `graficos_ausentes=`, `versión=` → `version=` y

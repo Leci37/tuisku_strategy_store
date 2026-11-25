@@ -24,7 +24,7 @@ desde el entorno, sin tocar el código:
 Con 4 núcleos: 9 procesos × 4 hilos = 36 peticiones a la vez. Lo que de verdad
 ocupa mucho tiempo no ocupa estos hilos: la IA va en trabajos en segundo plano
 (ZLECITOOL_JOB_WORKERS por proceso) y el PDF del servidor, en su cola. Medido
-con el loadtest/ de la plantilla (zlecitool-template) y en docs/PLAN.md del núcleo, §10.
+con el loadtest/ de la plantilla (zlecitool-template) y en docs/plan/PLAN.md del núcleo, §10.
 
 Sin preload_app: el reloj de las tareas programadas (núcleo 0.25) vive en cada
 proceso, y los hilos no pasan de un fork. Con él corre «Tus datos» (núcleo 0.30:

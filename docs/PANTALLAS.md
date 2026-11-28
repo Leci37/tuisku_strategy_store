@@ -191,7 +191,7 @@ De arriba abajo:
 
 ![La franja de Pro con un pack, dos estrategias y un código](img/edgefolio_es_strip.png)
 
-**Fila de confianza:** «PayPal: nunca vemos tu tarjeta», «Enlaces: 7 días, 10 descargas», «Factura por correo» y sales@tuisku.ai.
+**Fila de confianza:** «PayPal: nunca vemos tu tarjeta», «Enlaces: 7 días, 10 descargas», «Recibo por correo» y sales@tuisku.ai.
 
 Después de **Pagar** viene PayPal, fuera de la tienda.
 

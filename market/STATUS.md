@@ -28,5 +28,5 @@ Design, 2026-10-06) están en `docs/design/` y `docs/handoff/`, y las enlaza
 - el catálogo caduca el 13 jun 2027 (la «Expiry date» de sus scripts) y, sin uno nuevo, después se seguiría
   vendiendo;
 - los pagos, que pasan al núcleo (PayPal y Stripe, el IVA incluido, el recibo del núcleo);
-- la fila de confianza dice «Factura por correo», y lo que llega es un recibo, sin datos fiscales
-  ([MESSAGES.md](MESSAGES.md)).
+- el recibo es de la tienda, sin datos fiscales: la fila de confianza dice «Recibo por correo» (antes, «Factura»,
+  cambiado el 2026-11-25) hasta que llegue el del núcleo, con el IVA ([MESSAGES.md](MESSAGES.md)).

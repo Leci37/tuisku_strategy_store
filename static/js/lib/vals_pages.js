@@ -49,7 +49,7 @@ export function pageVals(c) {
     tourOpen: TS >= 0, tourS1: TS <= 0, tourS2: TS === 1, tourS3: TS === 2, tourHasBack: TS > 0,
     tourStepLabel: t('tourStepOf', { n: f.int(Math.max(0, TS) + 1), total: f.int(3) }),
     tourTitle: t(['tour1Title', 'tour2Title', 'tour3Title'][Math.max(0, TS)]),
-    tourText: TS <= 0 ? t(s.mode === 'pro' ? 'tour1Pro' : 'tour1Lite') : TS === 1 ? t('tour2Text') : t('tour3Text'),
+    tourText: TS <= 0 ? t(s.mode === 'pro' ? 'tour1Pro' : 'tour1Lite') : TS === 1 ? t('tour2Text') : tx.tour3Text,
     tourNextLabel: TS === 2 ? t('tourStart') : t('tourNext'),
     tourNext: () => { if (TS >= 2) closeTour(); else app.setState({ tourStep: TS + 1 }); },
     tourBack: () => app.setState({ tourStep: Math.max(0, TS - 1) }),

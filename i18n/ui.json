@@ -977,14 +977,14 @@
     "hi": "खरीदें और TradingView में लोड करें"
   },
   "tour3Text": {
-    "es": "Paga con PayPal y descarga el Pine Script. En TradingView, pégalo en el Pine Editor y pulsa «Add to chart». Los enlaces de descarga valen 7 días.",
-    "en": "Pay with PayPal and download the Pine Script. In TradingView, paste it into the Pine Editor and click Add to chart. Download links stay valid for 7 days.",
-    "pt": "Paga com PayPal e descarrega o Pine Script. No TradingView, cola-o no Pine Editor e carrega em «Add to chart». As ligações de download valem 7 dias.",
-    "fr": "Payez avec PayPal et téléchargez le Pine Script. Dans TradingView, collez-le dans le Pine Editor et cliquez sur « Add to chart ». Les liens de téléchargement restent valables 7 jours.",
-    "de": "Mit PayPal bezahlen und das Pine Script herunterladen. In TradingView im Pine Editor einfügen und auf „Add to chart“ klicken. Download-Links gelten 7 Tage.",
-    "zh": "用 PayPal 付款并下载 Pine Script。在 TradingView 中把它粘贴到 Pine Editor，然后点击“Add to chart”。下载链接 7 天内有效。",
-    "ar": "ادفع عبر PayPal ونزّل Pine Script. في TradingView الصقه في Pine Editor ثم انقر «Add to chart». تبقى روابط التنزيل صالحة 7 أيام.",
-    "hi": "PayPal से भुगतान करें और Pine Script डाउनलोड करें। TradingView में उसे Pine Editor में पेस्ट करें और «Add to chart» दबाएँ। डाउनलोड लिंक 7 दिन तक चलते हैं।"
+    "es": "Paga con PayPal y descarga el Pine Script. En TradingView, pégalo en el Pine Editor y pulsa «Add to chart». Los enlaces de descarga valen {days}.",
+    "en": "Pay with PayPal and download the Pine Script. In TradingView, paste it into the Pine Editor and click Add to chart. Download links stay valid for {days}.",
+    "pt": "Paga com PayPal e descarrega o Pine Script. No TradingView, cola-o no Pine Editor e carrega em «Add to chart». As ligações de download valem {days}.",
+    "fr": "Payez avec PayPal et téléchargez le Pine Script. Dans TradingView, collez-le dans le Pine Editor et cliquez sur « Add to chart ». Les liens de téléchargement restent valables {days}.",
+    "de": "Mit PayPal bezahlen und das Pine Script herunterladen. In TradingView im Pine Editor einfügen und auf „Add to chart“ klicken. Download-Links gelten {days}.",
+    "zh": "用 PayPal 付款并下载 Pine Script。在 TradingView 中把它粘贴到 Pine Editor，然后点击“Add to chart”。下载链接 {days}内有效。",
+    "ar": "ادفع عبر PayPal ونزّل Pine Script. في TradingView الصقه في Pine Editor ثم انقر «Add to chart». تبقى روابط التنزيل صالحة لمدة {days}.",
+    "hi": "PayPal से भुगतान करें और Pine Script डाउनलोड करें। TradingView में उसे Pine Editor में पेस्ट करें और «Add to chart» दबाएँ। डाउनलोड लिंक {days} तक चलते हैं।"
   },
   "expNpp": {
     "es": "Beneficio neto %: lo que ganó la estrategia en el backtest, como porcentaje del capital inicial.",
@@ -1891,14 +1891,14 @@
     "hi": "लिंक: {days}, {downloads}"
   },
   "trustInvoice": {
-    "es": "Factura por correo",
-    "en": "Invoice by email",
-    "pt": "Fatura por e-mail",
-    "fr": "Facture par e-mail",
-    "de": "Rechnung per E-Mail",
-    "zh": "电子邮件发票",
-    "ar": "فاتورة بالبريد الإلكتروني",
-    "hi": "ईमेल से इनवॉइस"
+    "es": "Recibo por correo",
+    "en": "Receipt by email",
+    "pt": "Recibo por e-mail",
+    "fr": "Reçu par e-mail",
+    "de": "Quittung per E-Mail",
+    "zh": "电子邮件收据",
+    "ar": "إيصال بالبريد الإلكتروني",
+    "hi": "ईमेल से रसीद"
   },
   "payNote": {
     "es": "Pagas {amount} con PayPal",

@@ -264,7 +264,7 @@ HttpOnly, 30 días; en la base de datos sólo su hash), la cuenta que compró co
 compró sin cuenta, una cuenta que ha demostrado el correo de PayPal. Cualquier otro (alguien con el id del
 pedido, que va en la dirección de vuelta de PayPal) recibe el recibo sin enlaces.
 
-**El recibo por correo** (la «factura por correo» que promete la fila de confianza bajo «Pagar»): el
+**El recibo por correo** (el «Recibo por correo» de la fila de confianza bajo «Pagar»; decía «Factura», hasta el 2026-11-25): el
 primer cobro de un pedido lo manda al correo del pedido (el de la cuenta o, sin cuenta, el de PayPal),
 en el idioma de la página: cada línea con lo que costó, el total, cuánto valen los enlaces y la
 dirección de Mis estrategias, sin enlaces de descarga (un correo no demuestra nada; ver abajo). Es un

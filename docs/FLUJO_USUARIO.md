@@ -148,7 +148,7 @@
 - Tiene 3 pasos, cada uno con «Paso N de 3»:
   1. «Elige un mercado», con el texto de Lite o el de Pro. El de Pro no lleva cifra: «Acota el catálogo con los filtros del panel: beneficio neto, precio, símbolo, temporalidad, indicadores y 16 más.»;
   2. «Lee la curva»;
-  3. «Compra y cárgala en TradingView».
+  3. «Compra y cárgala en TradingView», que acaba con lo que valen los enlaces de descarga: los días de `DOWNLOAD_DAYS` (API #1), con la forma que pide su número, como la fila de confianza («Los enlaces de descarga valen 7 días.»; decía 7, escrito en el texto, hasta el 2026-11-25).
 - **Controles:**
   - **Continuar**, **Atrás** (desde el paso 2) y **Empezar** (paso 3);
   - **×**, **Esc** o **Empezar** lo cierran y lo dejan como visto; un clic en el fondo oscuro no lo cierra;
@@ -243,7 +243,7 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 **📱 (390 px):**
 - Las pestañas se desplazan de lado: «Cripto» queda cortada en el borde, y «Novedades · N» y «Gratis», fuera hasta deslizar.
 - Los packs, «Arma tu pack» y las tarjetas van en una columna.
-- El carrito flotante va encima de la barra de abajo y mide unos 190 px con su fila de PayPal, enlaces y factura (abrir la casilla del código no lo cambia; con un código aplicado, su mensaje y el subtotal tachado lo llevan a unos 265 px). La píldora Comparar va dentro de él, encima, y le suma unos 46 px.
+- El carrito flotante va encima de la barra de abajo y mide unos 190 px con su fila de PayPal, enlaces y recibo (abrir la casilla del código no lo cambia; con un código aplicado, su mensaje y el subtotal tachado lo llevan a unos 265 px). La píldora Comparar va dentro de él, encima, y le suma unos 46 px.
 - El recorrido y el selector del pack ocupan el ancho menos 16 px por lado.
 - Los «?» de acierto y operaciones (13 px de alto), **Ficha técnica** y **Cómo decide** (20 px) son pequeños para un dedo.
 
@@ -529,7 +529,7 @@ Las imágenes de las tarjetas son miniaturas WebP (API #6).
 | ¿Tienes un código? (Lite) / Código + **Aplicar** | El código va al servidor al pulsar **Aplicar** o con Intro (no mientras se compone en chino o en hindi). Da igual en mayúsculas o con espacios. Según `code_status`, sale «Código de descuento aplicado» o, en rojo, «Código no válido: sin descuento». Un código no válido deja de aplicarse, pero sigue escrito en la casilla. Con el carrito vacío no sale nada hasta que entra algo. Aplicar otra vez el mismo no borra el mensaje, y la casilla vacía quita el código. En Lite, la casilla ya no se cierra, y sale abierta si al llegar hay un código aplicado |
 | Escalera (Pro) | Los tramos vienen de API #1. «Añade X más para llegar al Y %» usa `next_tier.missing` (detalle bajo la tabla). Sin tramo, «Aún sin descuento por volumen» (con un código, «Aún sin descuento por volumen + 20 % con el código»); pasado el último, «Descuento máximo alcanzado». Con un código de precio fijo no hay escalera: «Aún sin descuento por volumen», sin «Añade …», y el subtotal tachado si el precio baja |
 | Totales | El subtotal tachado solo si hay descuento, y el total. En moneda local, «≈ …» («≈» va pegado al importe: nunca se queda solo al final de una línea) y «Pagas X US$ con PayPal» |
-| Fila de confianza | «PayPal: nunca vemos tu tarjeta»; «Enlaces: 7 días, 10 descargas», con las cifras de API #1, cada una con la forma que pide su número («1 día»; en árabe, «الروابط لمدة يومين وحتى 11 تنزيلًا»); «Factura por correo» (es un recibo, ver los puntos a revisar); el correo de contacto (`CONTACT_EMAIL`, sales@tuisku.ai) |
+| Fila de confianza | «PayPal: nunca vemos tu tarjeta»; «Enlaces: 7 días, 10 descargas», con las cifras de API #1, cada una con la forma que pide su número («1 día»; en árabe, «الروابط لمدة يومين وحتى 11 تنزيلًا»); «Recibo por correo» (decía «Factura por correo» hasta el 2026-11-25: es un recibo, sin datos fiscales); el correo de contacto (`CONTACT_EMAIL`, sales@tuisku.ai) |
 | **Vaciar carrito** (Pro) | Saca del carrito las estrategias, los packs y el pack propio. Las elegidas para «Arma tu pack» siguen en su tarjeta, y el código se queda, con su mensaje |
 
 Sobre la escalera: un tramo cuenta solo por encima de su importe. Por eso dice 53,01 US$ donde el diseño dice 53,00 (con el mismo carrito de 237 US$), y con el carrito vacío dice 160,01 US$.

@@ -19,16 +19,16 @@ barra, «Entrar», el pie) no se apuntan. Dónde sale cada uno, en [web/PAGES.md
 | La nota | Muestra: {n} operaciones cerradas. Menos operaciones, más riesgo de sobreajuste. | `gradeTip` |
 | Recorrido de bienvenida, 1 | Elige un mercado · Busca una empresa o una cripto, o usa las pestañas: Destacadas, Tasa de acierto, Acciones, Cripto y Gratis. (En Pro: Acota el catálogo con los filtros del panel…) | `tour1Title`, `tour1Lite`, `tour1Pro` |
 | Recorrido de bienvenida, 2 | Lee la curva · Cada curva es el backtest de TradingView de la estrategia. Mira la tasa de acierto y el número de operaciones, y ten presente el aviso de sobreajuste: los resultados pasados no prometen los futuros. | `tour2Title`, `tour2Text` |
-| Recorrido de bienvenida, 3 | Compra y cárgala en TradingView · Paga con PayPal y descarga el Pine Script. En TradingView, pégalo en el Pine Editor y pulsa «Add to chart». Los enlaces de descarga valen 7 días. | `tour3Title`, `tour3Text` |
-| La fila de confianza, bajo «Pagar» | PayPal: nunca vemos tu tarjeta · Enlaces: {days}, {downloads} · Factura por correo | `trustPaypal`, `trustLinks`, `trustInvoice` |
+| Recorrido de bienvenida, 3 | Compra y cárgala en TradingView · Paga con PayPal y descarga el Pine Script. En TradingView, pégalo en el Pine Editor y pulsa «Add to chart». Los enlaces de descarga valen {days}. | `tour3Title`, `tour3Text` |
+| La fila de confianza, bajo «Pagar» | PayPal: nunca vemos tu tarjeta · Enlaces: {days}, {downloads} · Recibo por correo | `trustPaypal`, `trustLinks`, `trustInvoice` |
 | Bajo el total | Pagas {amount} con PayPal | `payNote` |
 | La gratis | Consíguela gratis · Escribe tu correo y te enviamos el enlace de descarga. · Avísame también de estrategias nuevas (opcional) | `freeTitle`, `freeText`, `newsOpt` |
 | Gracias | ¡Gracias! El pago se ha completado. · Tus estrategias están listas para descargar. · Añádela a TradingView | `thanksTitle`, `thanksSub`, `installTitle` |
 
-**Lo que hay que mirar** (al informe del ciclo 0.36, «Para el dueño»; aquí no se cambia nada de la tienda):
+**Cambiados en el remate del ciclo 0.36** (2026-11-25, `docs/DECISIONES.md`):
 
-- **«Factura por correo»** (`trustInvoice`): lo que llega es un recibo, sin datos fiscales; para una factura, la
-  tienda da `CONTACT_EMAIL` (README, «Las descargas»). El diseño decía «By email, with VAT»: tampoco. Con los
-  pagos en el núcleo, el recibo será el suyo, con el IVA desglosado (decidido el 2026-11-24).
-- **«Los enlaces de descarga valen 7 días»** (`tour3Text`) lleva el 7 escrito; `trustLinks` lo toma de
-  `DOWNLOAD_DAYS`. Si cambia la configuración, el recorrido se queda atrás.
+- **«Recibo por correo»** (`trustInvoice`): decía «Factura por correo», y lo que llega es un recibo, sin datos
+  fiscales (para una factura, la tienda da `CONTACT_EMAIL`: README, «Las descargas»). El diseño decía «By email,
+  with VAT»: tampoco. Vuelve a «Factura» con el recibo del núcleo, con el IVA desglosado (decidido el 2026-11-24).
+- **El paso 3 del recorrido** (`tour3Text`) toma los días de `DOWNLOAD_DAYS`, como `trustLinks` y `freeSent`: llevaba
+  el 7 escrito.

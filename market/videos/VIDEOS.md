@@ -6,7 +6,7 @@ enlace; las imágenes, sí, en GitHub). El estándar: `docs/estandar/MARKET.md` 
 
 | Vídeo | Tipo | De qué sale | Guion | Idioma | YouTube | Duración | Estado |
 |---|---|---|---|---|---|---|---|
-| Cómo se compra en Edgefolio | guía de usuario | `docs/FLUJO_USUARIO.md` | [scripts/user-guide.md](scripts/user-guide.md) | es | | 1:49 | grabado, sin voz |
+| Cómo se compra en Edgefolio | guía de usuario | `docs/FLUJO_USUARIO.md` | [scripts/user-guide.md](scripts/user-guide.md) | es | | 1:49 | por regrabar (abajo) |
 | Cómo se administra Edgefolio | guía de administración | `docs/FLUJO_ADMINISTRADOR.md` | [scripts/admin-guide.md](scripts/admin-guide.md) | es | | 0:56 | grabado, sin voz |
 | Edgefolio en un minuto | comercial | `PITCH.md`, `MESSAGES.md` | — | es | | | por escribir |
 
@@ -20,7 +20,10 @@ voz de verdad: el servicio aún no está elegido.
 
 - **La guía de usuario** se graba con la sesión de una cuenta de prueba ya abierta (entrar es del núcleo y no
   sale) y con el PayPal de prueba de la tienda: «Pagar» va directo a Gracias. Con el PayPal de verdad, entre
-  los dos sale la página de PayPal: la voz ya dice «paga con PayPal».
+  los dos sale la página de PayPal: la voz ya dice «paga con PayPal». **Por regrabar** desde el 2026-11-25: en su
+  escena U11 (1:11) la fila de confianza aún dice «Factura por correo», y la tienda ya dice «Recibo por correo»
+  (`docs/DECISIONES.md`). El guion no cambia: la voz no nombra la factura. Antes de YouTube (la voz de verdad y el
+  sí del dueño), se graba otra vez con los mismos scripts.
 - **La guía de administración** es el panel del núcleo (`docs/FLUJO_ADMINISTRADOR.md`): sólo lo que le toca a
   la tienda (Métricas, Sistema, Registro, Mensajes de contacto).
 

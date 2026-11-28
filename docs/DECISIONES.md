@@ -47,6 +47,18 @@ Del recorrido de la tienda del 25 y el 26 de octubre (`CAMBIOS.md`, «Y las del 
 - **La línea de cada petición:** al subir a la 0.36 del núcleo, `accesslog = "-"` pasa a `accesslog = None`
   en `gunicorn.conf.py`, en el mismo cambio. Hasta entonces no se toca (`ESTADO.md`, «Para el núcleo» 4).
 
+## 2026-11-25
+
+De la coordinadora del ciclo 0.36, por delegación del dueño y revisable por él
+(`pruebas/2026-11-24_ciclo_036/RESPUESTAS.md`, «Edgefolio»):
+
+- **«Recibo por correo»**, no «Factura por correo», en la fila de confianza: es lo que llega (nada se promete que no
+  sea verdad hoy). Vuelve a «Factura» con el recibo con IVA del núcleo.
+- **El recorrido de bienvenida dice los días de `DOWNLOAD_DAYS`**, como la fila de confianza, sin el 7 escrito.
+- **`docs/design/` se queda donde está**: lo leen `tools/design_update.py` y sus pruebas (`market/artifacts/README.md`
+  lo enlaza).
+- **Las ventas en el panel del núcleo** esperan a que los pagos pasen al núcleo.
+
 ## 2026-11-24
 
 - **Los logs:** ninguna capa por debajo de 30 líneas (cliente, servidor y endpoint), después de pedir un

@@ -35,6 +35,8 @@ export function renderVals(app) {
   // con la forma que pide su número (en árabe, 2 lleva el dual, de 3 a 10 el plural y de 11 a 99 el singular)
   const links = linkCounts(t, f, (s.cfg && s.cfg.download_days) || 7, (s.cfg && s.cfg.max_downloads) || 10);
   tx.trustLinks = t('trustLinks', links);
+  // el paso 3 del recorrido de bienvenida: los enlaces valen DOWNLOAD_DAYS (decía 7, escrito en el texto; 2026-11-25)
+  tx.tour3Text = t('tour3Text', { days: links.days });
   // el «Hecho» de la gratis: su enlace vale DOWNLOAD_DAYS (decía 7, escrito en el texto)
   tx.freeSent = t('freeSent', { days: links.days });
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""El recibo por correo (la «factura por correo» de la fila de confianza bajo el botón de pagar): sale una
+"""El recibo por correo (el «Recibo por correo» de la fila de confianza bajo el botón de pagar): sale una
 vez, cuando el pago entra, en el idioma de la página que cobra."""
 from edgefolio import routes
 from tests.conftest import outbox

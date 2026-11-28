@@ -529,6 +529,44 @@ def test_the_free_dialog_says_how_long_its_link_lasts(real_app, chromium):
                 tab.close()
 
 
+def test_the_welcome_tour_says_how_long_the_links_last(real_app, chromium):
+    """El paso 3 del recorrido de bienvenida dice cuánto valen los enlaces de descarga (DOWNLOAD_DAYS, de API #1), en la
+    forma de su número, como la fila de confianza y el «Hecho» de la gratis; hasta el 2026-11-25 decía 7 días, escrito
+    en el texto de los 8 idiomas."""
+    for lang in LANGS:
+        assert "{days}" in UI["tour3Text"][lang] and not re.search(r"\d", UI["tour3Text"][lang]), lang
+    with mobile.serve(real_app) as live:
+        for lang, days, count in (("ar", 11, "11 يومًا"), ("es", 1, "1 día")):
+            tab = mobile.open_page(chromium, live, "laptop")
+            page = tab.page
+            try:
+                def config(route, days=days):
+                    response = route.fetch()
+                    route.fulfill(response=response, json={**response.json(), "download_days": days})
+                page.route(re.compile(r".*/api/config$"), lambda route: config(route))
+                tab.goto(f"/?lang={lang}")                    # la primera visita: el recorrido se abre solo
+                dialog = page.get_by_role("dialog")
+                dialog.wait_for()
+                for _ in range(2):                            # «Continuar», el último botón del paso 1 y del 2
+                    dialog.locator("button").last.click()
+                dialog.get_by_text(UI["tour3Title"][lang], exact=True).wait_for()
+                dialog.get_by_text(UI["tour3Text"][lang].replace("{days}", count), exact=True).wait_for()
+                assert tab.problems() == [], tab.problems()
+            finally:
+                tab.close()
+
+
+def test_the_trust_row_promises_a_receipt_not_an_invoice():
+    # Lo que llega por correo es un recibo, sin número de factura ni IVA (README, «Las descargas»): la fila de confianza
+    # decía «Factura por correo» (el diseño, «Invoice by email, with VAT»). Desde el 2026-11-25 dice «Recibo por correo»;
+    # vuelve a «Factura» con el recibo con IVA del núcleo (docs/ESTADO.md).
+    invoice = {"es": "actura", "en": "nvoice", "pt": "atura", "fr": "acture", "de": "Rechnung", "zh": "发票",
+               "ar": "فاتورة", "hi": "इनवॉइस"}
+    for lang in LANGS:
+        assert invoice[lang] not in UI["trustInvoice"][lang], lang
+    assert UI["trustInvoice"]["es"] == "Recibo por correo" and UI["trustInvoice"]["en"] == "Receipt by email"
+
+
 def test_the_receipt_says_how_to_see_a_purchase_made_without_an_account():
     # Decía «entra con este correo», y entrar no basta: lo comprado sin cuenta sale cuando la cuenta demuestra el correo,
     # en «¿Compraste sin cuenta?» (2026-11-15). Cada idioma nombra ese apartado como lo nombra la página.

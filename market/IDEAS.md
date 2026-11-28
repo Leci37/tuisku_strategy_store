@@ -17,7 +17,7 @@ comercial del mismo día):
 | 4 | Arma tu pack | hecha (`PACK_SIZE` por `PACK_PRICE`) |
 | 5 | Favoritas y avisos por correo (versión nueva, bajada de precio, en un lote) | hecha, con la prueba del correo |
 | 6 | Versiones y actualizaciones de pago, vendidas como **plan anual** | a medias: las versiones están (gratis hasta que la estrategia caduca, decidido el 2026-10-26); el plan anual, no. Hoy no hay versiones más allá de la v1 |
-| 7 | La fila de confianza junto a «Pagar» | hecha, con dos diferencias: el contacto es `sales@tuisku.ai` (el diseño, `.eu`) y dice «Factura por correo» sin el IVA; lo que llega es un recibo ([MESSAGES.md](MESSAGES.md)) |
+| 7 | La fila de confianza junto a «Pagar» | hecha, con dos diferencias: el contacto es `sales@tuisku.ai` (el diseño, `.eu`) y dice «Recibo por correo» (decía «Factura por correo», sin el IVA; cambiado el 2026-11-25: lo que llega es un recibo, [MESSAGES.md](MESSAGES.md)) |
 | 8 | El precio aproximado en tu moneda | hecha |
 | 9 | Lo nuevo del mes: la pestaña Novedades | hecha (`NEW_DAYS`) |
 | 10 | La barra de abajo en el móvil | hecha (con el gancho del núcleo, `data-zt-bottom`) |

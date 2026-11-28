@@ -24,7 +24,7 @@ La captura es de `tools/screenshots.py` (en `docs/img/`, la del README); la vent
 8. **El recorrido de bienvenida** (la primera visita, y con «? Ver tutorial»): Elige un mercado, Lee la curva,
    Compra y cárgala en TradingView.
 9. **El carrito y la fila de confianza** bajo «Pagar»: PayPal, los enlaces y el recibo
-   ([MESSAGES.md](../MESSAGES.md): dice «Factura por correo»).
+   («Recibo por correo»; [MESSAGES.md](../MESSAGES.md)).
 10. **Gracias** (después de pagar): las descargas y el tutorial de instalación en cinco pasos.
 11. **El pie** (de la carcasa): lo legal y Contacto.
 

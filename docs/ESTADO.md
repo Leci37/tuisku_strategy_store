@@ -6,6 +6,18 @@ ronda de logs; lo de antes está en el README («Qué cambió desde la versión 
 
 ## Lo hecho
 
+### Núcleo 0.35.0 — el remate del ciclo de la 0.36 (25-11-2026)
+
+Lo que contestó la coordinadora del ciclo, por delegación del dueño (`pruebas/2026-11-24_ciclo_036/RESPUESTAS.md`,
+«Edgefolio»; regla 1: nada se promete que no sea verdad hoy):
+
+- **La fila de confianza dice «Recibo por correo»** (`trustInvoice`, en los 8 idiomas): decía «Factura por correo», y
+  lo que llega es un recibo sin número de factura ni IVA. Vuelve a «Factura» con el recibo con IVA del núcleo (abajo,
+  «Lo que falta»). Lo vigila `tests/test_texts.py`.
+- **El paso 3 del recorrido de bienvenida** (`tour3Text`) dice los días de `DOWNLOAD_DAYS`, con la forma de su número,
+  como la fila de confianza y el «Hecho» de la gratis: llevaba el 7 escrito en los 8 idiomas. Su prueba, en un
+  Chromium, en `tests/test_texts.py`.
+
 ### Núcleo 0.35.0 — el ciclo de la 0.36 en los documentos (25-11-2026)
 
 Sin tocar el código: `docs/` en los cuatro bloques del núcleo (`README.md` nuevo; `VISION.md`,
@@ -33,7 +45,8 @@ código ya pide de la 0.36 sigue esperando: abajo, «Con la 0.36».
   1. **El IVA va incluido en el precio.**
   2. **Pasarela: PayPal y Stripe, las dos**; no nos cerramos a una.
   3. **Recibo: uno solo, el del núcleo**, que ya lleva el IVA desglosado; la tienda lo enseña y lo enlaza (deja de
-     mandar el suyo, `mailReceiptBody`).
+     mandar el suyo, `mailReceiptBody`). Con él, la fila de confianza vuelve a decir «Factura por correo»
+     (`trustInvoice`, en los 8 idiomas; hasta entonces, «Recibo por correo»: 2026-11-25).
   4. **Sus pruebas no esperan a nada:** la pasarela de pruebas del núcleo existe desde la 0.35
      (`testing.fake_payments`, `testing.FakeGateway`; CONTRATO).
 
